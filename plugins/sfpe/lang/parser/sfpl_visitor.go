@@ -1,8 +1,8 @@
 // Code generated from Sfpl.g4 by ANTLR 4.7.2. DO NOT EDIT.
 
 package parser // Sfpl
-
 import "github.com/antlr/antlr4/runtime/Go/antlr"
+
 // A complete Visitor for a parse tree produced by SfplParser.
 type SfplVisitor interface {
 	antlr.ParseTreeVisitor
@@ -51,5 +51,4 @@ type SfplVisitor interface {
 
 	// Visit a parse tree produced by SfplParser#unary_operator.
 	VisitUnary_operator(ctx *Unary_operatorContext) interface{}
-
 }
