@@ -14,22 +14,22 @@ PRIORITY: 'priority';
 TAGS: 'tags';
 
 policy
-	: (f_rule | f_filter | f_macro | f_list)+ EOF
+	: (prule | pfilter | pmacro | plist)+ EOF
 	;
 
-f_rule
+prule
 	: DECL RULE DEF text DESC DEF text COND DEF expression (ACTION|OUTPUT) DEF text PRIORITY DEF SEVERITY TAGS DEF items 
 	;
 
-f_filter
-	: DECL FILTER DEF text DESC DEF text COND DEF expression
+pfilter
+	: DECL FILTER DEF ID COND DEF expression
 	;
 
-f_macro
+pmacro
 	: DECL MACRO DEF ID COND DEF expression
 	;
 
-f_list
+plist
 	: DECL LIST DEF ID ITEMS DEF items 
 	;
 	

@@ -11,19 +11,19 @@ func (v *BaseSfplVisitor) VisitPolicy(ctx *PolicyContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseSfplVisitor) VisitF_rule(ctx *F_ruleContext) interface{} {
+func (v *BaseSfplVisitor) VisitPrule(ctx *PruleContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseSfplVisitor) VisitF_filter(ctx *F_filterContext) interface{} {
+func (v *BaseSfplVisitor) VisitPfilter(ctx *PfilterContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseSfplVisitor) VisitF_macro(ctx *F_macroContext) interface{} {
+func (v *BaseSfplVisitor) VisitPmacro(ctx *PmacroContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseSfplVisitor) VisitF_list(ctx *F_listContext) interface{} {
+func (v *BaseSfplVisitor) VisitPlist(ctx *PlistContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

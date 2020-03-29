@@ -1,25 +1,52 @@
-package main
+package engine
 
 import (
-	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.ibm.com/sysflow/sf-processor/plugins/sfpe/lang/parser"
 )
 
+var lists = make(map[string][]string)
+var macros = make(map[string]parser.IExpressionContext)
+var filters = make(map[string]parser.IExpressionContext)
+var rules = make(map[string]parser.IPruleContext)
+
+var itemsre = regexp.MustCompile(`(^\[)(.*)(\]$?)`)
+
 type sfplListener struct {
 	*parser.BaseSfplListener
 }
 
-// ExitF_list is called when production f_list is exited.
-func (s *sfplListener) ExitF_list(ctx *parser.F_listContext) {
-	fmt.Println("Exiting list parsing")
-	fmt.Println(ctx.GetText())
+// ExitList is called when production list is exited.
+func (s *sfplListener) ExitPlist(ctx *parser.PlistContext) {
+	Trace.Printf("Parsing list %s", ctx.GetText())
+	lists[ctx.ID().GetText()] = extractList(ctx.Items())
 }
 
-func main() {
+// ExitMacro is called when production macro is exited.
+func (s *sfplListener) ExitPmacro(ctx *parser.PmacroContext) {
+	Trace.Printf("Parsing macro %s", ctx.GetText())
+	macros[ctx.ID().GetText()] = ctx.Expression()
+}
+
+// ExitFilter is called when production filter is exited.
+func (s *sfplListener) ExitPfilter(ctx *parser.PfilterContext) {
+	Trace.Printf("Parsing filter %s", ctx.GetText())
+	filters[ctx.ID().GetText()] = ctx.Expression()
+}
+
+// ExitFilter is called when production filter is exited.
+func (s *sfplListener) ExitPrule(ctx *parser.PruleContext) {
+	Trace.Printf("Parsing macro %s", ctx.GetText())
+
+}
+
+// Compile parses and interprets an input policy defined in path.
+func Compile(path string) {
 	// Setup the input
-	is := antlr.NewInputStream("- list: test\nitems: [1, 2, 3]")
+	is, _ := antlr.NewFileStream(path)
 
 	// Create the Lexer
 	lexer := parser.NewSfplLexer(is)
@@ -30,5 +57,15 @@ func main() {
 
 	// Finally parse the expression
 	antlr.ParseTreeWalkerDefault.Walk(&sfplListener{}, p.Policy())
-	//fmt.Println(p.Policy().GetText())
 }
+
+func extractList(ctx parser.IItemsContext) []string {
+	s := []string{}
+	ls := strings.Split(itemsre.ReplaceAllString(ctx.GetText(), "$2"), LISTSEP)
+	for _, v := range ls {
+		s = append(s, v)
+	}
+	return s
+}
+
+func visitExpression(ctx parser.ExpressionContext)

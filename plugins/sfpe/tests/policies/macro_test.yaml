@@ -1,0 +1,14 @@
+- list: operations
+  items: ["clone", "execve", "exit"]
+
+- macro: is_python
+  condition: container.name contains node and proc.exe contains python
+
+- rule: Simple rule to test if Python process
+  desc: unit test macro rule
+  condition: container.name contains node and sf.state=CREATE and sf.type=ProcessFlow and 
+  (evt.type=clone or evt.type=execve or evt.type=exit) and 
+  evt.type in (clone, execve, exit) and is_python
+  action: [alert]
+  priority: NOTICE
+  tags: [test]

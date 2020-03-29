@@ -26,29 +26,29 @@ func (s *BaseSfplListener) EnterPolicy(ctx *PolicyContext) {}
 // ExitPolicy is called when production policy is exited.
 func (s *BaseSfplListener) ExitPolicy(ctx *PolicyContext) {}
 
-// EnterF_rule is called when production f_rule is entered.
-func (s *BaseSfplListener) EnterF_rule(ctx *F_ruleContext) {}
+// EnterPrule is called when production prule is entered.
+func (s *BaseSfplListener) EnterPrule(ctx *PruleContext) {}
 
-// ExitF_rule is called when production f_rule is exited.
-func (s *BaseSfplListener) ExitF_rule(ctx *F_ruleContext) {}
+// ExitPrule is called when production prule is exited.
+func (s *BaseSfplListener) ExitPrule(ctx *PruleContext) {}
 
-// EnterF_filter is called when production f_filter is entered.
-func (s *BaseSfplListener) EnterF_filter(ctx *F_filterContext) {}
+// EnterPfilter is called when production pfilter is entered.
+func (s *BaseSfplListener) EnterPfilter(ctx *PfilterContext) {}
 
-// ExitF_filter is called when production f_filter is exited.
-func (s *BaseSfplListener) ExitF_filter(ctx *F_filterContext) {}
+// ExitPfilter is called when production pfilter is exited.
+func (s *BaseSfplListener) ExitPfilter(ctx *PfilterContext) {}
 
-// EnterF_macro is called when production f_macro is entered.
-func (s *BaseSfplListener) EnterF_macro(ctx *F_macroContext) {}
+// EnterPmacro is called when production pmacro is entered.
+func (s *BaseSfplListener) EnterPmacro(ctx *PmacroContext) {}
 
-// ExitF_macro is called when production f_macro is exited.
-func (s *BaseSfplListener) ExitF_macro(ctx *F_macroContext) {}
+// ExitPmacro is called when production pmacro is exited.
+func (s *BaseSfplListener) ExitPmacro(ctx *PmacroContext) {}
 
-// EnterF_list is called when production f_list is entered.
-func (s *BaseSfplListener) EnterF_list(ctx *F_listContext) {}
+// EnterPlist is called when production plist is entered.
+func (s *BaseSfplListener) EnterPlist(ctx *PlistContext) {}
 
-// ExitF_list is called when production f_list is exited.
-func (s *BaseSfplListener) ExitF_list(ctx *F_listContext) {}
+// ExitPlist is called when production plist is exited.
+func (s *BaseSfplListener) ExitPlist(ctx *PlistContext) {}
 
 // EnterExpression is called when production expression is entered.
 func (s *BaseSfplListener) EnterExpression(ctx *ExpressionContext) {}

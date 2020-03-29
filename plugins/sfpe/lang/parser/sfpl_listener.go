@@ -10,17 +10,17 @@ type SfplListener interface {
 	// EnterPolicy is called when entering the policy production.
 	EnterPolicy(c *PolicyContext)
 
-	// EnterF_rule is called when entering the f_rule production.
-	EnterF_rule(c *F_ruleContext)
+	// EnterPrule is called when entering the prule production.
+	EnterPrule(c *PruleContext)
 
-	// EnterF_filter is called when entering the f_filter production.
-	EnterF_filter(c *F_filterContext)
+	// EnterPfilter is called when entering the pfilter production.
+	EnterPfilter(c *PfilterContext)
 
-	// EnterF_macro is called when entering the f_macro production.
-	EnterF_macro(c *F_macroContext)
+	// EnterPmacro is called when entering the pmacro production.
+	EnterPmacro(c *PmacroContext)
 
-	// EnterF_list is called when entering the f_list production.
-	EnterF_list(c *F_listContext)
+	// EnterPlist is called when entering the plist production.
+	EnterPlist(c *PlistContext)
 
 	// EnterExpression is called when entering the expression production.
 	EnterExpression(c *ExpressionContext)
@@ -55,17 +55,17 @@ type SfplListener interface {
 	// ExitPolicy is called when exiting the policy production.
 	ExitPolicy(c *PolicyContext)
 
-	// ExitF_rule is called when exiting the f_rule production.
-	ExitF_rule(c *F_ruleContext)
+	// ExitPrule is called when exiting the prule production.
+	ExitPrule(c *PruleContext)
 
-	// ExitF_filter is called when exiting the f_filter production.
-	ExitF_filter(c *F_filterContext)
+	// ExitPfilter is called when exiting the pfilter production.
+	ExitPfilter(c *PfilterContext)
 
-	// ExitF_macro is called when exiting the f_macro production.
-	ExitF_macro(c *F_macroContext)
+	// ExitPmacro is called when exiting the pmacro production.
+	ExitPmacro(c *PmacroContext)
 
-	// ExitF_list is called when exiting the f_list production.
-	ExitF_list(c *F_listContext)
+	// ExitPlist is called when exiting the plist production.
+	ExitPlist(c *PlistContext)
 
 	// ExitExpression is called when exiting the expression production.
 	ExitExpression(c *ExpressionContext)

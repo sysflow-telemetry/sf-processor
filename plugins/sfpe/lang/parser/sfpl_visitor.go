@@ -10,17 +10,17 @@ type SfplVisitor interface {
 	// Visit a parse tree produced by SfplParser#policy.
 	VisitPolicy(ctx *PolicyContext) interface{}
 
-	// Visit a parse tree produced by SfplParser#f_rule.
-	VisitF_rule(ctx *F_ruleContext) interface{}
+	// Visit a parse tree produced by SfplParser#prule.
+	VisitPrule(ctx *PruleContext) interface{}
 
-	// Visit a parse tree produced by SfplParser#f_filter.
-	VisitF_filter(ctx *F_filterContext) interface{}
+	// Visit a parse tree produced by SfplParser#pfilter.
+	VisitPfilter(ctx *PfilterContext) interface{}
 
-	// Visit a parse tree produced by SfplParser#f_macro.
-	VisitF_macro(ctx *F_macroContext) interface{}
+	// Visit a parse tree produced by SfplParser#pmacro.
+	VisitPmacro(ctx *PmacroContext) interface{}
 
-	// Visit a parse tree produced by SfplParser#f_list.
-	VisitF_list(ctx *F_listContext) interface{}
+	// Visit a parse tree produced by SfplParser#plist.
+	VisitPlist(ctx *PlistContext) interface{}
 
 	// Visit a parse tree produced by SfplParser#expression.
 	VisitExpression(ctx *ExpressionContext) interface{}
