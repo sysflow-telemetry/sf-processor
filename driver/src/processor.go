@@ -5,6 +5,7 @@ import (
 
 	"github.com/sysflow-telemetry/sf-apis/go/handlers"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
+	"sync"
 )
 
 type SysFlowProcessor struct {
@@ -76,8 +77,9 @@ func (s SysFlowProcessor) getContFromFile(file *sfgo.File) *sfgo.Container {
 	return nil
 }
 
-func (s SysFlowProcessor) process(record <-chan *sfgo.SysFlow) {
+func (s SysFlowProcessor) process(record <-chan *sfgo.SysFlow, wg *sync.WaitGroup) {
 	entEnabled := s.Hdl.IsEntityEnabled()
+	defer wg.Done()
 	for {
 		sf, ok := <-record
 		if !ok {
