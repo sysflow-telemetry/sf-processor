@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"sync"
 
@@ -30,12 +29,51 @@ func (it inputType) String() string {
 	return [...]string{"file", "socket"}[it]
 }
 
+func processInputFile(path string) {
+	var handler Printer
+	var wg sync.WaitGroup
+	processor := NewSysFlowProc(handler)
+	records := make(chan *sfgo.SysFlow, chanSize)
+	wg.Add(1)
+	go processor.process(records, &wg)
+
+	sFlow := sfgo.NewSysFlow()
+	deser, err := compiler.CompileSchemaBytes([]byte(sFlow.Schema()), []byte(sFlow.Schema()))
+	if err != nil {
+		logger.Error.Println("compiler error: ", err)
+	}
+
+	f, _ := os.Open(flag.Arg(0))
+	reader := bufio.NewReader(f)
+	sreader, err := container.NewReader(reader)
+	if err != nil {
+		logger.Error.Println("reader error: ", err)
+	}
+
+	for {
+		sFlow = sfgo.NewSysFlow()
+		err = vm.Eval(sreader, deser, sFlow)
+		if err != nil {
+			logger.Error.Println("deserialize: ", err)
+			break
+		}
+		records <- sFlow
+	}
+	close(records)
+	wg.Wait()
+}
+
+func processInputStream(path string) {
+	// TODO
+	return
+}
+
 func main() {
 	// setup arg parsing
 	inputType := flag.String("input", file.String(), fmt.Sprintf("Input type {%s|%s}", file, socket))
 
 	flag.Usage = func() {
-		fmt.Println("Usage: sysprocessor path")
+		fmt.Println("Usage: sysprocessor [-input <value>] path")
 		fmt.Println()
 		fmt.Println("Positional arguments:")
 		fmt.Println("  path string\n\tInput path")
@@ -49,58 +87,25 @@ func main() {
 	flag.Parse()
 	if flag.NArg() < 1 {
 		flag.Usage()
-		os.Exit(0)
+		os.Exit(1)
 	}
 
 	// retrieve positional args
 	path := flag.Arg(0)
 
 	// Initialize logger
-	logging.InitLoggers(logging.)
+	logger.InitLoggers(logger.TRACE)
 
-	fmt.Printf("path: %s, type: %s\n", path, *inputType)
-
-	switch(*inputType){
-	case file:
+	// process input
+	switch *inputType {
+	case file.String():
+		processInputFile(path)
 		break
-	case socket:
-		break:
+	case socket.String():
+		processInputStream(path)
+		break
 	default:
-		fmt.
+		logger.Error.Println("Unrecognized input type: ", *inputType)
+		os.Exit(1)
 	}
-
-	os.Exit(0)
-	var handler Printer
-	var wg sync.WaitGroup
-	processor := NewSysFlowProc(handler)
-	records := make(chan *sfgo.SysFlow, chanSize)
-	wg.Add(1)
-	go processor.process(records, &wg)
-
-	sFlow := sfgo.NewSysFlow()
-	deser, err := compiler.CompileSchemaBytes([]byte(sFlow.Schema()), []byte(sFlow.Schema()))
-	if err != nil {
-		log.Fatal("compiler error:", err)
-	}
-
-	f, _ := os.Open(flag.Arg(0))
-	reader := bufio.NewReader(f)
-	sreader, err := container.NewReader(reader)
-	if err != nil {
-		log.Fatal("reader error:", err)
-	}
-	i := 0
-	for {
-		sFlow = sfgo.NewSysFlow()
-		err = vm.Eval(sreader, deser, sFlow)
-		if err != nil {
-			log.Printf("deserialize: %s\n", err)
-			break
-		}
-		i++
-		records <- sFlow
-	}
-	close(records)
-	wg.Wait()
-	log.Printf("The number of sysflow objects parsed is: %d\n", i)
 }

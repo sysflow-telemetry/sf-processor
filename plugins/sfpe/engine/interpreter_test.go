@@ -4,16 +4,17 @@ import (
 	"os"
 	"testing"
 
+	"github.ibm.com/sysflow/sf-processor/common/logger"
 	. "github.ibm.com/sysflow/sf-processor/plugins/sfpe/engine"
 )
 
 func TestMain(m *testing.M) {
-	InitLoggers(TRACE)
+	logger.InitLoggers(logger.TRACE)
 	os.Exit(m.Run())
 }
 
 func TestCompile(t *testing.T) {
-	Trace.Println("Running test compile")
+	logger.Trace.Println("Running test compile")
 	Compile("../tests/policies/macro_test.yaml")
 }
 

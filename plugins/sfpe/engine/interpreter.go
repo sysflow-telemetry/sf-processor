@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
+	"github.ibm.com/sysflow/sf-processor/common/logger"
 	"github.ibm.com/sysflow/sf-processor/plugins/sfpe/lang/parser"
 )
 
@@ -21,25 +22,25 @@ type sfplListener struct {
 
 // ExitList is called when production list is exited.
 func (s *sfplListener) ExitPlist(ctx *parser.PlistContext) {
-	Trace.Printf("Parsing list %s", ctx.GetText())
+	logger.Trace.Printf("Parsing list %s", ctx.GetText())
 	lists[ctx.ID().GetText()] = extractList(ctx.Items())
 }
 
 // ExitMacro is called when production macro is exited.
 func (s *sfplListener) ExitPmacro(ctx *parser.PmacroContext) {
-	Trace.Printf("Parsing macro %s", ctx.GetText())
+	logger.Trace.Printf("Parsing macro %s", ctx.GetText())
 	macros[ctx.ID().GetText()] = ctx.Expression()
 }
 
 // ExitFilter is called when production filter is exited.
 func (s *sfplListener) ExitPfilter(ctx *parser.PfilterContext) {
-	Trace.Printf("Parsing filter %s", ctx.GetText())
+	logger.Trace.Printf("Parsing filter %s", ctx.GetText())
 	filters[ctx.ID().GetText()] = ctx.Expression()
 }
 
 // ExitFilter is called when production filter is exited.
 func (s *sfplListener) ExitPrule(ctx *parser.PruleContext) {
-	Trace.Printf("Parsing macro %s", ctx.GetText())
+	logger.Trace.Printf("Parsing macro %s", ctx.GetText())
 
 }
 
@@ -68,4 +69,4 @@ func extractList(ctx parser.IItemsContext) []string {
 	return s
 }
 
-func visitExpression(ctx parser.ExpressionContext)
+//func visitExpression(ctx parser.ExpressionContext)
