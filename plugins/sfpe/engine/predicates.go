@@ -1,6 +1,10 @@
 package engine
 
 import (
+	"fmt"
+	"reflect"
+	"strings"
+
 	"github.ibm.com/sysflow/sf-processor/plugins/flattener/types"
 )
 
@@ -61,14 +65,17 @@ func Any(criteria []Criterion) Criterion {
 
 // Exists creates a criterion for an existential predicate.
 func Exists(attr string) Criterion {
-	//var p Predicate = func(r types.FlatRecord) bool { return r }
-	//return Criterion{p}
-	return False
+	m := Mapper.Map(attr)
+	p := func(r types.FlatRecord) bool { return reflect.ValueOf(m(r)).IsZero() }
+	return Criterion{p}
 }
 
 // Eq creates a criterion for an equality predicate.
 func Eq(lattr string, rattr string) Criterion {
-	return False
+	ml := Mapper.Map(lattr)
+	mr := Mapper.Map(rattr)
+	p := func(r types.FlatRecord) bool { return eval(ml(r), mr(r), ops.eq) }
+	return Criterion{p}
 }
 
 // NEq creates a criterion for an inequality predicate.
@@ -78,12 +85,18 @@ func NEq(lattr string, rattr string) Criterion {
 
 // Ge creates a criterion for a greater-or-equal predicate.
 func Ge(lattr string, rattr string) Criterion {
-	return False
+	ml := Mapper.MapInt(lattr)
+	mr := Mapper.MapInt(rattr)
+	p := func(r types.FlatRecord) bool { return ml(r) >= mr(r) }
+	return Criterion{p}
 }
 
 // Gt creates a criterion for a greater-than predicate.
 func Gt(lattr string, rattr string) Criterion {
-	return False
+	ml := Mapper.MapInt(lattr)
+	mr := Mapper.MapInt(rattr)
+	p := func(r types.FlatRecord) bool { return ml(r) > mr(r) }
+	return Criterion{p}
 }
 
 // Le creates a criterion for a lower-or-equal predicate.
@@ -98,25 +111,85 @@ func Lt(lattr string, rattr string) Criterion {
 
 // StartsWith creates a criterion for a starts-with predicate.
 func StartsWith(lattr string, rattr string) Criterion {
-	return False
+	ml := Mapper.MapStr(lattr)
+	mr := Mapper.MapStr(rattr)
+	p := func(r types.FlatRecord) bool { return eval(ml(r), mr(r), ops.startswith) }
+	return Criterion{p}
 }
 
 // Contains creates a criterion for a contains predicate.
 func Contains(lattr string, rattr string) Criterion {
-	return False
+	ml := Mapper.MapStr(lattr)
+	mr := Mapper.MapStr(rattr)
+	p := func(r types.FlatRecord) bool { return eval(ml(r), mr(r), ops.contains) }
+	return Criterion{p}
 }
 
 // IContains creates a criterion for a case-insensitive contains predicate.
 func IContains(lattr string, rattr string) Criterion {
-	return False
+	ml := Mapper.MapStr(lattr)
+	mr := Mapper.MapStr(rattr)
+	p := func(r types.FlatRecord) bool { return eval(ml(r), mr(r), ops.icontains) }
+	return Criterion{p}
 }
 
 // In creates a criterion for a list-inclusion predicate.
 func In(attr string, list []string) Criterion {
-	return False
+	m := Mapper.MapStr(attr)
+	p := func(r types.FlatRecord) bool {
+		for _, v := range list {
+			if eval(m(r), v, ops.eq) {
+				return true
+			}
+		}
+		return false
+	}
+	return Criterion{p}
 }
 
 // PMatch creates a criterion for a list-pattern-matching predicate.
 func PMatch(attr string, list []string) Criterion {
-	return False
+	m := Mapper.MapStr(attr)
+	p := func(r types.FlatRecord) bool {
+		for _, v := range list {
+			if eval(m(r), v, ops.contains) {
+				return true
+			}
+		}
+		return false
+	}
+	return Criterion{p}
+}
+
+// operator type.
+type operator func(string, string) bool
+
+// operators struct.
+type operators struct {
+	eq         operator
+	contains   operator
+	icontains  operator
+	startswith operator
+}
+
+// ops defines boolean comparison operators over strings.
+var ops = operators{
+	eq:         func(l string, r string) bool { return l == r },
+	contains:   func(l string, r string) bool { return strings.Contains(l, r) },
+	icontains:  func(l string, r string) bool { return strings.Contains(strings.ToLower(l), strings.ToLower(r)) },
+	startswith: func(l string, r string) bool { return strings.HasPrefix(l, r) },
+}
+
+// Eval evaluates a boolean operator over two predicates.
+func eval(l interface{}, r interface{}, op operator) bool {
+	lattrs := strings.Split(fmt.Sprintf("%v", l), LISTSEP)
+	rattrs := strings.Split(fmt.Sprintf("%v", r), LISTSEP)
+	for _, lattr := range lattrs {
+		for _, rattr := range rattrs {
+			if op(lattr, rattr) {
+				return true
+			}
+		}
+	}
+	return false
 }

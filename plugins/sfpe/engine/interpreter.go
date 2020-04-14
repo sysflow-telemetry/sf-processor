@@ -22,31 +22,31 @@ type sfplListener struct {
 
 // ExitList is called when production list is exited.
 func (s *sfplListener) ExitPlist(ctx *parser.PlistContext) {
-	logger.Trace.Printf("Parsing list %s", ctx.GetText())
+	logger.Trace.Println("Parsing list ", ctx.GetText())
 	lists[ctx.ID().GetText()] = extractListFromItems(ctx.Items())
 }
 
 // ExitMacro is called when production macro is exited.
 func (s *sfplListener) ExitPmacro(ctx *parser.PmacroContext) {
-	logger.Trace.Printf("Parsing macro %s", ctx.GetText())
+	logger.Trace.Println("Parsing macro ", ctx.GetText())
 	macros[ctx.ID().GetText()] = ctx.Expression()
 }
 
 // ExitFilter is called when production filter is exited.
 func (s *sfplListener) ExitPfilter(ctx *parser.PfilterContext) {
-	logger.Trace.Printf("Parsing filter %s", ctx.GetText())
+	logger.Trace.Println("Parsing filter ", ctx.GetText())
 	filters[ctx.ID().GetText()] = ctx.Expression()
 }
 
 // ExitFilter is called when production filter is exited.
 func (s *sfplListener) ExitPrule(ctx *parser.PruleContext) {
-	logger.Trace.Printf("Parsing rule %s", ctx.GetText())
+	logger.Trace.Println("Parsing rule ", ctx.GetText())
 	visitExpression(ctx.Expression())
 
 }
 
 // Compile parses and interprets an input policy defined in path.
-func Compile(path string) {
+func compile(path string) {
 	// Setup the input
 	is, _ := antlr.NewFileStream(path)
 
@@ -57,8 +57,16 @@ func Compile(path string) {
 	// Create the Parser
 	p := parser.NewSfplParser(stream)
 
-	// Finally parse the expression
+	// Parse the policy
 	antlr.ParseTreeWalkerDefault.Walk(&sfplListener{}, p.Policy())
+}
+
+// Compile parses and interprets a set of input policies defined in paths.
+func Compile(paths ...string) {
+	for _, path := range paths {
+		logger.Trace.Println("Parsing policy file ", path)
+		Compile(path)
+	}
 }
 
 func extractListFromItems(ctx parser.IItemsContext) []string {
@@ -121,7 +129,6 @@ func visitTerm(ctx parser.ITermContext) Criterion {
 	} else if opCtx, ok := termCtx.Unary_operator().(*parser.Unary_operatorContext); ok {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		if opCtx.EXISTS() != nil {
-			logger.Trace.Println("Exists: ", lop)
 			return Exists(lop)
 		}
 		logger.Error.Println("Unrecognized unary operator ", opCtx.GetText())

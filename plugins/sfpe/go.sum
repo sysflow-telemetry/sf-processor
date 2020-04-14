@@ -1,3 +1,5 @@
+github.com/actgardner/gogen-avro v6.5.0+incompatible h1:P73NiZR/S0lBWQDkK6mbvdgBXRc6e0/AaaSTqu/AvLI=
+github.com/actgardner/gogen-avro v6.5.0+incompatible/go.mod h1:N2PzqZtS+5w9xxGp2daeykhWdTL0lBiRhbbvkVj4Yd8=
 github.com/antlr/antlr4 v0.0.0-20200309161749-1284814c2112 h1:7NI4dc3NNTe5UyN+4UAmuMKrfR7PsuBHbsjFh17zj8g=
 github.com/antlr/antlr4 v0.0.0-20200309161749-1284814c2112/go.mod h1:T7PbCXFs94rrTttyxjbyT5+/1V8T2TYDejxUfHJjw1Y=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
@@ -7,12 +9,17 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.5.1 h1:nOGnQDM7FYENwehXlg/kFVnos3rEvtKTjRvOWSzb6H4=
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200329154308-3e2cbecdaedd/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200412150027-7b6b88c05383 h1:a1lF/OKssjXRBppAle9tGEv4xMT1BXPfjbutuO8ylHI=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200412150027-7b6b88c05383/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
 github.ibm.com/sysflow/sf-processor v0.0.0-20200401032541-3355ddc802fd h1:OgzObj9xDjfZ1NiqZOJ0Klo3DxD3uSIrBdMWcL9BWv4=
 github.ibm.com/sysflow/sf-processor v0.0.0-20200401214008-76842a5646cf h1:V3EyKGea2Rcv5XYgWbqm0MzeRzxfC9jMvrv4NasggJg=
 github.ibm.com/sysflow/sf-processor/common v0.0.0-20200401032541-3355ddc802fd h1:VZMCDBp7VCJraECOWc/guH1xzWotPXmjsYfqsdwWf/s=
 github.ibm.com/sysflow/sf-processor/common v0.0.0-20200401032541-3355ddc802fd/go.mod h1:sVsO3YBv7XsiMrZOj2WbnCF3f9tA/+d93HVSidJ14mk=
 github.ibm.com/sysflow/sf-processor/plugins/flattener v0.0.0-20200401214008-76842a5646cf h1:cScmmgeac0+n1rQm52idihLqBWiM0QYfmPndTLsaxDY=
 github.ibm.com/sysflow/sf-processor/plugins/flattener v0.0.0-20200401214008-76842a5646cf/go.mod h1:Buyv9nrmlbzdkFy2aKqzM+HefWJ60ZqeicFG1aYQXdg=
+github.ibm.com/sysflow/sf-processor/plugins/flattener v0.0.0-20200408155325-4382f71e34ae h1:N7Ghpk9nnP02FVmPh71FVBYA5GbaqKWbMOjSnZRDGe4=
+github.ibm.com/sysflow/sf-processor/plugins/flattener v0.0.0-20200408155325-4382f71e34ae/go.mod h1:HlZT87SK7ud0AYWc8y/DoKO8IFW0a3DOiqsGji6nevA=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
