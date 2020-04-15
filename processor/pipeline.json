@@ -1,0 +1,13 @@
+{
+   "pipeline":[{
+         "processor": "SysFlowProc",
+         "handler": "Flattener",
+         "in":   "sysflow SysFlowChan",
+         "out":  "flat FlattenerChan"
+          },
+         {
+         "processor": "PolicyEngine",
+         "in":   "flat FlattenerChan"         
+          }
+   ]
+}

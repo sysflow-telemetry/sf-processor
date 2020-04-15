@@ -9,7 +9,11 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/nsf/termbox-go v0.0.0-20200204031403-4d2b513ad8be // indirect
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200329154308-3e2cbecdaedd
-	github.ibm.com/sysflow/sf-processor/common v0.0.0-20200401032541-3355ddc802fd
+	github.com/spf13/viper v1.6.3
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200415202402-e5659ec14bfd
+	github.ibm.com/sysflow/sf-processor/common v0.0.0-20200414042919-6f26624f4df9
+	github.ibm.com/sysflow/sf-processor/plugins/flattener v0.0.0-20200415205203-9fa361cf78fd
+	github.ibm.com/sysflow/sf-processor/plugins/processor v0.0.0-20200415205203-9fa361cf78fd
+	github.ibm.com/sysflow/sf-processor/plugins/sfpe v0.0.0-20200415205203-9fa361cf78fd
 	google.golang.org/grpc v1.23.0
 )
