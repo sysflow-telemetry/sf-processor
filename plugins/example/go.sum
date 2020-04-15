@@ -1,0 +1,5 @@
+github.com/actgardner/gogen-avro v6.5.0+incompatible h1:P73NiZR/S0lBWQDkK6mbvdgBXRc6e0/AaaSTqu/AvLI=
+github.com/actgardner/gogen-avro v6.5.0+incompatible/go.mod h1:N2PzqZtS+5w9xxGp2daeykhWdTL0lBiRhbbvkVj4Yd8=
+github.com/sysflow-telemetry/sf-apis v0.0.0-20200316230117-c2ce7cfdefde h1:d9A5xlLwJfyrMyd4VSxaKRHup/H6hek1+hAmI7mbwb8=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200415202402-e5659ec14bfd h1:5JdMXJgPdKgE+5Sa9V1yKCy1xpOiDIIXNsAsJTR//5Y=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200415202402-e5659ec14bfd/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
