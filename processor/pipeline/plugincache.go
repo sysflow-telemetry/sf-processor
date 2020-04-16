@@ -2,19 +2,17 @@ package pipeline
 
 import (
 	"errors"
+	"plugin"
+	"strings"
+
 	"github.com/spf13/viper"
-	//_ "github.ibm.com/sysflow/sf-processor/plugins/flattener"
-	//_ "github.ibm.com/sysflow/sf-processor/plugins/flattener/types"
-	//_ "github.ibm.com/sysflow/sf-processor/plugins/processor"
-	//"github.com/sysflow-telemetry/sf-apis/goapis/go/handlers"
+
 	"github.com/sysflow-telemetry/sf-apis/go/handlers"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
 	"github.ibm.com/sysflow/sf-processor/common/logger"
 	hdl "github.ibm.com/sysflow/sf-processor/plugins/flattener"
 	proc "github.ibm.com/sysflow/sf-processor/plugins/processor"
 	pol "github.ibm.com/sysflow/sf-processor/plugins/sfpe"
-	"plugin"
-	"strings"
 )
 
 type PluginCache struct {
@@ -28,11 +26,9 @@ type PluginCache struct {
 
 func NewPluginCache() *PluginCache {
 	plug := &PluginCache{config: viper.New(), chanMap: make(map[string]interface{}), pluginMap: make(map[string]*plugin.Plugin)}
-	plug.procFuncMap = map[string]interface{}{"SysFlowProc": proc.NewSysFlowProc,
-		"PolicyEngine": pol.NewPolicyEngine}
+	plug.procFuncMap = map[string]interface{}{"SysFlowProc": proc.NewSysFlowProc, "PolicyEngine": pol.NewPolicyEngine}
 	plug.hdlFuncMap = map[string]interface{}{"Flattener": hdl.NewFlattener}
-	plug.chanFuncMap = map[string]interface{}{"SysFlowChan": proc.NewSysFlowChan,
-		"FlattenerChan": hdl.NewFlattenerChan}
+	plug.chanFuncMap = map[string]interface{}{"SysFlowChan": proc.NewSysFlowChan, "FlattenerChan": hdl.NewFlattenerChan}
 	plug.config.SetConfigName("pipeline")
 	plug.config.SetConfigType("json")
 	plug.config.AddConfigPath("./")
