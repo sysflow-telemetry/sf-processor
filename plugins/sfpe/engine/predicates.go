@@ -5,17 +5,17 @@ import (
 	"reflect"
 	"strings"
 
-	"github.ibm.com/sysflow/sf-processor/plugins/flattener/types"
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
 
 // Predicate defines the type of a functional predicate.
-type Predicate func(types.FlatRecord) bool
+type Predicate func(sfgo.FlatRecord) bool
 
 // True defines a functional predicate that always returns true.
-var True = Criterion{func(r types.FlatRecord) bool { return true }}
+var True = Criterion{func(r sfgo.FlatRecord) bool { return true }}
 
 // False defines a functional predicate that always returns false.
-var False = Criterion{func(r types.FlatRecord) bool { return false }}
+var False = Criterion{func(r sfgo.FlatRecord) bool { return false }}
 
 // Criterion defines an interface for functional predicate operations.
 type Criterion struct {
@@ -23,25 +23,25 @@ type Criterion struct {
 }
 
 // Eval evaluates a functional predicate.
-func (c Criterion) Eval(r types.FlatRecord) bool {
+func (c Criterion) Eval(r sfgo.FlatRecord) bool {
 	return c.Pred(r)
 }
 
 // And computes the conjunction of two functional predicates.
 func (c Criterion) And(cr Criterion) Criterion {
-	var p Predicate = func(r types.FlatRecord) bool { return c.Eval(r) && cr.Eval(r) }
+	var p Predicate = func(r sfgo.FlatRecord) bool { return c.Eval(r) && cr.Eval(r) }
 	return Criterion{p}
 }
 
 // Or computes the conjunction of two functional predicates.
 func (c Criterion) Or(cr Criterion) Criterion {
-	var p Predicate = func(r types.FlatRecord) bool { return c.Eval(r) || cr.Eval(r) }
+	var p Predicate = func(r sfgo.FlatRecord) bool { return c.Eval(r) || cr.Eval(r) }
 	return Criterion{p}
 }
 
 // Not computes the negation of the function predicate.
 func (c Criterion) Not() Criterion {
-	var p Predicate = func(r types.FlatRecord) bool { return !c.Eval(r) }
+	var p Predicate = func(r sfgo.FlatRecord) bool { return !c.Eval(r) }
 	return Criterion{p}
 }
 
@@ -66,7 +66,7 @@ func Any(criteria []Criterion) Criterion {
 // Exists creates a criterion for an existential predicate.
 func Exists(attr string) Criterion {
 	m := Mapper.Map(attr)
-	p := func(r types.FlatRecord) bool { return reflect.ValueOf(m(r)).IsZero() }
+	p := func(r sfgo.FlatRecord) bool { return reflect.ValueOf(m(r)).IsZero() }
 	return Criterion{p}
 }
 
@@ -74,7 +74,7 @@ func Exists(attr string) Criterion {
 func Eq(lattr string, rattr string) Criterion {
 	ml := Mapper.Map(lattr)
 	mr := Mapper.Map(rattr)
-	p := func(r types.FlatRecord) bool { return eval(ml(r), mr(r), ops.eq) }
+	p := func(r sfgo.FlatRecord) bool { return eval(ml(r), mr(r), ops.eq) }
 	return Criterion{p}
 }
 
@@ -87,7 +87,7 @@ func NEq(lattr string, rattr string) Criterion {
 func Ge(lattr string, rattr string) Criterion {
 	ml := Mapper.MapInt(lattr)
 	mr := Mapper.MapInt(rattr)
-	p := func(r types.FlatRecord) bool { return ml(r) >= mr(r) }
+	p := func(r sfgo.FlatRecord) bool { return ml(r) >= mr(r) }
 	return Criterion{p}
 }
 
@@ -95,7 +95,7 @@ func Ge(lattr string, rattr string) Criterion {
 func Gt(lattr string, rattr string) Criterion {
 	ml := Mapper.MapInt(lattr)
 	mr := Mapper.MapInt(rattr)
-	p := func(r types.FlatRecord) bool { return ml(r) > mr(r) }
+	p := func(r sfgo.FlatRecord) bool { return ml(r) > mr(r) }
 	return Criterion{p}
 }
 
@@ -113,7 +113,7 @@ func Lt(lattr string, rattr string) Criterion {
 func StartsWith(lattr string, rattr string) Criterion {
 	ml := Mapper.MapStr(lattr)
 	mr := Mapper.MapStr(rattr)
-	p := func(r types.FlatRecord) bool { return eval(ml(r), mr(r), ops.startswith) }
+	p := func(r sfgo.FlatRecord) bool { return eval(ml(r), mr(r), ops.startswith) }
 	return Criterion{p}
 }
 
@@ -121,7 +121,7 @@ func StartsWith(lattr string, rattr string) Criterion {
 func Contains(lattr string, rattr string) Criterion {
 	ml := Mapper.MapStr(lattr)
 	mr := Mapper.MapStr(rattr)
-	p := func(r types.FlatRecord) bool { return eval(ml(r), mr(r), ops.contains) }
+	p := func(r sfgo.FlatRecord) bool { return eval(ml(r), mr(r), ops.contains) }
 	return Criterion{p}
 }
 
@@ -129,14 +129,14 @@ func Contains(lattr string, rattr string) Criterion {
 func IContains(lattr string, rattr string) Criterion {
 	ml := Mapper.MapStr(lattr)
 	mr := Mapper.MapStr(rattr)
-	p := func(r types.FlatRecord) bool { return eval(ml(r), mr(r), ops.icontains) }
+	p := func(r sfgo.FlatRecord) bool { return eval(ml(r), mr(r), ops.icontains) }
 	return Criterion{p}
 }
 
 // In creates a criterion for a list-inclusion predicate.
 func In(attr string, list []string) Criterion {
 	m := Mapper.MapStr(attr)
-	p := func(r types.FlatRecord) bool {
+	p := func(r sfgo.FlatRecord) bool {
 		for _, v := range list {
 			if eval(m(r), v, ops.eq) {
 				return true
@@ -150,7 +150,7 @@ func In(attr string, list []string) Criterion {
 // PMatch creates a criterion for a list-pattern-matching predicate.
 func PMatch(attr string, list []string) Criterion {
 	m := Mapper.MapStr(attr)
-	p := func(r types.FlatRecord) bool {
+	p := func(r sfgo.FlatRecord) bool {
 		for _, v := range list {
 			if eval(m(r), v, ops.contains) {
 				return true

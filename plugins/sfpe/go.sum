@@ -9,9 +9,10 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.5.1 h1:nOGnQDM7FYENwehXlg/kFVnos3rEvtKTjRvOWSzb6H4=
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
+github.com/sysflow-telemetry/sf-apis v0.0.0-20200316230117-c2ce7cfdefde h1:d9A5xlLwJfyrMyd4VSxaKRHup/H6hek1+hAmI7mbwb8=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200329154308-3e2cbecdaedd/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200412150027-7b6b88c05383 h1:a1lF/OKssjXRBppAle9tGEv4xMT1BXPfjbutuO8ylHI=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200412150027-7b6b88c05383/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200415202402-e5659ec14bfd h1:5JdMXJgPdKgE+5Sa9V1yKCy1xpOiDIIXNsAsJTR//5Y=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200415202402-e5659ec14bfd/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
 github.ibm.com/sysflow/sf-processor v0.0.0-20200401032541-3355ddc802fd h1:OgzObj9xDjfZ1NiqZOJ0Klo3DxD3uSIrBdMWcL9BWv4=
 github.ibm.com/sysflow/sf-processor v0.0.0-20200401214008-76842a5646cf h1:V3EyKGea2Rcv5XYgWbqm0MzeRzxfC9jMvrv4NasggJg=
 github.ibm.com/sysflow/sf-processor/common v0.0.0-20200401032541-3355ddc802fd h1:VZMCDBp7VCJraECOWc/guH1xzWotPXmjsYfqsdwWf/s=

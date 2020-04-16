@@ -5,48 +5,27 @@ import (
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/sf-processor/common/logger"
 	"github.ibm.com/sysflow/sf-processor/plugins/sfpe/lang/parser"
 )
 
-var lists = make(map[string][]string)
-var macros = make(map[string]parser.IExpressionContext)
-var filters = make(map[string]parser.IExpressionContext)
-var rules = make(map[string]parser.IPruleContext)
+// Parsed rule and filter object maps.
+var rules = make(map[string]Rule)
+var filters = make(map[string]Filter)
 
+// Accessory parsing maps.
+var lists = make(map[string][]string)
+var macroCtxs = make(map[string]parser.IExpressionContext)
+
+// Regular expression for pasting lists.
 var itemsre = regexp.MustCompile(`(^\[)(.*)(\]$?)`)
 
-type sfplListener struct {
-	*parser.BaseSfplListener
-}
-
-// ExitList is called when production list is exited.
-func (s *sfplListener) ExitPlist(ctx *parser.PlistContext) {
-	logger.Trace.Println("Parsing list ", ctx.GetText())
-	lists[ctx.ID().GetText()] = extractListFromItems(ctx.Items())
-}
-
-// ExitMacro is called when production macro is exited.
-func (s *sfplListener) ExitPmacro(ctx *parser.PmacroContext) {
-	logger.Trace.Println("Parsing macro ", ctx.GetText())
-	macros[ctx.ID().GetText()] = ctx.Expression()
-}
-
-// ExitFilter is called when production filter is exited.
-func (s *sfplListener) ExitPfilter(ctx *parser.PfilterContext) {
-	logger.Trace.Println("Parsing filter ", ctx.GetText())
-	filters[ctx.ID().GetText()] = ctx.Expression()
-}
-
-// ExitFilter is called when production filter is exited.
-func (s *sfplListener) ExitPrule(ctx *parser.PruleContext) {
-	logger.Trace.Println("Parsing rule ", ctx.GetText())
-	visitExpression(ctx.Expression())
-
-}
+// PolicyInterpreter defines a rules engine for SysFlow data streams.
+type PolicyInterpreter struct{}
 
 // Compile parses and interprets an input policy defined in path.
-func compile(path string) {
+func (pi PolicyInterpreter) compile(path string) {
 	// Setup the input
 	is, _ := antlr.NewFileStream(path)
 
@@ -62,14 +41,108 @@ func compile(path string) {
 }
 
 // Compile parses and interprets a set of input policies defined in paths.
-func Compile(paths ...string) {
+func (pi PolicyInterpreter) Compile(paths ...string) {
 	for _, path := range paths {
 		logger.Trace.Println("Parsing policy file ", path)
-		Compile(path)
+		pi.compile(path)
 	}
 }
 
-func extractListFromItems(ctx parser.IItemsContext) []string {
+// Process executes all compiled policies against record r.
+func (pi PolicyInterpreter) Process(applyFilters bool, r sfgo.FlatRecord) (bool, []Rule) {
+	var rlist []Rule
+	if applyFilters && pi.evalFilters(r) {
+		return false, rlist
+	}
+	for _, rule := range rules {
+		if rule.condition.Eval(r) {
+			rlist = append(rlist, rule)
+		}
+	}
+	return false, rlist
+}
+
+// ProcessRule executes compiled policy rule p against record r.
+func (pi PolicyInterpreter) ProcessRule(applyFilters bool, r sfgo.FlatRecord, ruleNames ...string) (bool, []Rule) {
+	var rlist []Rule
+	if applyFilters && pi.evalFilters(r) {
+		return false, rlist
+	}
+	for _, rname := range ruleNames {
+		if rule, ok := rules[rname]; ok && rule.condition.Eval(r) {
+			rlist = append(rlist, rule)
+		}
+	}
+	return false, rlist
+}
+
+// EvalFilters executes compiled policy filters against record r.
+func (pi PolicyInterpreter) evalFilters(r sfgo.FlatRecord) bool {
+	for _, f := range filters {
+		if f.condition.Eval(r) {
+			return true
+		}
+	}
+	return false
+}
+
+type sfplListener struct {
+	*parser.BaseSfplListener
+}
+
+// ExitList is called when production list is exited.
+func (listener *sfplListener) ExitPlist(ctx *parser.PlistContext) {
+	logger.Trace.Println("Parsing list ", ctx.GetText())
+	lists[ctx.ID().GetText()] = listener.extractListFromItems(ctx.Items())
+}
+
+// ExitMacro is called when production macro is exited.
+func (listener *sfplListener) ExitPmacro(ctx *parser.PmacroContext) {
+	logger.Trace.Println("Parsing macro ", ctx.GetText())
+	macroCtxs[ctx.ID().GetText()] = ctx.Expression()
+}
+
+// ExitFilter is called when production filter is exited.
+func (listener *sfplListener) ExitPfilter(ctx *parser.PfilterContext) {
+	logger.Trace.Println("Parsing filter ", ctx.GetText())
+	f := Filter{
+		name:      ctx.ID().GetText(),
+		condition: listener.visitExpression(ctx.Expression()),
+	}
+	filters[f.name] = f
+}
+
+// ExitFilter is called when production filter is exited.
+func (listener *sfplListener) ExitPrule(ctx *parser.PruleContext) {
+	logger.Trace.Println("Parsing rule ", ctx.GetText())
+	r := Rule{
+		name:      listener.getOffChannelText(ctx.Text(0)),
+		desc:      listener.getOffChannelText(ctx.Text(1)),
+		condition: listener.visitExpression(ctx.Expression()),
+		actions:   listener.getActions(ctx.ACTION().GetText()),
+		tags:      listener.getTags(ctx.TAGS().GetText()),
+	}
+	rules[r.name] = r
+}
+
+func (listener *sfplListener) getOffChannelText(ctx parser.ITextContext) string {
+	a := ctx.GetStart().GetStart()
+	b := ctx.GetStop().GetStop()
+	interval := antlr.Interval{Start: a, Stop: b}
+	return ctx.GetStart().GetInputStream().GetTextFromInterval(&interval)
+}
+
+func (listener *sfplListener) getTags(tstr string) []EnrichmentTag {
+	var tags []EnrichmentTag
+	return tags
+}
+
+func (listener *sfplListener) getActions(astr string) []Action {
+	var actions []Action
+	return actions
+}
+
+func (listener *sfplListener) extractListFromItems(ctx parser.IItemsContext) []string {
 	s := []string{}
 	ls := strings.Split(itemsre.ReplaceAllString(ctx.GetText(), "$2"), LISTSEP)
 	for _, v := range ls {
@@ -78,19 +151,19 @@ func extractListFromItems(ctx parser.IItemsContext) []string {
 	return s
 }
 
-func extractListFromAtoms(ctxs []parser.IAtomContext) []string {
+func (listener *sfplListener) extractListFromAtoms(ctxs []parser.IAtomContext) []string {
 	s := []string{}
 	for _, v := range ctxs {
-		s = append(s, reduceList(v.GetText())...)
+		s = append(s, listener.reduceList(v.GetText())...)
 	}
 	return s
 }
 
-func reduceList(sl string) []string {
+func (listener *sfplListener) reduceList(sl string) []string {
 	s := []string{}
 	if l, ok := lists[sl]; ok {
 		for _, v := range l {
-			s = append(s, reduceList(v)...)
+			s = append(s, listener.reduceList(v)...)
 		}
 	} else {
 		s = append(s, sl)
@@ -98,7 +171,7 @@ func reduceList(sl string) []string {
 	return s
 }
 
-func visitExpression(ctx parser.IExpressionContext) Criterion {
+func (listener *sfplListener) visitExpression(ctx parser.IExpressionContext) Criterion {
 	orCtx := ctx.GetChild(0).(parser.IOr_expressionContext)
 	orPreds := make([]Criterion, 0)
 	for _, andCtx := range orCtx.GetChildren() {
@@ -107,7 +180,7 @@ func visitExpression(ctx parser.IExpressionContext) Criterion {
 			for _, termCtx := range andCtx.GetChildren() {
 				t, isTermCtx := termCtx.(parser.ITermContext)
 				if isTermCtx {
-					c := visitTerm(t)
+					c := listener.visitTerm(t)
 					andPreds = append(andPreds, c)
 				}
 			}
@@ -117,15 +190,15 @@ func visitExpression(ctx parser.IExpressionContext) Criterion {
 	return Any(orPreds)
 }
 
-func visitTerm(ctx parser.ITermContext) Criterion {
+func (listener *sfplListener) visitTerm(ctx parser.ITermContext) Criterion {
 	termCtx := ctx.(*parser.TermContext)
 	if termCtx.Variable() != nil {
-		if m, ok := macros[termCtx.GetText()]; ok {
-			return visitExpression(m)
+		if m, ok := macroCtxs[termCtx.GetText()]; ok {
+			return listener.visitExpression(m)
 		}
 		logger.Error.Println("Unrecognized reference ", termCtx.GetText())
 	} else if termCtx.NOT() != nil {
-		return visitTerm(termCtx.GetChild(1).(parser.ITermContext)).Not()
+		return listener.visitTerm(termCtx.GetChild(1).(parser.ITermContext)).Not()
 	} else if opCtx, ok := termCtx.Unary_operator().(*parser.Unary_operatorContext); ok {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		if opCtx.EXISTS() != nil {
@@ -154,15 +227,15 @@ func visitTerm(ctx parser.ITermContext) Criterion {
 		}
 		logger.Error.Println("Unrecognized binary operator ", opCtx.GetText())
 	} else if termCtx.Expression() != nil {
-		return visitExpression(termCtx.Expression())
+		return listener.visitExpression(termCtx.Expression())
 	} else if termCtx.IN() != nil {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		rop := termCtx.AllAtom()[1:]
-		return In(lop, extractListFromAtoms(rop))
+		return In(lop, listener.extractListFromAtoms(rop))
 	} else if termCtx.PMATCH() != nil {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		rop := termCtx.AllAtom()[1:]
-		return PMatch(lop, extractListFromAtoms(rop))
+		return PMatch(lop, listener.extractListFromAtoms(rop))
 	} else {
 		logger.Warn.Println("Unrecognized term ", termCtx.GetText())
 	}

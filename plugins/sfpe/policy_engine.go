@@ -1,23 +1,31 @@
 package sfpe
 
 import (
+	"sync"
+
 	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
 	"github.ibm.com/sysflow/sf-processor/common/logger"
-	"sync"
+	"github.ibm.com/sysflow/sf-processor/plugins/sfpe/engine"
 )
 
-type PolicyEng struct {
+// PolicyEngine defines a driver for the Policy Engine plugin.
+type PolicyEngine struct {
+	pi engine.PolicyInterpreter
 }
 
-func NewPolicyEngine() sp.SFProcessor {
-	return new(PolicyEng)
+// NewPolicyEngine constructs a new Policy Engine plugin.
+func NewPolicyEngine(paths ...string) sp.SFProcessor {
+	pe := new(PolicyEngine)
+	pe.pi.Compile(paths...)
+	return pe
 }
 
-func (s *PolicyEng) Process(ch interface{}, wg *sync.WaitGroup) {
+// Process implements the main loop of the plugin.
+func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 	cha := ch.(*hdl.FlatChannel)
 	record := cha.In
-	logger.Trace.Println("Policy engine capacity:", cap(record))
+	logger.Trace.Println("Policy engine capacity: ", cap(record))
 	defer wg.Done()
 	logger.Trace.Println("Starting Policy Engine")
 	for {
@@ -27,12 +35,13 @@ func (s *PolicyEng) Process(ch interface{}, wg *sync.WaitGroup) {
 			break
 		}
 		logger.Trace.Println(fc)
+		s.pi.Process(true, *fc)
 	}
 	logger.Trace.Println("Exiting PolicyEng")
 }
 
-func (s *PolicyEng) SetOutChan(ch interface{}) {
-}
+// SetOutChan sets the output channel of the plugin.
+func (s *PolicyEngine) SetOutChan(ch interface{}) {}
 
-func (s *PolicyEng) Cleanup() {
-}
+// Cleanup clean up the plugin resources.
+func (s *PolicyEngine) Cleanup() {}
