@@ -15,3 +15,17 @@
   action: [alert]
   priority: NOTICE
   tags: [test]
+
+- rule: client
+  desc: client rule
+  condition: sf.type=PE and sf.proc.name contains client
+  action: [alert]
+  priority: NOTICE
+  tags: [client]
+
+- rule: server
+  desc: server rule
+  condition: sf.type=PE and sf.proc.name contains server
+  action: [alert]
+  priority: NOTICE
+  tags: [server]

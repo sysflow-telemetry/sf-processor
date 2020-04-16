@@ -18,7 +18,7 @@ type PolicyEngine struct {
 //func NewPolicyEngine(paths ...string) sp.SFProcessor {
 func NewPolicyEngine() sp.SFProcessor {
 	pe := new(PolicyEngine)
-	pe.pi.Compile("./tests/policies/macro_test.yaml") // Fix: pass paths from constructor args.
+	pe.pi.Compile("../plugins/sfpe/tests/policies/macro_test.yaml") // Fix: pass paths from constructor args.
 	//pe.pi.Compile(paths...)
 	return pe
 }
@@ -37,7 +37,10 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 			break
 		}
 		logger.Trace.Println(fc)
-		s.pi.Process(true, *fc)
+		match, rlist := s.pi.Process(true, *fc)
+		if match {
+			logger.Trace.Printf("Matched rules: %v", rlist)
+		}
 	}
 	logger.Trace.Println("Exiting PolicyEng")
 }
