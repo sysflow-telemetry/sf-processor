@@ -15,9 +15,11 @@ type PolicyEngine struct {
 }
 
 // NewPolicyEngine constructs a new Policy Engine plugin.
-func NewPolicyEngine(paths ...string) sp.SFProcessor {
+//func NewPolicyEngine(paths ...string) sp.SFProcessor {
+func NewPolicyEngine() sp.SFProcessor {
 	pe := new(PolicyEngine)
-	pe.pi.Compile(paths...)
+	pe.pi.Compile("./tests/policies/macro_test.yaml") // Fix: pass paths from constructor args.
+	//pe.pi.Compile(paths...)
 	return pe
 }
 
