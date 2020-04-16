@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
+	"sync"
+
 	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
-	"sync"
 )
 
-type Example struct {
-}
+type Example struct{}
 
 func NewExample() sp.SFProcessor {
 	return new(Example)

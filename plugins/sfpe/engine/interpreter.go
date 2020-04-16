@@ -51,29 +51,33 @@ func (pi PolicyInterpreter) Compile(paths ...string) {
 // Process executes all compiled policies against record r.
 func (pi PolicyInterpreter) Process(applyFilters bool, r sfgo.FlatRecord) (bool, []Rule) {
 	var rlist []Rule
+	match := false
 	if applyFilters && pi.evalFilters(r) {
-		return false, rlist
+		return match, rlist
 	}
 	for _, rule := range rules {
 		if rule.condition.Eval(r) {
 			rlist = append(rlist, rule)
+			match = true
 		}
 	}
-	return false, rlist
+	return match, rlist
 }
 
 // ProcessRule executes compiled policy rule p against record r.
 func (pi PolicyInterpreter) ProcessRule(applyFilters bool, r sfgo.FlatRecord, ruleNames ...string) (bool, []Rule) {
 	var rlist []Rule
+	match := false
 	if applyFilters && pi.evalFilters(r) {
 		return false, rlist
 	}
 	for _, rname := range ruleNames {
 		if rule, ok := rules[rname]; ok && rule.condition.Eval(r) {
 			rlist = append(rlist, rule)
+			match = true
 		}
 	}
-	return false, rlist
+	return match, rlist
 }
 
 // EvalFilters executes compiled policy filters against record r.

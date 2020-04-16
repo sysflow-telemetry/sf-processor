@@ -80,7 +80,7 @@ func Eq(lattr string, rattr string) Criterion {
 
 // NEq creates a criterion for an inequality predicate.
 func NEq(lattr string, rattr string) Criterion {
-	return NEq(lattr, rattr).Not()
+	return Eq(lattr, rattr).Not()
 }
 
 // Ge creates a criterion for a greater-or-equal predicate.
