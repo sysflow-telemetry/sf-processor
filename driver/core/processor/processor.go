@@ -1,23 +1,26 @@
 package processor
 
 import (
-	"github.com/sysflow-telemetry/sf-apis/go/handlers"
+	"sync"
+
+	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/sf-processor/common/logger"
-	"sync"
 )
 
+// SysFlowProcessor defines the main processor class.
 type SysFlowProcessor struct {
 	hdr       *sfgo.SFHeader
-	Hdl       handlers.SFHandler
+	Hdl       hdl.SFHandler
 	contTable map[string]*sfgo.Container
 	procTable map[sfgo.OID]*sfgo.Process
 	fileTable map[sfgo.FOID]*sfgo.File
 	OutChan   interface{}
 }
 
-func NewSysFlowProc(hdl handlers.SFHandler) sp.SFProcessor {
+// NewSysFlowProc creates a new SysFlowProcessor instance.
+func NewSysFlowProc(hdl hdl.SFHandler) sp.SFProcessor {
 	logger.Trace.Println("Calling NewSysFlowProc")
 	p := new(SysFlowProcessor)
 	p.Hdl = hdl
@@ -27,72 +30,23 @@ func NewSysFlowProc(hdl handlers.SFHandler) sp.SFProcessor {
 	return p
 }
 
+// NewSysFlowChan creates a new processor channel instance.
 func NewSysFlowChan(size int) interface{} {
-	ch := sp.SFChannel{In: make(chan *sfgo.SysFlow, size)}
-	return &ch
+	return &sp.SFChannel{In: make(chan *sfgo.SysFlow, size)}
 }
 
-func (s *SysFlowProcessor) getContFromProc(proc *sfgo.Process) *sfgo.Container {
-	if proc.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
-		if c, ok := s.contTable[proc.ContainerId.String]; ok {
-			return c
-		} else {
-			logger.Warn.Println("No container object for ID: ", proc.ContainerId.String)
-		}
-	}
-	return nil
-}
-
-func (s *SysFlowProcessor) getContAndProc(oid *sfgo.OID) (*sfgo.Container, *sfgo.Process) {
-	p, ok := s.procTable[*oid]
-	if !ok {
-		logger.Warn.Println("No process object for PID, Create Time ", oid.Hpid, oid.CreateTS)
-		return nil, nil
-	}
-	if p.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
-		if c, ok := s.contTable[p.ContainerId.String]; ok {
-			return c, p
-		} else {
-			logger.Warn.Println("No container object for ID: ", p.ContainerId.String)
-		}
-	}
-	return nil, p
-}
-
-func (s *SysFlowProcessor) getFile(foid sfgo.FOID) *sfgo.File {
-	if f, ok := s.fileTable[foid]; ok {
-		return f
-	}
-	logger.Error.Println("No file object for FOID")
-	return nil
-}
-func (s *SysFlowProcessor) getOptFile(unf *sfgo.UnionNullFOID) *sfgo.File {
-	if unf.UnionType == sfgo.UnionNullFOIDTypeEnumFOID {
-		return s.getFile(unf.FOID)
-	}
-	return nil
-}
-
-func (s *SysFlowProcessor) getContFromFile(file *sfgo.File) *sfgo.Container {
-	if file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
-		if c, ok := s.contTable[file.ContainerId.String]; ok {
-			return c
-		} else {
-			logger.Warn.Println("Not container object for ID: ", file.ContainerId.String)
-		}
-	}
-	return nil
-}
-
+// SetOutChan sets the output channel of the plugin.
 func (s *SysFlowProcessor) SetOutChan(ch interface{}) {
 	s.OutChan = ch
 	s.Hdl.SetOutChan(ch)
 }
 
+// Cleanup tears down the plugin resources.
 func (s *SysFlowProcessor) Cleanup() {
 	s.Hdl.Cleanup()
 }
 
+// Process implements the main processor method of the plugin.
 func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 	entEnabled := s.Hdl.IsEntityEnabled()
 	cha := ch.(*sp.SFChannel)
@@ -163,4 +117,54 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 
 	}
 	s.Cleanup()
+}
+
+func (s *SysFlowProcessor) getContFromProc(proc *sfgo.Process) *sfgo.Container {
+	if proc.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+		if c, ok := s.contTable[proc.ContainerId.String]; ok {
+			return c
+		}
+		logger.Warn.Println("No container object for ID: ", proc.ContainerId.String)
+	}
+	return nil
+}
+
+func (s *SysFlowProcessor) getContAndProc(oid *sfgo.OID) (*sfgo.Container, *sfgo.Process) {
+	p, ok := s.procTable[*oid]
+	if !ok {
+		logger.Warn.Println("No process object for PID, Create Time ", oid.Hpid, oid.CreateTS)
+		return nil, nil
+	}
+	if p.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+		if c, ok := s.contTable[p.ContainerId.String]; ok {
+			return c, p
+		}
+		logger.Warn.Println("No container object for ID: ", p.ContainerId.String)
+	}
+	return nil, p
+}
+
+func (s *SysFlowProcessor) getFile(foid sfgo.FOID) *sfgo.File {
+	if f, ok := s.fileTable[foid]; ok {
+		return f
+	}
+	logger.Error.Println("No file object for FOID")
+	return nil
+}
+func (s *SysFlowProcessor) getOptFile(unf *sfgo.UnionNullFOID) *sfgo.File {
+	if unf.UnionType == sfgo.UnionNullFOIDTypeEnumFOID {
+		return s.getFile(unf.FOID)
+	}
+	return nil
+}
+
+func (s *SysFlowProcessor) getContFromFile(file *sfgo.File) *sfgo.Container {
+	if file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+		if c, ok := s.contTable[file.ContainerId.String]; ok {
+			return c
+		} else {
+			logger.Warn.Println("Not container object for ID: ", file.ContainerId.String)
+		}
+	}
+	return nil
 }

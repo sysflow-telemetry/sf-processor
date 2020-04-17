@@ -127,6 +127,7 @@ github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200415202402-e5659ec14bfd/go.mo
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
+github.ibm.com/sysflow/sf-processor v0.0.0-20200417162815-c484b8e31e16 h1:ZGWIpW7284Ox6GnRsXK95d+X+NilfNeb4yszCdIH6EA=
 github.ibm.com/sysflow/sf-processor/common v0.0.0-20200401032541-3355ddc802fd/go.mod h1:sVsO3YBv7XsiMrZOj2WbnCF3f9tA/+d93HVSidJ14mk=
 github.ibm.com/sysflow/sf-processor/common v0.0.0-20200414042919-6f26624f4df9/go.mod h1:sVsO3YBv7XsiMrZOj2WbnCF3f9tA/+d93HVSidJ14mk=
 github.ibm.com/sysflow/sf-processor/common v0.0.0-20200416185356-82fa0b2d2cd6 h1:1lFrb1UvsPVcsYTrSvQTFLtnotgnvJdbUnqe+OYZRw0=
@@ -138,6 +139,8 @@ github.ibm.com/sysflow/sf-processor/plugins/processor v0.0.0-20200416185356-82fa
 github.ibm.com/sysflow/sf-processor/plugins/processor v0.0.0-20200416185356-82fa0b2d2cd6/go.mod h1:wbisjJgp89QzHbNQXkuDcf3B624blBBtJeU6i26SO2w=
 github.ibm.com/sysflow/sf-processor/plugins/sfpe v0.0.0-20200416185356-82fa0b2d2cd6 h1:CIBpNRprASsseE4hRJHnA+8L5d/TGW6Oh6VShlGknsU=
 github.ibm.com/sysflow/sf-processor/plugins/sfpe v0.0.0-20200416185356-82fa0b2d2cd6/go.mod h1:GLIVhhaQIlXxPhppBEt9HjwPDeQGNj73acK2x7HH3rs=
+github.ibm.com/sysflow/sf-processor/plugins/sfpe v0.0.0-20200417162815-c484b8e31e16 h1:oz2n8ruhKx0I1UjppXUiRIqDRRb2uB3lWpBorWJeTg4=
+github.ibm.com/sysflow/sf-processor/plugins/sfpe v0.0.0-20200417162815-c484b8e31e16/go.mod h1:GLIVhhaQIlXxPhppBEt9HjwPDeQGNj73acK2x7HH3rs=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.uber.org/atomic v1.4.0/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
 go.uber.org/multierr v1.1.0/go.mod h1:wR5kodmAFQ0UK8QlbwjlSNy0Z68gJhDJUG5sjR94q/0=

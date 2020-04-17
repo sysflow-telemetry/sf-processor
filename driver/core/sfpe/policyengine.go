@@ -6,7 +6,7 @@ import (
 	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
 	"github.ibm.com/sysflow/sf-processor/common/logger"
-	"github.ibm.com/sysflow/sf-processor/plugins/sfpe/engine"
+	"github.ibm.com/sysflow/sf-processor/driver/core/sfpe/engine"
 )
 
 // PolicyEngine defines a driver for the Policy Engine plugin.
@@ -18,7 +18,7 @@ type PolicyEngine struct {
 //func NewPolicyEngine(paths ...string) sp.SFProcessor {
 func NewPolicyEngine() sp.SFProcessor {
 	pe := new(PolicyEngine)
-	pe.pi.Compile("../plugins/sfpe/tests/policies/macro_test.yaml") // Fix: pass paths from constructor args.
+	pe.pi.Compile("../../../tests/policies/macro_test.yaml") // Fix: pass paths from constructor args.
 	//pe.pi.Compile(paths...)
 	return pe
 }

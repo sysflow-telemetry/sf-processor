@@ -8,12 +8,15 @@ import (
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
 )
 
+// Example defines an example plugin.
 type Example struct{}
 
+// NewExample creates a new plugin instance.
 func NewExample() sp.SFProcessor {
 	return new(Example)
 }
 
+// Process implements the main interface of the plugin.
 func (s *Example) Process(ch interface{}, wg *sync.WaitGroup) {
 	cha := ch.(*hdl.FlatChannel)
 	record := cha.In
@@ -31,8 +34,12 @@ func (s *Example) Process(ch interface{}, wg *sync.WaitGroup) {
 	fmt.Println("Exiting Example")
 }
 
+// SetOutChan sets the output channel of the plugin.
 func (s *Example) SetOutChan(ch interface{}) {
 }
 
-func (s *Example) Cleanup() {
-}
+// Cleanup tears down plugin resources.
+func (s *Example) Cleanup() {}
+
+// This function is not run when module is used as a plugin.
+func main() {}
