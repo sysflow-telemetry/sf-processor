@@ -25,3 +25,6 @@ require (
 	google.golang.org/grpc v1.23.0
 	gopkg.in/ini.v1 v1.55.0 // indirect
 )
+
+replace github.ibm.com/sysflow/sf-processor/core => ../core
+replace github.ibm.com/sysflow/sf-processor/common => ../common

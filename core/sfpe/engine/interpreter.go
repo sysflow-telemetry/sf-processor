@@ -27,7 +27,10 @@ type PolicyInterpreter struct{}
 // Compile parses and interprets an input policy defined in path.
 func (pi PolicyInterpreter) compile(path string) {
 	// Setup the input
-	is, _ := antlr.NewFileStream(path)
+	is, err := antlr.NewFileStream(path)
+	if err != nil {
+		logger.Error.Println(err)
+	}
 
 	// Create the Lexer
 	lexer := parser.NewSfplLexer(is)
@@ -127,6 +130,7 @@ func (listener *sfplListener) ExitPrule(ctx *parser.PruleContext) {
 		actions:   listener.getActions(ctx.ACTION().GetText()),
 		tags:      listener.getTags(ctx.TAGS().GetText()),
 		priority:  listener.getPriority(ctx.PRIORITY().GetText()),
+		ctx:       make(map[string]interface{}),
 	}
 	rules[r.name] = r
 }
