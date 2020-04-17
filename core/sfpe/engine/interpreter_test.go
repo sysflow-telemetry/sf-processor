@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.ibm.com/sysflow/sf-processor/common/logger"
-	. "github.ibm.com/sysflow/sf-processor/plugins/sfpe/engine"
+	. "github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
 )
 
 var pi PolicyInterpreter

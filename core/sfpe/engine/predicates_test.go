@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/sysflow/sf-processor/plugins/flattener/types"
-	. "github.ibm.com/sysflow/sf-processor/plugins/sfpe/engine"
+	"github.ibm.com/sysflow/sf-processor/core/flattener/types"
+	. "github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
 )
 
 func TestNot(t *testing.T) {
