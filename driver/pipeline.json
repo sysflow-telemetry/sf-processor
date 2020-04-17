@@ -7,7 +7,8 @@
           },
          {
          "processor": "PolicyEngine",
-         "in":   "flat FlattenerChan"         
+         "in":   "flat FlattenerChan",
+         "policies": "../tests/policies/macro_test.yaml"	 
           }
    ]
 }

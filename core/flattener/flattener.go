@@ -24,6 +24,11 @@ func NewFlattenerChan(size int) interface{} {
 	return &ch
 }
 
+// Init initializes the handler with a configuration map.
+func (g *Flattener) Init(conf map[string]string) error {
+	return nil
+}
+
 // IsEntityEnabled is used to check if the flattener returns entity records.
 func (g *Flattener) IsEntityEnabled() bool {
 	return false

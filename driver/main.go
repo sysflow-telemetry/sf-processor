@@ -208,6 +208,12 @@ func LoadPipeline() (interface{}, []sp.SFProcessor, *sync.WaitGroup, []interface
 			}
 			tp := fmt.Sprintf("%T", prc)
 			logger.Trace.Println(tp)
+			err = prc.Init(p)
+			if err != nil {
+				logger.Error.Println(err)
+				return nil, nil, wg, nil, nil, err
+			}
+
 		} else {
 			logger.Error.Println("processor or handler tag must exist in plugin config")
 			return nil, nil, wg, nil, nil, err

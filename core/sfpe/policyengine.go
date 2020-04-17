@@ -1,6 +1,10 @@
 package sfpe
 
 import (
+	"errors"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"sync"
 
 	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
@@ -18,9 +22,45 @@ type PolicyEngine struct {
 //func NewPolicyEngine(paths ...string) sp.SFProcessor {
 func NewPolicyEngine() sp.SFProcessor {
 	pe := new(PolicyEngine)
-	pe.pi.Compile("../tests/policies/macro_test.yaml") // Fix: pass paths from constructor args.
-	//pe.pi.Compile(paths...)
 	return pe
+}
+
+func (s *PolicyEngine) Init(conf map[string]string) error {
+	var filename string = ""
+	if v, o := conf["policies"]; o {
+		filename = v
+	} else {
+		return errors.New("policies tag missing from policy engine plugin")
+	}
+
+	logger.Trace.Println("Loading policies from: " + filename)
+	var fi os.FileInfo
+	var e error
+	if fi, e = os.Stat(filename); os.IsNotExist(e) {
+		return e
+	}
+	if fi.IsDir() {
+		files, err := ioutil.ReadDir(filename)
+		if err != nil {
+			return err
+		}
+		var fls []string
+		for _, file := range files {
+			if filepath.Ext(file.Name()) == ".yaml" {
+				f := filename + "/" + file.Name()
+				fls = append(fls, f)
+			}
+		}
+		if len(fls) == 0 {
+			return errors.New("No policy files with extension .yaml present in directory: " + filename)
+		}
+		s.pi.Compile(fls...)
+
+	} else {
+		logger.Trace.Println("Compiling policies from: " + filename)
+		s.pi.Compile(filename)
+	}
+	return nil
 }
 
 // Process implements the main loop of the plugin.

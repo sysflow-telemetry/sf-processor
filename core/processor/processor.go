@@ -35,6 +35,11 @@ func NewSysFlowChan(size int) interface{} {
 	return &sp.SFChannel{In: make(chan *sfgo.SysFlow, size)}
 }
 
+// Init initializes the processor with a configuration map.
+func (s *SysFlowProcessor) Init(conf map[string]string) error {
+	return nil
+}
+
 // SetOutChan sets the output channel of the plugin.
 func (s *SysFlowProcessor) SetOutChan(ch interface{}) {
 	s.OutChan = ch
