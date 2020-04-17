@@ -10,9 +10,9 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/handlers"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
 	"github.ibm.com/sysflow/sf-processor/common/logger"
-	"github.ibm.com/sysflow/sf-processor/driver/core/flattener"
-	"github.ibm.com/sysflow/sf-processor/driver/core/processor"
-	"github.ibm.com/sysflow/sf-processor/driver/core/sfpe"
+	"github.ibm.com/sysflow/sf-processor/core/flattener"
+	"github.ibm.com/sysflow/sf-processor/core/processor"
+	"github.ibm.com/sysflow/sf-processor/core/sfpe"
 )
 
 // PluginCache defines a data strucure for managing plugins.
