@@ -57,6 +57,7 @@ func (pi PolicyInterpreter) Process(applyFilters bool, r sfgo.FlatRecord) (bool,
 	}
 	for _, rule := range rules {
 		if rule.condition.Eval(r) {
+			rule.ctx["record"] = r
 			rlist = append(rlist, rule)
 			match = true
 		}
@@ -125,6 +126,7 @@ func (listener *sfplListener) ExitPrule(ctx *parser.PruleContext) {
 		condition: listener.visitExpression(ctx.Expression()),
 		actions:   listener.getActions(ctx.ACTION().GetText()),
 		tags:      listener.getTags(ctx.TAGS().GetText()),
+		priority:  listener.getPriority(ctx.PRIORITY().GetText()),
 	}
 	rules[r.name] = r
 }
@@ -138,21 +140,56 @@ func (listener *sfplListener) getOffChannelText(ctx parser.ITextContext) string 
 
 func (listener *sfplListener) getTags(tstr string) []EnrichmentTag {
 	var tags []EnrichmentTag
+	l := listener.extractList(tstr)
+	for _, v := range l {
+		tags = append(tags, v)
+	}
 	return tags
+}
+
+func (listener *sfplListener) getPriority(p string) Priority {
+	switch strings.ToLower(p) {
+	case Low.String():
+		return Low
+	case Medium.String():
+		return Medium
+	case High.String():
+		return High
+	default:
+		logger.Warn.Printf("Unrecognized priority value %s. Deferring to %s\n", p, Low.String())
+		break
+	}
+	return Low
 }
 
 func (listener *sfplListener) getActions(astr string) []Action {
 	var actions []Action
+	l := listener.extractList(astr)
+	for _, v := range l {
+		switch strings.ToLower(v) {
+		case Alert.String():
+			actions = append(actions, Alert)
+		case Tag.String():
+			actions = append(actions, Tag)
+		default:
+			logger.Warn.Println("Unrecognized action value ", v)
+			break
+		}
+	}
 	return actions
 }
 
-func (listener *sfplListener) extractListFromItems(ctx parser.IItemsContext) []string {
+func (listener *sfplListener) extractList(str string) []string {
 	s := []string{}
-	ls := strings.Split(itemsre.ReplaceAllString(ctx.GetText(), "$2"), LISTSEP)
+	ls := strings.Split(itemsre.ReplaceAllString(str, "$2"), LISTSEP)
 	for _, v := range ls {
 		s = append(s, v)
 	}
 	return s
+}
+
+func (listener *sfplListener) extractListFromItems(ctx parser.IItemsContext) []string {
+	return listener.extractList(ctx.GetText())
 }
 
 func (listener *sfplListener) extractListFromAtoms(ctxs []parser.IAtomContext) []string {

@@ -29,20 +29,19 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 	record := cha.In
 	logger.Trace.Println("Policy engine capacity: ", cap(record))
 	defer wg.Done()
-	logger.Trace.Println("Starting Policy Engine")
+	logger.Trace.Println("Starting policy engine")
 	for {
 		fc, ok := <-record
 		if !ok {
 			logger.Trace.Println("Channel closed. Shutting down.")
 			break
 		}
-		logger.Trace.Println(fc)
 		match, rlist := s.pi.Process(true, *fc)
 		if match {
 			logger.Trace.Printf("Matched rules: %v", rlist)
 		}
 	}
-	logger.Trace.Println("Exiting PolicyEng")
+	logger.Trace.Println("Exiting policy engine")
 }
 
 // SetOutChan sets the output channel of the plugin.
