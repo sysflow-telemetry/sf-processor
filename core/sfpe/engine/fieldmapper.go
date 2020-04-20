@@ -19,15 +19,6 @@ type IntFieldMap func(r sfgo.FlatRecord) int64
 // StrFieldMap is a functional type denoting a string attribute mapper.
 type StrFieldMap func(r sfgo.FlatRecord) string
 
-// Types is used to obtain zero values for supported sfgo.
-type Types struct {
-	Int64  int64
-	String string
-}
-
-// Zeros is a zero-initialized struct used to obtain zero values for supported sfgo.
-var Zeros = Types{}
-
 // FieldMapper is an adapter for SysFlow attribute mappers.
 type FieldMapper struct {
 	Mappers map[string]FieldMap
@@ -49,7 +40,7 @@ func (m FieldMapper) MapInt(attr string) IntFieldMap {
 		} else if v, err := strconv.ParseInt(attr, 10, 64); err == nil {
 			return v
 		}
-		return Zeros.Int64
+		return sfgo.Zeros.Int64
 	}
 }
 
@@ -61,7 +52,7 @@ func (m FieldMapper) MapStr(attr string) StrFieldMap {
 		} else if v, ok := m.Map(attr)(r).(int64); ok {
 			return strconv.FormatInt(v, 10)
 		}
-		return Zeros.String
+		return sfgo.Zeros.String
 	}
 }
 
@@ -70,16 +61,16 @@ var Mapper = FieldMapper{
 	map[string]FieldMap{
 		"sf.type":                 mapRecType(),
 		"sf.opflags":              mapOpFlags(),
-		"sf.ret":                  mapInt(sfgo.EV_PROC_RET_INT), // normalize
-		"sf.ts":                   mapInt(sfgo.EV_PROC_TS_INT),  // normalize
+		"sf.ret":                  mapInt(sfgo.RET_INT),
+		"sf.ts":                   mapInt(sfgo.TS_INT),
 		"sf.endts":                mapEndTs(),
 		"sf.proc.pid":             mapInt(sfgo.PROC_OID_HPID_INT),
-		"sf.proc.name":            mapStr(sfgo.PROC_EXE_STR),
+		"sf.proc.name":            mapName(sfgo.PROC_EXE_STR),
 		"sf.proc.exe":             mapStr(sfgo.PROC_EXE_STR),
 		"sf.proc.args":            mapStr(sfgo.PROC_EXEARGS_STR),
 		"sf.proc.uid":             mapInt(sfgo.PROC_UID_INT),
 		"sf.proc.user":            mapStr(sfgo.PROC_USERNAME_STR),
-		"sf.proc.tid":             mapInt(sfgo.EV_PROC_TID_INT), // normalize
+		"sf.proc.tid":             mapInt(sfgo.TID_INT),
 		"sf.proc.gid":             mapInt(sfgo.PROC_GID_INT),
 		"sf.proc.group":           mapStr(sfgo.PROC_GROUPNAME_STR),
 		"sf.proc.createts":        mapInt(sfgo.PROC_OID_CREATETS_INT),
@@ -200,7 +191,7 @@ func mapEndTs() FieldMap {
 		case sfgo.NET_FLOW:
 			return r.Ints[sfgo.FL_NETW_ENDTS_INT]
 		default:
-			return Zeros.Int64
+			return sfgo.Zeros.Int64
 		}
 	}
 }
@@ -274,6 +265,6 @@ func mapContType(attr sfgo.Attribute) FieldMap {
 func mapNa(attr string) FieldMap {
 	return func(r sfgo.FlatRecord) interface{} {
 		logger.Warn.Println("Attribute not supported ", attr)
-		return Zeros.String
+		return sfgo.Zeros.String
 	}
 }

@@ -73,7 +73,7 @@ func (pi PolicyInterpreter) ProcessRule(applyFilters bool, r sfgo.FlatRecord, ru
 	var rlist []Rule
 	match := false
 	if applyFilters && pi.evalFilters(r) {
-		return false, rlist
+		return match, rlist
 	}
 	for _, rname := range ruleNames {
 		if rule, ok := rules[rname]; ok && rule.condition.Eval(r) {

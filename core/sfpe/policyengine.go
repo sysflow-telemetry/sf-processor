@@ -19,12 +19,12 @@ type PolicyEngine struct {
 }
 
 // NewPolicyEngine constructs a new Policy Engine plugin.
-//func NewPolicyEngine(paths ...string) sp.SFProcessor {
 func NewPolicyEngine() sp.SFProcessor {
 	pe := new(PolicyEngine)
 	return pe
 }
 
+// Init initializes the plugin.
 func (s *PolicyEngine) Init(conf map[string]string) error {
 	var filename string = ""
 	if v, o := conf["policies"]; o {

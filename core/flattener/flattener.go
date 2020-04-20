@@ -120,7 +120,7 @@ func (g *Flattener) HandleFileEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 		if file2.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			fr.Strs[sfgo.SEC_FILE_CONTAINERID_STRING_STR] = file2.ContainerId.String
 		} else {
-			fr.Strs[sfgo.SEC_FILE_CONTAINERID_STRING_STR] = sfgo.EMPTY_STR
+			fr.Strs[sfgo.SEC_FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
 		}
 	}
 	fr.Ints[sfgo.SF_REC_TYPE] = sfgo.FILE_EVT
@@ -153,8 +153,8 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Strs[sfgo.SFHE_EXPORTER_STR] = hdr.Exporter
 	} else {
 		logger.Warn.Println("Event does not have a related header.  This should not happen.")
-		fr.Ints[sfgo.SFHE_VERSION_INT] = sfgo.EMPTY_INT
-		fr.Strs[sfgo.SFHE_EXPORTER_STR] = sfgo.EMPTY_STR
+		fr.Ints[sfgo.SFHE_VERSION_INT] = sfgo.Zeros.Int64
+		fr.Strs[sfgo.SFHE_EXPORTER_STR] = sfgo.Zeros.String
 	}
 	if cont != nil {
 		fr.Strs[sfgo.CONT_ID_STR] = cont.Id
@@ -169,12 +169,12 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 			fr.Ints[sfgo.CONT_PRIVILEGED_INT] = 0
 		}
 	} else {
-		fr.Strs[sfgo.CONT_ID_STR] = sfgo.EMPTY_STR
-		fr.Strs[sfgo.CONT_NAME_STR] = sfgo.EMPTY_STR
-		fr.Strs[sfgo.CONT_IMAGE_STR] = sfgo.EMPTY_STR
-		fr.Strs[sfgo.CONT_IMAGEID_STR] = sfgo.EMPTY_STR
-		fr.Ints[sfgo.CONT_TYPE_INT] = sfgo.EMPTY_INT
-		fr.Ints[sfgo.CONT_PRIVILEGED_INT] = sfgo.EMPTY_INT
+		fr.Strs[sfgo.CONT_ID_STR] = sfgo.Zeros.String
+		fr.Strs[sfgo.CONT_NAME_STR] = sfgo.Zeros.String
+		fr.Strs[sfgo.CONT_IMAGE_STR] = sfgo.Zeros.String
+		fr.Strs[sfgo.CONT_IMAGEID_STR] = sfgo.Zeros.String
+		fr.Ints[sfgo.CONT_TYPE_INT] = sfgo.Zeros.Int64
+		fr.Ints[sfgo.CONT_PRIVILEGED_INT] = sfgo.Zeros.Int64
 
 	}
 	if proc != nil {
@@ -186,8 +186,8 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 			fr.Ints[sfgo.PROC_POID_CREATETS_INT] = proc.Poid.OID.CreateTS
 			fr.Ints[sfgo.PROC_POID_HPID_INT] = proc.Poid.OID.Hpid
 		} else {
-			fr.Ints[sfgo.PROC_POID_CREATETS_INT] = sfgo.EMPTY_INT
-			fr.Ints[sfgo.PROC_POID_HPID_INT] = sfgo.EMPTY_INT
+			fr.Ints[sfgo.PROC_POID_CREATETS_INT] = sfgo.Zeros.Int64
+			fr.Ints[sfgo.PROC_POID_HPID_INT] = sfgo.Zeros.Int64
 		}
 		fr.Ints[sfgo.PROC_TS_INT] = proc.Ts
 		fr.Strs[sfgo.PROC_EXE_STR] = proc.Exe
@@ -206,24 +206,24 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		if proc.ContainerId.UnionType != sfgo.UnionNullStringTypeEnumNull {
 			fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = proc.ContainerId.String
 		} else {
-			fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = sfgo.EMPTY_STR
+			fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
 		}
 	} else {
 		logger.Warn.Println("Event does not have a related process.  This should not happen.")
-		fr.Ints[sfgo.PROC_STATE_INT] = sfgo.EMPTY_INT
-		fr.Ints[sfgo.PROC_OID_CREATETS_INT] = sfgo.EMPTY_INT
-		fr.Ints[sfgo.PROC_OID_HPID_INT] = sfgo.EMPTY_INT
-		fr.Ints[sfgo.PROC_POID_CREATETS_INT] = sfgo.EMPTY_INT
-		fr.Ints[sfgo.PROC_POID_HPID_INT] = sfgo.EMPTY_INT
-		fr.Ints[sfgo.PROC_TS_INT] = sfgo.EMPTY_INT
-		fr.Strs[sfgo.PROC_EXE_STR] = sfgo.EMPTY_STR
-		fr.Strs[sfgo.PROC_EXEARGS_STR] = sfgo.EMPTY_STR
-		fr.Ints[sfgo.PROC_UID_INT] = sfgo.EMPTY_INT
-		fr.Strs[sfgo.PROC_USERNAME_STR] = sfgo.EMPTY_STR
-		fr.Ints[sfgo.PROC_GID_INT] = sfgo.EMPTY_INT
-		fr.Strs[sfgo.PROC_GROUPNAME_STR] = sfgo.EMPTY_STR
-		fr.Ints[sfgo.PROC_TTY_INT] = sfgo.EMPTY_INT
-		fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = sfgo.EMPTY_STR
+		fr.Ints[sfgo.PROC_STATE_INT] = sfgo.Zeros.Int64
+		fr.Ints[sfgo.PROC_OID_CREATETS_INT] = sfgo.Zeros.Int64
+		fr.Ints[sfgo.PROC_OID_HPID_INT] = sfgo.Zeros.Int64
+		fr.Ints[sfgo.PROC_POID_CREATETS_INT] = sfgo.Zeros.Int64
+		fr.Ints[sfgo.PROC_POID_HPID_INT] = sfgo.Zeros.Int64
+		fr.Ints[sfgo.PROC_TS_INT] = sfgo.Zeros.Int64
+		fr.Strs[sfgo.PROC_EXE_STR] = sfgo.Zeros.String
+		fr.Strs[sfgo.PROC_EXEARGS_STR] = sfgo.Zeros.String
+		fr.Ints[sfgo.PROC_UID_INT] = sfgo.Zeros.Int64
+		fr.Strs[sfgo.PROC_USERNAME_STR] = sfgo.Zeros.String
+		fr.Ints[sfgo.PROC_GID_INT] = sfgo.Zeros.Int64
+		fr.Strs[sfgo.PROC_GROUPNAME_STR] = sfgo.Zeros.String
+		fr.Ints[sfgo.PROC_TTY_INT] = sfgo.Zeros.Int64
+		fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
 	}
 	if file != nil {
 		fr.Ints[sfgo.FILE_STATE_INT] = int64(file.State)
@@ -233,13 +233,13 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		if file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			fr.Strs[sfgo.FILE_CONTAINERID_STRING_STR] = file.ContainerId.String
 		} else {
-			fr.Strs[sfgo.FILE_CONTAINERID_STRING_STR] = sfgo.EMPTY_STR
+			fr.Strs[sfgo.FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
 		}
 	} else {
-		fr.Ints[sfgo.FILE_STATE_INT] = sfgo.EMPTY_INT
-		fr.Ints[sfgo.FILE_TS_INT] = sfgo.EMPTY_INT
-		fr.Ints[sfgo.FILE_RESTYPE_INT] = sfgo.EMPTY_INT
-		fr.Strs[sfgo.FILE_PATH_STR] = sfgo.EMPTY_STR
-		fr.Strs[sfgo.FILE_CONTAINERID_STRING_STR] = sfgo.EMPTY_STR
+		fr.Ints[sfgo.FILE_STATE_INT] = sfgo.Zeros.Int64
+		fr.Ints[sfgo.FILE_TS_INT] = sfgo.Zeros.Int64
+		fr.Ints[sfgo.FILE_RESTYPE_INT] = sfgo.Zeros.Int64
+		fr.Strs[sfgo.FILE_PATH_STR] = sfgo.Zeros.String
+		fr.Strs[sfgo.FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
 	}
 }
