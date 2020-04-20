@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -104,8 +105,8 @@ var Mapper = FieldMapper{
 		"sf.file.openflags":       mapOpenFlags(sfgo.FL_FILE_OPENFLAGS_INT),
 		"sf.net.proto":            mapInt(sfgo.FL_NETW_PROTO_INT),
 		"sf.net.protoname":        mapProto(sfgo.FL_NETW_PROTO_INT),
-		"sf.net.sport":            mapPort(sfgo.FL_NETW_SPORT_INT),
-		"sf.net.dport":            mapPort(sfgo.FL_NETW_DPORT_INT),
+		"sf.net.sport":            mapInt(sfgo.FL_NETW_SPORT_INT),
+		"sf.net.dport":            mapInt(sfgo.FL_NETW_DPORT_INT),
 		"sf.net.port":             mapPort(sfgo.FL_NETW_SPORT_INT, sfgo.FL_NETW_DPORT_INT),
 		"sf.net.sip":              mapIP(sfgo.FL_NETW_SIP_INT),
 		"sf.net.dip":              mapIP(sfgo.FL_NETW_DIP_INT),
@@ -204,37 +205,37 @@ func mapDuration(attr sfgo.Attribute) FieldMap {
 
 func mapName(attr sfgo.Attribute) FieldMap {
 	return func(r sfgo.FlatRecord) interface{} {
-		return r.Strs[attr]
+		return filepath.Base(r.Strs[attr])
 	}
 }
 
 func mapDir(attr sfgo.Attribute) FieldMap {
 	return func(r sfgo.FlatRecord) interface{} {
-		return r.Strs[attr]
+		return filepath.Dir(r.Strs[attr])
 	}
 }
 
 func mapFileType(attr sfgo.Attribute) FieldMap {
 	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attr]
+		return r.Ints[attr] // TBD: convert to character
 	}
 }
 
 func mapIsOpenWrite(attr sfgo.Attribute) FieldMap {
 	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attr]
-	}
-}
-
-func mapOpenFlags(attrs ...sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attrs[0]]
+		return r.Ints[attr] // TBD
 	}
 }
 
 func mapIsOpenRead(attr sfgo.Attribute) FieldMap {
 	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attr]
+		return r.Ints[attr] // TBD
+	}
+}
+
+func mapOpenFlags(attrs ...sfgo.Attribute) FieldMap {
+	return func(r sfgo.FlatRecord) interface{} {
+		return r.Ints[attrs[0]] // TBD
 	}
 }
 
@@ -246,19 +247,23 @@ func mapProto(attr sfgo.Attribute) FieldMap {
 
 func mapPort(attrs ...sfgo.Attribute) FieldMap {
 	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attrs[0]]
+		var ports []string
+		for _, attr := range attrs {
+			ports = append(ports, strconv.FormatInt(r.Ints[attr], 10))
+		}
+		return strings.Join(ports, LISTSEP)
 	}
 }
 
 func mapIP(attrs ...sfgo.Attribute) FieldMap {
 	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attrs[0]]
+		return r.Ints[attrs[0]] // TBD
 	}
 }
 
 func mapContType(attr sfgo.Attribute) FieldMap {
 	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attr]
+		return r.Ints[attr] // TBD
 	}
 }
 
