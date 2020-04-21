@@ -66,9 +66,7 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 		case sfgo.SF_HEADER:
 			hdr := sf.Rec.SFHeader
 			s.hdr = hdr
-			// s.contTable = make(map[string]*sfgo.Container)
-			// s.procTable = make(map[sfgo.OID]*sfgo.Process)
-			// s.fileTable = make(map[sfgo.FOID]*sfgo.File)
+			s.tables.Reset()
 			if entEnabled {
 				s.Hdl.HandleHeader(s.hdr)
 			}
