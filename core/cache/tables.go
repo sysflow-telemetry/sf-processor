@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.ibm.com/sysflow/sf-processor/common/logger"
-
 	cqueue "github.com/enriquebris/goconcurrentqueue"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
+	"github.ibm.com/sysflow/sf-processor/common/logger"
 )
 
 // SFTables defines shared plugin tables that store process SysFlow entities.
@@ -70,7 +69,9 @@ func (t *SFTables) GetCont(ID string) *sfgo.Container {
 
 // SetCont stores a container object in the cache.
 func (t *SFTables) SetCont(ID string, o *sfgo.Container) {
+	t.rwmutex.RLock()
 	m, _ := t.contTable.Get(t.contTable.GetLen() - 1)
+	t.rwmutex.RUnlock()
 	table := m.(cmap.ConcurrentMap)
 	table.Set(ID, o)
 }
@@ -91,7 +92,9 @@ func (t *SFTables) GetProc(ID sfgo.OID) *sfgo.Process {
 
 // SetProc stores a process object in the cache.
 func (t *SFTables) SetProc(ID sfgo.OID, o *sfgo.Process) {
+	t.rwmutex.RLock()
 	m, _ := t.procTable.Get(t.procTable.GetLen() - 1)
+	t.rwmutex.RUnlock()
 	table := m.(cmap.ConcurrentMap)
 	table.Set(t.getHash(ID), o)
 }
@@ -112,7 +115,9 @@ func (t *SFTables) GetFile(ID sfgo.FOID) *sfgo.File {
 
 // SetFile stores a file object in the cache.
 func (t *SFTables) SetFile(ID sfgo.FOID, o *sfgo.File) {
+	t.rwmutex.RLock()
 	m, _ := t.fileTable.Get(t.fileTable.GetLen() - 1)
+	t.rwmutex.RUnlock()
 	table := m.(cmap.ConcurrentMap)
 	table.Set(t.getHash(ID), o)
 }
