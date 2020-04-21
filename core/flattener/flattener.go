@@ -162,7 +162,6 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Strs[sfgo.CONT_IMAGE_STR] = cont.Image
 		fr.Strs[sfgo.CONT_IMAGEID_STR] = cont.Imageid
 		fr.Ints[sfgo.CONT_TYPE_INT] = int64(cont.Type)
-
 		if cont.Privileged {
 			fr.Ints[sfgo.CONT_PRIVILEGED_INT] = 1
 		} else {
@@ -181,7 +180,6 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.PROC_STATE_INT] = int64(proc.State)
 		fr.Ints[sfgo.PROC_OID_CREATETS_INT] = int64(proc.Oid.CreateTS)
 		fr.Ints[sfgo.PROC_OID_HPID_INT] = int64(proc.Oid.Hpid)
-
 		if proc.Poid.UnionType != sfgo.UnionNullOIDTypeEnumNull {
 			fr.Ints[sfgo.PROC_POID_CREATETS_INT] = proc.Poid.OID.CreateTS
 			fr.Ints[sfgo.PROC_POID_HPID_INT] = proc.Poid.OID.Hpid
@@ -196,13 +194,11 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Strs[sfgo.PROC_USERNAME_STR] = proc.UserName
 		fr.Ints[sfgo.PROC_GID_INT] = int64(proc.Gid)
 		fr.Strs[sfgo.PROC_GROUPNAME_STR] = proc.GroupName
-
 		if proc.Tty {
 			fr.Ints[sfgo.PROC_TTY_INT] = 1
 		} else {
 			fr.Ints[sfgo.PROC_TTY_INT] = 0
 		}
-
 		if proc.ContainerId.UnionType != sfgo.UnionNullStringTypeEnumNull {
 			fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = proc.ContainerId.String
 		} else {

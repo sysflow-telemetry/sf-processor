@@ -32,7 +32,6 @@ func (s *PolicyEngine) Init(conf map[string]string, tables interface{}) error {
 	} else {
 		return errors.New("policies tag missing from policy engine plugin")
 	}
-
 	logger.Trace.Println("Loading policies from: " + filename)
 	var fi os.FileInfo
 	var e error

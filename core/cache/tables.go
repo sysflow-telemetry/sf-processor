@@ -3,6 +3,7 @@ package cache
 import (
 	"crypto/sha256"
 	"fmt"
+	"sync"
 
 	"github.ibm.com/sysflow/sf-processor/common/logger"
 
@@ -16,6 +17,7 @@ type SFTables struct {
 	contTable *cqueue.FIFO
 	procTable *cqueue.FIFO
 	fileTable *cqueue.FIFO
+	rwmutex   sync.RWMutex
 	capacity  int
 }
 
@@ -38,6 +40,8 @@ func NewSFTables(capacity int) *SFTables {
 
 // Reset pushes a new set of empty maps into the cache.
 func (t *SFTables) Reset() {
+	t.rwmutex.Lock()
+	defer t.rwmutex.Unlock()
 	t.reset(t.contTable)
 	t.reset(t.procTable)
 	t.reset(t.fileTable)
@@ -52,6 +56,8 @@ func (t *SFTables) reset(queue *cqueue.FIFO) {
 
 // GetCont retrieves a cached container object by ID.
 func (t *SFTables) GetCont(ID string) *sfgo.Container {
+	t.rwmutex.RLock()
+	defer t.rwmutex.RUnlock()
 	for i := 0; i < t.contTable.GetLen(); i++ {
 		m, _ := t.contTable.Get(i)
 		table := m.(cmap.ConcurrentMap)
@@ -71,6 +77,8 @@ func (t *SFTables) SetCont(ID string, o *sfgo.Container) {
 
 // GetProc retrieves a cached process object by ID.
 func (t *SFTables) GetProc(ID sfgo.OID) *sfgo.Process {
+	t.rwmutex.RLock()
+	defer t.rwmutex.RUnlock()
 	for i := 0; i < t.procTable.GetLen(); i++ {
 		m, _ := t.procTable.Get(i)
 		table := m.(cmap.ConcurrentMap)
@@ -90,6 +98,8 @@ func (t *SFTables) SetProc(ID sfgo.OID, o *sfgo.Process) {
 
 // GetFile retrieves a cached file object by ID.
 func (t *SFTables) GetFile(ID sfgo.FOID) *sfgo.File {
+	t.rwmutex.RLock()
+	defer t.rwmutex.RUnlock()
 	for i := 0; i < t.fileTable.GetLen(); i++ {
 		m, _ := t.fileTable.Get(i)
 		table := m.(cmap.ConcurrentMap)
