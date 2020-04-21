@@ -25,7 +25,7 @@ func NewPolicyEngine() sp.SFProcessor {
 }
 
 // Init initializes the plugin.
-func (s *PolicyEngine) Init(conf map[string]string) error {
+func (s *PolicyEngine) Init(conf map[string]string, tables interface{}) error {
 	var filename string = ""
 	if v, o := conf["policies"]; o {
 		filename = v

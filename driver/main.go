@@ -10,6 +10,8 @@ import (
 	"os"
 	"sync"
 
+	"github.ibm.com/sysflow/sf-processor/core/cache"
+
 	"github.com/actgardner/gogen-avro/compiler"
 	"github.com/actgardner/gogen-avro/container"
 	"github.com/actgardner/gogen-avro/vm"
@@ -25,6 +27,7 @@ const (
 	SOCK_FILE    = "/var/run/sysflow.sock"
 	BUFF_SIZE    = 16384
 	OO_BUFF_SIZE = 1024
+	CACHE_SIZE   = 2
 )
 
 type inputType int
@@ -176,6 +179,7 @@ func LoadPipeline() (interface{}, []sp.SFProcessor, *sync.WaitGroup, []interface
 	var processors []sp.SFProcessor
 	var channels []interface{}
 	var hdlrs []handlers.SFHandler
+	tables := cache.NewSFTables(CACHE_SIZE)
 	conf, err := pl.GetConfig()
 	if err != nil {
 		logger.Error.Println("Unable to load pipeline config: ", err)
@@ -208,7 +212,7 @@ func LoadPipeline() (interface{}, []sp.SFProcessor, *sync.WaitGroup, []interface
 			}
 			tp := fmt.Sprintf("%T", prc)
 			logger.Trace.Println(tp)
-			err = prc.Init(p)
+			err = prc.Init(p, tables)
 			if err != nil {
 				logger.Error.Println(err)
 				return nil, nil, wg, nil, nil, err

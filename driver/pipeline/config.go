@@ -1,6 +1,6 @@
 package pipeline
 
-// Plugin denotes the type of a plugin.
+// Plugin defines a map for plugin configuration.
 type Plugin map[string]string
 
 // PluginConfig defines a plugin configuration object.

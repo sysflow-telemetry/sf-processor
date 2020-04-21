@@ -4,6 +4,10 @@ github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0 h1:j7MyDjg6pb7A2ziow1
 github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0/go.mod h1:T7PbCXFs94rrTttyxjbyT5+/1V8T2TYDejxUfHJjw1Y=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/enriquebris/goconcurrentqueue v0.6.0 h1:DJ97cgoPVoqlC4tTGBokn/omaB3o16yIs5QdAm6YEjc=
+github.com/enriquebris/goconcurrentqueue v0.6.0/go.mod h1:wGJhQNFI4wLNHleZLo5ehk1puj8M6OIl0tOjs3kwJus=
+github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6 h1:lNCW6THrCKBiJBpz8kbVGjC7MgdCGKwuvBgc7LoD6sw=
+github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6/go.mod h1:Lu3tH6HLW3feq74c2GC+jIMS/K2CFcDWnWD9XkenwhI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
@@ -15,6 +19,8 @@ github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200415202402-e5659ec14bfd h1:5J
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200415202402-e5659ec14bfd/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200419012147-daacc2243084 h1:e2QqvoCNo+qKbX0qAqAkyBba5rmvhgvbhXsm9rcdD20=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200419012147-daacc2243084/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200420175558-239d6161bebc h1:MNOwxz5B5Fsu0kTY+uR5wQvMKAo8B9Y2z2Yiq8Rv6Tw=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200420175558-239d6161bebc/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
 github.ibm.com/sysflow/sf-processor v0.0.0-20200417191929-a92fcd82f392 h1:GKkKmQ/rJRklAXRjUbXhNrmio9BivvJuqBV6kT5zaEs=
 github.ibm.com/sysflow/sf-processor v0.0.0-20200417193244-61d8d9d5918f h1:apTkkjATxZ4NSAVXd+9a1WCeIaX9bfpFHg1eh/oc/N0=
 github.ibm.com/sysflow/sf-processor/common v0.0.0-20200417191929-a92fcd82f392 h1:tcUnFjtqapROfLeGqJNzVXEZpJPPeWhoBeFzCro3yjQ=

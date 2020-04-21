@@ -23,6 +23,8 @@ github.com/dgraph-io/dgo v1.0.0/go.mod h1:6K5zUB6Lsml4SEStX+fPzGhJtCLX9XxbkHJLsG
 github.com/dgraph-io/dgo/v2 v2.2.0/go.mod h1:LJCkLxm5fUMcU+yb8gHFjHt7ChgNuz3YnQQ6MQkmscI=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
+github.com/enriquebris/goconcurrentqueue v0.6.0 h1:DJ97cgoPVoqlC4tTGBokn/omaB3o16yIs5QdAm6YEjc=
+github.com/enriquebris/goconcurrentqueue v0.6.0/go.mod h1:wGJhQNFI4wLNHleZLo5ehk1puj8M6OIl0tOjs3kwJus=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWoS4=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
@@ -77,6 +79,8 @@ github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3Rllmb
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/nsf/termbox-go v0.0.0-20200204031403-4d2b513ad8be/go.mod h1:IuKpRQcYE1Tfu+oAQqaLisqDeXgjyyltCfsaoYN18NQ=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
+github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6 h1:lNCW6THrCKBiJBpz8kbVGjC7MgdCGKwuvBgc7LoD6sw=
+github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6/go.mod h1:Lu3tH6HLW3feq74c2GC+jIMS/K2CFcDWnWD9XkenwhI=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/pelletier/go-toml v1.7.0 h1:7utD74fnzVc/cpcyy8sjrlFr5vYpypUixARcHIMIGuI=
 github.com/pelletier/go-toml v1.7.0/go.mod h1:vwGMzjaWMwyfHwgIBhI2YUM4fB6nL6lVAvS1LBMMhTE=
@@ -124,6 +128,10 @@ github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200415202402-e5659ec14bfd h1:5J
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200415202402-e5659ec14bfd/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200417223309-a2878f82cbc4 h1:U8vqKthr/LXLfiSc2bHzV2wJcmNLqjxry+ZoNfPDp/g=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200417223309-a2878f82cbc4/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200419012147-daacc2243084 h1:e2QqvoCNo+qKbX0qAqAkyBba5rmvhgvbhXsm9rcdD20=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200419012147-daacc2243084/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200420175558-239d6161bebc h1:MNOwxz5B5Fsu0kTY+uR5wQvMKAo8B9Y2z2Yiq8Rv6Tw=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200420175558-239d6161bebc/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=

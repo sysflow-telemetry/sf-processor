@@ -12,13 +12,14 @@ require (
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/nsf/termbox-go v0.0.0-20200204031403-4d2b513ad8be // indirect
+	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.3
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200417223309-a2878f82cbc4
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200420175558-239d6161bebc
 	github.ibm.com/sysflow/sf-processor/common v0.0.0-20200417191929-a92fcd82f392
 	github.ibm.com/sysflow/sf-processor/core v0.0.0-20200417193244-61d8d9d5918f
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
