@@ -1,6 +1,6 @@
 package engine
 
-// Package constants.
+// Parsing constants.
 const (
 	LISTSEP string = ","
 	EMPTY   string = ""
