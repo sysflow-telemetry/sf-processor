@@ -23,6 +23,8 @@ github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200420175558-239d6161bebc h1:MN
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200420175558-239d6161bebc/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200422172625-57936fb5beec h1:2ecQGhtZhHUdlUkj8KYhw968jUOriOidtAYgJzLxzCg=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200422172625-57936fb5beec/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200422203822-89baf17b2999 h1:7X+HLv0uOWp4uONTIAVDzoi5YXUS+fGi5jl/nXikWtY=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200422203822-89baf17b2999/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
 github.ibm.com/sysflow/sf-processor v0.0.0-20200417191929-a92fcd82f392 h1:GKkKmQ/rJRklAXRjUbXhNrmio9BivvJuqBV6kT5zaEs=
 github.ibm.com/sysflow/sf-processor v0.0.0-20200417193244-61d8d9d5918f h1:apTkkjATxZ4NSAVXd+9a1WCeIaX9bfpFHg1eh/oc/N0=
 github.ibm.com/sysflow/sf-processor/common v0.0.0-20200417191929-a92fcd82f392 h1:tcUnFjtqapROfLeGqJNzVXEZpJPPeWhoBeFzCro3yjQ=

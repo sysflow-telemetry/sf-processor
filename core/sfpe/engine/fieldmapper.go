@@ -225,13 +225,19 @@ func mapFileType(attr sfgo.Attribute) FieldMap {
 
 func mapIsOpenWrite(attr sfgo.Attribute) FieldMap {
 	return func(r Record) interface{} {
-		return r.GetInt(attr) // TBD
+		if utils.IsOpenWrite(r.GetInt(attr)) {
+			return true
+		}
+		return false
 	}
 }
 
 func mapIsOpenRead(attr sfgo.Attribute) FieldMap {
 	return func(r Record) interface{} {
-		return r.GetInt(attr) // TBD
+		if utils.IsOpenRead(r.GetInt(attr)) {
+			return true
+		}
+		return false
 	}
 }
 
@@ -269,7 +275,7 @@ func mapIP(attrs ...sfgo.Attribute) FieldMap {
 
 func mapContType(attr sfgo.Attribute) FieldMap {
 	return func(r Record) interface{} {
-		return r.GetInt(attr) // TBD
+		return utils.GetContType(r.GetInt(attr))
 	}
 }
 
