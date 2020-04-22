@@ -25,7 +25,7 @@
 
 - rule: server
   desc: server rule
-  condition: sf.type=PE and sf.proc.name contains server
+  condition: sf.type=PE and sf.proc.aname contains server
   action: [alert]
   priority: NOTICE
   tags: [server]

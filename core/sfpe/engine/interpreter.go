@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/sf-processor/common/logger"
 	"github.ibm.com/sysflow/sf-processor/core/sfpe/lang/parser"
 )
@@ -52,7 +51,7 @@ func (pi PolicyInterpreter) Compile(paths ...string) {
 }
 
 // Process executes all compiled policies against record r.
-func (pi PolicyInterpreter) Process(applyFilters bool, r sfgo.FlatRecord) (bool, []Rule) {
+func (pi PolicyInterpreter) Process(applyFilters bool, r Record) (bool, []Rule) {
 	var rlist []Rule
 	match := false
 	if applyFilters && pi.evalFilters(r) {
@@ -69,7 +68,7 @@ func (pi PolicyInterpreter) Process(applyFilters bool, r sfgo.FlatRecord) (bool,
 }
 
 // ProcessRule executes compiled policy rule p against record r.
-func (pi PolicyInterpreter) ProcessRule(applyFilters bool, r sfgo.FlatRecord, ruleNames ...string) (bool, []Rule) {
+func (pi PolicyInterpreter) ProcessRule(applyFilters bool, r Record, ruleNames ...string) (bool, []Rule) {
 	var rlist []Rule
 	match := false
 	if applyFilters && pi.evalFilters(r) {
@@ -85,7 +84,7 @@ func (pi PolicyInterpreter) ProcessRule(applyFilters bool, r sfgo.FlatRecord, ru
 }
 
 // EvalFilters executes compiled policy filters against record r.
-func (pi PolicyInterpreter) evalFilters(r sfgo.FlatRecord) bool {
+func (pi PolicyInterpreter) evalFilters(r Record) bool {
 	for _, f := range filters {
 		if f.condition.Eval(r) {
 			return true

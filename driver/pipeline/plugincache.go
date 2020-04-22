@@ -120,7 +120,7 @@ func (p PluginCache) GetChan(mod string, ch string, size int) (interface{}, erro
 		}
 		funct, ok := symChan.(func(int) interface{})
 		if !ok {
-			return nil, errors.New("unexpected type from module symbol for channel function: " + fName)
+			return nil, errors.New("Unexpected type from module symbol for channel function: " + fName)
 		}
 		c = funct(size)
 	}
@@ -132,7 +132,7 @@ func (p PluginCache) GetChan(mod string, ch string, size int) (interface{}, erro
 func (p PluginCache) GetProcessor(mod string, name string, hdl handlers.SFHandler, hdlr bool) (sp.SFProcessor, error) {
 	var prc sp.SFProcessor
 	if val, ok := p.procFuncMap[name]; ok {
-		logger.Trace.Println("Found processor in function map", name)
+		logger.Trace.Println("Found processor in function map: ", name)
 		if hdlr {
 			funct := val.(func(handlers.SFHandler) sp.SFProcessor)
 			prc = funct(hdl)
@@ -146,8 +146,7 @@ func (p PluginCache) GetProcessor(mod string, name string, hdl handlers.SFHandle
 		if err != nil {
 			return nil, err
 		}
-		logger.Trace.Println("FName: ", fName)
-		logger.Trace.Println("plug: ", plug)
+		logger.Trace.Println("Plugin: ", plug)
 		symProcessor, err := plug.Lookup(fName)
 		if err != nil {
 			return nil, err
@@ -155,13 +154,13 @@ func (p PluginCache) GetProcessor(mod string, name string, hdl handlers.SFHandle
 		if hdlr {
 			funct, ok := symProcessor.(func(handlers.SFHandler) sp.SFProcessor)
 			if !ok {
-				return nil, errors.New("unexpected type from module symbol for processor: " + fName)
+				return nil, errors.New("Unexpected type from module symbol for processor: " + fName)
 			}
 			prc = funct(hdl)
 		} else {
 			funct, ok := symProcessor.(func() sp.SFProcessor)
 			if !ok {
-				return nil, errors.New("unexpected type from module symbol for processor: " + fName)
+				return nil, errors.New("Unexpected type from module symbol for processor: " + fName)
 			}
 			prc = funct()
 		}

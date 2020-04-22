@@ -12,13 +12,13 @@ import (
 )
 
 // FieldMap is a functional type denoting a SysFlow attribute mapper.
-type FieldMap func(r sfgo.FlatRecord) interface{}
+type FieldMap func(r Record) interface{}
 
 // IntFieldMap is a functional type denoting a numerical attribute mapper.
-type IntFieldMap func(r sfgo.FlatRecord) int64
+type IntFieldMap func(r Record) int64
 
 // StrFieldMap is a functional type denoting a string attribute mapper.
-type StrFieldMap func(r sfgo.FlatRecord) string
+type StrFieldMap func(r Record) string
 
 // FieldMapper is an adapter for SysFlow attribute mappers.
 type FieldMapper struct {
@@ -30,12 +30,12 @@ func (m FieldMapper) Map(attr string) FieldMap {
 	if mapper, ok := m.Mappers[attr]; ok {
 		return mapper
 	}
-	return func(r sfgo.FlatRecord) interface{} { return attr }
+	return func(r Record) interface{} { return attr }
 }
 
 // MapInt retrieves a numerical field map based on a SysFlow attribute.
 func (m FieldMapper) MapInt(attr string) IntFieldMap {
-	return func(r sfgo.FlatRecord) int64 {
+	return func(r Record) int64 {
 		if v, ok := m.Map(attr)(r).(int64); ok {
 			return v
 		} else if v, err := strconv.ParseInt(attr, 10, 64); err == nil {
@@ -47,7 +47,7 @@ func (m FieldMapper) MapInt(attr string) IntFieldMap {
 
 // MapStr retrieves a string field map based on a SysFlow attribute.
 func (m FieldMapper) MapStr(attr string) StrFieldMap {
-	return func(r sfgo.FlatRecord) string {
+	return func(r Record) string {
 		if v, ok := m.Map(attr)(r).(string); ok {
 			return v
 		} else if v, ok := m.Map(attr)(r).(int64); ok {
@@ -78,20 +78,22 @@ var Mapper = FieldMapper{
 		"sf.proc.duration":        mapDuration(sfgo.PROC_OID_CREATETS_INT),
 		"sf.proc.tty":             mapInt(sfgo.PROC_TTY_INT),
 		"sf.proc.cmdline":         mapJoin(sfgo.PROC_EXE_STR, sfgo.PROC_EXEARGS_STR),
-		"sf.proc.aname":           mapNa("sf.proc.aname"), // TBD
-		"sf.proc.apid":            mapNa("sf.proc.apid"),  // TBD
+		"sf.proc.aname":           mapCachedValue(ProcAName),
+		"sf.proc.aexe":            mapCachedValue(ProcAExe),
+		"sf.proc.acmdline":        mapCachedValue(ProcACmdLine),
+		"sf.proc.apid":            mapCachedValue(ProcAPID),
 		"sf.pproc.pid":            mapInt(sfgo.PROC_POID_HPID_INT),
-		"sf.pproc.name":           mapNa("sf.pproc.name"),  // TBD
-		"sf.pproc.exe":            mapNa("sf.pproc.exe"),   // TBD
-		"sf.pproc.args":           mapNa("sf.pproc.args"),  // TBD
-		"sf.pproc.uid":            mapNa("sf.pproc.uid"),   // TBD
-		"sf.pproc.user":           mapNa("sf.pproc.user"),  // TBD
-		"sf.pproc.gid":            mapNa("sf.pproc.gid"),   // TBD
-		"sf.pproc.group":          mapNa("sf.pproc.group"), // TBD
+		"sf.pproc.name":           mapCachedValue(PProcName),
+		"sf.pproc.exe":            mapCachedValue(PProcExe),
+		"sf.pproc.args":           mapCachedValue(PProcArgs),
+		"sf.pproc.uid":            mapCachedValue(PProcUID),
+		"sf.pproc.user":           mapCachedValue(PProcUser),
+		"sf.pproc.gid":            mapCachedValue(PProcGID),
+		"sf.pproc.group":          mapCachedValue(PProcGroup),
 		"sf.pproc.createts":       mapInt(sfgo.PROC_POID_CREATETS_INT),
 		"sf.pproc.duration":       mapDuration(sfgo.PROC_POID_CREATETS_INT),
-		"sf.pproc.tty":            mapNa("sf.pproc.tty"),     // TBD
-		"sf.pproc.cmdline":        mapNa("sf.pproc.cmdline"), // TBD
+		"sf.pproc.tty":            mapCachedValue(PProcTTY),
+		"sf.pproc.cmdline":        mapCachedValue(PProcCmdLine),
 		"sf.file.name":            mapName(sfgo.FILE_PATH_STR),
 		"sf.file.path":            mapStr(sfgo.FILE_PATH_STR),
 		"sf.file.directory":       mapDir(sfgo.FILE_PATH_STR),
@@ -125,36 +127,36 @@ var Mapper = FieldMapper{
 }
 
 func mapStr(attr sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} { return r.Strs[attr] }
+	return func(r Record) interface{} { return r.GetStr(attr) }
 }
 
 func mapInt(attr sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} { return r.Ints[attr] }
+	return func(r Record) interface{} { return r.GetInt(attr) }
 }
 
 func mapSum(attrs ...sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
+	return func(r Record) interface{} {
 		var sum int64 = 0
 		for _, attr := range attrs {
-			sum += r.Ints[attr]
+			sum += r.GetInt(attr)
 		}
 		return sum
 	}
 }
 
 func mapJoin(attrs ...sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		var join string = r.Strs[attrs[0]]
+	return func(r Record) interface{} {
+		var join string = r.GetStr(attrs[0])
 		for _, attr := range attrs[1:] {
-			join += SPACE + r.Strs[attr]
+			join += SPACE + r.GetStr(attr)
 		}
 		return join
 	}
 }
 
 func mapRecType() FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		switch r.Ints[sfgo.SF_REC_TYPE] {
+	return func(r Record) interface{} {
+		switch r.GetInt(sfgo.SF_REC_TYPE) {
 		case sfgo.PROC:
 			return "P"
 		case sfgo.FILE:
@@ -178,19 +180,19 @@ func mapRecType() FieldMap {
 }
 
 func mapOpFlags() FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		opflags := r.Ints[sfgo.EV_PROC_OPFLAGS_INT]
+	return func(r Record) interface{} {
+		opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT)
 		return strings.Join(utils.GetOpFlags(int32(opflags)), LISTSEP)
 	}
 }
 
 func mapEndTs() FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		switch r.Ints[sfgo.SF_REC_TYPE] {
+	return func(r Record) interface{} {
+		switch r.GetInt(sfgo.SF_REC_TYPE) {
 		case sfgo.FILE_FLOW:
-			return r.Ints[sfgo.FL_FILE_ENDTS_INT]
+			return r.GetInt(sfgo.FL_FILE_ENDTS_INT)
 		case sfgo.NET_FLOW:
-			return r.Ints[sfgo.FL_NETW_ENDTS_INT]
+			return r.GetInt(sfgo.FL_NETW_ENDTS_INT)
 		default:
 			return sfgo.Zeros.Int64
 		}
@@ -198,77 +200,84 @@ func mapEndTs() FieldMap {
 }
 
 func mapDuration(attr sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		return time.Now().Unix() - r.Ints[attr]
+	return func(r Record) interface{} {
+		return time.Now().Unix() - r.GetInt(attr)
 	}
 }
 
 func mapName(attr sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		return filepath.Base(r.Strs[attr])
+	return func(r Record) interface{} {
+		return filepath.Base(r.GetStr(attr))
 	}
 }
 
 func mapDir(attr sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		return filepath.Dir(r.Strs[attr])
+	return func(r Record) interface{} {
+		return filepath.Dir(r.GetStr(attr))
 	}
 }
 
 func mapFileType(attr sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attr] // TBD: convert to character
+	return func(r Record) interface{} {
+		return r.GetInt(attr) // TBD: convert to character
 	}
 }
 
 func mapIsOpenWrite(attr sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attr] // TBD
+	return func(r Record) interface{} {
+		return r.GetInt(attr) // TBD
 	}
 }
 
 func mapIsOpenRead(attr sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attr] // TBD
+	return func(r Record) interface{} {
+		return r.GetInt(attr) // TBD
 	}
 }
 
 func mapOpenFlags(attrs ...sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attrs[0]] // TBD
+	return func(r Record) interface{} {
+		return r.GetInt(attrs[0]) // TBD
 	}
 }
 
 func mapProto(attr sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attr]
+	return func(r Record) interface{} {
+		return r.GetInt(attr)
 	}
 }
 
 func mapPort(attrs ...sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
+	return func(r Record) interface{} {
 		var ports []string
 		for _, attr := range attrs {
-			ports = append(ports, strconv.FormatInt(r.Ints[attr], 10))
+			ports = append(ports, strconv.FormatInt(r.GetInt(attr), 10))
 		}
 		return strings.Join(ports, LISTSEP)
 	}
 }
 
 func mapIP(attrs ...sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attrs[0]] // TBD
+	return func(r Record) interface{} {
+		return r.GetInt(attrs[0]) // TBD
 	}
 }
 
 func mapContType(attr sfgo.Attribute) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
-		return r.Ints[attr] // TBD
+	return func(r Record) interface{} {
+		return r.GetInt(attr) // TBD
+	}
+}
+
+func mapCachedValue(attr RecAttribute) FieldMap {
+	return func(r Record) interface{} {
+		oid := sfgo.OID{CreateTS: r.GetInt(sfgo.PROC_OID_CREATETS_INT), Hpid: r.GetInt(sfgo.PROC_OID_HPID_INT)}
+		return r.GetCachedValue(oid, attr)
 	}
 }
 
 func mapNa(attr string) FieldMap {
-	return func(r sfgo.FlatRecord) interface{} {
+	return func(r Record) interface{} {
 		logger.Warn.Println("Attribute not supported ", attr)
 		return sfgo.Zeros.String
 	}
