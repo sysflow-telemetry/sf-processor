@@ -1,0 +1,18 @@
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+
+#./driver -input file ../tests/traces/tcp.sf
+
+arg filePath=/host/var/run/sysflow.sock
+ENV FILE_PATH=$filepath
+
+arg inputtype=socket
+ENV INPUT_TYPE=$inputtype
+
+RUN mkdir -p /usr/local/sf-processor/bin && mkdir -p /usr/local/sf-processor/conf
+COPY ./driver/sfprocessor /usr/local/sf-processor/bin/sfprocessor
+COPY ./driver/pipeline.json /usr/local/sf-processor/conf/pipeline.json
+COPY ./tests/policies/macro_test.yaml /usr/local/sf-processor/conf/macro_test.yaml
+
+CMD /usr/local/sf-processor/bin/sfprocessor \
+                            ${INPUT_TYPE:+-input} ${INPUT_TYPE} \
+                            ${FILE_PATH}
