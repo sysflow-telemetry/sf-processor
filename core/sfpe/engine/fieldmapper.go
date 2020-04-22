@@ -219,7 +219,7 @@ func mapDir(attr sfgo.Attribute) FieldMap {
 
 func mapFileType(attr sfgo.Attribute) FieldMap {
 	return func(r Record) interface{} {
-		return r.GetInt(attr) // TBD: convert to character
+		return utils.GetFileType(r.GetInt(attr))
 	}
 }
 
@@ -235,9 +235,9 @@ func mapIsOpenRead(attr sfgo.Attribute) FieldMap {
 	}
 }
 
-func mapOpenFlags(attrs ...sfgo.Attribute) FieldMap {
+func mapOpenFlags(attr sfgo.Attribute) FieldMap {
 	return func(r Record) interface{} {
-		return r.GetInt(attrs[0]) // TBD
+		return strings.Join(utils.GetOpenFlags(r.GetInt(attr)), LISTSEP)
 	}
 }
 
@@ -249,7 +249,7 @@ func mapProto(attr sfgo.Attribute) FieldMap {
 
 func mapPort(attrs ...sfgo.Attribute) FieldMap {
 	return func(r Record) interface{} {
-		var ports []string
+		var ports = make([]string, 0)
 		for _, attr := range attrs {
 			ports = append(ports, strconv.FormatInt(r.GetInt(attr), 10))
 		}
@@ -259,7 +259,11 @@ func mapPort(attrs ...sfgo.Attribute) FieldMap {
 
 func mapIP(attrs ...sfgo.Attribute) FieldMap {
 	return func(r Record) interface{} {
-		return r.GetInt(attrs[0]) // TBD
+		var ips = make([]string, 0)
+		for _, attr := range attrs {
+			ips = append(ips, utils.GetIPStr(int32(r.GetInt(attr))))
+		}
+		return strings.Join(ips, LISTSEP)
 	}
 }
 
