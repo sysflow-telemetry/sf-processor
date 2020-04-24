@@ -8,7 +8,7 @@
          {
          "processor": "PolicyEngine",
          "in":   "flat FlattenerChan",
-         "policies": "../tests/policies/macro_test.yaml"	 
+         "policies": "/usr/local/sf-processor/conf/macro_test.yaml"	 
           }
    ]
 }

@@ -43,7 +43,7 @@ func (it inputType) String() string {
 	return [...]string{"file", "socket"}[it]
 }
 
-func processInputFile(path string) {
+func processInputFile(path string, config string) {
 	/*var handler Printer
 	var wg sync.WaitGroup
 	processor := NewSysFlowProc(handler)
@@ -52,7 +52,7 @@ func processInputFile(path string) {
 	go processor.process(records, &wg)
 	*/
 
-	channel, pipeline, wg, channels, hdlers, err := LoadPipeline()
+	channel, pipeline, wg, channels, hdlers, err := LoadPipeline(config)
 	if err != nil {
 		logger.Error.Println("pipeline error:", err)
 		return
@@ -98,7 +98,7 @@ func processInputFile(path string) {
 	wg.Wait()
 }
 
-func processInputStream(path string) {
+func processInputStream(path string, config string) {
 	if err := os.RemoveAll(path); err != nil {
 		logger.Error.Println("remove error:", err)
 		return
@@ -111,7 +111,7 @@ func processInputStream(path string) {
 	}
 	defer l.Close()
 
-	channel, pipeline, wg, channels, hdlers, err := LoadPipeline()
+	channel, pipeline, wg, channels, hdlers, err := LoadPipeline(config)
 	if err != nil {
 		logger.Error.Println("pipeline error:", err)
 		return
@@ -176,8 +176,8 @@ func processInputStream(path string) {
 	wg.Wait()
 }
 
-func LoadPipeline() (interface{}, []sp.SFProcessor, *sync.WaitGroup, []interface{}, []handlers.SFHandler, error) {
-	pl := pipeline.NewPluginCache()
+func LoadPipeline(config string) (interface{}, []sp.SFProcessor, *sync.WaitGroup, []interface{}, []handlers.SFHandler, error) {
+	pl := pipeline.NewPluginCache(config)
 	wg := new(sync.WaitGroup)
 	var processors []sp.SFProcessor
 	var channels []interface{}
@@ -260,6 +260,7 @@ func main() {
 	inputType := flag.String("input", file.String(), fmt.Sprintf("Input type {%s|%s}", file, socket))
 	cpuprofile := flag.String("cpuprofile", "", "Write cpu profile to `file`")
 	memprofile := flag.String("memprofile", "", "Write memory profile to `file`")
+	configFile := flag.String("config", "/usr/local/sf-processor/conf/pipeline.json", "Path to pipeline configuration file")
 
 	flag.Usage = func() {
 		fmt.Println("Usage: sysprocessor [-input <value>] path")
@@ -301,10 +302,10 @@ func main() {
 	// process input
 	switch *inputType {
 	case file.String():
-		processInputFile(path)
+		processInputFile(path, *configFile)
 		break
 	case socket.String():
-		processInputStream(path)
+		processInputStream(path, *configFile)
 		break
 	default:
 		logger.Error.Println("Unrecognized input type: ", *inputType)

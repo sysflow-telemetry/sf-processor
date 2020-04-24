@@ -2,6 +2,8 @@ package pipeline
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 	"plugin"
 	"strings"
 
@@ -23,24 +25,35 @@ type PluginCache struct {
 	hdlFuncMap  map[string]interface{}
 	chanFuncMap map[string]interface{}
 	config      *viper.Viper
+	configFile  string
 }
 
 // NewPluginCache creates a new PluginCache instance.
-func NewPluginCache() *PluginCache {
-	plug := &PluginCache{config: viper.New(), chanMap: make(map[string]interface{}), pluginMap: make(map[string]*plugin.Plugin)}
+func NewPluginCache(conf string) *PluginCache {
+	plug := &PluginCache{config: viper.New(), chanMap: make(map[string]interface{}), pluginMap: make(map[string]*plugin.Plugin), configFile: conf}
 	plug.procFuncMap = map[string]interface{}{"SysFlowProc": processor.NewSysFlowProc, "PolicyEngine": sfpe.NewPolicyEngine}
 	plug.hdlFuncMap = map[string]interface{}{"Flattener": flattener.NewFlattener}
 	plug.chanFuncMap = map[string]interface{}{"SysFlowChan": processor.NewSysFlowChan, "FlattenerChan": flattener.NewFlattenerChan}
-	plug.config.SetConfigName("pipeline")
-	plug.config.SetConfigType("json")
-	plug.config.AddConfigPath("./")
 	return plug
 }
 
 // GetConfig reads the PluginCache configuration.
 func (p PluginCache) GetConfig() (*PluginConfig, error) {
+
+	s, err := os.Stat(p.configFile)
+	if os.IsNotExist(err) {
+		return nil, err
+	}
+	if s.IsDir() {
+		return nil, errors.New("Pipeline config file is not a file.")
+	}
+	dir := filepath.Dir(p.configFile)
+	p.config.SetConfigName(strings.TrimSuffix(filepath.Base(p.configFile), filepath.Ext(p.configFile)))
+	p.config.SetConfigType("json")
+	p.config.AddConfigPath(dir)
+
 	conf := new(PluginConfig)
-	err := p.config.ReadInConfig()
+	err = p.config.ReadInConfig()
 
 	if err != nil {
 		return nil, err

@@ -28,11 +28,10 @@ services:
       INPUT_TYPE: socket
   sf-collector:
     container_name: sf-collector
-    image: sysflowtelemetry/sf-collector:latest
+    image: sysflowtelemetry/sf-collector:edge
     depends_on:
       - "sf-processor"
     privileged: true
-    entrypoint: ["/usr/local/sysflow/bin/sysporter", "-r", "/tests/traces/tcp-client-server.scap", "-e", "local", "-u", "/sock/sysflow.sock"]
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock 
       - /dev:/host/dev 
@@ -46,7 +45,7 @@ services:
     environment:
       EXPORTER_ID: local
       FILTER: "\"container.name!=sf-collector and container.name!=sf-processor\"" 
-      INTERVAL: 60 
-      OUTPUT: /mnt/data/ # trace files directory prefix
+      INTERVAL: 300 
+      SOCK_FILE: /sock/sysflow.sock
 volumes:
   socket-vol:
