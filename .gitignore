@@ -21,3 +21,6 @@
 # Misc
 .antlr
 driver/driver
+*.pdf
+*.prof
+*.vlog

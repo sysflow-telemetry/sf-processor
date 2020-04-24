@@ -29,3 +29,10 @@
   action: [alert]
   priority: NOTICE
   tags: [server]
+
+- rule: exfil
+  desc: exfil rule
+  condition: sf.proc.aname contains exfil.py
+  action: [alert]
+  priority: HIGH
+  tags: [exfil]

@@ -6,8 +6,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"net"
 	"os"
+	"runtime"
+	"runtime/pprof"
 	"sync"
 
 	"github.com/actgardner/gogen-avro/compiler"
@@ -83,7 +86,9 @@ func processInputFile(path string) {
 		sFlow = sfgo.NewSysFlow()
 		err = vm.Eval(sreader, deser, sFlow)
 		if err != nil {
-			logger.Error.Println("deserialize: ", err)
+			if err.Error() != "EOF" {
+				logger.Error.Println("deserialize: ", err)
+			}
 			break
 		}
 		records <- sFlow
@@ -149,7 +154,6 @@ func processInputStream(path string) {
 			_, _, flags, _, err := conn.ReadMsgUnix(buf[:], oobuf[:])
 			if err != nil {
 				logger.Error.Println("read error:", err)
-				close(records)
 				break
 			}
 			if flags == 0 {
@@ -254,6 +258,8 @@ func LoadPipeline() (interface{}, []sp.SFProcessor, *sync.WaitGroup, []interface
 func main() {
 	// setup arg parsing
 	inputType := flag.String("input", file.String(), fmt.Sprintf("Input type {%s|%s}", file, socket))
+	cpuprofile := flag.String("cpuprofile", "", "Write cpu profile to `file`")
+	memprofile := flag.String("memprofile", "", "Write memory profile to `file`")
 
 	flag.Usage = func() {
 		fmt.Println("Usage: sysprocessor [-input <value>] path")
@@ -279,6 +285,19 @@ func main() {
 	// Initialize logger
 	logger.InitLoggers(logger.TRACE)
 
+	// CPU profiling
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal("could not create CPU profile: ", err)
+		}
+		defer f.Close() // error handling omitted
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("could not start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
+	}
+
 	// process input
 	switch *inputType {
 	case file.String():
@@ -290,5 +309,18 @@ func main() {
 	default:
 		logger.Error.Println("Unrecognized input type: ", *inputType)
 		os.Exit(1)
+	}
+
+	// Memory profiling
+	if *memprofile != "" {
+		f, err := os.Create(*memprofile)
+		if err != nil {
+			log.Fatal("could not create memory profile: ", err)
+		}
+		defer f.Close() // error handling omitted
+		runtime.GC()    // get up-to-date statistics
+		if err := pprof.WriteHeapProfile(f); err != nil {
+			log.Fatal("could not write memory profile: ", err)
+		}
 	}
 }
