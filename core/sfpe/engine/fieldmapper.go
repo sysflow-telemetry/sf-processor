@@ -49,12 +49,22 @@ func (m FieldMapper) MapInt(attr string) IntFieldMap {
 func (m FieldMapper) MapStr(attr string) StrFieldMap {
 	return func(r Record) string {
 		if v, ok := m.Map(attr)(r).(string); ok {
-			return v
+			return m.trimBoundingQuotes(v)
 		} else if v, ok := m.Map(attr)(r).(int64); ok {
 			return strconv.FormatInt(v, 10)
 		}
 		return sfgo.Zeros.String
 	}
+}
+
+func (m FieldMapper) trimBoundingQuotes(s string) string {
+	if len(s) > 0 && (s[0] == '"' || s[0] == '\'') {
+		s = s[1:]
+	}
+	if len(s) > 0 && (s[len(s)-1] == '"' || s[len(s)-1] == '\'') {
+		s = s[:len(s)-1]
+	}
+	return s
 }
 
 // Mapper defines a global attribute mapper instance.

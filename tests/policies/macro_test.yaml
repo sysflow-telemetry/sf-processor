@@ -13,26 +13,29 @@
   (evt.type=clone or evt.type=execve or evt.type=exit) and 
   evt.type in (clone, execve, exit) and is_node and not is_python and proc.name exists
   action: [alert]
-  priority: NOTICE
+  priority: medium
   tags: [test]
 
 - rule: client
   desc: client rule
   condition: sf.type=PE and sf.proc.name contains client
   action: [alert]
-  priority: NOTICE
+  priority: low
   tags: [client]
 
 - rule: server
   desc: server rule
   condition: sf.type=PE and sf.proc.aname contains server
   action: [alert]
-  priority: NOTICE
+  priority: medium
   tags: [server]
 
-- rule: exfil
-  desc: exfil rule
-  condition: sf.proc.aname contains exfil.py
-  action: [alert]
-  priority: HIGH
-  tags: [exfil]
+# - rule: exfil
+#   desc: exfil rule
+#   condition: sf.proc.aname contains exfil.py
+#   action: [alert]
+#   priority: high
+#   tags: [exfil]
+
+# - filter: whitelist
+#   condition: sf.proc.aname contains server

@@ -126,9 +126,9 @@ func (listener *sfplListener) ExitPrule(ctx *parser.PruleContext) {
 		name:      listener.getOffChannelText(ctx.Text(0)),
 		desc:      listener.getOffChannelText(ctx.Text(1)),
 		condition: listener.visitExpression(ctx.Expression()),
-		actions:   listener.getActions(ctx.ACTION().GetText()),
-		tags:      listener.getTags(ctx.TAGS().GetText()),
-		priority:  listener.getPriority(ctx.PRIORITY().GetText()),
+		actions:   listener.getActions(ctx.Text(2).GetText()),
+		tags:      listener.getTags(ctx.Items()),
+		priority:  listener.getPriority(ctx.SEVERITY().GetText()),
 		ctx:       make(map[string]interface{}),
 	}
 	rules[r.name] = r
@@ -141,13 +141,9 @@ func (listener *sfplListener) getOffChannelText(ctx parser.ITextContext) string 
 	return ctx.GetStart().GetInputStream().GetTextFromInterval(&interval)
 }
 
-func (listener *sfplListener) getTags(tstr string) []EnrichmentTag {
-	var tags []EnrichmentTag
-	l := listener.extractList(tstr)
-	for _, v := range l {
-		tags = append(tags, v)
-	}
-	return tags
+func (listener *sfplListener) getTags(ctx parser.IItemsContext) []EnrichmentTag {
+	var tags = make([]EnrichmentTag, 0)
+	return append(tags, listener.extractListFromItems(ctx))
 }
 
 func (listener *sfplListener) getPriority(p string) Priority {

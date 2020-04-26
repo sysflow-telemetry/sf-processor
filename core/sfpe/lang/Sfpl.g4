@@ -185,11 +185,9 @@ DEF
 	;
 
 SEVERITY
-	: 'DEBUG'
-	| 'INFO'
-	| 'NOTICE'
-	| 'WARNING'
-	| 'ERROR'
+	: 'high'
+	| 'medium'
+	| 'low'	
 	;
 
 ID

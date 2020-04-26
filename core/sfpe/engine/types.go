@@ -129,23 +129,50 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 	if ptree := r.memoizePtree(ID); ptree != nil {
 		switch attr {
 		case PProcName:
-			return filepath.Base(ptree[1].Exe)
+			if len(ptree) > 1 {
+				return filepath.Base(ptree[1].Exe)
+			}
+			break
 		case PProcExe:
-			return ptree[1].Exe
+			if len(ptree) > 1 {
+				return ptree[1].Exe
+			}
+			break
 		case PProcArgs:
-			return ptree[1].ExeArgs
+			if len(ptree) > 1 {
+				return ptree[1].ExeArgs
+			}
+			break
 		case PProcUID:
-			return ptree[1].Uid
+			if len(ptree) > 1 {
+				return ptree[1].Uid
+			}
+			break
 		case PProcUser:
-			return ptree[1].UserName
+			if len(ptree) > 1 {
+				return ptree[1].UserName
+			}
+			break
 		case PProcGID:
-			return ptree[1].Gid
+			if len(ptree) > 1 {
+				return ptree[1].Gid
+			}
+			break
 		case PProcGroup:
-			return ptree[1].GroupName
+			if len(ptree) > 1 {
+				return ptree[1].GroupName
+			}
+			break
 		case PProcTTY:
-			return ptree[1].Tty
+			if len(ptree) > 1 {
+				return ptree[1].Tty
+			}
+			break
 		case PProcCmdLine:
-			return ptree[1].Exe + SPACE + ptree[1].ExeArgs
+			if len(ptree) > 1 {
+				return ptree[1].Exe + SPACE + ptree[1].ExeArgs
+			}
+			break
 		case ProcAName:
 			var s []string
 			for _, p := range ptree {

@@ -70,8 +70,8 @@ func Exists(attr string) Criterion {
 
 // Eq creates a criterion for an equality predicate.
 func Eq(lattr string, rattr string) Criterion {
-	ml := Mapper.Map(lattr)
-	mr := Mapper.Map(rattr)
+	ml := Mapper.MapStr(lattr)
+	mr := Mapper.MapStr(rattr)
 	p := func(r Record) bool { return eval(ml(r), mr(r), ops.eq) }
 	return Criterion{p}
 }
