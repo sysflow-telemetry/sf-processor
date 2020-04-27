@@ -8,8 +8,15 @@ import (
 	"github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
 )
 
+const (
+	maxBuffer int64 = 100
+)
+
 // Syslogger defines a syslogger plugin.
-type Syslogger struct{}
+type Syslogger struct {
+	occs    []*engine.Occurence
+	counter int64
+}
 
 // NewSyslogger creates a new plugin instance.
 func NewSyslogger() sp.SFProcessor {
@@ -31,16 +38,30 @@ func (s *Syslogger) Process(ch interface{}, wg *sync.WaitGroup) {
 	for {
 		fc, ok := <-record
 		if !ok {
+			s.exportOffenses()
 			logger.Trace.Println("Channel closed. Shutting down.")
 			break
 		}
-		var rlist []string
-		for _, rule := range fc.Rules {
-			rlist = append(rlist, rule.Name)
+		s.counter++
+		s.occs = append(s.occs, fc)
+		if s.counter > maxBuffer {
+			s.exportOffenses()
+			s.counter = 0
 		}
-		logger.Trace.Printf("\033[1;36m%v\033[0m \033[1;34m%v\033[0m", rlist, fc.Record.Fr)
+		// var rlist []string
+		// for _, rule := range fc.Rules {
+		// 	rlist = append(rlist, rule.Name)
+		// }
+		// logger.Trace.Printf("\033[1;36m%v\033[0m \033[1;34m%v\033[0m", rlist, fc.Record.Fr)
 	}
 	logger.Trace.Println("Exiting Syslogger")
+}
+
+func (s *Syslogger) exportOffenses() {
+	offenses := CreateOffenses(s.occs)
+	for _, o := range offenses {
+		logger.Trace.Printf("\033[1;34m%v\033[0m\n", o.ToJSONStr())
+	}
 }
 
 // SetOutChan sets the output channel of the plugin.

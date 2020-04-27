@@ -50,9 +50,9 @@ type Rule struct {
 	Desc      string
 	condition Criterion
 	actions   []Action
-	tags      []EnrichmentTag
-	priority  Priority
-	ctx       Context
+	Tags      []EnrichmentTag
+	Priority  Priority
+	Ctx       Context
 }
 
 // Filter type

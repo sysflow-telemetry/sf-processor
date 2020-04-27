@@ -59,7 +59,7 @@ func (pi PolicyInterpreter) Process(applyFilters bool, r Record) (bool, []Rule) 
 	}
 	for _, rule := range rules {
 		if rule.condition.Eval(r) {
-			rule.ctx["record"] = r
+			rule.Ctx["record"] = r
 			rlist = append(rlist, rule)
 			match = true
 		}
@@ -127,9 +127,9 @@ func (listener *sfplListener) ExitPrule(ctx *parser.PruleContext) {
 		Desc:      listener.getOffChannelText(ctx.Text(1)),
 		condition: listener.visitExpression(ctx.Expression()),
 		actions:   listener.getActions(ctx.Text(2).GetText()),
-		tags:      listener.getTags(ctx.Items()),
-		priority:  listener.getPriority(ctx.SEVERITY().GetText()),
-		ctx:       make(map[string]interface{}),
+		Tags:      listener.getTags(ctx.Items()),
+		Priority:  listener.getPriority(ctx.SEVERITY().GetText()),
+		Ctx:       make(map[string]interface{}),
 	}
 	rules[r.Name] = r
 }
