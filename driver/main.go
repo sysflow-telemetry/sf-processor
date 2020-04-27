@@ -126,13 +126,6 @@ func processInputStream(path string, config string) {
 		logger.Error.Println("compiler error:", err)
 		return
 	}
-	/*var wg sync.WaitGroup
-	wg.Add(1)
-	var handler Printer
-	processor := NewSysFlowProc(handler)
-	records := make(chan *sfgo.SysFlow, CHAN_SIZE)
-	go processor.process(records, &wg)
-	*/
 
 	sfChannel := channel.(*sp.SFChannel)
 

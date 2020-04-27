@@ -10,3 +10,4 @@ require (
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200422203822-89baf17b2999
 	github.ibm.com/sysflow/sf-processor/common v0.0.0-20200417191929-a92fcd82f392
 )
+

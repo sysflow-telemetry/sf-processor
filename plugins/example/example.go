@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"sync"
 
 	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
+	"github.ibm.com/sysflow/sf-processor/common/logger"
 )
 
 // Example defines an example plugin.
@@ -16,27 +16,31 @@ func NewExample() sp.SFProcessor {
 	return new(Example)
 }
 
+// Init initializes the plugin with a configuration map and cache.
+func (s *Example) Init(conf map[string]string, tables interface{}) error {
+	return nil
+}
+
 // Process implements the main interface of the plugin.
 func (s *Example) Process(ch interface{}, wg *sync.WaitGroup) {
 	cha := ch.(*hdl.FlatChannel)
 	record := cha.In
-	fmt.Println("Example channel capacity:", cap(record))
+	logger.Trace.Println("Example channel capacity:", cap(record))
 	defer wg.Done()
-	fmt.Println("Starting Example")
+	logger.Trace.Println("Starting Example")
 	for {
 		fc, ok := <-record
 		if !ok {
-			fmt.Println("Channel closed. Shutting down.")
+			logger.Trace.Println("Channel closed. Shutting down.")
 			break
 		}
-		fmt.Println(fc)
+		logger.Trace.Println(fc)
 	}
-	fmt.Println("Exiting Example")
+	logger.Trace.Println("Exiting Example")
 }
 
 // SetOutChan sets the output channel of the plugin.
-func (s *Example) SetOutChan(ch interface{}) {
-}
+func (s *Example) SetOutChan(ch interface{}) {}
 
 // Cleanup tears down plugin resources.
 func (s *Example) Cleanup() {}

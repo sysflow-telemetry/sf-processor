@@ -201,3 +201,22 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 	}
 	return sfgo.Zeros.String
 }
+
+// Occurence type
+type Occurence struct {
+	record Record
+	rules  []Rule
+}
+
+// OccurenceChannel type
+type OccurenceChannel struct {
+	In chan *Occurence
+}
+
+// NewOccurence constructs a new occurence
+func NewOccurence(r Record, rlist []Rule) *Occurence {
+	o := new(Occurence)
+	o.record = r
+	o.rules = rlist
+	return o
+}

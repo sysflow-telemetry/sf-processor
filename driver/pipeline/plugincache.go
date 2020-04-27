@@ -15,6 +15,7 @@ import (
 	"github.ibm.com/sysflow/sf-processor/core/flattener"
 	"github.ibm.com/sysflow/sf-processor/core/processor"
 	"github.ibm.com/sysflow/sf-processor/core/sfpe"
+	"github.ibm.com/sysflow/sf-processor/core/syslogger"
 )
 
 // PluginCache defines a data strucure for managing plugins.
@@ -31,9 +32,9 @@ type PluginCache struct {
 // NewPluginCache creates a new PluginCache instance.
 func NewPluginCache(conf string) *PluginCache {
 	plug := &PluginCache{config: viper.New(), chanMap: make(map[string]interface{}), pluginMap: make(map[string]*plugin.Plugin), configFile: conf}
-	plug.procFuncMap = map[string]interface{}{"SysFlowProc": processor.NewSysFlowProc, "PolicyEngine": sfpe.NewPolicyEngine}
+	plug.procFuncMap = map[string]interface{}{"SysFlowProc": processor.NewSysFlowProc, "PolicyEngine": sfpe.NewPolicyEngine, "Syslogger": syslogger.NewSyslogger}
 	plug.hdlFuncMap = map[string]interface{}{"Flattener": flattener.NewFlattener}
-	plug.chanFuncMap = map[string]interface{}{"SysFlowChan": processor.NewSysFlowChan, "FlattenerChan": flattener.NewFlattenerChan}
+	plug.chanFuncMap = map[string]interface{}{"SysFlowChan": processor.NewSysFlowChan, "FlattenerChan": flattener.NewFlattenerChan, "OccurenceChan": sfpe.NewOccurenceChan}
 	return plug
 }
 

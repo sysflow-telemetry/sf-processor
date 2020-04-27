@@ -18,12 +18,18 @@ import (
 type PolicyEngine struct {
 	pi     engine.PolicyInterpreter
 	tables *cache.SFTables
+	ch     chan *engine.Occurence
 }
 
 // NewPolicyEngine constructs a new Policy Engine plugin.
 func NewPolicyEngine() sp.SFProcessor {
 	pe := new(PolicyEngine)
 	return pe
+}
+
+// NewOccurenceChan creates a new occurence channel instance.
+func NewOccurenceChan(size int) interface{} {
+	return &engine.OccurenceChannel{In: make(chan *engine.Occurence, size)}
 }
 
 // Init initializes the plugin.
@@ -72,16 +78,23 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 			logger.Trace.Println("Channel closed. Shutting down.")
 			break
 		}
-		match, rlist := s.pi.Process(true, engine.NewRecord(*fc, s.tables))
+		r := engine.NewRecord(*fc, s.tables)
+		match, rlist := s.pi.Process(true, r)
 		if match {
-			logger.Trace.Printf("Matched rules: %v", rlist)
+			//logger.Trace.Printf("Matched rules: %v", rlist)
+			s.ch <- engine.NewOccurence(r, rlist)
 		}
 	}
 	logger.Trace.Println("Exiting policy engine")
+	s.Cleanup()
 }
 
 // SetOutChan sets the output channel of the plugin.
-func (s *PolicyEngine) SetOutChan(ch interface{}) {}
+func (s *PolicyEngine) SetOutChan(ch interface{}) {
+	s.ch = (ch.(*engine.OccurenceChannel)).In
+}
 
 // Cleanup clean up the plugin resources.
-func (s *PolicyEngine) Cleanup() {}
+func (s *PolicyEngine) Cleanup() {
+	close(s.ch)
+}

@@ -3,3 +3,8 @@ github.com/actgardner/gogen-avro v6.5.0+incompatible/go.mod h1:N2PzqZtS+5w9xxGp2
 github.com/sysflow-telemetry/sf-apis v0.0.0-20200316230117-c2ce7cfdefde h1:d9A5xlLwJfyrMyd4VSxaKRHup/H6hek1+hAmI7mbwb8=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200415202402-e5659ec14bfd h1:5JdMXJgPdKgE+5Sa9V1yKCy1xpOiDIIXNsAsJTR//5Y=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200415202402-e5659ec14bfd/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200422203822-89baf17b2999 h1:7X+HLv0uOWp4uONTIAVDzoi5YXUS+fGi5jl/nXikWtY=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200422203822-89baf17b2999/go.mod h1:YN3VqRtLh90nYGJxgVXQuAHsK+49bWB9OgPVYRun7dA=
+github.ibm.com/sysflow/sf-processor v0.0.0-20200426024200-5773272b783a h1:Nb/gHNKlCYen5Uss6jDyPXuv2ZBq+6ITlGGfM9RbH4o=
+github.ibm.com/sysflow/sf-processor/common v0.0.0-20200426024200-5773272b783a h1:tFVrcT4unAe9HmMd6OPGya71kpCrCQ/ZRLO79q+zVIc=
+github.ibm.com/sysflow/sf-processor/common v0.0.0-20200426024200-5773272b783a/go.mod h1:sVsO3YBv7XsiMrZOj2WbnCF3f9tA/+d93HVSidJ14mk=
