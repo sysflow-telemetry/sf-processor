@@ -493,15 +493,15 @@
   condition: sf.pproc.exe = /usr/bin/sudo
   ###### Rules ####################
  
-# - rule: Suspicious process spawned
-#   desc: Suspicious behavior observed in application spawning another process
-#   condition: sf.type = PE and sf.opflags = EXEC and 
-#              sf.proc.exe != sf.pproc.exe and 
-#              not sf.pproc.exe = /usr/local/sbin/runc and
-#              sf.proc.name pmatch (shell_binaries, compilers, pkg_mgmt_binaries, shell_interpreters, coreutils_mod_binaries)
-#   action: [alert]
-#   priority: low
-#   tags: [notification, suspicious-process]
+- rule: Suspicious process spawned
+  desc: Suspicious behavior observed in application spawning another process
+  condition: sf.type = PE and sf.opflags = EXEC and 
+             sf.proc.exe != sf.pproc.exe and 
+             not sf.pproc.exe = /usr/local/sbin/runc and
+             sf.proc.name pmatch (shell_binaries, compilers, pkg_mgmt_binaries, shell_interpreters, coreutils_mod_binaries)
+  action: [alert]
+  priority: low
+  tags: [notification, suspicious-process]
 
 - rule: Webserver writing file
   desc: Webserver is writing a file other than a log file

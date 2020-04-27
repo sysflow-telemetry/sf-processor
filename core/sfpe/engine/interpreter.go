@@ -123,15 +123,15 @@ func (listener *sfplListener) ExitPfilter(ctx *parser.PfilterContext) {
 func (listener *sfplListener) ExitPrule(ctx *parser.PruleContext) {
 	logger.Trace.Println("Parsing rule ", ctx.GetText())
 	r := Rule{
-		name:      listener.getOffChannelText(ctx.Text(0)),
-		desc:      listener.getOffChannelText(ctx.Text(1)),
+		Name:      listener.getOffChannelText(ctx.Text(0)),
+		Desc:      listener.getOffChannelText(ctx.Text(1)),
 		condition: listener.visitExpression(ctx.Expression()),
 		actions:   listener.getActions(ctx.Text(2).GetText()),
 		tags:      listener.getTags(ctx.Items()),
 		priority:  listener.getPriority(ctx.SEVERITY().GetText()),
 		ctx:       make(map[string]interface{}),
 	}
-	rules[r.name] = r
+	rules[r.Name] = r
 }
 
 func (listener *sfplListener) getOffChannelText(ctx parser.ITextContext) string {

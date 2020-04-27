@@ -46,8 +46,8 @@ func (p Priority) String() string {
 
 // Rule type
 type Rule struct {
-	name      string
-	desc      string
+	Name      string
+	Desc      string
 	condition Criterion
 	actions   []Action
 	tags      []EnrichmentTag
@@ -63,9 +63,9 @@ type Filter struct {
 
 // Record type
 type Record struct {
-	fr    sfgo.FlatRecord
-	ctx   *cache.SFTables
-	ptree map[sfgo.OID][]*sfgo.Process
+	Fr    sfgo.FlatRecord
+	Ctx   *cache.SFTables
+	Ptree map[sfgo.OID][]*sfgo.Process
 }
 
 // NewRecord creates a new Record isntance.
@@ -95,33 +95,33 @@ const (
 
 // GetInt returns an integer value from internal flat record.
 func (r Record) GetInt(attr sfgo.Attribute) int64 {
-	return r.fr.Ints[attr]
+	return r.Fr.Ints[attr]
 }
 
 // GetStr returns a string value from internal flat record.
 func (r Record) GetStr(attr sfgo.Attribute) string {
-	return r.fr.Strs[attr]
+	return r.Fr.Strs[attr]
 }
 
 // GetProc returns a process object by ID.
 func (r Record) GetProc(ID sfgo.OID) *sfgo.Process {
-	return r.ctx.GetProc(ID)
+	return r.Ctx.GetProc(ID)
 }
 
 func (r Record) getProcProv(ID sfgo.OID) []*sfgo.Process {
 	var ptree = make([]*sfgo.Process, 0)
-	if p := r.ctx.GetProc(ID); p != nil && p.Poid.UnionType != sfgo.UnionNullOIDTypeEnumNull {
+	if p := r.Ctx.GetProc(ID); p != nil && p.Poid.UnionType != sfgo.UnionNullOIDTypeEnumNull {
 		return append(append(ptree, p), r.getProcProv(*p.Poid.OID)...)
 	}
 	return ptree
 }
 
 func (r Record) memoizePtree(ID sfgo.OID) []*sfgo.Process {
-	if ptree, ok := r.ptree[ID]; ok {
+	if ptree, ok := r.Ptree[ID]; ok {
 		return ptree
 	}
-	r.ptree[ID] = r.getProcProv(ID)
-	return r.ptree[ID]
+	r.Ptree[ID] = r.getProcProv(ID)
+	return r.Ptree[ID]
 }
 
 // GetCachedValue returns the value of attr from cache for process ID.
@@ -204,8 +204,8 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 
 // Occurence type
 type Occurence struct {
-	record Record
-	rules  []Rule
+	Record Record
+	Rules  []Rule
 }
 
 // OccurenceChannel type
@@ -216,7 +216,7 @@ type OccurenceChannel struct {
 // NewOccurence constructs a new occurence
 func NewOccurence(r Record, rlist []Rule) *Occurence {
 	o := new(Occurence)
-	o.record = r
-	o.rules = rlist
+	o.Record = r
+	o.Rules = rlist
 	return o
 }

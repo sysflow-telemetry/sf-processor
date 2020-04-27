@@ -34,7 +34,11 @@ func (s *Syslogger) Process(ch interface{}, wg *sync.WaitGroup) {
 			logger.Trace.Println("Channel closed. Shutting down.")
 			break
 		}
-		logger.Trace.Printf("Matched rules: %v", *fc)
+		var rlist []string
+		for _, rule := range fc.Rules {
+			rlist = append(rlist, rule.Name)
+		}
+		logger.Trace.Printf("\033[1;36m%v\033[0m \033[1;34m%v\033[0m", rlist, fc.Record.Fr)
 	}
 	logger.Trace.Println("Exiting Syslogger")
 }
