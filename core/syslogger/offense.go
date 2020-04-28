@@ -24,30 +24,31 @@ type Policy struct {
 
 // Observation type
 type Observation struct {
-	Type          string   `json:"type"`
-	TS            int64    `json:"ts"`
-	EndTS         int64    `json:"endts"`
-	PID           int64    `json:"procId"`
-	TID           int64    `json:"threadId"`
-	PExe          string   `json:"procExe"`
-	PArgs         string   `json:"procArgs"`
-	PpID          int64    `json:"pProcId"`
-	PpExe         string   `json:"pProcExe"`
-	PpArgs        string   `json:"pProcArgs"`
-	PAExe         []string `json:"procAncExes"`
-	PAPID         []string `json:"procAncIds"`
-	FilePath      string   `json:"filePath"`
-	OpFlags       []string `json:"opFlags"`
-	SIP           string   `json:"sIp"`
-	SPort         int64    `json:"sPort"`
-	DIP           string   `json:"dIp"`
-	DPort         int64    `json:"dPort"`
-	Proto         string   `json:"proto"`
-	ContID        string   `json:"contId"`
-	ContName      string   `json:"contName"`
-	ContImageID   string   `json:"contImageId"`
-	ContImageName string   `json:"contImageName"`
-	Policies      []Policy `json:"policies"`
+	Type          string         `json:"type"`
+	TS            int64          `json:"ts"`
+	EndTS         int64          `json:"endts"`
+	PID           int64          `json:"procId"`
+	TID           int64          `json:"threadId"`
+	PExe          string         `json:"procExe"`
+	PArgs         string         `json:"procArgs"`
+	PpID          int64          `json:"pProcId"`
+	PpExe         string         `json:"pProcExe"`
+	PpArgs        string         `json:"pProcArgs"`
+	PAExe         []string       `json:"procAncExes"`
+	PAPID         []string       `json:"procAncIds"`
+	FilePath      string         `json:"filePath"`
+	OpFlags       []string       `json:"opFlags"`
+	SIP           string         `json:"sIp"`
+	SPort         int64          `json:"sPort"`
+	DIP           string         `json:"dIp"`
+	DPort         int64          `json:"dPort"`
+	Proto         string         `json:"proto"`
+	ContID        string         `json:"contId"`
+	ContName      string         `json:"contName"`
+	ContImageID   string         `json:"contImageId"`
+	ContImageName string         `json:"contImageName"`
+	Hashes        engine.HashSet `json:"hashes"`
+	Policies      []Policy       `json:"policies"`
 }
 
 // CreateOffenses creates offense instances based on a list of records
@@ -108,6 +109,7 @@ func extractObservations(recs []*engine.Record) []Observation {
 			ContName:      engine.Mapper.MapStr("sf.container.name")(r),
 			ContImageID:   engine.Mapper.MapStr("sf.container.imageid")(r),
 			ContImageName: engine.Mapper.MapStr("sf.container.image")(r),
+			Hashes:        r.Ctx.GetHashes(),
 			Policies:      extractPolicySet(r.Ctx.GetRules()),
 		}
 		observations = append(observations, o)

@@ -2,8 +2,16 @@ package engine
 
 // Configuration keys.
 const (
-	PoliciesConfigKey string = "policies"
-	CrioConfigKey     string = "crioEndpoint"
+	PoliciesConfigKey   string = "policies"
+	ContRuntimeType     string = "runtime"
+	ContRuntimeEndpoint string = "runtimeendpoint"
+)
+
+// Runtime constants.
+const (
+	Docker     string = "docker"
+	Crio       string = "crio"
+	Containerd string = "containerd"
 )
 
 // Parsing constants.

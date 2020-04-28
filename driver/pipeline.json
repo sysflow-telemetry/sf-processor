@@ -9,12 +9,12 @@
      {
       "processor": "PolicyEngine",
       "in":   "flat FlattenerChan",
-      "out":  "occ OccurenceChan",
-      "policies": "/usr/local/sf-processor/conf/macro_test.yaml"	 
+      "out":  "evt EventChan",
+      "policies": "/usr/local/sf-processor/conf/macro_test.yaml"      
      },
      {
       "processor": "Syslogger",
-      "in":   "occ OccurenceChan"
+      "in":   "evt EventChan"
      }
    ]
 }

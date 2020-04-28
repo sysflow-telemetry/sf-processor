@@ -23,9 +23,10 @@ require (
 	github.ibm.com/sysflow/sf-processor/common v0.0.0-20200417191929-a92fcd82f392
 	github.ibm.com/sysflow/sf-processor/core v0.0.0-20200417193244-61d8d9d5918f
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
-	google.golang.org/grpc v1.23.0
+	google.golang.org/grpc v1.29.1
 	gopkg.in/ini.v1 v1.55.0 // indirect
 )
 
 replace github.ibm.com/sysflow/sf-processor/core => ../core
+
 replace github.ibm.com/sysflow/sf-processor/common => ../common

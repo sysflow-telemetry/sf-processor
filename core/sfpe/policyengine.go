@@ -26,8 +26,8 @@ func NewPolicyEngine() sp.SFProcessor {
 	return new(PolicyEngine)
 }
 
-// NewOccurenceChan creates a new occurence channel instance.
-func NewOccurenceChan(size int) interface{} {
+// NewEventChan creates a new event record channel instance.
+func NewEventChan(size int) interface{} {
 	return &engine.RecordChannel{In: make(chan *engine.Record, size)}
 }
 

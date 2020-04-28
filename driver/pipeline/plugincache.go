@@ -34,7 +34,7 @@ func NewPluginCache(conf string) *PluginCache {
 	plug := &PluginCache{config: viper.New(), chanMap: make(map[string]interface{}), pluginMap: make(map[string]*plugin.Plugin), configFile: conf}
 	plug.procFuncMap = map[string]interface{}{"SysFlowProc": processor.NewSysFlowProc, "PolicyEngine": sfpe.NewPolicyEngine, "Syslogger": syslogger.NewSyslogger}
 	plug.hdlFuncMap = map[string]interface{}{"Flattener": flattener.NewFlattener}
-	plug.chanFuncMap = map[string]interface{}{"SysFlowChan": processor.NewSysFlowChan, "FlattenerChan": flattener.NewFlattenerChan, "OccurenceChan": sfpe.NewOccurenceChan}
+	plug.chanFuncMap = map[string]interface{}{"SysFlowChan": processor.NewSysFlowChan, "FlattenerChan": flattener.NewFlattenerChan, "EventChan": sfpe.NewEventChan}
 	return plug
 }
 
