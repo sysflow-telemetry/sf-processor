@@ -16,18 +16,16 @@ type Action int
 const (
 	Alert Action = iota
 	Tag
+	Hash
 )
 
 // String returns the string representation of an action instance.
 func (a Action) String() string {
-	return [...]string{"alert", "tag"}[a]
+	return [...]string{"alert", "tag", "hash"}[a]
 }
 
 // EnrichmentTag denotes the type for enrichment tags.
 type EnrichmentTag interface{}
-
-// Context denotes the type for contextual information obtained during rule processing.
-type Context map[string]interface{}
 
 // Priority denotes the type for rule priority.
 type Priority int
@@ -49,10 +47,9 @@ type Rule struct {
 	Name      string
 	Desc      string
 	condition Criterion
-	actions   []Action
+	Actions   []Action
 	Tags      []EnrichmentTag
 	Priority  Priority
-	Ctx       Context
 }
 
 // Filter type
@@ -64,13 +61,14 @@ type Filter struct {
 // Record type
 type Record struct {
 	Fr    sfgo.FlatRecord
-	Ctx   *cache.SFTables
+	Cr    *cache.SFTables
 	Ptree map[sfgo.OID][]*sfgo.Process
+	Ctx   Context
 }
 
 // NewRecord creates a new Record isntance.
-func NewRecord(fr sfgo.FlatRecord, ctx *cache.SFTables) Record {
-	return Record{fr, ctx, make(map[sfgo.OID][]*sfgo.Process)}
+func NewRecord(fr sfgo.FlatRecord, cr *cache.SFTables) Record {
+	return Record{fr, cr, make(map[sfgo.OID][]*sfgo.Process), make(Context, 3)}
 }
 
 // RecAttribute denotes a record attribute enumeration.
@@ -105,12 +103,12 @@ func (r Record) GetStr(attr sfgo.Attribute) string {
 
 // GetProc returns a process object by ID.
 func (r Record) GetProc(ID sfgo.OID) *sfgo.Process {
-	return r.Ctx.GetProc(ID)
+	return r.Cr.GetProc(ID)
 }
 
 func (r Record) getProcProv(ID sfgo.OID) []*sfgo.Process {
 	var ptree = make([]*sfgo.Process, 0)
-	if p := r.Ctx.GetProc(ID); p != nil && p.Poid.UnionType != sfgo.UnionNullOIDTypeEnumNull {
+	if p := r.Cr.GetProc(ID); p != nil && p.Poid.UnionType != sfgo.UnionNullOIDTypeEnumNull {
 		return append(append(ptree, p), r.getProcProv(*p.Poid.OID)...)
 	}
 	return ptree
@@ -200,6 +198,56 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 		}
 	}
 	return sfgo.Zeros.String
+}
+
+// Context denotes the type for contextual information obtained during rule processing.
+type Context []interface{}
+
+// ContextKey type
+type contextKey int
+
+// ContextKey enum
+const (
+	ruleCtxKey contextKey = iota
+	tagCtxKey
+	hashCtxKey
+)
+
+// AddRule stores add a rule instance to the set of rules matching a record.
+func (s Context) AddRule(r Rule) {
+	s[ruleCtxKey] = append(s[ruleCtxKey].([]Rule), r)
+}
+
+// GetRules retrieves the list of stored rules associated with a record context.
+func (s Context) GetRules() []Rule {
+	return s[ruleCtxKey].([]Rule)
+}
+
+// SetTags stores tags into context object.
+func (s Context) SetTags(tags []string) {
+	s[tagCtxKey] = tags
+}
+
+// GetTags retrieves hashes from context object.
+func (s Context) GetTags() []string {
+	return s[tagCtxKey].([]string)
+}
+
+// SetHashes stores hashes into context object.
+func (s Context) SetHashes(h HashSet) {
+	s[hashCtxKey] = h
+}
+
+// GetHashes retrieves hashes from context object.
+func (s Context) GetHashes() HashSet {
+	return s[hashCtxKey].(HashSet)
+}
+
+// HashSet type
+type HashSet struct {
+	MD5    string
+	SHA1   string
+	SHA256 string
 }
 
 // Occurence type

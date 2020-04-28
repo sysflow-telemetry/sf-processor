@@ -21,7 +21,9 @@ var macroCtxs = make(map[string]parser.IExpressionContext)
 var itemsre = regexp.MustCompile(`(^\[)(.*)(\]$?)`)
 
 // PolicyInterpreter defines a rules engine for SysFlow data streams.
-type PolicyInterpreter struct{}
+type PolicyInterpreter struct {
+	ahdl ActionHandler
+}
 
 // Compile parses and interprets an input policy defined in path.
 func (pi PolicyInterpreter) compile(path string) {
@@ -59,7 +61,7 @@ func (pi PolicyInterpreter) Process(applyFilters bool, r Record) (bool, []Rule) 
 	}
 	for _, rule := range rules {
 		if rule.condition.Eval(r) {
-			rule.Ctx["record"] = r
+			pi.ahdl.HandleAction(rule, r)
 			rlist = append(rlist, rule)
 			match = true
 		}
@@ -76,6 +78,7 @@ func (pi PolicyInterpreter) ProcessRule(applyFilters bool, r Record, ruleNames .
 	}
 	for _, rname := range ruleNames {
 		if rule, ok := rules[rname]; ok && rule.condition.Eval(r) {
+			pi.ahdl.HandleAction(rule, r)
 			rlist = append(rlist, rule)
 			match = true
 		}
@@ -126,10 +129,9 @@ func (listener *sfplListener) ExitPrule(ctx *parser.PruleContext) {
 		Name:      listener.getOffChannelText(ctx.Text(0)),
 		Desc:      listener.getOffChannelText(ctx.Text(1)),
 		condition: listener.visitExpression(ctx.Expression()),
-		actions:   listener.getActions(ctx.Text(2).GetText()),
+		Actions:   listener.getActions(ctx.Text(2).GetText()),
 		Tags:      listener.getTags(ctx.Items()),
 		Priority:  listener.getPriority(ctx.SEVERITY().GetText()),
-		Ctx:       make(map[string]interface{}),
 	}
 	rules[r.Name] = r
 }

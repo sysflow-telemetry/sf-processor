@@ -1,6 +1,8 @@
 package syslogger
 
 import (
+	"log"
+	"os"
 	"sync"
 
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
@@ -9,7 +11,7 @@ import (
 )
 
 const (
-	maxBuffer int64 = 100
+	maxBuffer int64 = 0
 )
 
 // Syslogger defines a syslogger plugin.
@@ -25,6 +27,7 @@ func NewSyslogger() sp.SFProcessor {
 
 // Init initializes the plugin with a configuration map and cache.
 func (s *Syslogger) Init(conf map[string]string, tables interface{}) error {
+	os.Remove("/tmp/offenses.json")
 	return nil
 }
 
@@ -46,6 +49,7 @@ func (s *Syslogger) Process(ch interface{}, wg *sync.WaitGroup) {
 		s.occs = append(s.occs, fc)
 		if s.counter > maxBuffer {
 			s.exportOffenses()
+			s.occs = make([]*engine.Occurence, 0)
 			s.counter = 0
 		}
 		// var rlist []string
@@ -61,6 +65,20 @@ func (s *Syslogger) exportOffenses() {
 	offenses := CreateOffenses(s.occs)
 	for _, o := range offenses {
 		logger.Trace.Printf("\033[1;34m%v\033[0m\n", o.ToJSONStr())
+	}
+}
+
+func (s *Syslogger) exportOffensesToFile() {
+	offenses := CreateOffenses(s.occs)
+	for _, o := range offenses {
+		f, err := os.OpenFile("/tmp/offenses.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Println(err)
+		}
+		defer f.Close()
+		if _, err := f.WriteString(o.ToJSONStr() + "\n"); err != nil {
+			log.Println(err)
+		}
 	}
 }
 
