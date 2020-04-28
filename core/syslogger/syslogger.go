@@ -2,6 +2,7 @@ package syslogger
 
 import (
 	"log"
+	"log/syslog"
 	"os"
 	"sync"
 
@@ -18,6 +19,7 @@ const (
 type Syslogger struct {
 	occs    []*engine.Occurence
 	counter int64
+	sysl    *syslog.Writer
 }
 
 // NewSyslogger creates a new plugin instance.
@@ -28,7 +30,29 @@ func NewSyslogger() sp.SFProcessor {
 // Init initializes the plugin with a configuration map and cache.
 func (s *Syslogger) Init(conf map[string]string, tables interface{}) error {
 	os.Remove("/tmp/offenses.json")
-	return nil
+	net := "tcp"
+	if network, ok := conf["network"]; ok {
+		net = network
+	} else {
+		logger.Warn.Println("Network not set in syslogger.  Defaulting to tcp")
+	}
+	addr := "localhost:514"
+	if address, ok := conf["address"]; ok {
+		addr = address
+	} else {
+		logger.Warn.Println("address not set in syslogger.  Defaulting to localhost:1234")
+	}
+	t := "sfprocessor"
+	if tag, ok := conf["tag"]; ok {
+		t = tag
+	} else {
+		logger.Warn.Println("tag not set in syslogger.  Defaulting to sfprocessor")
+	}
+
+	slog, err := syslog.Dial(net, addr,
+		syslog.LOG_ALERT|syslog.LOG_DAEMON, t)
+	s.sysl = slog
+	return err
 }
 
 // Process implements the main interface of the plugin.
@@ -65,6 +89,7 @@ func (s *Syslogger) exportOffenses() {
 	offenses := CreateOffenses(s.occs)
 	for _, o := range offenses {
 		logger.Trace.Printf("\033[1;34m%v\033[0m\n", o.ToJSONStr())
+		s.sysl.Alert(o.ToJSONStr())
 	}
 }
 
