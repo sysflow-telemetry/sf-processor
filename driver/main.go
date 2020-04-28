@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -43,6 +44,33 @@ func (it inputType) String() string {
 	return [...]string{"file", "socket"}[it]
 }
 
+func getFiles(filename string) ([]string, error) {
+	var fls []string
+	if fi, err := os.Stat(filename); os.IsNotExist(err) {
+		return nil, err
+	} else if fi.IsDir() {
+		logger.Trace.Println("File is a directory")
+		var files []os.FileInfo
+		var err error
+		if files, err = ioutil.ReadDir(filename); err != nil {
+			return nil, err
+		}
+		for _, file := range files {
+			f := filename + "/" + file.Name()
+			logger.Trace.Println("File in Directory: " + f)
+			fls = append(fls, f)
+		}
+		if len(fls) == 0 {
+			return nil, errors.New("No files present in directory: " + filename)
+		}
+
+	} else {
+		fls = append(fls, filename)
+	}
+	logger.Trace.Printf("Number of files in list: %d\n", len(fls))
+	return fls, nil
+}
+
 func processInputFile(path string, config string) {
 	/*var handler Printer
 	var wg sync.WaitGroup
@@ -70,28 +98,38 @@ func processInputFile(path string, config string) {
 		logger.Error.Println("compiler error: ", err)
 	}
 	logger.Trace.Println("Loading file: ", flag.Arg(0))
-	f, err := os.Open(flag.Arg(0))
-	if err != nil {
-		logger.Error.Println("file open error: ", err)
-		return
-	}
-	reader := bufio.NewReader(f)
-	sreader, err := container.NewReader(reader)
-	if err != nil {
-		logger.Error.Println("reader error: ", err)
-		return
-	}
 
-	for {
-		sFlow = sfgo.NewSysFlow()
-		err = vm.Eval(sreader, deser, sFlow)
+	files, err := getFiles(flag.Arg(0))
+	if err != nil {
+		logger.Error.Println("files error: ", err)
+		return
+	}
+	for _, fn := range files {
+		logger.Trace.Println("Loading file: " + fn)
+		f, err := os.Open(fn)
 		if err != nil {
-			if err.Error() != "EOF" {
-				logger.Error.Println("deserialize: ", err)
-			}
-			break
+			logger.Error.Println("file open error: ", err)
+			return
 		}
-		records <- sFlow
+		reader := bufio.NewReader(f)
+		sreader, err := container.NewReader(reader)
+		if err != nil {
+			logger.Error.Println("reader error: ", err)
+			return
+		}
+
+		for {
+			sFlow = sfgo.NewSysFlow()
+			err = vm.Eval(sreader, deser, sFlow)
+			if err != nil {
+				if err.Error() != "EOF" {
+					logger.Error.Println("deserialize: ", err)
+				}
+				break
+			}
+			records <- sFlow
+		}
+		f.Close()
 	}
 	logger.Trace.Println("Closing main channel")
 	close(records)
