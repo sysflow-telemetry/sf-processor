@@ -27,7 +27,8 @@ type PolicyInterpreter struct {
 
 // NewPolicyInterpreter constructs a new interpreter instance.
 func NewPolicyInterpreter(conf map[string]string) PolicyInterpreter {
-	return PolicyInterpreter{ActionHandler{conf}}
+	ah := NewActionHandler(conf)
+	return PolicyInterpreter{ah}
 }
 
 // Compile parses and interprets an input policy defined in path.
