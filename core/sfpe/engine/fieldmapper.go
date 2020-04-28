@@ -12,13 +12,13 @@ import (
 )
 
 // FieldMap is a functional type denoting a SysFlow attribute mapper.
-type FieldMap func(r Record) interface{}
+type FieldMap func(r *Record) interface{}
 
 // IntFieldMap is a functional type denoting a numerical attribute mapper.
-type IntFieldMap func(r Record) int64
+type IntFieldMap func(r *Record) int64
 
 // StrFieldMap is a functional type denoting a string attribute mapper.
-type StrFieldMap func(r Record) string
+type StrFieldMap func(r *Record) string
 
 // FieldMapper is an adapter for SysFlow attribute mappers.
 type FieldMapper struct {
@@ -30,12 +30,12 @@ func (m FieldMapper) Map(attr string) FieldMap {
 	if mapper, ok := m.Mappers[attr]; ok {
 		return mapper
 	}
-	return func(r Record) interface{} { return attr }
+	return func(r *Record) interface{} { return attr }
 }
 
 // MapInt retrieves a numerical field map based on a SysFlow attribute.
 func (m FieldMapper) MapInt(attr string) IntFieldMap {
-	return func(r Record) int64 {
+	return func(r *Record) int64 {
 		if v, ok := m.Map(attr)(r).(int64); ok {
 			return v
 		} else if v, err := strconv.ParseInt(attr, 10, 64); err == nil {
@@ -47,7 +47,7 @@ func (m FieldMapper) MapInt(attr string) IntFieldMap {
 
 // MapStr retrieves a string field map based on a SysFlow attribute.
 func (m FieldMapper) MapStr(attr string) StrFieldMap {
-	return func(r Record) string {
+	return func(r *Record) string {
 		if v, ok := m.Map(attr)(r).(string); ok {
 			return m.trimBoundingQuotes(v)
 		} else if v, ok := m.Map(attr)(r).(int64); ok {
@@ -137,15 +137,15 @@ var Mapper = FieldMapper{
 }
 
 func mapStr(attr sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} { return r.GetStr(attr) }
+	return func(r *Record) interface{} { return r.GetStr(attr) }
 }
 
 func mapInt(attr sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} { return r.GetInt(attr) }
+	return func(r *Record) interface{} { return r.GetInt(attr) }
 }
 
 func mapSum(attrs ...sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		var sum int64 = 0
 		for _, attr := range attrs {
 			sum += r.GetInt(attr)
@@ -155,7 +155,7 @@ func mapSum(attrs ...sfgo.Attribute) FieldMap {
 }
 
 func mapJoin(attrs ...sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		var join string = r.GetStr(attrs[0])
 		for _, attr := range attrs[1:] {
 			join += SPACE + r.GetStr(attr)
@@ -165,7 +165,7 @@ func mapJoin(attrs ...sfgo.Attribute) FieldMap {
 }
 
 func mapRecType() FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		switch r.GetInt(sfgo.SF_REC_TYPE) {
 		case sfgo.PROC:
 			return "P"
@@ -190,14 +190,14 @@ func mapRecType() FieldMap {
 }
 
 func mapOpFlags() FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT)
 		return strings.Join(utils.GetOpFlags(int32(opflags)), LISTSEP)
 	}
 }
 
 func mapEndTs() FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		switch r.GetInt(sfgo.SF_REC_TYPE) {
 		case sfgo.FILE_FLOW:
 			return r.GetInt(sfgo.FL_FILE_ENDTS_INT)
@@ -210,31 +210,31 @@ func mapEndTs() FieldMap {
 }
 
 func mapDuration(attr sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		return time.Now().Unix() - r.GetInt(attr)
 	}
 }
 
 func mapName(attr sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		return filepath.Base(r.GetStr(attr))
 	}
 }
 
 func mapDir(attr sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		return filepath.Dir(r.GetStr(attr))
 	}
 }
 
 func mapFileType(attr sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		return utils.GetFileType(r.GetInt(attr))
 	}
 }
 
 func mapIsOpenWrite(attr sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		if utils.IsOpenWrite(r.GetInt(attr)) {
 			return true
 		}
@@ -243,7 +243,7 @@ func mapIsOpenWrite(attr sfgo.Attribute) FieldMap {
 }
 
 func mapIsOpenRead(attr sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		if utils.IsOpenRead(r.GetInt(attr)) {
 			return true
 		}
@@ -252,19 +252,19 @@ func mapIsOpenRead(attr sfgo.Attribute) FieldMap {
 }
 
 func mapOpenFlags(attr sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		return strings.Join(utils.GetOpenFlags(r.GetInt(attr)), LISTSEP)
 	}
 }
 
 func mapProto(attr sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		return r.GetInt(attr)
 	}
 }
 
 func mapPort(attrs ...sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		var ports = make([]string, 0)
 		for _, attr := range attrs {
 			ports = append(ports, strconv.FormatInt(r.GetInt(attr), 10))
@@ -274,7 +274,7 @@ func mapPort(attrs ...sfgo.Attribute) FieldMap {
 }
 
 func mapIP(attrs ...sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		var ips = make([]string, 0)
 		for _, attr := range attrs {
 			ips = append(ips, utils.GetIPStr(int32(r.GetInt(attr))))
@@ -284,20 +284,20 @@ func mapIP(attrs ...sfgo.Attribute) FieldMap {
 }
 
 func mapContType(attr sfgo.Attribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		return utils.GetContType(r.GetInt(attr))
 	}
 }
 
 func mapCachedValue(attr RecAttribute) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		oid := sfgo.OID{CreateTS: r.GetInt(sfgo.PROC_OID_CREATETS_INT), Hpid: r.GetInt(sfgo.PROC_OID_HPID_INT)}
 		return r.GetCachedValue(oid, attr)
 	}
 }
 
 func mapNa(attr string) FieldMap {
-	return func(r Record) interface{} {
+	return func(r *Record) interface{} {
 		logger.Warn.Println("Attribute not supported ", attr)
 		return sfgo.Zeros.String
 	}

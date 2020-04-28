@@ -50,8 +50,8 @@ type Observation struct {
 	Policies      []Policy `json:"policies"`
 }
 
-// CreateOffenses creates offense instances based on a list of occurrences
-func CreateOffenses(occs []*engine.Occurence) []*Offense {
+// CreateOffenses creates offense instances based on a list of records
+func CreateOffenses(occs []*engine.Record) []*Offense {
 	var offenses = make([]*Offense, 0)
 	var cobs = make(map[string][]Observation)
 	for _, o := range extractObservations(occs) {
@@ -82,33 +82,33 @@ func (s *Offense) ToJSON() []byte {
 	return o
 }
 
-func extractObservations(occs []*engine.Occurence) []Observation {
+func extractObservations(recs []*engine.Record) []Observation {
 	var observations = make([]Observation, 0)
-	for _, occ := range occs {
+	for _, r := range recs {
 		o := Observation{
-			Type:          engine.Mapper.MapStr("sf.type")(occ.Record),
-			TS:            engine.Mapper.MapInt("sf.ts")(occ.Record),
-			PID:           engine.Mapper.MapInt("sf.proc.pid")(occ.Record),
-			TID:           engine.Mapper.MapInt("sf.proc.tid")(occ.Record),
-			PExe:          engine.Mapper.MapStr("sf.proc.exe")(occ.Record),
-			PArgs:         engine.Mapper.MapStr("sf.proc.args")(occ.Record),
-			PpID:          engine.Mapper.MapInt("sf.pproc.pid")(occ.Record),
-			PpExe:         engine.Mapper.MapStr("sf.pproc.exe")(occ.Record),
-			PpArgs:        engine.Mapper.MapStr("sf.pproc.args")(occ.Record),
-			PAExe:         strings.Split(engine.Mapper.MapStr("sf.proc.aexe")(occ.Record), engine.LISTSEP),
-			PAPID:         strings.Split(engine.Mapper.MapStr("sf.proc.apid")(occ.Record), engine.LISTSEP),
-			FilePath:      engine.Mapper.MapStr("sf.file.path")(occ.Record),
-			SIP:           engine.Mapper.MapStr("sf.net.sip")(occ.Record),
-			SPort:         engine.Mapper.MapInt("sf.net.sport")(occ.Record),
-			DIP:           engine.Mapper.MapStr("sf.net.dip")(occ.Record),
-			DPort:         engine.Mapper.MapInt("sf.net.dport")(occ.Record),
-			Proto:         engine.Mapper.MapStr("sf.net.proto")(occ.Record),
-			OpFlags:       strings.Split(engine.Mapper.MapStr("sf.opflags")(occ.Record), engine.LISTSEP),
-			ContID:        engine.Mapper.MapStr("sf.container.id")(occ.Record),
-			ContName:      engine.Mapper.MapStr("sf.container.name")(occ.Record),
-			ContImageID:   engine.Mapper.MapStr("sf.container.imageid")(occ.Record),
-			ContImageName: engine.Mapper.MapStr("sf.container.image")(occ.Record),
-			Policies:      extractPolicySet(occ.Rules),
+			Type:          engine.Mapper.MapStr("sf.type")(r),
+			TS:            engine.Mapper.MapInt("sf.ts")(r),
+			PID:           engine.Mapper.MapInt("sf.proc.pid")(r),
+			TID:           engine.Mapper.MapInt("sf.proc.tid")(r),
+			PExe:          engine.Mapper.MapStr("sf.proc.exe")(r),
+			PArgs:         engine.Mapper.MapStr("sf.proc.args")(r),
+			PpID:          engine.Mapper.MapInt("sf.pproc.pid")(r),
+			PpExe:         engine.Mapper.MapStr("sf.pproc.exe")(r),
+			PpArgs:        engine.Mapper.MapStr("sf.pproc.args")(r),
+			PAExe:         strings.Split(engine.Mapper.MapStr("sf.proc.aexe")(r), engine.LISTSEP),
+			PAPID:         strings.Split(engine.Mapper.MapStr("sf.proc.apid")(r), engine.LISTSEP),
+			FilePath:      engine.Mapper.MapStr("sf.file.path")(r),
+			SIP:           engine.Mapper.MapStr("sf.net.sip")(r),
+			SPort:         engine.Mapper.MapInt("sf.net.sport")(r),
+			DIP:           engine.Mapper.MapStr("sf.net.dip")(r),
+			DPort:         engine.Mapper.MapInt("sf.net.dport")(r),
+			Proto:         engine.Mapper.MapStr("sf.net.proto")(r),
+			OpFlags:       strings.Split(engine.Mapper.MapStr("sf.opflags")(r), engine.LISTSEP),
+			ContID:        engine.Mapper.MapStr("sf.container.id")(r),
+			ContName:      engine.Mapper.MapStr("sf.container.name")(r),
+			ContImageID:   engine.Mapper.MapStr("sf.container.imageid")(r),
+			ContImageName: engine.Mapper.MapStr("sf.container.image")(r),
+			Policies:      extractPolicySet(r.Ctx.GetRules()),
 		}
 		observations = append(observations, o)
 	}

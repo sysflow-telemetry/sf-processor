@@ -1,19 +1,20 @@
 {
-   "pipeline":[{
-         "processor": "SysFlowProc",
-         "handler": "Flattener",
-         "in":   "sysflow SysFlowChan",
-         "out":  "flat FlattenerChan"
-          },
-         {
-         "processor": "PolicyEngine",
-         "in":   "flat FlattenerChan",
-         "out":  "occ OccurenceChan",
-         "policies": "/usr/local/sf-processor/conf/macro_test.yaml"	 
-          },
-          {
-            "processor": "Syslogger",
-            "in":   "occ OccurenceChan"
-          }
+   "pipeline":[
+     {
+      "processor": "SysFlowProc",
+      "handler": "Flattener",
+      "in":   "sysflow SysFlowChan",
+      "out":  "flat FlattenerChan"
+     },
+     {
+      "processor": "PolicyEngine",
+      "in":   "flat FlattenerChan",
+      "out":  "occ OccurenceChan",
+      "policies": "/usr/local/sf-processor/conf/macro_test.yaml"	 
+     },
+     {
+      "processor": "Syslogger",
+      "in":   "occ OccurenceChan"
+     }
    ]
 }

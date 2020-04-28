@@ -67,8 +67,18 @@ type Record struct {
 }
 
 // NewRecord creates a new Record isntance.
-func NewRecord(fr sfgo.FlatRecord, cr *cache.SFTables) Record {
-	return Record{fr, cr, make(map[sfgo.OID][]*sfgo.Process), make(Context, 3)}
+func NewRecord(fr sfgo.FlatRecord, cr *cache.SFTables) *Record {
+	var r = new(Record)
+	r.Fr = fr
+	r.Cr = cr
+	r.Ptree = make(map[sfgo.OID][]*sfgo.Process)
+	r.Ctx = make(Context, 3)
+	return r
+}
+
+// RecordChannel type
+type RecordChannel struct {
+	In chan *Record
 }
 
 // RecAttribute denotes a record attribute enumeration.
@@ -220,7 +230,10 @@ func (s Context) AddRule(r Rule) {
 
 // GetRules retrieves the list of stored rules associated with a record context.
 func (s Context) GetRules() []Rule {
-	return s[ruleCtxKey].([]Rule)
+	if s[ruleCtxKey] != nil {
+		return s[ruleCtxKey].([]Rule)
+	}
+	return nil
 }
 
 // SetTags stores tags into context object.
@@ -230,7 +243,10 @@ func (s Context) SetTags(tags []string) {
 
 // GetTags retrieves hashes from context object.
 func (s Context) GetTags() []string {
-	return s[tagCtxKey].([]string)
+	if s[tagCtxKey] != nil {
+		return s[tagCtxKey].([]string)
+	}
+	return nil
 }
 
 // SetHashes stores hashes into context object.
@@ -240,7 +256,10 @@ func (s Context) SetHashes(h HashSet) {
 
 // GetHashes retrieves hashes from context object.
 func (s Context) GetHashes() HashSet {
-	return s[hashCtxKey].(HashSet)
+	if s[hashCtxKey] != nil {
+		return s[hashCtxKey].(HashSet)
+	}
+	return HashSet{}
 }
 
 // HashSet type
@@ -248,23 +267,4 @@ type HashSet struct {
 	MD5    string
 	SHA1   string
 	SHA256 string
-}
-
-// Occurence type
-type Occurence struct {
-	Record Record
-	Rules  []Rule
-}
-
-// OccurenceChannel type
-type OccurenceChannel struct {
-	In chan *Occurence
-}
-
-// NewOccurence constructs a new occurence
-func NewOccurence(r Record, rlist []Rule) *Occurence {
-	o := new(Occurence)
-	o.Record = r
-	o.Rules = rlist
-	return o
 }

@@ -25,6 +25,11 @@ type PolicyInterpreter struct {
 	ahdl ActionHandler
 }
 
+// NewPolicyInterpreter constructs a new interpreter instance.
+func NewPolicyInterpreter(conf map[string]string) PolicyInterpreter {
+	return PolicyInterpreter{ActionHandler{conf}}
+}
+
 // Compile parses and interprets an input policy defined in path.
 func (pi PolicyInterpreter) compile(path string) {
 	// Setup the input
@@ -53,41 +58,37 @@ func (pi PolicyInterpreter) Compile(paths ...string) {
 }
 
 // Process executes all compiled policies against record r.
-func (pi PolicyInterpreter) Process(applyFilters bool, r Record) (bool, []Rule) {
-	var rlist []Rule
+func (pi PolicyInterpreter) Process(applyFilters bool, r *Record) (bool, *Record) {
 	match := false
 	if applyFilters && pi.evalFilters(r) {
-		return match, rlist
+		return match, nil
 	}
 	for _, rule := range rules {
 		if rule.condition.Eval(r) {
 			pi.ahdl.HandleAction(rule, r)
-			rlist = append(rlist, rule)
 			match = true
 		}
 	}
-	return match, rlist
+	return match, r
 }
 
 // ProcessRule executes compiled policy rule p against record r.
-func (pi PolicyInterpreter) ProcessRule(applyFilters bool, r Record, ruleNames ...string) (bool, []Rule) {
-	var rlist []Rule
+func (pi PolicyInterpreter) ProcessRule(applyFilters bool, r *Record, ruleNames ...string) (bool, *Record) {
 	match := false
 	if applyFilters && pi.evalFilters(r) {
-		return match, rlist
+		return match, nil
 	}
 	for _, rname := range ruleNames {
 		if rule, ok := rules[rname]; ok && rule.condition.Eval(r) {
 			pi.ahdl.HandleAction(rule, r)
-			rlist = append(rlist, rule)
 			match = true
 		}
 	}
-	return match, rlist
+	return match, r
 }
 
 // EvalFilters executes compiled policy filters against record r.
-func (pi PolicyInterpreter) evalFilters(r Record) bool {
+func (pi PolicyInterpreter) evalFilters(r *Record) bool {
 	for _, f := range filters {
 		if f.condition.Eval(r) {
 			return true
