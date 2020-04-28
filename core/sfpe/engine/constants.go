@@ -4,7 +4,7 @@ package engine
 const (
 	PoliciesConfigKey   string = "policies"
 	ContRuntimeType     string = "runtime"
-	ContRuntimeEndpoint string = "runtimeendpoint"
+	ContRuntimeEndpoint string = "runtimeEndpoint"
 )
 
 // Runtime constants.
