@@ -35,8 +35,11 @@ func (s ActionHandler) HandleAction(rule Rule, r *Record) {
 		case Hash:
 			hs := s.computeHashes(r)
 			r.Ctx.SetHashes(hs)
-		case Alert:
+			fallthrough
 		case Tag:
+			fallthrough
+		case Alert:
+			fallthrough
 		default:
 			r.Ctx.AddRule(rule)
 		}

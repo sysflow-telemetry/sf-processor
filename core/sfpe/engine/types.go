@@ -225,6 +225,9 @@ const (
 
 // AddRule stores add a rule instance to the set of rules matching a record.
 func (s Context) AddRule(r Rule) {
+	if s[ruleCtxKey] == nil {
+		s[ruleCtxKey] = make([]Rule, 0)
+	}
 	s[ruleCtxKey] = append(s[ruleCtxKey].([]Rule), r)
 }
 
