@@ -174,6 +174,8 @@ func (listener *sfplListener) getActions(astr string) []Action {
 			actions = append(actions, Alert)
 		case Tag.String():
 			actions = append(actions, Tag)
+		case Hash.String():
+			actions = append(actions, Hash)
 		default:
 			logger.Warn.Println("Unrecognized action value ", v)
 			break
