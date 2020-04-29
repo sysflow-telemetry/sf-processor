@@ -70,6 +70,7 @@ func (g *Flattener) HandleFile(hdr *sfgo.SFHeader, cont *sfgo.Container, file *s
 func (g *Flattener) HandleNetFlow(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, nf *sfgo.NetworkFlow) error {
 	//fr := g.Pool.Get()
 	fr := new(sfgo.FlatRecord)
+	fr.Ints[sfgo.SF_REC_TYPE] = sfgo.NET_FLOW
 	g.fillEntities(hdr, cont, proc, nil, fr)
 	fr.Ints[sfgo.FL_NETW_TS_INT] = nf.Ts
 	fr.Ints[sfgo.FL_NETW_TID_INT] = nf.Tid
@@ -93,6 +94,7 @@ func (g *Flattener) HandleNetFlow(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 func (g *Flattener) HandleFileFlow(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file *sfgo.File, ff *sfgo.FileFlow) error {
 	//fr := g.Pool.Get()
 	fr := new(sfgo.FlatRecord)
+	fr.Ints[sfgo.SF_REC_TYPE] = sfgo.FILE_FLOW
 	g.fillEntities(hdr, cont, proc, file, fr)
 	fr.Ints[sfgo.FL_FILE_TS_INT] = ff.Ts
 	fr.Ints[sfgo.FL_FILE_TID_INT] = ff.Tid
