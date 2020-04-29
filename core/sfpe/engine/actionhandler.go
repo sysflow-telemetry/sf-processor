@@ -107,7 +107,8 @@ func (s ActionHandler) getDockerHashesCmd(cmd, path string, contID string) (stri
 	scanner := bufio.NewScanner(respID.Reader)
 	var v string
 	for scanner.Scan() {
-		v = scanner.Text()[1:]
+		v = scanner.Text()
+		logger.Trace.Println(v)
 	}
 	return v, nil
 }
