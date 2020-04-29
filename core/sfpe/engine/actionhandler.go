@@ -92,6 +92,23 @@ func (s ActionHandler) getDockerHashes(path string, contID string) ([]byte, []by
 
 }
 
+func (s ActionHandler) getDockerHashesCmd(cmd string, path string, contID string) ([]byte, error) {
+	command := []string{cmd, path}
+	execConfig := types.ExecConfig{Tty: false, AttachStdout: true, AttachStderr: false, Cmd: command}
+	respIDExecCreate, err := s.clt.ContainerExecCreate(context.Background(), contID, execConfig)
+	if err != nil {
+		logger.Error.Println(err)
+		return nil, err
+	}
+	respID, err := s.clt.ContainerExecAttach(context.Background(), respIDExecCreate.ID, types.ExecStartCheck{})
+	if err != nil {
+		return nil, err
+	}
+	defer respID.Close()
+	scanner := bufio.NewScanner(respID.Reader)
+	return scanner.Bytes()[1:], nil
+}
+
 func (s ActionHandler) computeHashesOnDocker(r *Record) HashSet {
 	var hs HashSet = HashSet{}
 	rtype := Mapper.MapStr("sf.type")(r)
@@ -100,7 +117,9 @@ func (s ActionHandler) computeHashesOnDocker(r *Record) HashSet {
 		path := Mapper.MapStr("sf.file.path")(r)
 		contID := Mapper.MapStr("sf.container.id")(r)
 		if contID != sfgo.Zeros.String {
-			md5Hash, sha1Hash, sha256Hash, err := s.getDockerHashes(path, contID)
+			md5Hash, err := s.getDockerHashesCmd("md5sum", path, contID)
+			sha1Hash, err := s.getDockerHashesCmd("sha1sum", path, contID)
+			sha256Hash, err := s.getDockerHashesCmd("sha256sum", path, contID)
 			if err != nil {
 				logger.Error.Println(err)
 			} else {
