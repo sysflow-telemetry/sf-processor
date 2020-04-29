@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
+	"encoding/hex"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -103,9 +104,9 @@ func (s ActionHandler) computeHashesOnDocker(r *Record) HashSet {
 			if err != nil {
 				logger.Error.Println(err)
 			} else {
-				hs.MD5 = string(md5Hash)
-				hs.SHA1 = string(sha1Hash)
-				hs.SHA256 = string(sha256Hash)
+				hs.MD5 = hex.EncodeToString(md5Hash)
+				hs.SHA1 = hex.EncodeToString(sha1Hash)
+				hs.SHA256 = hex.EncodeToString(sha256Hash)
 				logger.Trace.Printf("Hashes %v\n", hs)
 			}
 		}
