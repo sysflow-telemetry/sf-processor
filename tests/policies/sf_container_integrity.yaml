@@ -279,7 +279,7 @@
              sed_write)
   
 - macro: open_read
-  condition: (sf.file.is_open_read = true or opflags = READ_RECV)
+  condition: (sf.file.is_open_read = true or sf.opflags = READ_RECV)
   
 - macro: interactive
   condition: >
@@ -461,7 +461,7 @@
   condition: (sf.proc.name=nrpe and sf.proc.username=nagios)
 
 - macro: container
-  condition: (sf.container.id != host)
+  condition: (sf.container.type != host)
 
 - macro: known_user_in_container
   condition: (container and sf.proc.username != "N/A")
