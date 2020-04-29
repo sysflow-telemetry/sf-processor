@@ -2,13 +2,16 @@ package engine
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
+	"fmt"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/sf-processor/common/logger"
 )
@@ -104,13 +107,12 @@ func (s ActionHandler) getDockerHashesCmd(cmd, path string, contID string) (stri
 		return "", err
 	}
 	defer respID.Close()
-	scanner := bufio.NewScanner(respID.Reader)
-	var v string
-	for scanner.Scan() {
-		v = scanner.Text()
-		logger.Trace.Println(v)
+	var outBuf, errBuf bytes.Buffer
+	_, err = stdcopy.StdCopy(&outBuf, &errBuf, respID.Reader)
+	if err != nil {
+		fmt.Println(err)
 	}
-	return v, nil
+	return outBuf.String(), nil
 }
 
 func (s ActionHandler) computeHashesOnDocker(r *Record) HashSet {
