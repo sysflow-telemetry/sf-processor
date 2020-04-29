@@ -45,7 +45,6 @@ func (s ActionHandler) HandleAction(rule Rule, r *Record) {
 		case Alert:
 			fallthrough
 		default:
-			logger.Trace.Println("Adding rule to record ", rule.Name)
 			r.Ctx.AddRule(rule)
 		}
 	}
@@ -119,9 +118,9 @@ func (s ActionHandler) getDockerHashesCmd(cmd, path string, contID string) (stri
 func (s ActionHandler) computeHashesOnDocker(r *Record) HashSet {
 	var hs HashSet = HashSet{}
 	rtype := Mapper.MapStr("sf.type")(r)
-	logger.Trace.Println("Computing hash for ", rtype)
 	if rtype == "FE" || rtype == "FF" {
 		path := Mapper.MapStr("sf.file.path")(r)
+		logger.Trace.Println("Computing hash for ", path)
 		contID := Mapper.MapStr("sf.container.id")(r)
 		if contID != sfgo.Zeros.String {
 			// md5Hash, sha1Hash, sha256Hash, err := s.getDockerHashes(path, contID)
@@ -134,7 +133,6 @@ func (s ActionHandler) computeHashesOnDocker(r *Record) HashSet {
 				hs.MD5 = md5Hash
 				hs.SHA1 = sha1Hash
 				hs.SHA256 = sha256Hash
-				logger.Trace.Printf("Hashes %v\n", hs)
 			}
 		}
 	}
