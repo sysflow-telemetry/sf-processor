@@ -21,7 +21,9 @@ services:
   sf-processor:
     container_name: sf-processor
     image: sf-processor:latest
+    privileged: true
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock 
       - socket-vol:/sock/
     environment:
       FILE_PATH: /sock/sysflow.sock
@@ -44,7 +46,7 @@ services:
       - ./tests/traces:/tests/traces
     environment:
       EXPORTER_ID: local
-      FILTER: "\"container.name!=sf-collector and container.name!=sf-processor\"" 
+      FILTER: "\"container.type!=host and container.name!=sf-collector and container.name!=sf-processor\"" 
       INTERVAL: 300 
       SOCK_FILE: /sock/sysflow.sock
 volumes:

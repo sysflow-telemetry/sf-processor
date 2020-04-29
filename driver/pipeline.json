@@ -10,7 +10,7 @@
       "processor": "PolicyEngine",
       "in":   "flat FlattenerChan",
       "out":  "evt EventChan",
-      "policies": "/usr/local/sf-processor/conf/macro_test.yaml"  
+      "policies": "/usr/local/sf-processor/conf/"  
      },
      {
       "processor": "Syslogger",

@@ -11,7 +11,7 @@ ENV INPUT_TYPE=$inputtype
 RUN mkdir -p /usr/local/sf-processor/bin && mkdir -p /usr/local/sf-processor/conf
 COPY ./driver/sfprocessor /usr/local/sf-processor/bin/sfprocessor
 COPY ./driver/pipeline.json /usr/local/sf-processor/conf/pipeline.json
-COPY ./tests/policies/macro_test.yaml /usr/local/sf-processor/conf/macro_test.yaml
+COPY ./tests/policies/ /usr/local/sf-processor/conf/
 
 CMD /usr/local/sf-processor/bin/sfprocessor \
                             ${INPUT_TYPE:+-input} ${INPUT_TYPE} \
