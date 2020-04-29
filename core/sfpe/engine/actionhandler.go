@@ -120,7 +120,7 @@ func (s ActionHandler) computeHashesOnDocker(r *Record) HashSet {
 	rtype := Mapper.MapStr("sf.type")(r)
 	if rtype == "FE" || rtype == "FF" {
 		path := Mapper.MapStr("sf.file.path")(r)
-		logger.Trace.Println("Computing hash for ", path)
+		//logger.Trace.Println("Computing hash for ", path)
 		contID := Mapper.MapStr("sf.container.id")(r)
 		if contID != sfgo.Zeros.String {
 			// md5Hash, sha1Hash, sha256Hash, err := s.getDockerHashes(path, contID)
