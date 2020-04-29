@@ -8,6 +8,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"fmt"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -112,7 +113,7 @@ func (s ActionHandler) getDockerHashesCmd(cmd, path string, contID string) (stri
 	if err != nil {
 		fmt.Println(err)
 	}
-	return outBuf.String(), nil
+	return strings.Split(outBuf.String(), SPACE)[0], nil
 }
 
 func (s ActionHandler) computeHashesOnDocker(r *Record) HashSet {
