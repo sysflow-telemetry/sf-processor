@@ -6,7 +6,6 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
-	"encoding/hex"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -92,21 +91,25 @@ func (s ActionHandler) getDockerHashes(path string, contID string) ([]byte, []by
 
 }
 
-func (s ActionHandler) getDockerHashesCmd(cmd string, path string, contID string) ([]byte, error) {
+func (s ActionHandler) getDockerHashesCmd(cmd, path string, contID string) (string, error) {
 	command := []string{cmd, path}
 	execConfig := types.ExecConfig{Tty: false, AttachStdout: true, AttachStderr: false, Cmd: command}
 	respIDExecCreate, err := s.clt.ContainerExecCreate(context.Background(), contID, execConfig)
 	if err != nil {
 		logger.Error.Println(err)
-		return nil, err
+		return "", err
 	}
 	respID, err := s.clt.ContainerExecAttach(context.Background(), respIDExecCreate.ID, types.ExecStartCheck{})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	defer respID.Close()
 	scanner := bufio.NewScanner(respID.Reader)
-	return scanner.Bytes()[1:], nil
+	var v string
+	for scanner.Scan() {
+		v = scanner.Text()[1:]
+	}
+	return v, nil
 }
 
 func (s ActionHandler) computeHashesOnDocker(r *Record) HashSet {
@@ -117,15 +120,16 @@ func (s ActionHandler) computeHashesOnDocker(r *Record) HashSet {
 		path := Mapper.MapStr("sf.file.path")(r)
 		contID := Mapper.MapStr("sf.container.id")(r)
 		if contID != sfgo.Zeros.String {
-			md5Hash, err := s.getDockerHashesCmd("md5sum", path, contID)
-			sha1Hash, err := s.getDockerHashesCmd("sha1sum", path, contID)
+			// md5Hash, sha1Hash, sha256Hash, err := s.getDockerHashes(path, contID)
+			md5Hash, _ := s.getDockerHashesCmd("md5sum", path, contID)
+			sha1Hash, _ := s.getDockerHashesCmd("sha1sum", path, contID)
 			sha256Hash, err := s.getDockerHashesCmd("sha256sum", path, contID)
 			if err != nil {
 				logger.Error.Println(err)
 			} else {
-				hs.MD5 = hex.EncodeToString(md5Hash)
-				hs.SHA1 = hex.EncodeToString(sha1Hash)
-				hs.SHA256 = hex.EncodeToString(sha256Hash)
+				hs.MD5 = md5Hash
+				hs.SHA1 = sha1Hash
+				hs.SHA256 = sha256Hash
 				logger.Trace.Printf("Hashes %v\n", hs)
 			}
 		}
