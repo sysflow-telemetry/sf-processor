@@ -25,13 +25,32 @@ COPY Makefile ${SRC_ROOT}
 #RUN cd ${SRC_ROOT}driver && $GOGET ./...  && $GOBUILD -o $BIN -v
 RUN cd ${SRC_ROOT} && make install
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal AS runtime
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-267 AS runtime
 
 arg filePath=/sock/sysflow.sock
 ENV FILE_PATH=$filepath
 
 arg inputtype=socket
 ENV INPUT_TYPE=$inputtype
+
+ARG VERSION=dev
+ARG RELEASE=dev
+
+# Update Label
+LABEL "name"="Sysflow Processor"
+LABEL "vendor"="IBM"
+LABEL "version"="${VERSION}"
+LABEL "release"="${RELEASE}"
+LABEL "summary"="Sysflow Processor contains a rule engine applying Sysflow rules on consumed Sysflow stream, and acts according to the loaded plug-in"
+LABEL "description"="Sysflow Processor contains a rule engine applying Sysflow rules on consumed Sysflow stream, and acts according to the loaded plug-in"
+LABEL "io.k8s.display-name"="Sysflow Processor"
+LABEL "io.k8s.description"="Sysflow Processor contains a rule engine applying Sysflow rules on consumed Sysflow stream, and acts according to the loaded plug-in"
+
+
+# Update License
+RUN mkdir /licenses
+COPY ./LICENSE.md /licenses/
+
 
 COPY --from=base /usr/local/sf-processor/  /usr/local/sf-processor/
 
