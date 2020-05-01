@@ -275,6 +275,8 @@ func (listener *sfplListener) visitTerm(ctx parser.ITermContext) Criterion {
 			return Ge(lop, rop)
 		} else if opCtx.LT() != nil {
 			return Lt(lop, rop)
+		} else if opCtx.LE() != nil {
+			return Le(lop, rop)
 		}
 		logger.Error.Println("Unrecognized binary operator ", opCtx.GetText())
 	} else if termCtx.Expression() != nil {

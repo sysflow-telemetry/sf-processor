@@ -4,6 +4,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.ibm.com/sysflow/sf-processor/common/ioutils"
 	"github.ibm.com/sysflow/sf-processor/common/logger"
 	. "github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
 )
@@ -17,5 +19,7 @@ func SetupInterpreter(m *testing.M) {
 
 func TestCompile(t *testing.T) {
 	logger.Trace.Println("Running test compile")
-	pi.Compile("../../../tests/policies/unit_test_macro.yaml")
+	paths, err := ioutils.ListFilePaths("../../../tests/policies", ".yaml")
+	assert.NoError(t, err)
+	assert.NoError(t, pi.Compile(paths...))
 }
