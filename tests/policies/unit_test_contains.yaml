@@ -1,0 +1,13 @@
+- rule: Contains rule
+  desc: unit test Contains rule
+  condition: sf.container.name contains node and sf.proc.exe contains /usr/bin/python
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+- rule: iContains rule
+  desc: unit test iContains rule
+  condition: sf.container.name contains node and sf.proc.exe icontains /USR/BIN/PYTHON
+  action: [alert]
+  priority: low
+  tags: [test]

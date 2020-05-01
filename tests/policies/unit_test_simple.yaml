@@ -1,0 +1,41 @@
+- rule: Simple rule 1
+  desc: unit test rule
+  condition: sf.container.name contains node and sf.type=PE and sf.proc.exe contains python
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+- rule: Simple rule 2
+  desc: unit test rule
+  condition: (sf.container.name contains node and sf.type=PE and sf.proc.exe contains python)
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+- rule: Simple rule 3
+  desc: unit test rule
+  condition: sf.container.name contains node and (sf.type=PE and sf.proc.exe contains python)
+  action: [alert]
+  priority: low
+  tags: [test]
+
+- rule: Simple rule 4
+  desc: unit test rule
+  condition: sf.container.name contains node and sf.type=PE and sf.proc.exe = /usr/bin/python
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+ - rule: Simple rule 5
+  desc: unit test rule
+  condition: (sf.container.name contains node and sf.type=PE and sf.proc.exe = /usr/bin/python)
+  action: [alert]
+  priority: low
+  tags: [test] 
+
+ - rule: Simple rule 6
+  desc: unit test rule
+  condition: sf.container.name contains node and (sf.type=PE and proc.exe = /usr/bin/python)
+  action: [alert]
+  priority: low
+  tags: [test] 

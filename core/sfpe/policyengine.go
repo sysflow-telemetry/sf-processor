@@ -2,13 +2,11 @@ package sfpe
 
 import (
 	"errors"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"sync"
 
 	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
+	"github.ibm.com/sysflow/sf-processor/common/ioutils"
 	"github.ibm.com/sysflow/sf-processor/common/logger"
 	"github.ibm.com/sysflow/sf-processor/core/cache"
 	"github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
@@ -35,52 +33,33 @@ func NewEventChan(size int) interface{} {
 func (s *PolicyEngine) Init(conf map[string]string, tables interface{}) error {
 	s.pi = engine.NewPolicyInterpreter(conf)
 	s.tables = tables.(*cache.SFTables)
-	if filename, ok := conf[engine.PoliciesConfigKey]; ok {
-		logger.Trace.Println("Loading policies from: " + filename)
-		if fi, err := os.Stat(filename); os.IsNotExist(err) {
-			return err
-		} else if fi.IsDir() {
-			var files []os.FileInfo
-			var err error
-			if files, err = ioutil.ReadDir(filename); err != nil {
-				return err
+	if path, ok := conf[engine.PoliciesConfigKey]; ok {
+		logger.Trace.Println("Loading policies from: ", path)
+		paths, err := ioutils.ListFilePaths(path, ".yaml")
+		if err == nil {
+			if len(paths) == 0 {
+				return errors.New("No policy files with extension .yaml found in path: " + path)
 			}
-			var fls []string
-			for _, file := range files {
-				if filepath.Ext(file.Name()) == ".yaml" {
-					f := filename + "/" + file.Name()
-					fls = append(fls, f)
-				}
-			}
-			if len(fls) == 0 {
-				return errors.New("No policy files with extension .yaml present in directory: " + filename)
-			}
-			s.pi.Compile(fls...)
-		} else {
-			s.pi.Compile(filename)
+			return s.pi.Compile(paths...)
 		}
-	} else {
-		return errors.New("policies tag missing from policy engine plugin")
+		return errors.New("Error while listing policies: " + err.Error())
 	}
-	return nil
+	return errors.New("Configuration tag 'policies' missing from policy engine plugin settings")
 }
 
 // Process implements the main loop of the plugin.
 func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
-	cha := ch.(*hdl.FlatChannel)
-	record := cha.In
-	logger.Trace.Println("Policy engine capacity: ", cap(record))
+	in := ch.(*hdl.FlatChannel).In
 	defer wg.Done()
-	logger.Trace.Println("Starting policy engine")
+	logger.Trace.Println("Starting policy engine with capacity: ", cap(in))
 	for {
-		fc, ok := <-record
-		if !ok {
-			logger.Trace.Println("Channel closed. Shutting down.")
+		if fc, ok := <-in; ok {
+			if match, r := s.pi.Process(true, engine.NewRecord(*fc, s.tables)); match {
+				s.ch <- r
+			}
+		} else {
+			logger.Trace.Println("Input channel closed. Shutting down.")
 			break
-		}
-		match, r := s.pi.Process(true, engine.NewRecord(*fc, s.tables))
-		if match {
-			s.ch <- r
 		}
 	}
 	logger.Trace.Println("Exiting policy engine")

@@ -11,7 +11,7 @@ import (
 	"github.ibm.com/sysflow/sf-processor/common/logger"
 )
 
-// SFTables defines shared plugin tables that store process SysFlow entities.
+// SFTables defines thread-safe shared cache for plugins for storing SysFlow entities.
 type SFTables struct {
 	contTable *cqueue.FIFO
 	procTable *cqueue.FIFO

@@ -1,0 +1,12 @@
+- list: binaries
+  items: [python, bash]
+
+- macro: pmatch_macro
+  condition: sf.proc.exe pmatch (binaries, /bin/node)
+
+- rule: Pmatch rule
+  desc: Unit test Pmatch rule
+  condition: sf.container.name contains node and sf.type=PE and pmatch_macro and sf.proc.args startswith cos-write.py
+  action: [alert]
+  priority: low
+  tags: [test]

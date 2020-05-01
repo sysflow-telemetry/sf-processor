@@ -32,11 +32,12 @@ func NewPolicyInterpreter(conf map[string]string) PolicyInterpreter {
 }
 
 // Compile parses and interprets an input policy defined in path.
-func (pi PolicyInterpreter) compile(path string) {
+func (pi PolicyInterpreter) compile(path string) error {
 	// Setup the input
 	is, err := antlr.NewFileStream(path)
 	if err != nil {
-		logger.Error.Println(err)
+		logger.Error.Println("Error reading policy from path", path)
+		return err
 	}
 
 	// Create the Lexer
@@ -48,14 +49,18 @@ func (pi PolicyInterpreter) compile(path string) {
 
 	// Parse the policy
 	antlr.ParseTreeWalkerDefault.Walk(&sfplListener{}, p.Policy())
+	return nil
 }
 
 // Compile parses and interprets a set of input policies defined in paths.
-func (pi PolicyInterpreter) Compile(paths ...string) {
+func (pi PolicyInterpreter) Compile(paths ...string) error {
 	for _, path := range paths {
 		logger.Trace.Println("Parsing policy file ", path)
-		pi.compile(path)
+		if err := pi.compile(path); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // Process executes all compiled policies against record r.

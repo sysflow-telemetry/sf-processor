@@ -1,0 +1,8 @@
+- rule: Network Flows on specific port
+  desc: unit test network port rule
+  condition: sf.container.name contains node and 
+  			     sf.type=NF and
+  			     sf.proc.exe contains python
+  action: [alert]
+  priority: low
+  tags: [test]

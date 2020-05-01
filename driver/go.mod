@@ -28,5 +28,4 @@ require (
 )
 
 replace github.ibm.com/sysflow/sf-processor/core => ../core
-
 replace github.ibm.com/sysflow/sf-processor/common => ../common

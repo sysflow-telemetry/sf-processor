@@ -1,0 +1,29 @@
+- list: binaries
+  items: [/usr/bin/python, bash]
+
+- macro: in_macro
+  condition: sf.proc.exe in (binaries)
+
+- rule: Logic rule
+  desc: unit test Logic rule
+  condition: sf.container.name contains node and sf.type=PE and
+  			 (sf.proc.exe=/usr/bin/python or sf.proc.args startswith cos-write.py) and
+  			 (sf.proc.exe in (binaries) or sf.proc.exe pmatch (binaries)) and
+  			  in_macro and
+  			  sf.proc.args startswith cos-write.py and
+  			 (in_macro and (sf.proc.exe=/usr/bin/python or sf.proc.args startswith cos-write.py))
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+ - rule: Pars rule
+  desc: unit test Pars rule
+  condition: sf.container.name contains node and sf.type=PE and
+  			 ((sf.proc.exe=/usr/bin/python) or (sf.proc.args startswith cos-write.py)) and
+  			 (sf.proc.exe in (binaries) or sf.proc.exe pmatch (binaries)) and
+  			 ((((((in_macro)))))) and
+  			 (sf.proc.args startswith cos-write.py and
+  			 (in_macro and (sf.proc.exe=/usr/bin/python or sf.proc.args startswith cos-write.py)))
+  action: [alert]
+  priority: low
+  tags: [test]
