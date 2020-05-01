@@ -9,11 +9,11 @@ OUTPUT=$(BIN)
 #SRC=github.ibm.com/sysflow/sf-processor/driver
 SRC=./driver
 
-build: 
+build: deps
 	cd $(SRC) && $(GOBUILD) -o $(OUTPUT) -v
 
 deps:
-	cd $(SRC) && $(GOGET) ./..
+	cd $(SRC) && $(GOGET) ./...
 
 test:
 	cd $(SRC) && $(GOTEST) -v ./...
@@ -22,8 +22,14 @@ clean:
 	cd $(SRC) && $(GOCLEAN)
 	rm -f $(SRC)/$(BIN)
 
+install: build
+	mkdir -p /usr/local/sf-processor/bin && mkdir -p /usr/local/sf-processor/conf
+	cp ./driver/sfprocessor /usr/local/sf-processor/bin/sfprocessor
+	cp ./driver/pipeline.json /usr/local/sf-processor/conf/pipeline.json
+	cp ./tests/policies/* /usr/local/sf-processor/conf/
+
 docker-build: build
-	sudo docker build -t sf-processor:latest -f Dockerfile.processor .
+	sudo docker build -t sf-processor:latest --target=runtime -f Dockerfile.processor .
 
 pull:
 	git pull origin master
