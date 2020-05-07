@@ -8,14 +8,13 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
-
 	"github.com/sysflow-telemetry/sf-apis/go/handlers"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
 	"github.ibm.com/sysflow/sf-processor/common/logger"
+	"github.ibm.com/sysflow/sf-processor/core/exporter"
 	"github.ibm.com/sysflow/sf-processor/core/flattener"
 	"github.ibm.com/sysflow/sf-processor/core/processor"
 	"github.ibm.com/sysflow/sf-processor/core/sfpe"
-	"github.ibm.com/sysflow/sf-processor/core/syslogger"
 )
 
 // PluginCache defines a data strucure for managing plugins.
@@ -32,28 +31,28 @@ type PluginCache struct {
 // NewPluginCache creates a new PluginCache instance.
 func NewPluginCache(conf string) *PluginCache {
 	plug := &PluginCache{config: viper.New(), chanMap: make(map[string]interface{}), pluginMap: make(map[string]*plugin.Plugin), configFile: conf}
-	plug.procFuncMap = map[string]interface{}{"SysFlowProc": processor.NewSysFlowProc, "PolicyEngine": sfpe.NewPolicyEngine, "Syslogger": syslogger.NewSyslogger}
+	plug.procFuncMap = map[string]interface{}{"SysFlowProc": processor.NewSysFlowProc, "PolicyEngine": sfpe.NewPolicyEngine, "Exporter": exporter.NewExporter}
 	plug.hdlFuncMap = map[string]interface{}{"Flattener": flattener.NewFlattener}
 	plug.chanFuncMap = map[string]interface{}{"SysFlowChan": processor.NewSysFlowChan, "FlattenerChan": flattener.NewFlattenerChan, "EventChan": sfpe.NewEventChan}
 	return plug
 }
 
 // GetConfig reads the PluginCache configuration.
-func (p PluginCache) GetConfig() (*PluginConfig, error) {
+func (p PluginCache) GetConfig() (*Config, error) {
 
 	s, err := os.Stat(p.configFile)
 	if os.IsNotExist(err) {
 		return nil, err
 	}
 	if s.IsDir() {
-		return nil, errors.New("Pipeline config file is not a file.")
+		return nil, errors.New("pipeline config file is not a file")
 	}
 	dir := filepath.Dir(p.configFile)
 	p.config.SetConfigName(strings.TrimSuffix(filepath.Base(p.configFile), filepath.Ext(p.configFile)))
 	p.config.SetConfigType("json")
 	p.config.AddConfigPath(dir)
 
-	conf := new(PluginConfig)
+	conf := new(Config)
 	err = p.config.ReadInConfig()
 
 	if err != nil {

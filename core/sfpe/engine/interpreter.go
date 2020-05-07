@@ -64,10 +64,13 @@ func (pi PolicyInterpreter) Compile(paths ...string) error {
 }
 
 // Process executes all compiled policies against record r.
-func (pi PolicyInterpreter) Process(applyFilters bool, r *Record) (bool, *Record) {
+func (pi PolicyInterpreter) Process(applyFilters bool, filterOnly bool, r *Record) (bool, *Record) {
 	match := false
-	if applyFilters && pi.evalFilters(r) {
+	if applyFilters && pi.EvalFilters(r) {
 		return match, nil
+	}
+	if filterOnly {
+		return true, r
 	}
 	for _, rule := range rules {
 		if rule.condition.Eval(r) {
@@ -79,10 +82,13 @@ func (pi PolicyInterpreter) Process(applyFilters bool, r *Record) (bool, *Record
 }
 
 // ProcessRule executes compiled policy rule p against record r.
-func (pi PolicyInterpreter) ProcessRule(applyFilters bool, r *Record, ruleNames ...string) (bool, *Record) {
+func (pi PolicyInterpreter) ProcessRule(applyFilters bool, filterOnly bool, r *Record, ruleNames ...string) (bool, *Record) {
 	match := false
-	if applyFilters && pi.evalFilters(r) {
+	if applyFilters && pi.EvalFilters(r) {
 		return match, nil
+	}
+	if filterOnly {
+		return true, r
 	}
 	for _, rname := range ruleNames {
 		if rule, ok := rules[rname]; ok && rule.condition.Eval(r) {
@@ -94,7 +100,7 @@ func (pi PolicyInterpreter) ProcessRule(applyFilters bool, r *Record, ruleNames 
 }
 
 // EvalFilters executes compiled policy filters against record r.
-func (pi PolicyInterpreter) evalFilters(r *Record) bool {
+func (pi PolicyInterpreter) EvalFilters(r *Record) bool {
 	for _, f := range filters {
 		if f.condition.Eval(r) {
 			return true

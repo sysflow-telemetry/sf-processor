@@ -14,9 +14,10 @@ import (
 
 // PolicyEngine defines a driver for the Policy Engine plugin.
 type PolicyEngine struct {
-	pi     engine.PolicyInterpreter
-	tables *cache.SFTables
-	ch     chan *engine.Record
+	pi         engine.PolicyInterpreter
+	tables     *cache.SFTables
+	ch         chan *engine.Record
+	filterOnly bool
 }
 
 // NewPolicyEngine constructs a new Policy Engine plugin.
@@ -33,6 +34,10 @@ func NewEventChan(size int) interface{} {
 func (s *PolicyEngine) Init(conf map[string]string, tables interface{}) error {
 	s.pi = engine.NewPolicyInterpreter(conf)
 	s.tables = tables.(*cache.SFTables)
+	if mode, ok := conf[engine.ModeConfigKey]; ok && mode == engine.FilterMode {
+		logger.Trace.Println("Setting policy engine in filter mode")
+		s.filterOnly = true
+	}
 	if path, ok := conf[engine.PoliciesConfigKey]; ok {
 		logger.Trace.Println("Loading policies from: ", path)
 		paths, err := ioutils.ListFilePaths(path, ".yaml")
@@ -54,7 +59,7 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 	logger.Trace.Println("Starting policy engine with capacity: ", cap(in))
 	for {
 		if fc, ok := <-in; ok {
-			if match, r := s.pi.Process(true, engine.NewRecord(*fc, s.tables)); match {
+			if match, r := s.pi.Process(true, s.filterOnly, engine.NewRecord(*fc, s.tables)); match {
 				s.ch <- r
 			}
 		} else {

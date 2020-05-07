@@ -1,9 +1,9 @@
 package pipeline
 
-// Plugin defines a map for plugin configuration.
-type Plugin map[string]string
+// PluginConfig defines a map for plugin configuration.
+type PluginConfig map[string]string
 
-// PluginConfig defines a plugin configuration object.
-type PluginConfig struct {
-	Pipeline []Plugin `json,mapstructures:"pipeline"`
+// Config defines a pipeline configuration object.
+type Config struct {
+	Pipeline []PluginConfig `json,mapstructures:"pipeline"`
 }

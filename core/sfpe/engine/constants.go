@@ -2,9 +2,16 @@ package engine
 
 // Configuration keys.
 const (
-	PoliciesConfigKey   string = "policies"
-	ContRuntimeType     string = "runtime"
-	ContRuntimeEndpoint string = "runtimeEndpoint"
+	PoliciesConfigKey            string = "policies"
+	ModeConfigKey                string = "mode"
+	ContRuntimeTypeConfigKey     string = "runtime"
+	ContRuntimeEndpointConfigKey string = "runtimeEndpoint"
+)
+
+// Mode constants.
+const (
+	AlertMode  string = "alert"
+	FilterMode string = "filter"
 )
 
 // Runtime constants.

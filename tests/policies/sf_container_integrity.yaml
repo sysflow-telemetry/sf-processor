@@ -528,13 +528,13 @@
   priority: high
   tags: [actionable-offense, suspicious-process]
 
-- rule: Dowloaded file enrichment 
-  desc: Downloader is being run inside the container. Could be downloading something malicious
-  condition: sf.type = FF and sf.opflags = WRITE and
-             sf.proc.name pmatch (downloader_binaries)
-  action: [hash]
-  priority: high
-  tags: [actionable-offense, suspicious-process]
+# - rule: Dowloaded file enrichment 
+#   desc: Downloader is being run inside the container. Could be downloading something malicious
+#   condition: sf.type = FF and sf.opflags = WRITE and
+#              sf.proc.name pmatch (downloader_binaries)
+#   action: [hash]
+#   priority: high
+#   tags: [actionable-offense, suspicious-process]
 
 - rule: Remote copy program detected
   desc: Remote copy is occurring inside the container. Could be data exfiltration

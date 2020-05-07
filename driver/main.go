@@ -25,12 +25,13 @@ import (
 	"github.ibm.com/sysflow/sf-processor/driver/pipeline"
 )
 
+// Driver constants
 const (
-	CHAN_SIZE    = 100000
-	SOCK_FILE    = "/var/run/sysflow.sock"
-	BUFF_SIZE    = 16384
-	OO_BUFF_SIZE = 1024
-	CACHE_SIZE   = 2
+	ChanSize   = 100000
+	SockFile   = "/var/run/sysflow.sock"
+	BuffSize   = 16384
+	OOBuffSize = 1024
+	CacheSize  = 2
 )
 
 type inputType int
@@ -72,14 +73,6 @@ func getFiles(filename string) ([]string, error) {
 }
 
 func processInputFile(path string, config string) {
-	/*var handler Printer
-	var wg sync.WaitGroup
-	processor := NewSysFlowProc(handler)
-	records := make(chan *sfgo.SysFlow, CHAN_SIZE)
-	wg.Add(1)
-	go processor.process(records, &wg)
-	*/
-
 	channel, pipeline, wg, channels, hdlers, err := LoadPipeline(config)
 	if err != nil {
 		logger.Error.Println("pipeline error:", err)
@@ -166,22 +159,19 @@ func processInputStream(path string, config string) {
 	}
 
 	sfChannel := channel.(*sp.SFChannel)
-
 	records := sfChannel.In
 
 	for {
-		buf := make([]byte, BUFF_SIZE)
-		oobuf := make([]byte, OO_BUFF_SIZE)
+		buf := make([]byte, BuffSize)
+		oobuf := make([]byte, OOBuffSize)
 		reader := bytes.NewReader(buf)
 		conn, err := l.AcceptUnix()
 		if err != nil {
 			logger.Error.Println("accept error:", err)
-			close(records)
-			return
+			break
 		}
 		for {
 			sFlow = sfgo.NewSysFlow()
-			//n, _ ,  err := conn.ReadFromUnix(buf[:])
 			_, _, flags, _, err := conn.ReadMsgUnix(buf[:], oobuf[:])
 			if err != nil {
 				logger.Error.Println("read error:", err)
@@ -189,7 +179,6 @@ func processInputStream(path string, config string) {
 			}
 			if flags == 0 {
 				reader.Reset(buf)
-				//println("Server Received: ", string(buf[0:n]))
 				err = vm.Eval(reader, deser, sFlow)
 				if err != nil {
 					logger.Error.Println("deserialize:", err)
@@ -198,22 +187,21 @@ func processInputStream(path string, config string) {
 			} else {
 				logger.Error.Println("Flag error ReadMsgUnix:", flags)
 			}
-
 		}
-
 	}
 	logger.Trace.Println("Closing main channel")
 	close(records)
 	wg.Wait()
 }
 
+// LoadPipeline sets up the an edge processing pipeline based on configuration settings.
 func LoadPipeline(config string) (interface{}, []sp.SFProcessor, *sync.WaitGroup, []interface{}, []handlers.SFHandler, error) {
 	pl := pipeline.NewPluginCache(config)
 	wg := new(sync.WaitGroup)
 	var processors []sp.SFProcessor
 	var channels []interface{}
 	var hdlrs []handlers.SFHandler
-	tables := cache.NewSFTables(CACHE_SIZE)
+	tables := cache.NewSFTables(CacheSize)
 	conf, err := pl.GetConfig()
 	if err != nil {
 		logger.Error.Println("Unable to load pipeline config: ", err)
@@ -251,14 +239,12 @@ func LoadPipeline(config string) (interface{}, []sp.SFProcessor, *sync.WaitGroup
 				logger.Error.Println(err)
 				return nil, nil, wg, nil, nil, err
 			}
-
 		} else {
 			logger.Error.Println("processor or handler tag must exist in plugin config")
 			return nil, nil, wg, nil, nil, err
 		}
-
 		if v, o := p["in"]; o {
-			in, err = pl.GetChan(mod, v, CHAN_SIZE)
+			in, err = pl.GetChan(mod, v, ChanSize)
 			channels = append(channels, in)
 			chp := fmt.Sprintf("%T", in)
 			logger.Trace.Println(chp)
@@ -267,7 +253,7 @@ func LoadPipeline(config string) (interface{}, []sp.SFProcessor, *sync.WaitGroup
 			return nil, nil, wg, nil, nil, errors.New("in tag must exist in plugin config")
 		}
 		if v, o := p["out"]; o {
-			out, err = pl.GetChan(mod, v, CHAN_SIZE)
+			out, err = pl.GetChan(mod, v, ChanSize)
 			chp := fmt.Sprintf("%T", out)
 			channels = append(channels, out)
 			logger.Trace.Println(chp)
@@ -279,11 +265,8 @@ func LoadPipeline(config string) (interface{}, []sp.SFProcessor, *sync.WaitGroup
 		if idx == 0 {
 			first = in
 		}
-
 	}
-
 	return first, processors, wg, channels, hdlrs, nil
-
 }
 
 func main() {

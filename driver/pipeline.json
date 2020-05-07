@@ -3,18 +3,28 @@
      {
       "processor": "SysFlowProc",
       "handler": "Flattener",
-      "in":   "sysflow SysFlowChan",
-      "out":  "flat FlattenerChan"
+      "in": "sysflow SysFlowChan",
+      "out": "flat FlattenerChan"
      },
      {
       "processor": "PolicyEngine",
-      "in":   "flat FlattenerChan",
-      "out":  "evt EventChan",
-      "policies": "/usr/local/sf-processor/conf/"  
+      "in": "flat FlattenerChan",
+      "out": "evt EventChan",
+      "policies": "/usr/local/sf-processor/conf/",
+      "mode": "filter"
      },
      {
-      "processor": "Syslogger",
-      "in":   "evt EventChan"
+      "processor": "Exporter",
+      "in": "evt EventChan",
+      "export": "syslog",
+      "type": "telemetry",
+      "format": "json",
+      "flat": false,
+      "path": "./export.json",      
+      "proto": "tcp",
+      "tag": "sysflow",
+      "host": "localhost",
+      "port": 514
      }
    ]
 }
