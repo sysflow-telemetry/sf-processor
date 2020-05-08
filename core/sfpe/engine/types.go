@@ -108,7 +108,7 @@ func (r Record) GetInt(attr sfgo.Attribute) int64 {
 
 // GetStr returns a string value from internal flat record.
 func (r Record) GetStr(attr sfgo.Attribute) string {
-	return r.Fr.Strs[attr]
+	return strings.TrimSpace(r.Fr.Strs[attr])
 }
 
 // GetProc returns a process object by ID.

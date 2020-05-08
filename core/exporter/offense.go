@@ -2,15 +2,14 @@ package exporter
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
 )
 
 // Offense type
 type Offense struct {
-	GroupID      string        `json:"groupId"`
-	Observations []Observation `json:"observations"`
+	GroupID      string            `json:"groupId"`
+	Observations []TelemetryRecord `json:"observations"`
 }
 
 // Policy type
@@ -22,14 +21,15 @@ type Policy struct {
 }
 
 // CreateOffenses creates offense instances based on a list of records
-func CreateOffenses(occs []*engine.Record) []Event {
+func CreateOffenses(recs []*engine.Record, config Config) []Event {
 	var offenses = make([]Event, 0)
-	var cobs = make(map[string][]Observation)
-	for _, o := range ExtractObservations(occs) {
-		if m, ok := cobs[o.ContID]; ok {
-			cobs[o.ContID] = append(m, o)
+	var cobs = make(map[string][]TelemetryRecord)
+	for i, o := range extractObservations(recs, config) {
+		contID := engine.Mapper.MapStr("sf.container.id")(recs[i])
+		if m, ok := cobs[contID]; ok {
+			cobs[contID] = append(m, o)
 		} else {
-			cobs[o.ContID] = append(make([]Observation, 0), o)
+			cobs[contID] = append(make([]TelemetryRecord, 0), o)
 		}
 	}
 	for k, v := range cobs {
@@ -53,31 +53,20 @@ func (s Offense) ToJSON() []byte {
 	return o
 }
 
-func extractPolicySet(rules []engine.Rule) []Policy {
-	var pols = make([]Policy, 0)
-	for _, r := range rules {
-		p := Policy{
-			ID:       r.Name,
-			Desc:     r.Desc,
-			Priority: int(r.Priority),
-			Tags:     extracTags(r.Tags),
-		}
-		pols = append(pols, p)
+// CreateObservations creates offense instances based on a list of records
+func CreateObservations(recs []*engine.Record, config Config) []Event {
+	var observations = make([]Event, 0)
+	for _, o := range extractObservations(recs, config) {
+		observations = append(observations, o)
 	}
-	return pols
+	return observations
 }
 
-func extracTags(tags []engine.EnrichmentTag) []string {
-	s := make([]string, 0)
-	for _, v := range tags {
-		switch v.(type) {
-		case []string:
-			s = append(s, v.([]string)...)
-			break
-		default:
-			s = append(s, string(fmt.Sprintf("%v", v)))
-			break
-		}
+func extractObservations(recs []*engine.Record, config Config) []TelemetryRecord {
+	var observations = make([]TelemetryRecord, 0)
+	for _, r := range recs {
+		o := extractTelemetryRecord(r, config)
+		observations = append(observations, o)
 	}
-	return s
+	return observations
 }

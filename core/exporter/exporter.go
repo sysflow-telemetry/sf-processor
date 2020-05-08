@@ -67,12 +67,18 @@ func (s *Exporter) process() {
 
 func (s *Exporter) createEvents() []Event {
 	if s.config.ExpType == AlertType {
-		return CreateOffenses(s.recs)
+		return CreateOffenses(s.recs, s.config)
 	}
-	return CreateTelemetryRecord(s.recs, s.config)
+	return CreateTelemetryRecords(s.recs, s.config)
 }
 
 func (s *Exporter) export(events []Event) {
+	if s.config.Format == JSONFormat {
+		s.exportAsJSON(events)
+	}
+}
+
+func (s *Exporter) exportAsJSON(events []Event) {
 	for _, e := range events {
 		if s.config.Export == StdOutExport {
 			logger.Trace.Printf("\033[1;34m%v\033[0m\n", e.ToJSONStr())
