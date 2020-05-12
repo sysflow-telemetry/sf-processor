@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -75,6 +77,7 @@ var Mapper = FieldMapper{
 		"sf.ret":                  mapInt(sfgo.RET_INT),
 		"sf.ts":                   mapInt(sfgo.TS_INT),
 		"sf.endts":                mapEndTs(),
+		"sf.proc.oid":             mapOID(sfgo.PROC_OID_HPID_INT, sfgo.PROC_OID_CREATETS_INT),
 		"sf.proc.pid":             mapInt(sfgo.PROC_OID_HPID_INT),
 		"sf.proc.name":            mapName(sfgo.PROC_EXE_STR),
 		"sf.proc.exe":             mapStr(sfgo.PROC_EXE_STR),
@@ -92,6 +95,7 @@ var Mapper = FieldMapper{
 		"sf.proc.aexe":            mapCachedValue(ProcAExe),
 		"sf.proc.acmdline":        mapCachedValue(ProcACmdLine),
 		"sf.proc.apid":            mapCachedValue(ProcAPID),
+		"sf.pproc.oid":            mapOID(sfgo.PROC_POID_HPID_INT, sfgo.PROC_POID_CREATETS_INT),
 		"sf.pproc.pid":            mapInt(sfgo.PROC_POID_HPID_INT),
 		"sf.pproc.name":           mapCachedValue(PProcName),
 		"sf.pproc.exe":            mapCachedValue(PProcExe),
@@ -293,6 +297,16 @@ func mapCachedValue(attr RecAttribute) FieldMap {
 	return func(r *Record) interface{} {
 		oid := sfgo.OID{CreateTS: r.GetInt(sfgo.PROC_OID_CREATETS_INT), Hpid: r.GetInt(sfgo.PROC_OID_HPID_INT)}
 		return r.GetCachedValue(oid, attr)
+	}
+}
+
+func mapOID(attrs ...sfgo.Attribute) FieldMap {
+	return func(r *Record) interface{} {
+		h := sha256.New()
+		for _, attr := range attrs {
+			h.Write([]byte(fmt.Sprintf("%v", r.GetInt(attr))))
+		}
+		return fmt.Sprintf("%x", h.Sum(nil))
 	}
 }
 
