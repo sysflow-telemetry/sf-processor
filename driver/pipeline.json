@@ -2,21 +2,21 @@
    "_comment": "DO NOT EDIT THIS TEMPLATE (remove this attribute when copying)",
    "pipeline":[
      {
-      "processor": "SysFlowProc",
-      "handler": "Flattener",
-      "in": "sysflow SysFlowChan",
-      "out": "flat FlattenerChan"
+      "processor": "sysflowproc",
+      "handler": "flattener",
+      "in": "sysflow sysflowchan",
+      "out": "flat flattenerchan"
      },
      {
-      "processor": "PolicyEngine",
-      "in": "flat FlattenerChan",
-      "out": "evt EventChan",
+      "processor": "policyengine",
+      "in": "flat flattenerchan",
+      "out": "evt eventchan",
       "policies": "file|dir path (default: /usr/local/sf-processor/conf/)",
       "mode": "alert|filter (default: alert)"
      },
      {
-      "processor": "Exporter",
-      "in": "evt EventChan",
+      "processor": "exporter",
+      "in": "evt eventchan",
       "export": "terminal|file|syslog (default: terminal)",
       "type": "alert|telemetry (default: alert)",
       "format": "json",

@@ -31,15 +31,14 @@ type PluginCache struct {
 // NewPluginCache creates a new PluginCache instance.
 func NewPluginCache(conf string) *PluginCache {
 	plug := &PluginCache{config: viper.New(), chanMap: make(map[string]interface{}), pluginMap: make(map[string]*plugin.Plugin), configFile: conf}
-	plug.procFuncMap = map[string]interface{}{"SysFlowProc": processor.NewSysFlowProc, "PolicyEngine": sfpe.NewPolicyEngine, "Exporter": exporter.NewExporter}
-	plug.hdlFuncMap = map[string]interface{}{"Flattener": flattener.NewFlattener}
-	plug.chanFuncMap = map[string]interface{}{"SysFlowChan": processor.NewSysFlowChan, "FlattenerChan": flattener.NewFlattenerChan, "EventChan": sfpe.NewEventChan}
+	plug.procFuncMap = map[string]interface{}{"sysflowproc": processor.NewSysFlowProc, "policyengine": sfpe.NewPolicyEngine, "exporter": exporter.NewExporter}
+	plug.hdlFuncMap = map[string]interface{}{"flattener": flattener.NewFlattener}
+	plug.chanFuncMap = map[string]interface{}{"sysflowchan": processor.NewSysFlowChan, "flattenerchan": flattener.NewFlattenerChan, "eventchan": sfpe.NewEventChan}
 	return plug
 }
 
 // GetConfig reads the PluginCache configuration.
-func (p PluginCache) GetConfig() (*Config, error) {
-
+func (p *PluginCache) GetConfig() (*Config, error) {
 	s, err := os.Stat(p.configFile)
 	if os.IsNotExist(err) {
 		return nil, err
@@ -63,11 +62,43 @@ func (p PluginCache) GetConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	p.updateConfigFromEnv(conf)
 	return conf, nil
 }
 
+// updateConfigFromEnv updates config object with environment variables if set.
+// It assumes the following convention:
+// - Environment variables follow the naming schema <PROCESSOR NAME>_<CONFIG ATTRIBUTE NAME>
+// - Processor name in pipeline.json is all lower case
+func (p *PluginCache) updateConfigFromEnv(config *Config) {
+	for _, c := range config.Pipeline {
+		if proc, ok := c["processor"]; ok {
+			logger.Trace.Printf("ENVIRONMENT FOR PROC: %v", proc)
+			for k, v := range p.getEnv(proc) {
+				logger.Trace.Printf("ENVIRONMENT: k: %v, v: %v", k, v)
+				c[k] = v
+			}
+		}
+	}
+}
+
+// getEnv returns the environemnt config settings for processor proc.
+func (p *PluginCache) getEnv(proc string) map[string]string {
+	var conf = make(map[string]string)
+	for _, e := range os.Environ() {
+		pair := strings.SplitN(e, "=", 2)
+		key := strings.SplitN(strings.ToLower(pair[0]), "_", 2)
+		if len(key) == 2 && key[0] == proc {
+			logger.Trace.Printf("OS ENVIRONMENT: k: %v, v: %v", pair[0], pair[1])
+			conf[key[1]] = pair[1]
+		}
+	}
+	return conf
+}
+
 // GetPlugin retrieves a cached plugin by its name.
-func (p PluginCache) GetPlugin(mod string) (*plugin.Plugin, error) {
+func (p *PluginCache) GetPlugin(mod string) (*plugin.Plugin, error) {
 	var plug *plugin.Plugin
 	var err error
 	if val, ok := p.pluginMap[mod]; ok {
@@ -83,7 +114,7 @@ func (p PluginCache) GetPlugin(mod string) (*plugin.Plugin, error) {
 }
 
 // GetHandler retrieves a cached plugin handler by name.
-func (p PluginCache) GetHandler(mod string, name string) (handlers.SFHandler, error) {
+func (p *PluginCache) GetHandler(mod string, name string) (handlers.SFHandler, error) {
 	var hdl handlers.SFHandler
 	if val, ok := p.hdlFuncMap[name]; ok {
 		funct := val.(func() handlers.SFHandler)
@@ -108,7 +139,7 @@ func (p PluginCache) GetHandler(mod string, name string) (handlers.SFHandler, er
 }
 
 // GetChan retrieves a cached plugin channel by name.
-func (p PluginCache) GetChan(mod string, ch string, size int) (interface{}, error) {
+func (p *PluginCache) GetChan(mod string, ch string, size int) (interface{}, error) {
 	fields := strings.Fields(ch)
 	if len(fields) != 2 {
 		return nil, errors.New("Channel must be of the form <identifier> <type>")
@@ -142,7 +173,7 @@ func (p PluginCache) GetChan(mod string, ch string, size int) (interface{}, erro
 }
 
 // GetProcessor retrieves a cached plugin processor by name.
-func (p PluginCache) GetProcessor(mod string, name string, hdl handlers.SFHandler, hdlr bool) (sp.SFProcessor, error) {
+func (p *PluginCache) GetProcessor(mod string, name string, hdl handlers.SFHandler, hdlr bool) (sp.SFProcessor, error) {
 	var prc sp.SFProcessor
 	if val, ok := p.procFuncMap[name]; ok {
 		logger.Trace.Println("Found processor in function map: ", name)
