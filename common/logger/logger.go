@@ -23,6 +23,15 @@ func (d LogLevel) String() string {
 	return [...]string{"Trace", "Info", "Warn", "Error"}[d]
 }
 
+// GetLogLevelFromValue returns LogLevel corresponding to string s (if not found, defaults to INFO).
+func GetLogLevelFromValue(s string) LogLevel {
+	m := map[string]LogLevel{"Trace": TRACE, "Info": INFO, "Warn": WARN, "Error": ERROR}
+	if l, ok := m[s]; ok {
+		return l
+	}
+	return INFO
+}
+
 // Loggers reflecting different log levels.
 var (
 	Trace *log.Logger

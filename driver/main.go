@@ -275,9 +275,10 @@ func main() {
 	cpuprofile := flag.String("cpuprofile", "", "Write cpu profile to `file`")
 	memprofile := flag.String("memprofile", "", "Write memory profile to `file`")
 	configFile := flag.String("config", "/usr/local/sf-processor/conf/pipeline.json", "Path to pipeline configuration file")
+	logLevel := flag.String("log", "Info", "Log level [Trace, Info, Warn, Error]")
 
 	flag.Usage = func() {
-		fmt.Println("Usage: sysprocessor [-input <value>] path")
+		fmt.Println("Usage: sysprocessor [-input <value>] [-log <value>] path")
 		fmt.Println()
 		fmt.Println("Positional arguments:")
 		fmt.Println("  path string\n\tInput path")
@@ -298,7 +299,7 @@ func main() {
 	path := flag.Arg(0)
 
 	// Initialize logger
-	logger.InitLoggers(logger.TRACE)
+	logger.InitLoggers(logger.GetLogLevelFromValue(*logLevel))
 
 	// CPU profiling
 	if *cpuprofile != "" {
