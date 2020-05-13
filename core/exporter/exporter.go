@@ -81,7 +81,7 @@ func (s *Exporter) export(events []Event) {
 func (s *Exporter) exportAsJSON(events []Event) {
 	for _, e := range events {
 		if s.config.Export == StdOutExport {
-			logger.Trace.Printf("\033[1;34m%v\033[0m\n", e.ToJSONStr())
+			logger.Info.Printf("\033[1;34m%v\033[0m\n", e.ToJSONStr())
 		} else if s.config.Export == SyslogExport {
 			s.sysl.Alert(e.ToJSONStr())
 		} else if s.config.Export == FileExport {
