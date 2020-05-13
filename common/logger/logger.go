@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 )
 
 // LogLevel type for enumeration.
@@ -25,8 +26,8 @@ func (d LogLevel) String() string {
 
 // GetLogLevelFromValue returns LogLevel corresponding to string s (if not found, defaults to INFO).
 func GetLogLevelFromValue(s string) LogLevel {
-	m := map[string]LogLevel{"Trace": TRACE, "Info": INFO, "Warn": WARN, "Error": ERROR}
-	if l, ok := m[s]; ok {
+	m := map[string]LogLevel{"trace": TRACE, "info": INFO, "warn": WARN, "error": ERROR}
+	if l, ok := m[strings.ToLower(s)]; ok {
 		return l
 	}
 	return INFO
