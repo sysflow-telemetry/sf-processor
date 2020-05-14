@@ -74,9 +74,7 @@ func (p *PluginCache) GetConfig() (*Config, error) {
 func (p *PluginCache) updateConfigFromEnv(config *Config) {
 	for _, c := range config.Pipeline {
 		if proc, ok := c["processor"]; ok {
-			logger.Trace.Printf("ENVIRONMENT FOR PROC: %v", proc)
 			for k, v := range p.getEnv(proc) {
-				logger.Trace.Printf("ENVIRONMENT: k: %v, v: %v", k, v)
 				c[k] = v
 			}
 		}
@@ -90,7 +88,6 @@ func (p *PluginCache) getEnv(proc string) map[string]string {
 		pair := strings.SplitN(e, "=", 2)
 		key := strings.SplitN(strings.ToLower(pair[0]), "_", 2)
 		if len(key) == 2 && key[0] == proc {
-			logger.Trace.Printf("OS ENVIRONMENT: k: %v, v: %v", pair[0], pair[1])
 			conf[key[1]] = pair[1]
 		}
 	}
