@@ -21,6 +21,7 @@
 # Misc
 .antlr
 driver/driver
+driver/sfprocessor
 *.pdf
 *.prof
 *.vlog
