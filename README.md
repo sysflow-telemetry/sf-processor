@@ -31,7 +31,12 @@ Arguments:
 
 ## Configuration
 Create a JSON file specifying the edge processing pipeline plugins and configuration settings.
-See template below as driver/pipeline.json is.
+See template below and driver/pipeline.json is with the default values.
+
+pipeline.json can be overridden by environment variables from Dockerfile.
+The convension is <PLUGINNAME>_<CONFIGKEY>.
+For example, you can override export type in the exporter plugin by doing:
+$ export EXPORTER_TYPE=file
 
 ```
 {
