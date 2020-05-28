@@ -5,7 +5,7 @@ import (
 
 	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
-	"github.ibm.com/sysflow/sf-processor/common/logger"
+	"github.ibm.com/sysflow/goutils/logger"
 )
 
 // Example defines an example plugin.

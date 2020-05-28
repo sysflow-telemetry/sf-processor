@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.ibm.com/sysflow/sf-processor/common/logger"
+	"github.ibm.com/sysflow/goutils/logger"
 )
 
 func TestMain(m *testing.M) {

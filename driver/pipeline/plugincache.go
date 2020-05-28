@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/sysflow-telemetry/sf-apis/go/handlers"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
-	"github.ibm.com/sysflow/sf-processor/common/logger"
+	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/exporter"
 	"github.ibm.com/sysflow/sf-processor/core/flattener"
 	"github.ibm.com/sysflow/sf-processor/core/processor"

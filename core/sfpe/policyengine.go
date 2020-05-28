@@ -6,8 +6,8 @@ import (
 
 	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
-	"github.ibm.com/sysflow/sf-processor/common/ioutils"
-	"github.ibm.com/sysflow/sf-processor/common/logger"
+	"github.ibm.com/sysflow/goutils/ioutils"
+	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/cache"
 	"github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
 )

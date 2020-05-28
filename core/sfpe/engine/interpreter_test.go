@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/sysflow/sf-processor/common/ioutils"
-	"github.ibm.com/sysflow/sf-processor/common/logger"
+	"github.ibm.com/sysflow/goutils/ioutils"
+	"github.ibm.com/sysflow/goutils/logger"
 	. "github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
 )
 

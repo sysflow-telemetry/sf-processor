@@ -8,7 +8,7 @@ import (
 	cqueue "github.com/enriquebris/goconcurrentqueue"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/sf-processor/common/logger"
+	"github.ibm.com/sysflow/goutils/logger"
 )
 
 // SFTables defines thread-safe shared cache for plugins for storing SysFlow entities.

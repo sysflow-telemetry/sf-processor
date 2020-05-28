@@ -3,7 +3,7 @@ package flattener
 import (
 	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/sf-processor/common/logger"
+	"github.ibm.com/sysflow/goutils/logger"
 )
 
 // Flattener defines the main class for the flatterner plugin.

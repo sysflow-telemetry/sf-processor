@@ -3,7 +3,6 @@ module github.ibm.com/sysflow/sf-processor/core
 go 1.14
 
 require (
-	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0
 	github.com/containerd/containerd v1.3.4 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
@@ -18,9 +17,9 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200422203822-89baf17b2999
-	github.ibm.com/sysflow/sf-processor/common v0.0.0-20200417191929-a92fcd82f392
+	github.ibm.com/sysflow/goutils v0.0.0-20200528201643-85683bbabbe4
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0 // indirect
 	google.golang.org/grpc v1.29.1 // indirect
 )
 
-replace github.ibm.com/sysflow/sf-processor/common => ../common
+replace github.ibm.com/sysflow/goutils => ../../goutils

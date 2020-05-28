@@ -10,7 +10,7 @@ import (
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-apis/go/utils"
-	"github.ibm.com/sysflow/sf-processor/common/logger"
+	"github.ibm.com/sysflow/goutils/logger"
 )
 
 // FieldMap is a functional type denoting a SysFlow attribute mapper.
