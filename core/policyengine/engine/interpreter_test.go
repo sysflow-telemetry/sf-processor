@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.ibm.com/sysflow/goutils/ioutils"
 	"github.ibm.com/sysflow/goutils/logger"
-	. "github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
+	. "github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
 var pi PolicyInterpreter

@@ -1,4 +1,4 @@
-package sfpe
+package policyengine
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 	"github.ibm.com/sysflow/goutils/ioutils"
 	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/cache"
-	"github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
+	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
 // PolicyEngine defines a driver for the Policy Engine plugin.
@@ -57,11 +57,13 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 	in := ch.(*hdl.FlatChannel).In
 	defer wg.Done()
 	logger.Trace.Println("Starting policy engine with capacity: ", cap(in))
+	out := func(r *engine.Record) { s.ch <- r }
 	for {
 		if fc, ok := <-in; ok {
-			if match, r := s.pi.Process(true, s.filterOnly, engine.NewRecord(*fc, s.tables)); match {
-				s.ch <- r
-			}
+			s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc, s.tables), out)
+			// if match, r := s.pi.Process(true, s.filterOnly, engine.NewRecord(*fc, s.tables)); match {
+			// 	s.ch <- r
+			// }
 		} else {
 			logger.Trace.Println("Input channel closed. Shutting down.")
 			break

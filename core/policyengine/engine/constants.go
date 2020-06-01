@@ -6,6 +6,7 @@ const (
 	ModeConfigKey                string = "mode"
 	ContRuntimeTypeConfigKey     string = "runtime"
 	ContRuntimeEndpointConfigKey string = "runtimeEndpoint"
+	EnrichmentConfigKey          string = "enrichmentconfigpath"
 )
 
 // Mode constants.

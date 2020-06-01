@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
+	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
 const schemaVersion = "0.1"

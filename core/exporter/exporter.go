@@ -8,7 +8,7 @@ import (
 
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
 	"github.ibm.com/sysflow/goutils/logger"
-	"github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
+	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
 // Exporter defines a syslogger plugin.

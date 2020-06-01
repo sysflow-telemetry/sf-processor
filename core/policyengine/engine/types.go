@@ -267,7 +267,9 @@ func (s Context) GetHashes() HashSet {
 
 // HashSet type
 type HashSet struct {
-	MD5    string
-	SHA1   string
-	SHA256 string
+	MD5      string
+	SHA1     string
+	SHA256   string
+	Size     int
+	UpdateTs int64
 }

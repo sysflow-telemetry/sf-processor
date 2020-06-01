@@ -3,7 +3,7 @@ package exporter
 import (
 	"encoding/json"
 
-	"github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
+	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
 // Offense type

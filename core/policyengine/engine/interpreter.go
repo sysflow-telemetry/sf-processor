@@ -6,7 +6,7 @@ import (
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.ibm.com/sysflow/goutils/logger"
-	"github.ibm.com/sysflow/sf-processor/core/sfpe/lang/parser"
+	"github.ibm.com/sysflow/sf-processor/core/policyengine/lang/parser"
 )
 
 // Parsed rule and filter object maps.
@@ -61,6 +61,21 @@ func (pi PolicyInterpreter) Compile(paths ...string) error {
 		}
 	}
 	return nil
+}
+
+// ProcessAsync executes all compiled policies against record r.
+func (pi PolicyInterpreter) ProcessAsync(applyFilters bool, filterOnly bool, r *Record, out func(r *Record)) {
+	if applyFilters && pi.EvalFilters(r) {
+		return
+	}
+	if filterOnly {
+		out(r)
+	}
+	for _, rule := range rules {
+		if rule.condition.Eval(r) {
+			pi.ahdl.HandleActionAsync(rule, r, out)
+		}
+	}
 }
 
 // Process executes all compiled policies against record r.
