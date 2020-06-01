@@ -215,7 +215,7 @@ func mapEndTs() FieldMap {
 
 func mapDuration(attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		return time.Now().Unix() - r.GetInt(attr)
+		return time.Now().UnixNano() - r.GetInt(attr)
 	}
 }
 
