@@ -1,15 +1,15 @@
 # SysFlow Edge Processor
 
 ## Build
-To build the processor, run: 
+To build the processor, run:
 ```
 cd driver
 go get ./...
 go build .
 ```
 
-## Usage 
-For usage, after build, run: 
+## Usage
+For usage, after build, run:
 ```
 ./driver -h
 Usage: sysprocessor [-input <value>] path
@@ -62,8 +62,8 @@ $ export EXPORTER_TYPE=file
       "type": "alert|telemetry (default: alert)",
       "format": "json",
       "flat": "false|true (default: false)",
-      "path": "output file path (default: ./export.out)",      
-      "proto": "rsyslog protocol tcp|udp (default: tcp)",
+      "path": "output file path (default: ./export.out)",
+      "proto": "rsyslog protocol tcp|udp|tcp+tls (default: tcp)",
       "tag": "rsyslog tag (default: sysflow)",
       "host": "rsyslog host (default: localhost)",
       "port": "ryslog port (default: 514)",

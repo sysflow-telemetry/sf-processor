@@ -1,11 +1,12 @@
 package exporter
 
 import (
+	"crypto/tls"
 	"fmt"
-	"log/syslog"
 	"os"
 	"sync"
 
+	syslog "github.com/RackSec/srslog"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
 	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/sfpe/engine"
@@ -32,7 +33,13 @@ func (s *Exporter) Init(conf map[string]string, tables interface{}) error {
 		os.Remove(s.config.Path)
 	} else if s.config.Export == SyslogExport {
 		raddr := fmt.Sprintf("%s:%d", s.config.Host, s.config.Port)
-		s.sysl, err = syslog.Dial(s.config.Proto.String(), raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag)
+		if s.config.Proto == TCPTLSProto {
+			// TODO: verify connection with given trust certifications
+			nopTLSConfig := &tls.Config{InsecureSkipVerify: true}
+			s.sysl, err = syslog.DialWithTLSConfig(s.config.Proto.String(), raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag, nopTLSConfig)
+		} else {
+			s.sysl, err = syslog.Dial(s.config.Proto.String(), raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag)
+		}
 	}
 	return err
 }

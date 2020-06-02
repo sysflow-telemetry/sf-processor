@@ -140,18 +140,21 @@ type Proto int
 // Proto config options.
 const (
 	TCPProto Proto = iota
+	TCPTLSProto
 	UDPProto
 )
 
 func (s Proto) String() string {
-	return [...]string{"tcp", "udp"}[s]
+	return [...]string{"tcp", "tcp+tls", "udp"}[s]
 }
 
 func parseProtoConfig(s string) Proto {
-	if TCPProto.String() == s {
+	switch s {
+	case TCPProto.String():
 		return TCPProto
-	}
-	if UDPProto.String() == s {
+	case TCPTLSProto.String():
+		return TCPTLSProto
+	case UDPProto.String():
 		return UDPProto
 	}
 	return TCPProto
