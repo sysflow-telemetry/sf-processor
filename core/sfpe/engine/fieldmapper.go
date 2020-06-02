@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -68,6 +69,25 @@ func (m FieldMapper) trimBoundingQuotes(s string) string {
 	}
 	return s
 }
+
+func getFields() []string {
+	keys := make([]string, 0, len(Mapper.Mappers))
+	for k := range Mapper.Mappers {
+		keys = append(keys, k)
+	}
+	sort.SliceStable(keys, func(i int, j int) bool {
+		ki := len(strings.Split(keys[i], "."))
+		kj := len(strings.Split(keys[j], "."))
+		if ki == kj {
+			return strings.Compare(keys[i], keys[j]) < 0
+		}
+		return ki < kj
+	})
+	return keys
+}
+
+// Fields defines a sorted array of all field mapper keys.
+var Fields = getFields()
 
 // Mapper defines a global attribute mapper instance.
 var Mapper = FieldMapper{
@@ -273,6 +293,7 @@ func mapPort(attrs ...sfgo.Attribute) FieldMap {
 		for _, attr := range attrs {
 			ports = append(ports, strconv.FormatInt(r.GetInt(attr), 10))
 		}
+		// logger.Info.Println(ports)
 		return strings.Join(ports, LISTSEP)
 	}
 }
@@ -283,6 +304,7 @@ func mapIP(attrs ...sfgo.Attribute) FieldMap {
 		for _, attr := range attrs {
 			ips = append(ips, utils.GetIPStr(int32(r.GetInt(attr))))
 		}
+		// logger.Info.Println(ips)
 		return strings.Join(ips, LISTSEP)
 	}
 }

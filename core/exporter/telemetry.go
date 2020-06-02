@@ -106,8 +106,8 @@ func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 	if config.Flat {
 		r.FlatRecord = new(FlatRecord)
 		r.FlatRecord.Data = make(map[string]interface{})
-		for k, v := range engine.Mapper.Mappers {
-			r.Data[k] = v(rec)
+		for _, k := range engine.Fields {
+			r.Data[k] = engine.Mapper.Mappers[k](rec)
 		}
 	} else {
 		r.DataRecord = new(DataRecord)
@@ -115,9 +115,9 @@ func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 		pprocExists := !reflect.ValueOf(pprocID).IsZero()
 		ct := engine.Mapper.MapStr("sf.container.id")(rec)
 		ctExists := !reflect.ValueOf(ct).IsZero()
-		for k, v := range engine.Mapper.Mappers {
+		for _, k := range engine.Fields {
 			kc := strings.Split(k, ".")
-			value := extractValue(k, v(rec))
+			value := extractValue(k, engine.Mapper.Mappers[k](rec))
 			if len(kc) == 2 {
 				switch value.(type) {
 				case string:
