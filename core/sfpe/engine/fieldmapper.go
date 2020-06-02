@@ -216,7 +216,8 @@ func mapRecType() FieldMap {
 func mapOpFlags() FieldMap {
 	return func(r *Record) interface{} {
 		opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT)
-		return strings.Join(utils.GetOpFlags(int32(opflags)), LISTSEP)
+		rtype := mapRecType()(r).(string)
+		return strings.Join(utils.GetOpFlags(int32(opflags), rtype), LISTSEP)
 	}
 }
 
