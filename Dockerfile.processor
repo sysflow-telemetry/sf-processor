@@ -16,7 +16,7 @@ RUN wget https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go1.14.2.linux-amd64.tar.gz && mkdir -p $SRC_ROOT
 
 COPY core ${SRC_ROOT}core
-COPY common ${SRC_ROOT}common
+COPY common ${SRC_ROOT}../goutils
 COPY driver ${SRC_ROOT}driver
 COPY plugins ${SRC_ROOT}plugins
 COPY tests ${SRC_ROOT}tests

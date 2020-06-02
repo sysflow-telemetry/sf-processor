@@ -3,6 +3,7 @@ module github.ibm.com/sysflow/sf-processor/core
 go 1.14
 
 require (
+	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0
 	github.com/containerd/containerd v1.3.4 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
