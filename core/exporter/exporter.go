@@ -26,7 +26,7 @@ func NewExporter() sp.SFProcessor {
 }
 
 // Init initializes the plugin with a configuration map and cache.
-func (s *Exporter) Init(conf map[string]string, tables interface{}) error {
+func (s *Exporter) Init(conf map[string]string) error {
 	var err error
 	s.config = CreateConfig(conf)
 	if s.config.Export == FileExport {

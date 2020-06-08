@@ -32,8 +32,8 @@ func NewSysFlowChan(size int) interface{} {
 }
 
 // Init initializes the processor with a configuration map.
-func (s *SysFlowProcessor) Init(conf map[string]string, tables interface{}) error {
-	s.tables = tables.(*cache.SFTables)
+func (s *SysFlowProcessor) Init(conf map[string]string) error {
+	s.tables = cache.GetInstance()
 	return nil
 }
 

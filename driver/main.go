@@ -21,7 +21,6 @@ import (
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/goutils/logger"
-	"github.ibm.com/sysflow/sf-processor/core/cache"
 	"github.ibm.com/sysflow/sf-processor/driver/pipeline"
 )
 
@@ -31,7 +30,6 @@ const (
 	SockFile   = "/var/run/sysflow.sock"
 	BuffSize   = 16384
 	OOBuffSize = 1024
-	CacheSize  = 2
 )
 
 type inputType int
@@ -201,7 +199,6 @@ func LoadPipeline(config string) (interface{}, []sp.SFProcessor, *sync.WaitGroup
 	var processors []sp.SFProcessor
 	var channels []interface{}
 	var hdlrs []handlers.SFHandler
-	tables := cache.NewSFTables(CacheSize)
 	conf, err := pl.GetConfig()
 	if err != nil {
 		logger.Error.Println("Unable to load pipeline config: ", err)
@@ -234,7 +231,7 @@ func LoadPipeline(config string) (interface{}, []sp.SFProcessor, *sync.WaitGroup
 			}
 			tp := fmt.Sprintf("%T", prc)
 			logger.Trace.Println(tp)
-			err = prc.Init(p, tables)
+			err = prc.Init(p)
 			if err != nil {
 				logger.Error.Println(err)
 				return nil, nil, wg, nil, nil, err

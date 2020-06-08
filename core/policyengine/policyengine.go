@@ -31,9 +31,9 @@ func NewEventChan(size int) interface{} {
 }
 
 // Init initializes the plugin.
-func (s *PolicyEngine) Init(conf map[string]string, tables interface{}) error {
+func (s *PolicyEngine) Init(conf map[string]string) error {
 	s.pi = engine.NewPolicyInterpreter(conf)
-	s.tables = tables.(*cache.SFTables)
+	s.tables = cache.GetInstance()
 	if mode, ok := conf[engine.ModeConfigKey]; ok && mode == engine.FilterMode {
 		logger.Trace.Println("Setting policy engine in filter mode")
 		s.filterOnly = true
