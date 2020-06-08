@@ -36,7 +36,7 @@ func (s *Exporter) Init(conf map[string]string, tables interface{}) error {
 		if s.config.Proto == TCPTLSProto {
 			// TODO: verify connection with given trust certifications
 			nopTLSConfig := &tls.Config{InsecureSkipVerify: true}
-			s.sysl, err = syslog.DialWithTLSConfig(s.config.Proto.String(), raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag, nopTLSConfig)
+			s.sysl, err = syslog.DialWithTLSConfig("tcp+tls", raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag, nopTLSConfig)
 		} else {
 			s.sysl, err = syslog.Dial(s.config.Proto.String(), raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag)
 		}
