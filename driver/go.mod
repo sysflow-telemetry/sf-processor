@@ -26,3 +26,4 @@ require (
 
 replace github.ibm.com/sysflow/sf-processor/core => ../core
 replace github.ibm.com/sysflow/goutils => ../../goutils
+replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go
