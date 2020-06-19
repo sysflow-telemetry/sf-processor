@@ -7,4 +7,4 @@ require (
 	github.ibm.com/sysflow/goutils v0.0.0-20200528201643-85683bbabbe4
 )
 
-replace github.ibm.com/sysflow/goutils => ../../../goutils
+replace github.ibm.com/sysflow/goutils => ../../common
