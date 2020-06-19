@@ -17,11 +17,10 @@ require (
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/stretchr/testify v1.5.1
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200602024344-4a71552fc529
-	github.ibm.com/sysflow/goutils v0.0.0-20200528201643-85683bbabbe4
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200618213240-a59f3a148871
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0 // indirect
 	google.golang.org/grpc v1.29.1 // indirect
 	gotest.tools/v3 v3.0.2 // indirect
 )
 
-replace github.ibm.com/sysflow/goutils => ../../goutils
+replace github.ibm.com/sysflow/goutils => ../common
