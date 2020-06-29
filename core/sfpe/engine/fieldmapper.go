@@ -55,6 +55,8 @@ func (m FieldMapper) MapStr(attr string) StrFieldMap {
 			return m.trimBoundingQuotes(v)
 		} else if v, ok := m.Map(attr)(r).(int64); ok {
 			return strconv.FormatInt(v, 10)
+		} else if v, ok := m.Map(attr)(r).(bool); ok {
+			return strconv.FormatBool(v)
 		}
 		return sfgo.Zeros.String
 	}
