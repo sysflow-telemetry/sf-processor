@@ -14,13 +14,18 @@ require (
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/moby/term v0.0.0-20200507201656-73f35e472e8f // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
+	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
+	github.com/sirupsen/logrus v1.6.0 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200618213240-a59f3a148871
+	github.ibm.com/sysflow/goutils v0.0.0-00010101000000-000000000000
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0 // indirect
 	google.golang.org/grpc v1.29.1 // indirect
 	gotest.tools/v3 v3.0.2 // indirect
 )
 
-replace github.ibm.com/sysflow/goutils => ../common
+replace github.ibm.com/sysflow/goutils => ../modules/goutils
+
+replace github.com/sysflow-telemetry/sf-apis/go => ../modules/sf-apis/go
