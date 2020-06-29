@@ -132,6 +132,7 @@ var Mapper = FieldMapper{
 		"sf.pproc.cmdline":        mapCachedValue(PProcCmdLine),
 		"sf.file.name":            mapName(sfgo.FILE_PATH_STR),
 		"sf.file.path":            mapStr(sfgo.FILE_PATH_STR),
+		"sf.file.canonicalpath":   mapLinkPath(sfgo.FILE_PATH_STR),
 		"sf.file.directory":       mapDir(sfgo.FILE_PATH_STR),
 		"sf.file.newname":         mapName(sfgo.SEC_FILE_PATH_STR),
 		"sf.file.newpath":         mapStr(sfgo.SEC_FILE_PATH_STR),
@@ -251,6 +252,19 @@ func mapName(attr sfgo.Attribute) FieldMap {
 func mapDir(attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		return filepath.Dir(r.GetStr(attr))
+	}
+}
+
+func mapLinkPath(attr sfgo.Attribute) FieldMap {
+	return func(r *Record) interface{} {
+		orig := r.GetStr(attr)
+		// Possible format: aabbccddeeff0011->aabbccddeeff0011 /path/to/target.file
+		var src, dst uint64
+		var targetPath string
+		if _, err := fmt.Sscanf(orig, "%x->%x %s", &src, &dst, &targetPath); nil == err {
+			return targetPath
+		}
+		return orig
 	}
 }
 
