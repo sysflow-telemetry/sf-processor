@@ -2,18 +2,19 @@ package engine
 
 // ActionHandler type
 type ActionHandler struct {
-	conf       map[string]string
-	fileHasher *FileHasher
+	conf map[string]string
+	//fileHasher *FileHasher
 }
 
 // NewActionHandler creates a new handler.
 func NewActionHandler(conf map[string]string) ActionHandler {
-	var fh *FileHasher
-	if c, ok := conf[EnrichmentConfigKey]; ok {
-		fh = NewFileHasher()
-		fh.Init(c)
-	}
-	return ActionHandler{conf, fh}
+	// var fh *FileHasher
+	// if c, ok := conf[EnrichmentConfigKey]; ok {
+	// 	fh = NewFileHasher()
+	// 	fh.Init(c)
+	// }
+	// return ActionHandler{conf, fh}
+	return ActionHandler{conf}
 }
 
 // HandleActionAsync handles actions defined in rule.
@@ -21,10 +22,10 @@ func (s ActionHandler) HandleActionAsync(rule Rule, r *Record, out func(r *Recor
 	for _, a := range rule.Actions {
 		switch a {
 		case Hash:
-			h, _ := s.fileHasher.ProcessSync(r)
-			if hs, ok := h.(HashSet); ok {
-				r.Ctx.SetHashes(hs)
-			}
+			// h, _ := s.fileHasher.ProcessSync(r)
+			// if hs, ok := h.(HashSet); ok {
+			// 	r.Ctx.SetHashes(hs)
+			// }
 			fallthrough
 		case Tag:
 			fallthrough
@@ -42,10 +43,10 @@ func (s ActionHandler) HandleAction(rule Rule, r *Record) {
 	for _, a := range rule.Actions {
 		switch a {
 		case Hash:
-			h, _ := s.fileHasher.ProcessSync(r)
-			if hs, ok := h.(HashSet); ok {
-				r.Ctx.SetHashes(hs)
-			}
+			// h, _ := s.fileHasher.ProcessSync(r)
+			// if hs, ok := h.(HashSet); ok {
+			// 	r.Ctx.SetHashes(hs)
+			// }
 			fallthrough
 		case Tag:
 			fallthrough
