@@ -19,7 +19,7 @@ func SetupInterpreter(m *testing.M) {
 
 func TestCompile(t *testing.T) {
 	logger.Trace.Println("Running test compile")
-	paths, err := ioutils.ListFilePaths("../../../tests/policies", ".yaml")
+	paths, err := ioutils.ListFilePaths("../../../resources/policies/tests", ".yaml")
 	assert.NoError(t, err)
 	assert.NoError(t, pi.Compile(paths...))
 }
