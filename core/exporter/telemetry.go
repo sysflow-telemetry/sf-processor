@@ -111,9 +111,9 @@ func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 		}
 	} else {
 		r.DataRecord = new(DataRecord)
-		pprocID := engine.Mapper.MapInt("sf.pproc.pid")(rec)
+		pprocID := engine.Mapper.MapInt(engine.SF_PPROC_PID)(rec)
 		pprocExists := !reflect.ValueOf(pprocID).IsZero()
-		ct := engine.Mapper.MapStr("sf.container.id")(rec)
+		ct := engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(rec)
 		ctExists := !reflect.ValueOf(ct).IsZero()
 		for _, k := range engine.Fields {
 			kc := strings.Split(k, ".")
@@ -144,7 +144,7 @@ func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 						r.Pproc[kc[2]] = value
 					}
 				case net:
-					if r.Type == "NF" {
+					if r.Type == engine.TyNF {
 						if r.NetData == nil {
 							r.NetData = new(NetData)
 							r.NetData.Net = make(map[string]interface{})
@@ -152,7 +152,7 @@ func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 						r.Net[kc[2]] = value
 					}
 				case file:
-					if r.Type == "FF" || r.Type == "FE" {
+					if r.Type == engine.TyFF || r.Type == engine.TyFE {
 						if r.FileData == nil {
 							r.FileData = new(FileData)
 							r.FileData.File = make(map[string]interface{})
@@ -160,7 +160,7 @@ func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 						r.File[kc[2]] = value
 					}
 				case flow:
-					if r.Type == "FF" || r.Type == "NF" {
+					if r.Type == engine.TyFF || r.Type == engine.TyNF {
 						if r.FlowData == nil {
 							r.FlowData = new(FlowData)
 							r.FlowData.Flow = make(map[string]interface{})
@@ -229,7 +229,7 @@ func extractValue(k string, v interface{}) interface{} {
 }
 
 func array(k string) bool {
-	return k == "sf.opflags" || k == "sf.proc.apid" || k == "sf.proc.aname" ||
-		k == "sf.proc.aexe" || k == "sf.proc.acmdline" || k == "sf.file.openflags" ||
-		k == "sf.net.ip" || k == "sf.net.port"
+	return k == engine.SF_OPFLAGS || k == engine.SF_PROC_APID || k == engine.SF_PROC_ANAME ||
+		k == engine.SF_PROC_AEXE || k == engine.SF_PROC_ACMDLINE || k == engine.SF_FILE_OPENFLAGS ||
+		k == engine.SF_NET_IP || k == engine.SF_NET_PORT
 }
