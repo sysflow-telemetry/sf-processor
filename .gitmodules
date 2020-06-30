@@ -3,4 +3,4 @@
 	url = git@github.ibm.com:sysflow/goutils.git
 [submodule "modules/sf-apis"]
 	path = modules/sf-apis
-	url = git@github.com:sysflow-telemetry/sf-apis.git
+	url = https://github.com/sysflow-telemetry/sf-apis.git
