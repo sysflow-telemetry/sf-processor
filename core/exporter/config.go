@@ -145,7 +145,7 @@ const (
 )
 
 func (s Proto) String() string {
-	return [...]string{"tcp", "tcp+tls", "udp"}[s]
+	return [...]string{"tcp", "tls", "udp"}[s]
 }
 
 func parseProtoConfig(s string) Proto {
