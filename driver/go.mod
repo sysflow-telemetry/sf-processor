@@ -4,11 +4,9 @@ go 1.14
 
 require (
 	github.com/actgardner/gogen-avro v6.5.0+incompatible
-	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
-	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
@@ -23,5 +21,7 @@ require (
 )
 
 replace github.ibm.com/sysflow/sf-processor/core => ../core
+
 replace github.ibm.com/sysflow/goutils => ../modules/goutils
+
 replace github.com/sysflow-telemetry/sf-apis/go => ../modules/sf-apis/go
