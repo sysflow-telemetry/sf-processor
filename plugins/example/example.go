@@ -16,8 +16,8 @@ func NewExample() sp.SFProcessor {
 	return new(Example)
 }
 
-// Init initializes the plugin with a configuration map and cache.
-func (s *Example) Init(conf map[string]string, tables interface{}) error {
+// Init initializes the plugin with a configuration map.
+func (s *Example) Init(conf map[string]string) error {
 	return nil
 }
 
