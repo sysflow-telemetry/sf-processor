@@ -23,10 +23,10 @@ clean:
 	rm -f $(SRC)/$(BIN)
 
 install: build
-	mkdir -p /usr/local/sf-processor/bin && mkdir -p /usr/local/sf-processor/conf
+	mkdir -p /usr/local/sf-processor/bin /usr/local/sf-processor/conf /usr/local/sf-processor/policies
 	cp ./driver/sfprocessor /usr/local/sf-processor/bin/sfprocessor
 	cp ./driver/pipeline.json /usr/local/sf-processor/conf/pipeline.json
-	cp ./tests/policies/* /usr/local/sf-processor/conf/
+	cp ./policies/* /usr/local/sf-processor/policies/
 
 docker-build: build
 	sudo docker build -t sf-processor:latest --target=runtime -f Dockerfile.processor .
