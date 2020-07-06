@@ -7,9 +7,13 @@ import (
 	"sync"
 
 	syslog "github.com/RackSec/srslog"
-	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
+	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
+)
+
+const (
+	pluginName string = "exporter"
 )
 
 // Exporter defines a syslogger plugin.
@@ -21,8 +25,13 @@ type Exporter struct {
 }
 
 // NewExporter creates a new plugin instance.
-func NewExporter() sp.SFProcessor {
+func NewExporter() plugins.SFProcessor {
 	return new(Exporter)
+}
+
+// Register registers plugin to plugin cache.
+func (s *Exporter) Register(pc *plugins.SFPluginCache) {
+	(*pc).AddProcessor(pluginName, NewExporter)
 }
 
 // Init initializes the plugin with a configuration map and cache.

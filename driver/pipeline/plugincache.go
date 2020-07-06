@@ -7,14 +7,13 @@ import (
 	"plugin"
 	"strings"
 
-	"github.com/spf13/viper"
-	"github.com/sysflow-telemetry/sf-apis/go/handlers"
-	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
-	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/exporter"
-	"github.ibm.com/sysflow/sf-processor/core/flattener"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine"
 	"github.ibm.com/sysflow/sf-processor/core/processor"
+
+	"github.com/spf13/viper"
+	"github.com/sysflow-telemetry/sf-apis/go/plugins"
+	"github.ibm.com/sysflow/goutils/logger"
 )
 
 // PluginCache defines a data strucure for managing plugins.
@@ -31,10 +30,26 @@ type PluginCache struct {
 // NewPluginCache creates a new PluginCache instance.
 func NewPluginCache(conf string) *PluginCache {
 	plug := &PluginCache{config: viper.New(), chanMap: make(map[string]interface{}), pluginMap: make(map[string]*plugin.Plugin), configFile: conf}
-	plug.procFuncMap = map[string]interface{}{"sysflowproc": processor.NewSysFlowProc, "policyengine": policyengine.NewPolicyEngine, "exporter": exporter.NewExporter}
-	plug.hdlFuncMap = map[string]interface{}{"flattener": flattener.NewFlattener}
-	plug.chanFuncMap = map[string]interface{}{"sysflowchan": processor.NewSysFlowChan, "flattenerchan": flattener.NewFlattenerChan, "eventchan": policyengine.NewEventChan}
 	return plug
+}
+
+// Init initializes plugins.
+func (p *PluginCache) Init() {
+	(&processor.SysFlowProcessor{}).Register(p)
+	(&policyengine.PolicyEngine{}).Register(p)
+	(&exporter.Exporter{}).Register(p)
+}
+
+func (p *PluginCache) AddProcessor(name string, factory interface{}) {
+
+}
+
+func (p *PluginCache) AddHandler(name string, factory interface{}) {
+
+}
+
+func (p *PluginCache) AddChannel(name string, factory interface{}) {
+
 }
 
 // GetConfig reads the PluginCache configuration.
@@ -111,13 +126,13 @@ func (p *PluginCache) GetPlugin(mod string) (*plugin.Plugin, error) {
 }
 
 // GetHandler retrieves a cached plugin handler by name.
-func (p *PluginCache) GetHandler(mod string, name string) (handlers.SFHandler, error) {
-	var hdl handlers.SFHandler
+func (p *PluginCache) GetHandler(mod string, name string) (plugins.SFHandler, error) {
+	var hdl plugins.SFHandler
 	if val, ok := p.hdlFuncMap[name]; ok {
-		funct := val.(func() handlers.SFHandler)
+		funct := val.(func() plugins.SFHandler)
 		hdl = funct()
 	} else {
-		fName := "New" + name
+		fName := "New" + name // TODO: change to Register
 		plug, err := p.GetPlugin(mod)
 		if err != nil {
 			return nil, err
@@ -126,7 +141,7 @@ func (p *PluginCache) GetHandler(mod string, name string) (handlers.SFHandler, e
 		if err != nil {
 			return nil, err
 		}
-		funct, ok := symFlattener.(func() handlers.SFHandler)
+		funct, ok := symFlattener.(func() plugins.SFHandler)
 		if !ok {
 			return nil, errors.New("Unexpected type from module symbol for handler function: " + fName)
 		}
@@ -154,7 +169,7 @@ func (p *PluginCache) GetChan(mod string, ch string, size int) (interface{}, err
 		if err != nil {
 			return nil, err
 		}
-		fName := "New" + fields[1]
+		fName := "New" + fields[1] // TODO: change to Register
 		symChan, err := plug.Lookup(fName)
 		if err != nil {
 			return nil, err
@@ -170,19 +185,19 @@ func (p *PluginCache) GetChan(mod string, ch string, size int) (interface{}, err
 }
 
 // GetProcessor retrieves a cached plugin processor by name.
-func (p *PluginCache) GetProcessor(mod string, name string, hdl handlers.SFHandler, hdlr bool) (sp.SFProcessor, error) {
+func (p *PluginCache) GetProcessor(mod string, name string, hdl plugins.SFHandler, hdlr bool) (sp.SFProcessor, error) {
 	var prc sp.SFProcessor
 	if val, ok := p.procFuncMap[name]; ok {
 		logger.Trace.Println("Found processor in function map: ", name)
 		if hdlr {
-			funct := val.(func(handlers.SFHandler) sp.SFProcessor)
+			funct := val.(func(plugins.SFHandler) sp.SFProcessor)
 			prc = funct(hdl)
 		} else {
 			funct := val.(func() sp.SFProcessor)
 			prc = funct()
 		}
 	} else {
-		fName := "New" + name
+		fName := "New" + name // TODO: change to Register
 		plug, err := p.GetPlugin(mod)
 		if err != nil {
 			return nil, err
@@ -193,13 +208,13 @@ func (p *PluginCache) GetProcessor(mod string, name string, hdl handlers.SFHandl
 			return nil, err
 		}
 		if hdlr {
-			funct, ok := symProcessor.(func(handlers.SFHandler) sp.SFProcessor)
+			funct, ok := symProcessor.(func(plugins.SFHandler) sp.SFProcessor)
 			if !ok {
 				return nil, errors.New("Unexpected type from module symbol for processor: " + fName)
 			}
 			prc = funct(hdl)
 		} else {
-			funct, ok := symProcessor.(func() sp.SFProcessor)
+			funct, ok := symProcessor.(func() plugins.SFProcessor)
 			if !ok {
 				return nil, errors.New("Unexpected type from module symbol for processor: " + fName)
 			}
