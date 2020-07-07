@@ -41,8 +41,11 @@ func (s *Exporter) Init(conf map[string]string) error {
 		} else {
 			s.sysl, err = syslog.Dial(s.config.Proto.String(), raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag)
 		}
-		if err == nil && s.config.LogSource != sfgo.Zeros.String {
-			s.sysl.SetHostname(s.config.LogSource)
+		if err == nil {
+			s.sysl.SetFormatter(syslog.RFC5424Formatter)
+			if s.config.LogSource != sfgo.Zeros.String {
+				s.sysl.SetHostname(s.config.LogSource)
+			}
 		}
 	}
 	return err

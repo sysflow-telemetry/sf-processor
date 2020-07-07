@@ -19,6 +19,7 @@ COPY core ${SRC_ROOT}core
 COPY modules ${SRC_ROOT}/modules
 COPY driver ${SRC_ROOT}driver
 COPY plugins ${SRC_ROOT}plugins
+COPY policies ${SRC_ROOT}policies
 COPY tests ${SRC_ROOT}tests
 COPY Makefile ${SRC_ROOT}
 
