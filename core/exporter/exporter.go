@@ -8,6 +8,7 @@ import (
 
 	syslog "github.com/RackSec/srslog"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
@@ -39,6 +40,9 @@ func (s *Exporter) Init(conf map[string]string) error {
 			s.sysl, err = syslog.DialWithTLSConfig("tcp+tls", raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag, nopTLSConfig)
 		} else {
 			s.sysl, err = syslog.Dial(s.config.Proto.String(), raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag)
+		}
+		if err == nil && s.config.LogSource != sfgo.Zeros.String {
+			s.sysl.SetHostname(s.config.LogSource)
 		}
 	}
 	return err

@@ -12,6 +12,7 @@ const (
 	FlatConfigKey        string = "flat"
 	ProtoConfigKey       string = "proto"
 	TagConfigKey         string = "tag"
+	LogSourceConfigKey   string = "source"
 	HostConfigKey        string = "host"
 	PortConfigKey        string = "port"
 	PathConfigKey        string = "path"
@@ -26,6 +27,7 @@ type Config struct {
 	Flat        bool
 	Proto       Proto
 	Tag         string
+	LogSource   string
 	Host        string
 	Port        int
 	Path        string
@@ -34,7 +36,7 @@ type Config struct {
 
 // CreateConfig creates a new config object from config dictionary.
 func CreateConfig(conf map[string]string) Config {
-	var c Config = Config{Host: "localhost", Port: 514, Path: "./export.out"} // default values
+	var c Config = Config{Host: "localhost", Port: 514, Path: "./export.out", Tag: "sysflow"} // default values
 	if v, ok := conf[ExportConfigKey]; ok {
 		c.Export = parseExportConfig(v)
 	}
@@ -52,6 +54,9 @@ func CreateConfig(conf map[string]string) Config {
 	}
 	if v, ok := conf[TagConfigKey]; ok {
 		c.Tag = v
+	}
+	if v, ok := conf[LogSourceConfigKey]; ok {
+		c.LogSource = v
 	}
 	if v, ok := conf[HostConfigKey]; ok {
 		c.Host = v
