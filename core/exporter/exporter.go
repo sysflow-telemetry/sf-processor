@@ -8,6 +8,7 @@ import (
 
 	syslog "github.com/RackSec/srslog"
 	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
@@ -42,6 +43,9 @@ func (s *Exporter) Init(conf map[string]string) error {
 		}
 		if err == nil {
 			s.sysl.SetFormatter(syslog.RFC5424Formatter)
+			if s.config.LogSource != sfgo.Zeros.String {
+				s.sysl.SetHostname(s.config.LogSource)
+			}
 		}
 	}
 	return err
