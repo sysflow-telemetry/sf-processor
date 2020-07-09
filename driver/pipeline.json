@@ -2,7 +2,7 @@
    "_comment": "Default configuration (check ../README.md for details)",
    "pipeline":[
      {
-      "processor": "sysflowproc",
+      "processor": "sysflowreader",
       "handler": "flattener",
       "in": "sysflow sysflowchan",
       "out": "flat flattenerchan"
@@ -11,7 +11,7 @@
       "processor": "policyengine",
       "in": "flat flattenerchan",
       "out": "evt eventchan",
-      "policies": "/usr/local/sf-processor/conf/",
+      "policies": "/usr/local/sf-processor/policies/",
       "mode": "alert"
      },
      {

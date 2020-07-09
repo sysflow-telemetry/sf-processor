@@ -28,9 +28,9 @@ func NewFlattenerChan(size int) interface{} {
 }
 
 // Register registers plugin to plugin cache.
-func (g *Flattener) Register(pc *plugins.SFPluginCache) {
-	(*pc).AddHandler(handlerName, NewFlattener)
-	(*pc).AddChannel(channelName, NewFlattenerChan)
+func (g *Flattener) Register(pc plugins.SFPluginCache) {
+	pc.AddHandler(handlerName, NewFlattener)
+	pc.AddChannel(channelName, NewFlattenerChan)
 }
 
 // Init initializes the handler with a configuration map.

@@ -29,9 +29,14 @@ func NewExporter() plugins.SFProcessor {
 	return new(Exporter)
 }
 
+// GetName returns the plugin name.
+func (s *Exporter) GetName() string {
+	return pluginName
+}
+
 // Register registers plugin to plugin cache.
-func (s *Exporter) Register(pc *plugins.SFPluginCache) {
-	(*pc).AddProcessor(pluginName, NewExporter)
+func (s *Exporter) Register(pc plugins.SFPluginCache) {
+	pc.AddProcessor(pluginName, NewExporter)
 }
 
 // Init initializes the plugin with a configuration map and cache.
@@ -48,6 +53,9 @@ func (s *Exporter) Init(conf map[string]string) error {
 			s.sysl, err = syslog.DialWithTLSConfig("tcp+tls", raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag, nopTLSConfig)
 		} else {
 			s.sysl, err = syslog.Dial(s.config.Proto.String(), raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag)
+		}
+		if err == nil {
+			s.sysl.SetFormatter(syslog.RFC5424Formatter)
 		}
 	}
 	return err

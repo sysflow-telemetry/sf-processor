@@ -30,15 +30,20 @@ func NewSysFlowProcessor(hdl plugins.SFHandler) plugins.SFProcessor {
 	return p
 }
 
+// GetName returns the plugin name.
+func (s *SysFlowProcessor) GetName() string {
+	return pluginName
+}
+
 // NewSysFlowChan creates a new processor channel instance.
 func NewSysFlowChan(size int) interface{} {
 	return &plugins.SFChannel{In: make(chan *sfgo.SysFlow, size)}
 }
 
 // Register registers plugin to plugin cache.
-func (s *SysFlowProcessor) Register(pc *plugins.SFPluginCache) {
-	(*pc).AddProcessor(pluginName, NewSysFlowProcessor)
-	(*pc).AddChannel(channelName, NewSysFlowChan)
+func (s *SysFlowProcessor) Register(pc plugins.SFPluginCache) {
+	pc.AddProcessor(pluginName, NewSysFlowProcessor)
+	pc.AddChannel(channelName, NewSysFlowChan)
 	(&flattener.Flattener{}).Register(pc)
 }
 

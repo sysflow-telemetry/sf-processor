@@ -29,15 +29,20 @@ func NewPolicyEngine() plugins.SFProcessor {
 	return new(PolicyEngine)
 }
 
+// GetName returns the plugin name.
+func (s *PolicyEngine) GetName() string {
+	return pluginName
+}
+
 // NewEventChan creates a new event record channel instance.
 func NewEventChan(size int) interface{} {
 	return &engine.RecordChannel{In: make(chan *engine.Record, size)}
 }
 
 // Register registers plugin to plugin cache.
-func (s *PolicyEngine) Register(pc *plugins.SFPluginCache) {
-	(*pc).AddProcessor(pluginName, NewPolicyEngine)
-	(*pc).AddChannel(channelName, NewEventChan)
+func (s *PolicyEngine) Register(pc plugins.SFPluginCache) {
+	pc.AddProcessor(pluginName, NewPolicyEngine)
+	pc.AddChannel(channelName, NewEventChan)
 }
 
 // Init initializes the plugin.
