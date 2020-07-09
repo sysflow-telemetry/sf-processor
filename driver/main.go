@@ -217,9 +217,8 @@ func LoadPipeline(pluginDir string, config string) (interface{}, []plugins.SFPro
 	for idx, p := range conf.Pipeline {
 		hdler := false
 		var hdl plugins.SFHandler
-		mod := p[pipeline.ModConfig]
 		if val, ok := p[pipeline.HdlConfig]; ok {
-			hdl, err = pl.GetHandler(mod, val)
+			hdl, err = pl.GetHandler(val)
 			if err != nil {
 				logger.Error.Println(err)
 				return nil, nil, wg, nil, nil, err
@@ -231,7 +230,7 @@ func LoadPipeline(pluginDir string, config string) (interface{}, []plugins.SFPro
 		}
 		var prc plugins.SFProcessor
 		if val, ok := p[pipeline.ProcConfig]; ok {
-			prc, err = pl.GetProcessor(mod, val, hdl, hdler)
+			prc, err = pl.GetProcessor(val, hdl, hdler)
 			if err != nil {
 				logger.Error.Println(err)
 				return nil, nil, wg, nil, nil, err
@@ -248,7 +247,7 @@ func LoadPipeline(pluginDir string, config string) (interface{}, []plugins.SFPro
 			return nil, nil, wg, nil, nil, err
 		}
 		if v, o := p[pipeline.InChanConfig]; o {
-			in, err = pl.GetChan(mod, v, ChanSize)
+			in, err = pl.GetChan(v, ChanSize)
 			channels = append(channels, in)
 			chp := fmt.Sprintf("%T", in)
 			logger.Trace.Println(chp)
@@ -257,7 +256,7 @@ func LoadPipeline(pluginDir string, config string) (interface{}, []plugins.SFPro
 			return nil, nil, wg, nil, nil, errors.New("in tag must exist in plugin config")
 		}
 		if v, o := p[pipeline.OutChanConfig]; o {
-			out, err = pl.GetChan(mod, v, ChanSize)
+			out, err = pl.GetChan(v, ChanSize)
 			chp := fmt.Sprintf("%T", out)
 			channels = append(channels, out)
 			logger.Trace.Println(chp)

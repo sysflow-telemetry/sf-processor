@@ -16,7 +16,7 @@ import (
 	"github.ibm.com/sysflow/sf-processor/core/processor"
 )
 
-// PluginCache defines a data strucure for managing plugins
+// PluginCache defines a data strucure for managing plugins.
 type PluginCache struct {
 	chanMap     map[string]interface{}
 	pluginMap   map[string]*plugin.Plugin
@@ -27,7 +27,7 @@ type PluginCache struct {
 	configFile  string
 }
 
-// NewPluginCache creates a new PluginCache instance
+// NewPluginCache creates a new PluginCache instance.
 func NewPluginCache(conf string) *PluginCache {
 	plug := &PluginCache{config: viper.New(),
 		chanMap:     make(map[string]interface{}),
@@ -40,14 +40,14 @@ func NewPluginCache(conf string) *PluginCache {
 	return plug
 }
 
-// initializes plugin cache
+// initializes plugin cache.
 func (p *PluginCache) init() {
 	(&processor.SysFlowProcessor{}).Register(p)
 	(&policyengine.PolicyEngine{}).Register(p)
 	(&exporter.Exporter{}).Register(p)
 }
 
-// LoadPlugins loads dynamic plugins to plugin cache from dir path
+// LoadPlugins loads dynamic plugins to plugin cache from dir path.
 func (p *PluginCache) LoadPlugins(dir string) error {
 	var plug *plugin.Plugin
 	if paths, err := ioutils.ListFilePaths(dir, ".so"); err == nil {
@@ -68,22 +68,22 @@ func (p *PluginCache) LoadPlugins(dir string) error {
 	return nil
 }
 
-// AddProcessor adds a processor factory method to the plugin cache
+// AddProcessor adds a processor factory method to the plugin cache.
 func (p *PluginCache) AddProcessor(name string, factory interface{}) {
 	p.procFuncMap[name] = factory
 }
 
-// AddHandler adds a handler factory method to the plugin cache
+// AddHandler adds a handler factory method to the plugin cache.
 func (p *PluginCache) AddHandler(name string, factory interface{}) {
 	p.hdlFuncMap[name] = factory
 }
 
-// AddChannel adds a channel factory method to the plugin cache
+// AddChannel adds a channel factory method to the plugin cache.
 func (p *PluginCache) AddChannel(name string, factory interface{}) {
 	p.chanFuncMap[name] = factory
 }
 
-// GetConfig reads the PluginCache configuration
+// GetConfig reads the PluginCache configuration.
 func (p *PluginCache) GetConfig() (*Config, error) {
 	s, err := os.Stat(p.configFile)
 	if os.IsNotExist(err) {
@@ -113,7 +113,7 @@ func (p *PluginCache) GetConfig() (*Config, error) {
 	return conf, nil
 }
 
-// updateConfigFromEnv updates config object with environment variables if set
+// updateConfigFromEnv updates config object with environment variables if set.
 // It assumes the following convention:
 // - Environment variables follow the naming schema <PROCESSOR NAME>_<CONFIG ATTRIBUTE NAME>
 // - Processor name in pipeline.json is all lower case
@@ -127,7 +127,7 @@ func (p *PluginCache) updateConfigFromEnv(config *Config) {
 	}
 }
 
-// getEnv returns the environemnt config settings for processor proc
+// getEnv returns the environemnt config settings for processor proc.
 func (p *PluginCache) getEnv(proc string) map[string]string {
 	var conf = make(map[string]string)
 	for _, e := range os.Environ() {
@@ -140,8 +140,8 @@ func (p *PluginCache) getEnv(proc string) map[string]string {
 	return conf
 }
 
-// GetHandler retrieves a cached plugin handler by name
-func (p *PluginCache) GetHandler(mod string, name string) (plugins.SFHandler, error) {
+// GetHandler retrieves a cached plugin handler by name.
+func (p *PluginCache) GetHandler(name string) (plugins.SFHandler, error) {
 	var hdl plugins.SFHandler
 	if val, ok := p.hdlFuncMap[name]; ok {
 		funct := val.(func() plugins.SFHandler)
@@ -150,8 +150,8 @@ func (p *PluginCache) GetHandler(mod string, name string) (plugins.SFHandler, er
 	return hdl, nil
 }
 
-// GetChan retrieves a cached plugin channel by name
-func (p *PluginCache) GetChan(mod string, ch string, size int) (interface{}, error) {
+// GetChan retrieves a cached plugin channel by name.
+func (p *PluginCache) GetChan(ch string, size int) (interface{}, error) {
 	fields := strings.Fields(ch)
 	if len(fields) != 2 {
 		return nil, errors.New("Channel must be of the form <identifier> <type>")
@@ -169,8 +169,8 @@ func (p *PluginCache) GetChan(mod string, ch string, size int) (interface{}, err
 	return c, nil
 }
 
-// GetProcessor retrieves a cached plugin processor by name
-func (p *PluginCache) GetProcessor(mod string, name string, hdl plugins.SFHandler, hdlr bool) (plugins.SFProcessor, error) {
+// GetProcessor retrieves a cached plugin processor by name.
+func (p *PluginCache) GetProcessor(name string, hdl plugins.SFHandler, hdlr bool) (plugins.SFProcessor, error) {
 	var prc plugins.SFProcessor
 	if val, ok := p.procFuncMap[name]; ok {
 		logger.Trace.Println("Found processor in function map: ", name)
