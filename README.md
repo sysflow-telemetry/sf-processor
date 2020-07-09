@@ -65,6 +65,7 @@ $ export EXPORTER_TYPE=file
       "path": "output file path (default: ./export.out)",
       "proto": "rsyslog protocol tcp|udp|tcp+tls (default: tcp)",
       "tag": "rsyslog tag (default: sysflow)",
+      "source": "rsyslog source hostname (default: hostname)",
       "host": "rsyslog host (default: localhost)",
       "port": "ryslog port (default: 514)",
       "buffer": "event aggregation buffer (default: 0)"
