@@ -1,1 +1,1 @@
-This project is still not a open source project. The copyright belongs to IBM.
+Copyright (C) 2020 IBM Corporation.

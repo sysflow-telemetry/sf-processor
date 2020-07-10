@@ -60,8 +60,8 @@ func (s ActionHandler) HandleAction(rule Rule, r *Record) {
 
 func (s ActionHandler) computeHashes(r *Record) HashSet {
 	var hs HashSet = HashSet{}
-	rtype := Mapper.MapStr("sf.type")(r)
-	if rtype == "FE" || rtype == "FF" {
+	rtype := Mapper.MapStr(SF_TYPE)(r)
+	if rtype == TyFE || rtype == TyFF {
 		//path := Mapper.MapStr("sf.file.path")(r)
 		//contID := Mapper.MapStr("sf.container.id")(r)
 		// if contID != sfgo.Zeros.String {

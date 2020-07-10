@@ -2,7 +2,7 @@
    "_comment": "Default configuration (check ../README.md for details)",
    "pipeline":[
      {
-      "processor": "sysflowproc",
+      "processor": "sysflowreader",
       "handler": "flattener",
       "in": "sysflow sysflowchan",
       "out": "flat flattenerchan"

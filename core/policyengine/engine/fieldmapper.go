@@ -94,72 +94,72 @@ var Fields = getFields()
 // Mapper defines a global attribute mapper instance.
 var Mapper = FieldMapper{
 	map[string]FieldMap{
-		"sf.type":                 mapRecType(),
-		"sf.opflags":              mapOpFlags(),
-		"sf.ret":                  mapInt(sfgo.RET_INT),
-		"sf.ts":                   mapInt(sfgo.TS_INT),
-		"sf.endts":                mapEndTs(),
-		"sf.proc.oid":             mapOID(sfgo.PROC_OID_HPID_INT, sfgo.PROC_OID_CREATETS_INT),
-		"sf.proc.pid":             mapInt(sfgo.PROC_OID_HPID_INT),
-		"sf.proc.name":            mapName(sfgo.PROC_EXE_STR),
-		"sf.proc.exe":             mapStr(sfgo.PROC_EXE_STR),
-		"sf.proc.args":            mapStr(sfgo.PROC_EXEARGS_STR),
-		"sf.proc.uid":             mapInt(sfgo.PROC_UID_INT),
-		"sf.proc.user":            mapStr(sfgo.PROC_USERNAME_STR),
-		"sf.proc.tid":             mapInt(sfgo.TID_INT),
-		"sf.proc.gid":             mapInt(sfgo.PROC_GID_INT),
-		"sf.proc.group":           mapStr(sfgo.PROC_GROUPNAME_STR),
-		"sf.proc.createts":        mapInt(sfgo.PROC_OID_CREATETS_INT),
-		"sf.proc.duration":        mapDuration(sfgo.PROC_OID_CREATETS_INT),
-		"sf.proc.tty":             mapInt(sfgo.PROC_TTY_INT),
-		"sf.proc.cmdline":         mapJoin(sfgo.PROC_EXE_STR, sfgo.PROC_EXEARGS_STR),
-		"sf.proc.aname":           mapCachedValue(ProcAName),
-		"sf.proc.aexe":            mapCachedValue(ProcAExe),
-		"sf.proc.acmdline":        mapCachedValue(ProcACmdLine),
-		"sf.proc.apid":            mapCachedValue(ProcAPID),
-		"sf.pproc.oid":            mapOID(sfgo.PROC_POID_HPID_INT, sfgo.PROC_POID_CREATETS_INT),
-		"sf.pproc.pid":            mapInt(sfgo.PROC_POID_HPID_INT),
-		"sf.pproc.name":           mapCachedValue(PProcName),
-		"sf.pproc.exe":            mapCachedValue(PProcExe),
-		"sf.pproc.args":           mapCachedValue(PProcArgs),
-		"sf.pproc.uid":            mapCachedValue(PProcUID),
-		"sf.pproc.user":           mapCachedValue(PProcUser),
-		"sf.pproc.gid":            mapCachedValue(PProcGID),
-		"sf.pproc.group":          mapCachedValue(PProcGroup),
-		"sf.pproc.createts":       mapInt(sfgo.PROC_POID_CREATETS_INT),
-		"sf.pproc.duration":       mapDuration(sfgo.PROC_POID_CREATETS_INT),
-		"sf.pproc.tty":            mapCachedValue(PProcTTY),
-		"sf.pproc.cmdline":        mapCachedValue(PProcCmdLine),
-		"sf.file.name":            mapName(sfgo.FILE_PATH_STR),
-		"sf.file.path":            mapStr(sfgo.FILE_PATH_STR),
-		"sf.file.canonicalpath":   mapLinkPath(sfgo.FILE_PATH_STR),
-		"sf.file.directory":       mapDir(sfgo.FILE_PATH_STR),
-		"sf.file.newname":         mapName(sfgo.SEC_FILE_PATH_STR),
-		"sf.file.newpath":         mapStr(sfgo.SEC_FILE_PATH_STR),
-		"sf.file.newdirectory":    mapDir(sfgo.SEC_FILE_PATH_STR),
-		"sf.file.type":            mapFileType(sfgo.FILE_RESTYPE_INT),
-		"sf.file.is_open_write":   mapIsOpenWrite(sfgo.FL_FILE_OPENFLAGS_INT),
-		"sf.file.is_open_read":    mapIsOpenRead(sfgo.FL_FILE_OPENFLAGS_INT),
-		"sf.file.fd":              mapInt(sfgo.FL_FILE_FD_INT),
-		"sf.file.openflags":       mapOpenFlags(sfgo.FL_FILE_OPENFLAGS_INT),
-		"sf.net.proto":            mapInt(sfgo.FL_NETW_PROTO_INT),
-		"sf.net.protoname":        mapProto(sfgo.FL_NETW_PROTO_INT),
-		"sf.net.sport":            mapInt(sfgo.FL_NETW_SPORT_INT),
-		"sf.net.dport":            mapInt(sfgo.FL_NETW_DPORT_INT),
-		"sf.net.port":             mapPort(sfgo.FL_NETW_SPORT_INT, sfgo.FL_NETW_DPORT_INT),
-		"sf.net.sip":              mapIP(sfgo.FL_NETW_SIP_INT),
-		"sf.net.dip":              mapIP(sfgo.FL_NETW_DIP_INT),
-		"sf.net.ip":               mapIP(sfgo.FL_NETW_SIP_INT, sfgo.FL_NETW_DIP_INT),
-		"sf.flow.rbytes":          mapSum(sfgo.FL_FILE_NUMRRECVBYTES_INT, sfgo.FL_NETW_NUMRRECVBYTES_INT),
-		"sf.flow.rops":            mapSum(sfgo.FL_FILE_NUMRRECVOPS_INT, sfgo.FL_NETW_NUMRRECVOPS_INT),
-		"sf.flow.wbytes":          mapSum(sfgo.FL_FILE_NUMWSENDBYTES_INT, sfgo.FL_NETW_NUMWSENDBYTES_INT),
-		"sf.flow.wops":            mapSum(sfgo.FL_FILE_NUMWSENDOPS_INT, sfgo.FL_NETW_NUMWSENDOPS_INT),
-		"sf.container.id":         mapStr(sfgo.CONT_ID_STR),
-		"sf.container.name":       mapStr(sfgo.CONT_NAME_STR),
-		"sf.container.imageid":    mapStr(sfgo.CONT_IMAGEID_STR),
-		"sf.container.image":      mapStr(sfgo.CONT_IMAGE_STR),
-		"sf.container.type":       mapContType(sfgo.CONT_TYPE_INT),
-		"sf.container.privileged": mapInt(sfgo.CONT_PRIVILEGED_INT),
+		SF_TYPE:                 mapRecType(),
+		SF_OPFLAGS:              mapOpFlags(),
+		SF_RET:                  mapInt(sfgo.RET_INT),
+		SF_TS:                   mapInt(sfgo.TS_INT),
+		SF_ENDTS:                mapEndTs(),
+		SF_PROC_OID:             mapOID(sfgo.PROC_OID_HPID_INT, sfgo.PROC_OID_CREATETS_INT),
+		SF_PROC_PID:             mapInt(sfgo.PROC_OID_HPID_INT),
+		SF_PROC_NAME:            mapName(sfgo.PROC_EXE_STR),
+		SF_PROC_EXE:             mapStr(sfgo.PROC_EXE_STR),
+		SF_PROC_ARGS:            mapStr(sfgo.PROC_EXEARGS_STR),
+		SF_PROC_UID:             mapInt(sfgo.PROC_UID_INT),
+		SF_PROC_USER:            mapStr(sfgo.PROC_USERNAME_STR),
+		SF_PROC_TID:             mapInt(sfgo.TID_INT),
+		SF_PROC_GID:             mapInt(sfgo.PROC_GID_INT),
+		SF_PROC_GROUP:           mapStr(sfgo.PROC_GROUPNAME_STR),
+		SF_PROC_CREATETS:        mapInt(sfgo.PROC_OID_CREATETS_INT),
+		SF_PROC_DURATION:        mapDuration(sfgo.PROC_OID_CREATETS_INT),
+		SF_PROC_TTY:             mapInt(sfgo.PROC_TTY_INT),
+		SF_PROC_CMDLINE:         mapJoin(sfgo.PROC_EXE_STR, sfgo.PROC_EXEARGS_STR),
+		SF_PROC_ANAME:           mapCachedValue(ProcAName),
+		SF_PROC_AEXE:            mapCachedValue(ProcAExe),
+		SF_PROC_ACMDLINE:        mapCachedValue(ProcACmdLine),
+		SF_PROC_APID:            mapCachedValue(ProcAPID),
+		SF_PPROC_OID:            mapOID(sfgo.PROC_POID_HPID_INT, sfgo.PROC_POID_CREATETS_INT),
+		SF_PPROC_PID:            mapInt(sfgo.PROC_POID_HPID_INT),
+		SF_PPROC_NAME:           mapCachedValue(PProcName),
+		SF_PPROC_EXE:            mapCachedValue(PProcExe),
+		SF_PPROC_ARGS:           mapCachedValue(PProcArgs),
+		SF_PPROC_UID:            mapCachedValue(PProcUID),
+		SF_PPROC_USER:           mapCachedValue(PProcUser),
+		SF_PPROC_GID:            mapCachedValue(PProcGID),
+		SF_PPROC_GROUP:          mapCachedValue(PProcGroup),
+		SF_PPROC_CREATETS:       mapInt(sfgo.PROC_POID_CREATETS_INT),
+		SF_PPROC_DURATION:       mapDuration(sfgo.PROC_POID_CREATETS_INT),
+		SF_PPROC_TTY:            mapCachedValue(PProcTTY),
+		SF_PPROC_CMDLINE:        mapCachedValue(PProcCmdLine),
+		SF_FILE_NAME:            mapName(sfgo.FILE_PATH_STR),
+		SF_FILE_PATH:            mapStr(sfgo.FILE_PATH_STR),
+		SF_FILE_CANONICALPATH:   mapLinkPath(sfgo.FILE_PATH_STR),
+		SF_FILE_DIRECTORY:       mapDir(sfgo.FILE_PATH_STR),
+		SF_FILE_NEWNAME:         mapName(sfgo.SEC_FILE_PATH_STR),
+		SF_FILE_NEWPATH:         mapStr(sfgo.SEC_FILE_PATH_STR),
+		SF_FILE_NEWDIRECTORY:    mapDir(sfgo.SEC_FILE_PATH_STR),
+		SF_FILE_TYPE:            mapFileType(sfgo.FILE_RESTYPE_INT),
+		SF_FILE_IS_OPEN_WRITE:   mapIsOpenWrite(sfgo.FL_FILE_OPENFLAGS_INT),
+		SF_FILE_IS_OPEN_READ:    mapIsOpenRead(sfgo.FL_FILE_OPENFLAGS_INT),
+		SF_FILE_FD:              mapInt(sfgo.FL_FILE_FD_INT),
+		SF_FILE_OPENFLAGS:       mapOpenFlags(sfgo.FL_FILE_OPENFLAGS_INT),
+		SF_NET_PROTO:            mapInt(sfgo.FL_NETW_PROTO_INT),
+		SF_NET_PROTONAME:        mapProto(sfgo.FL_NETW_PROTO_INT),
+		SF_NET_SPORT:            mapInt(sfgo.FL_NETW_SPORT_INT),
+		SF_NET_DPORT:            mapInt(sfgo.FL_NETW_DPORT_INT),
+		SF_NET_PORT:             mapPort(sfgo.FL_NETW_SPORT_INT, sfgo.FL_NETW_DPORT_INT),
+		SF_NET_SIP:              mapIP(sfgo.FL_NETW_SIP_INT),
+		SF_NET_DIP:              mapIP(sfgo.FL_NETW_DIP_INT),
+		SF_NET_IP:               mapIP(sfgo.FL_NETW_SIP_INT, sfgo.FL_NETW_DIP_INT),
+		SF_FLOW_RBYTES:          mapSum(sfgo.FL_FILE_NUMRRECVBYTES_INT, sfgo.FL_NETW_NUMRRECVBYTES_INT),
+		SF_FLOW_ROPS:            mapSum(sfgo.FL_FILE_NUMRRECVOPS_INT, sfgo.FL_NETW_NUMRRECVOPS_INT),
+		SF_FLOW_WBYTES:          mapSum(sfgo.FL_FILE_NUMWSENDBYTES_INT, sfgo.FL_NETW_NUMWSENDBYTES_INT),
+		SF_FLOW_WOPS:            mapSum(sfgo.FL_FILE_NUMWSENDOPS_INT, sfgo.FL_NETW_NUMWSENDOPS_INT),
+		SF_CONTAINER_ID:         mapStr(sfgo.CONT_ID_STR),
+		SF_CONTAINER_NAME:       mapStr(sfgo.CONT_NAME_STR),
+		SF_CONTAINER_IMAGEID:    mapStr(sfgo.CONT_IMAGEID_STR),
+		SF_CONTAINER_IMAGE:      mapStr(sfgo.CONT_IMAGE_STR),
+		SF_CONTAINER_TYPE:       mapContType(sfgo.CONT_TYPE_INT),
+		SF_CONTAINER_PRIVILEGED: mapInt(sfgo.CONT_PRIVILEGED_INT),
 	},
 }
 
@@ -195,23 +195,23 @@ func mapRecType() FieldMap {
 	return func(r *Record) interface{} {
 		switch r.GetInt(sfgo.SF_REC_TYPE) {
 		case sfgo.PROC:
-			return "P"
+			return TyP
 		case sfgo.FILE:
-			return "F"
+			return TyF
 		case sfgo.CONT:
-			return "C"
+			return TyC
 		case sfgo.PROC_EVT:
-			return "PE"
+			return TyPE
 		case sfgo.FILE_EVT:
-			return "FE"
+			return TyFE
 		case sfgo.FILE_FLOW:
-			return "FF"
+			return TyFF
 		case sfgo.NET_FLOW:
-			return "NF"
+			return TyNF
 		case sfgo.HEADER:
-			return "H"
+			return TyH
 		default:
-			return ""
+			return TyUnknow
 		}
 	}
 }

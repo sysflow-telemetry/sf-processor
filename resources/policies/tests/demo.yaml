@@ -1,0 +1,6 @@
+ - macro: _demo_whitelist
+  condition: (not sf.proc.args contains '-c python cos-write.py'
+              and not sf.proc.args contains '/sbin/ldconfig -p') 
+
+ - filter: __demo__
+   condition: not _demo_whitelist

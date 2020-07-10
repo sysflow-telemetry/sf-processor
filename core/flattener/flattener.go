@@ -1,27 +1,36 @@
 package flattener
 
 import (
-	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
+	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/goutils/logger"
 )
 
+const (
+	handlerName string = "flattener"
+	channelName string = "flattenerchan"
+)
+
 // Flattener defines the main class for the flatterner plugin.
 type Flattener struct {
-	Pool     *sfgo.FlatRecordPool
-	flatChan *hdl.FlatChannel
-	ch       chan *sfgo.FlatRecord
+	//Pool  *sfgo.FlatRecordPool
+	outCh chan *sfgo.FlatRecord
 }
 
 // NewFlattener creates a new Flattener instance.
-func NewFlattener() hdl.SFHandler {
+func NewFlattener() plugins.SFHandler {
 	return new(Flattener)
 }
 
 // NewFlattenerChan creates a new channel with given capacity.
 func NewFlattenerChan(size int) interface{} {
-	ch := hdl.FlatChannel{In: make(chan *sfgo.FlatRecord, size)}
-	return &ch
+	return &plugins.FlatChannel{In: make(chan *sfgo.FlatRecord, size)}
+}
+
+// Register registers plugin to plugin cache.
+func (g *Flattener) Register(pc plugins.SFPluginCache) {
+	pc.AddHandler(handlerName, NewFlattener)
+	pc.AddChannel(channelName, NewFlattenerChan)
 }
 
 // Init initializes the handler with a configuration map.
@@ -36,14 +45,13 @@ func (g *Flattener) IsEntityEnabled() bool {
 
 // SetOutChan sets the plugin output channel.
 func (g *Flattener) SetOutChan(chObj interface{}) {
-	g.flatChan = chObj.(*hdl.FlatChannel)
-	g.ch = g.flatChan.In
+	g.outCh = chObj.(*plugins.FlatChannel).In
 }
 
 // Cleanup tears down resources.
 func (g *Flattener) Cleanup() {
 	logger.Trace.Println("Calling Cleanup on Flattener channel")
-	close(g.ch)
+	close(g.outCh)
 }
 
 // HandleHeader processes Header entities.
@@ -86,7 +94,7 @@ func (g *Flattener) HandleNetFlow(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 	fr.Ints[sfgo.FL_NETW_NUMWSENDOPS_INT] = nf.NumWSendOps
 	fr.Ints[sfgo.FL_NETW_NUMRRECVBYTES_INT] = nf.NumRRecvBytes
 	fr.Ints[sfgo.FL_NETW_NUMWSENDBYTES_INT] = nf.NumWSendBytes
-	g.ch <- fr
+	g.outCh <- fr
 	return nil
 }
 
@@ -106,7 +114,7 @@ func (g *Flattener) HandleFileFlow(hdr *sfgo.SFHeader, cont *sfgo.Container, pro
 	fr.Ints[sfgo.FL_FILE_NUMWSENDOPS_INT] = ff.NumWSendOps
 	fr.Ints[sfgo.FL_FILE_NUMRRECVBYTES_INT] = ff.NumRRecvBytes
 	fr.Ints[sfgo.FL_FILE_NUMWSENDBYTES_INT] = ff.NumWSendBytes
-	g.ch <- fr
+	g.outCh <- fr
 	return nil
 }
 
@@ -131,7 +139,7 @@ func (g *Flattener) HandleFileEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 	fr.Ints[sfgo.EV_FILE_TID_INT] = fe.Tid
 	fr.Ints[sfgo.EV_FILE_OPFLAGS_INT] = int64(fe.OpFlags)
 	fr.Ints[sfgo.EV_FILE_RET_INT] = int64(fe.Ret)
-	g.ch <- fr
+	g.outCh <- fr
 	return nil
 }
 
@@ -145,7 +153,7 @@ func (g *Flattener) HandleProcEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 	fr.Ints[sfgo.EV_PROC_TID_INT] = pe.Tid
 	fr.Ints[sfgo.EV_PROC_OPFLAGS_INT] = int64(pe.OpFlags)
 	fr.Ints[sfgo.EV_PROC_RET_INT] = int64(pe.Ret)
-	g.ch <- fr
+	g.outCh <- fr
 	return nil
 }
 

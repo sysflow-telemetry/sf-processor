@@ -7,4 +7,6 @@ require (
 	github.ibm.com/sysflow/goutils v0.0.0-20200528201643-85683bbabbe4
 )
 
-replace github.ibm.com/sysflow/goutils => ../../common
+replace github.ibm.com/sysflow/goutils => ../../modules/goutils
+
+replace github.com/sysflow-telemetry/sf-apis/go => ../../modules/sf-apis/go

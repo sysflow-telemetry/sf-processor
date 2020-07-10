@@ -4,30 +4,45 @@ import (
 	"errors"
 	"sync"
 
-	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
-	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
+	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.ibm.com/sysflow/goutils/ioutils"
 	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/cache"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
+const (
+	pluginName  string = "policyengine"
+	channelName string = "eventchan"
+)
+
 // PolicyEngine defines a driver for the Policy Engine plugin.
 type PolicyEngine struct {
 	pi         engine.PolicyInterpreter
 	tables     *cache.SFTables
-	ch         chan *engine.Record
+	outCh      chan *engine.Record
 	filterOnly bool
 }
 
 // NewPolicyEngine constructs a new Policy Engine plugin.
-func NewPolicyEngine() sp.SFProcessor {
+func NewPolicyEngine() plugins.SFProcessor {
 	return new(PolicyEngine)
+}
+
+// GetName returns the plugin name.
+func (s *PolicyEngine) GetName() string {
+	return pluginName
 }
 
 // NewEventChan creates a new event record channel instance.
 func NewEventChan(size int) interface{} {
 	return &engine.RecordChannel{In: make(chan *engine.Record, size)}
+}
+
+// Register registers plugin to plugin cache.
+func (s *PolicyEngine) Register(pc plugins.SFPluginCache) {
+	pc.AddProcessor(pluginName, NewPolicyEngine)
+	pc.AddChannel(channelName, NewEventChan)
 }
 
 // Init initializes the plugin.
@@ -54,10 +69,10 @@ func (s *PolicyEngine) Init(conf map[string]string) error {
 
 // Process implements the main loop of the plugin.
 func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
-	in := ch.(*hdl.FlatChannel).In
+	in := ch.(*plugins.FlatChannel).In
 	defer wg.Done()
 	logger.Trace.Println("Starting policy engine with capacity: ", cap(in))
-	out := func(r *engine.Record) { s.ch <- r }
+	out := func(r *engine.Record) { s.outCh <- r }
 	for {
 		if fc, ok := <-in; ok {
 			s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc, s.tables), out)
@@ -75,10 +90,10 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 
 // SetOutChan sets the output channel of the plugin.
 func (s *PolicyEngine) SetOutChan(ch interface{}) {
-	s.ch = (ch.(*engine.RecordChannel)).In
+	s.outCh = (ch.(*engine.RecordChannel)).In
 }
 
 // Cleanup clean up the plugin resources.
 func (s *PolicyEngine) Cleanup() {
-	close(s.ch)
+	close(s.outCh)
 }
