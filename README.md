@@ -12,21 +12,25 @@ go build .
 For usage, after build, run:
 ```
 ./driver -h
-Usage: sysprocessor [-input <value>] path
+Usage: sysprocessor [-input <value>] [-log <value>] [-plugdir <value>] path
 
 Positional arguments:
   path string
-        Input path
+	Input path
 
 Arguments:
   -config string
-        Path to pipeline configuration file (default "/usr/local/sf-processor/conf/pipeline.json")
+    	Path to pipeline configuration file (default "/usr/local/sf-processor/conf/pipeline.json")
   -cpuprofile file
-        Write cpu profile to file
+    	Write cpu profile to file
   -input string
-        Input type {file|socket} (default "file")
+    	Input type {file|socket} (default "file")
+  -log string
+    	Log level {trace|info|warn|error} (default "info")
   -memprofile file
-        Write memory profile to file
+    	Write memory profile to file
+  -plugdir string
+    	Dynamic plugins directory (default "../resources/plugins")
 ```
 
 ## Configuration
@@ -43,7 +47,7 @@ $ export EXPORTER_TYPE=file
    "_comment": "DO NOT EDIT THIS TEMPLATE (remove this attribute when copying)",
    "pipeline":[
      {
-      "processor": "sysflowproc",
+      "processor": "sysflowreader",
       "handler": "flattener",
       "in": "sysflow sysflowchan",
       "out": "flat flattenerchan"
@@ -72,5 +76,4 @@ $ export EXPORTER_TYPE=file
      }
    ]
 }
-
 ```
