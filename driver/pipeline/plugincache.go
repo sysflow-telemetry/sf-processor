@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"plugin"
@@ -142,12 +143,11 @@ func (p *PluginCache) getEnv(proc string) map[string]string {
 
 // GetHandler retrieves a cached plugin handler by name.
 func (p *PluginCache) GetHandler(name string) (plugins.SFHandler, error) {
-	var hdl plugins.SFHandler
 	if val, ok := p.hdlFuncMap[name]; ok {
 		funct := val.(func() plugins.SFHandler)
-		hdl = funct()
+		return funct(), nil
 	}
-	return hdl, nil
+	return nil, fmt.Errorf("Handler '%s' not found in plugin cache", name)
 }
 
 // GetChan retrieves a cached plugin channel by name.
@@ -160,20 +160,20 @@ func (p *PluginCache) GetChan(ch string, size int) (interface{}, error) {
 		logger.Trace.Println("Found existing channel ", fields[0])
 		return val, nil
 	}
-	var c interface{}
 	if val, ok := p.chanFuncMap[fields[1]]; ok {
 		funct := val.(func(int) interface{})
-		c = funct(size)
+		c := funct(size)
+		p.chanMap[fields[0]] = c
+		return c, nil
 	}
-	p.chanMap[fields[0]] = c
-	return c, nil
+	return nil, fmt.Errorf("Channel '%s' not found in plugin cache", fields[0])
 }
 
 // GetProcessor retrieves a cached plugin processor by name.
 func (p *PluginCache) GetProcessor(name string, hdl plugins.SFHandler, hdlr bool) (plugins.SFProcessor, error) {
-	var prc plugins.SFProcessor
 	if val, ok := p.procFuncMap[name]; ok {
 		logger.Trace.Println("Found processor in function map: ", name)
+		var prc plugins.SFProcessor
 		if hdlr {
 			funct := val.(func(plugins.SFHandler) plugins.SFProcessor)
 			prc = funct(hdl)
@@ -181,6 +181,7 @@ func (p *PluginCache) GetProcessor(name string, hdl plugins.SFHandler, hdlr bool
 			funct := val.(func() plugins.SFProcessor)
 			prc = funct()
 		}
+		return prc, nil
 	}
-	return prc, nil
+	return nil, fmt.Errorf("Plugin '%s' not found in plugin cache", name)
 }
