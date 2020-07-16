@@ -160,6 +160,7 @@ var Mapper = FieldMapper{
 		SF_CONTAINER_IMAGE:      mapStr(sfgo.CONT_IMAGE_STR),
 		SF_CONTAINER_TYPE:       mapContType(sfgo.CONT_TYPE_INT),
 		SF_CONTAINER_PRIVILEGED: mapInt(sfgo.CONT_PRIVILEGED_INT),
+		SF_NODE_ID:              mapStr(sfgo.SFHE_EXPORTER_STR),
 	},
 }
 

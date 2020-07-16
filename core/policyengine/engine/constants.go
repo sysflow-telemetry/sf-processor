@@ -111,4 +111,5 @@ const (
 	SF_CONTAINER_IMAGE      string = "sf.container.image"
 	SF_CONTAINER_TYPE       string = "sf.container.type"
 	SF_CONTAINER_PRIVILEGED string = "sf.container.privileged"
+	SF_NODE_ID              string = "sf.node.id"
 )

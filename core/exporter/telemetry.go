@@ -19,6 +19,7 @@ const (
 	file      = "file"
 	flow      = "flow"
 	container = "container"
+	node      = "node"
 )
 
 // TelemetryRecord type
@@ -48,6 +49,7 @@ type DataRecord struct {
 	*FileData  `json:",omitempty"`
 	*FlowData  `json:",omitempty"`
 	*ContData  `json:",omitempty"`
+	*NodeData  `json:",omitempty"`
 }
 
 // ProcData type
@@ -78,6 +80,11 @@ type FlowData struct {
 // ContData type
 type ContData struct {
 	Container map[string]interface{} `json:"container"`
+}
+
+// NodeData type
+type NodeData struct {
+	Node map[string]interface{} `json:"node"`
 }
 
 // CreateTelemetryRecords creates offense instances based on a list of records
@@ -175,6 +182,12 @@ func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 						}
 						r.Container[kc[2]] = value
 					}
+				case node:
+					if r.NodeData == nil {
+						r.NodeData = new(NodeData)
+						r.NodeData.Node = make(map[string]interface{})
+					}
+					r.Node[kc[2]] = value
 				}
 			}
 		}
