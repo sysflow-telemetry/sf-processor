@@ -3,27 +3,43 @@ package main
 import (
 	"sync"
 
-	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
-	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
-	"github.ibm.com/sysflow/sf-processor/common/logger"
+	"github.com/sysflow-telemetry/sf-apis/go/plugins"
+	"github.ibm.com/sysflow/goutils/logger"
 )
+
+const (
+	pluginName string = "example"
+)
+
+// Plugin exports a symbol for this plugin.
+var Plugin Example
 
 // Example defines an example plugin.
 type Example struct{}
 
 // NewExample creates a new plugin instance.
-func NewExample() sp.SFProcessor {
+func NewExample() plugins.SFProcessor {
 	return new(Example)
 }
 
-// Init initializes the plugin with a configuration map and cache.
-func (s *Example) Init(conf map[string]string, tables interface{}) error {
+// GetName returns the plugin name.
+func (s *Example) GetName() string {
+	return pluginName
+}
+
+// Init initializes the plugin with a configuration map.
+func (s *Example) Init(conf map[string]string) error {
 	return nil
+}
+
+// Register registers plugin to plugin cache.
+func (s *Example) Register(pc plugins.SFPluginCache) {
+	pc.AddProcessor(pluginName, NewExample)
 }
 
 // Process implements the main interface of the plugin.
 func (s *Example) Process(ch interface{}, wg *sync.WaitGroup) {
-	cha := ch.(*hdl.FlatChannel)
+	cha := ch.(*plugins.FlatChannel)
 	record := cha.In
 	logger.Trace.Println("Example channel capacity:", cap(record))
 	defer wg.Done()
@@ -34,7 +50,7 @@ func (s *Example) Process(ch interface{}, wg *sync.WaitGroup) {
 			logger.Trace.Println("Channel closed. Shutting down.")
 			break
 		}
-		logger.Trace.Println(fc)
+		logger.Info.Println(fc)
 	}
 	logger.Trace.Println("Exiting Example")
 }

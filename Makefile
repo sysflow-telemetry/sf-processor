@@ -1,12 +1,11 @@
 # Basic go commands
 GOCMD=go
-GOBUILD=$(GOCMD) build
+GOBUILD=$(GOCMD) build -tags exclude_graphdriver_btrfs
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
-GOGET=$(GOCMD) get
+GOGET=$(GOCMD) get -tags exclude_graphdriver_btrfs
 BIN=sfprocessor
 OUTPUT=$(BIN)
-#SRC=github.ibm.com/sysflow/sf-processor/driver
 SRC=./driver
 
 build: deps
@@ -23,17 +22,17 @@ clean:
 	rm -f $(SRC)/$(BIN)
 
 install: build
-	mkdir -p /usr/local/sf-processor/bin && mkdir -p /usr/local/sf-processor/conf
+	mkdir -p /usr/local/sf-processor/bin /usr/local/sf-processor/conf /usr/local/sf-processor/policies
 	cp ./driver/sfprocessor /usr/local/sf-processor/bin/sfprocessor
 	cp ./driver/pipeline.json /usr/local/sf-processor/conf/pipeline.json
-	cp ./tests/policies/* /usr/local/sf-processor/conf/
+	cp ./resources/policies/distribution/* /usr/local/sf-processor/policies/
 
 docker-build: build
-	sudo docker build -t sf-processor:latest --target=runtime -f Dockerfile.processor .
+	sudo docker build -t sf-processor --target=runtime -f Dockerfile .
 
 pull:
 	git pull origin master
 
 up: 
-	sudo docker-compose -f docker-compose.processor.yml up
+	sudo docker-compose -f docker-compose.yml up
 

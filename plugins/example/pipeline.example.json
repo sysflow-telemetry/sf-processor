@@ -1,0 +1,15 @@
+{
+   "_comment": "Dynamic plugin example. To build the plugin, run `make` under ../plugins/example.",
+   "pipeline":[
+     {
+      "processor": "sysflowreader",
+      "handler": "flattener",
+      "in": "sysflow sysflowchan",
+      "out": "flat flattenerchan"
+     },
+     {
+      "processor": "example",
+      "in": "flat flattenerchan"           
+     }
+   ]
+}

@@ -8,8 +8,15 @@ import (
 	cqueue "github.com/enriquebris/goconcurrentqueue"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/sf-processor/common/logger"
+	"github.ibm.com/sysflow/goutils/logger"
 )
+
+const (
+	cacheSize = 2
+)
+
+var instance *SFTables
+var once sync.Once
 
 // SFTables defines thread-safe shared cache for plugins for storing SysFlow entities.
 type SFTables struct {
@@ -20,8 +27,16 @@ type SFTables struct {
 	capacity  int
 }
 
-// NewSFTables creates a new SFTables instance.
-func NewSFTables(capacity int) *SFTables {
+// GetInstance returns SFTables singleton instance
+func GetInstance() *SFTables {
+	once.Do(func() {
+		instance = newSFTables(cacheSize)
+	})
+	return instance
+}
+
+// newSFTables creates a new SFTables instance.
+func newSFTables(capacity int) *SFTables {
 	t := new(SFTables)
 	if capacity < 1 {
 		logger.Error.Println("Cache capacity must be greater than 1")

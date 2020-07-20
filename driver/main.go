@@ -17,20 +17,19 @@ import (
 	"github.com/actgardner/gogen-avro/compiler"
 	"github.com/actgardner/gogen-avro/container"
 	"github.com/actgardner/gogen-avro/vm"
-	"github.com/sysflow-telemetry/sf-apis/go/handlers"
-	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
+	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/sf-processor/common/logger"
-	"github.ibm.com/sysflow/sf-processor/core/cache"
+	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/driver/pipeline"
 )
 
+// Driver constants
 const (
-	CHAN_SIZE    = 100000
-	SOCK_FILE    = "/var/run/sysflow.sock"
-	BUFF_SIZE    = 16384
-	OO_BUFF_SIZE = 1024
-	CACHE_SIZE   = 2
+	ChanSize   = 100000
+	SockFile   = "/var/run/sysflow.sock"
+	BuffSize   = 16384
+	OOBuffSize = 1024
+	PluginDir  = "../resources/plugins"
 )
 
 type inputType int
@@ -71,16 +70,8 @@ func getFiles(filename string) ([]string, error) {
 	return fls, nil
 }
 
-func processInputFile(path string, config string) {
-	/*var handler Printer
-	var wg sync.WaitGroup
-	processor := NewSysFlowProc(handler)
-	records := make(chan *sfgo.SysFlow, CHAN_SIZE)
-	wg.Add(1)
-	go processor.process(records, &wg)
-	*/
-
-	channel, pipeline, wg, channels, hdlers, err := LoadPipeline(config)
+func processInputFile(path string, pluginDir string, config string) {
+	channel, pipeline, wg, channels, hdlers, err := LoadPipeline(pluginDir, config)
 	if err != nil {
 		logger.Error.Println("pipeline error:", err)
 		return
@@ -88,7 +79,7 @@ func processInputFile(path string, config string) {
 	logger.Trace.Printf("Loaded %d stages\n", len(pipeline))
 	logger.Trace.Printf("Loaded %d channels\n", len(channels))
 	logger.Trace.Printf("Loaded %d hdlrs\n", len(hdlers))
-	sfChannel := channel.(*sp.SFChannel)
+	sfChannel := channel.(*plugins.SFChannel)
 
 	records := sfChannel.In
 
@@ -136,7 +127,7 @@ func processInputFile(path string, config string) {
 	wg.Wait()
 }
 
-func processInputStream(path string, config string) {
+func processInputStream(path string, pluginDir string, config string) {
 	if err := os.RemoveAll(path); err != nil {
 		logger.Error.Println("remove error:", err)
 		return
@@ -149,7 +140,7 @@ func processInputStream(path string, config string) {
 	}
 	defer l.Close()
 
-	channel, pipeline, wg, channels, hdlers, err := LoadPipeline(config)
+	channel, pipeline, wg, channels, hdlers, err := LoadPipeline(pluginDir, config)
 	if err != nil {
 		logger.Error.Println("pipeline error:", err)
 		return
@@ -165,23 +156,20 @@ func processInputStream(path string, config string) {
 		return
 	}
 
-	sfChannel := channel.(*sp.SFChannel)
-
+	sfChannel := channel.(*plugins.SFChannel)
 	records := sfChannel.In
 
 	for {
-		buf := make([]byte, BUFF_SIZE)
-		oobuf := make([]byte, OO_BUFF_SIZE)
+		buf := make([]byte, BuffSize)
+		oobuf := make([]byte, OOBuffSize)
 		reader := bytes.NewReader(buf)
 		conn, err := l.AcceptUnix()
 		if err != nil {
 			logger.Error.Println("accept error:", err)
-			close(records)
-			return
+			break
 		}
 		for {
 			sFlow = sfgo.NewSysFlow()
-			//n, _ ,  err := conn.ReadFromUnix(buf[:])
 			_, _, flags, _, err := conn.ReadMsgUnix(buf[:], oobuf[:])
 			if err != nil {
 				logger.Error.Println("read error:", err)
@@ -189,7 +177,6 @@ func processInputStream(path string, config string) {
 			}
 			if flags == 0 {
 				reader.Reset(buf)
-				//println("Server Received: ", string(buf[0:n]))
 				err = vm.Eval(reader, deser, sFlow)
 				if err != nil {
 					logger.Error.Println("deserialize:", err)
@@ -198,22 +185,27 @@ func processInputStream(path string, config string) {
 			} else {
 				logger.Error.Println("Flag error ReadMsgUnix:", flags)
 			}
-
 		}
-
 	}
 	logger.Trace.Println("Closing main channel")
 	close(records)
 	wg.Wait()
 }
 
-func LoadPipeline(config string) (interface{}, []sp.SFProcessor, *sync.WaitGroup, []interface{}, []handlers.SFHandler, error) {
+// LoadPipeline sets up the an edge processing pipeline based on configuration settings.
+func LoadPipeline(pluginDir string, config string) (interface{}, []plugins.SFProcessor, *sync.WaitGroup, []interface{}, []plugins.SFHandler, error) {
 	pl := pipeline.NewPluginCache(config)
 	wg := new(sync.WaitGroup)
-	var processors []sp.SFProcessor
+
+	var processors []plugins.SFProcessor
 	var channels []interface{}
-	var hdlrs []handlers.SFHandler
-	tables := cache.NewSFTables(CACHE_SIZE)
+	var hdlrs []plugins.SFHandler
+
+	if err := pl.LoadPlugins(pluginDir); err != nil {
+		logger.Error.Println("Unable to load dynamic plugins: ", err)
+		return nil, nil, wg, nil, nil, err
+	}
+
 	conf, err := pl.GetConfig()
 	if err != nil {
 		logger.Error.Println("Unable to load pipeline config: ", err)
@@ -224,10 +216,9 @@ func LoadPipeline(config string) (interface{}, []sp.SFProcessor, *sync.WaitGroup
 	var first interface{}
 	for idx, p := range conf.Pipeline {
 		hdler := false
-		var hdl handlers.SFHandler
-		mod := p["mod"]
-		if val, ok := p["handler"]; ok {
-			hdl, err = pl.GetHandler(mod, val)
+		var hdl plugins.SFHandler
+		if val, ok := p[pipeline.HdlConfig]; ok {
+			hdl, err = pl.GetHandler(val)
 			if err != nil {
 				logger.Error.Println(err)
 				return nil, nil, wg, nil, nil, err
@@ -237,28 +228,26 @@ func LoadPipeline(config string) (interface{}, []sp.SFProcessor, *sync.WaitGroup
 			logger.Trace.Println(xType)
 			hdler = true
 		}
-		var prc sp.SFProcessor
-		if val, ok := p["processor"]; ok {
-			prc, err = pl.GetProcessor(mod, val, hdl, hdler)
+		var prc plugins.SFProcessor
+		if val, ok := p[pipeline.ProcConfig]; ok {
+			prc, err = pl.GetProcessor(val, hdl, hdler)
 			if err != nil {
 				logger.Error.Println(err)
 				return nil, nil, wg, nil, nil, err
 			}
 			tp := fmt.Sprintf("%T", prc)
 			logger.Trace.Println(tp)
-			err = prc.Init(p, tables)
+			err = prc.Init(p)
 			if err != nil {
 				logger.Error.Println(err)
 				return nil, nil, wg, nil, nil, err
 			}
-
 		} else {
 			logger.Error.Println("processor or handler tag must exist in plugin config")
 			return nil, nil, wg, nil, nil, err
 		}
-
-		if v, o := p["in"]; o {
-			in, err = pl.GetChan(mod, v, CHAN_SIZE)
+		if v, o := p[pipeline.InChanConfig]; o {
+			in, err = pl.GetChan(v, ChanSize)
 			channels = append(channels, in)
 			chp := fmt.Sprintf("%T", in)
 			logger.Trace.Println(chp)
@@ -266,8 +255,8 @@ func LoadPipeline(config string) (interface{}, []sp.SFProcessor, *sync.WaitGroup
 			logger.Error.Println("in tag must exist in plugin config")
 			return nil, nil, wg, nil, nil, errors.New("in tag must exist in plugin config")
 		}
-		if v, o := p["out"]; o {
-			out, err = pl.GetChan(mod, v, CHAN_SIZE)
+		if v, o := p[pipeline.OutChanConfig]; o {
+			out, err = pl.GetChan(v, ChanSize)
 			chp := fmt.Sprintf("%T", out)
 			channels = append(channels, out)
 			logger.Trace.Println(chp)
@@ -279,11 +268,8 @@ func LoadPipeline(config string) (interface{}, []sp.SFProcessor, *sync.WaitGroup
 		if idx == 0 {
 			first = in
 		}
-
 	}
-
 	return first, processors, wg, channels, hdlrs, nil
-
 }
 
 func main() {
@@ -292,9 +278,11 @@ func main() {
 	cpuprofile := flag.String("cpuprofile", "", "Write cpu profile to `file`")
 	memprofile := flag.String("memprofile", "", "Write memory profile to `file`")
 	configFile := flag.String("config", "/usr/local/sf-processor/conf/pipeline.json", "Path to pipeline configuration file")
+	logLevel := flag.String("log", "info", "Log level {trace|info|warn|error}")
+	pluginDir := flag.String("plugdir", PluginDir, "Dynamic plugins directory")
 
 	flag.Usage = func() {
-		fmt.Println("Usage: sysprocessor [-input <value>] path")
+		fmt.Println("Usage: sysprocessor [-input <value>] [-log <value>] [-plugdir <value>] path")
 		fmt.Println()
 		fmt.Println("Positional arguments:")
 		fmt.Println("  path string\n\tInput path")
@@ -315,7 +303,7 @@ func main() {
 	path := flag.Arg(0)
 
 	// Initialize logger
-	logger.InitLoggers(logger.TRACE)
+	logger.InitLoggers(logger.GetLogLevelFromValue(*logLevel))
 
 	// CPU profiling
 	if *cpuprofile != "" {
@@ -333,10 +321,10 @@ func main() {
 	// process input
 	switch *inputType {
 	case file.String():
-		processInputFile(path, *configFile)
+		processInputFile(path, *pluginDir, *configFile)
 		break
 	case socket.String():
-		processInputStream(path, *configFile)
+		processInputStream(path, *pluginDir, *configFile)
 		break
 	default:
 		logger.Error.Println("Unrecognized input type: ", *inputType)

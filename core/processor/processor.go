@@ -3,55 +3,70 @@ package processor
 import (
 	"sync"
 
-	hdl "github.com/sysflow-telemetry/sf-apis/go/handlers"
-	sp "github.com/sysflow-telemetry/sf-apis/go/processors"
+	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/sf-processor/common/logger"
+	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/cache"
+	"github.ibm.com/sysflow/sf-processor/core/flattener"
+)
+
+const (
+	pluginName  string = "sysflowreader"
+	channelName string = "sysflowchan"
 )
 
 // SysFlowProcessor defines the main processor class.
 type SysFlowProcessor struct {
-	hdr     *sfgo.SFHeader
-	Hdl     hdl.SFHandler
-	tables  *cache.SFTables
-	OutChan interface{}
+	hdr    *sfgo.SFHeader
+	hdl    plugins.SFHandler
+	tables *cache.SFTables
 }
 
-// NewSysFlowProc creates a new SysFlowProcessor instance.
-func NewSysFlowProc(hdl hdl.SFHandler) sp.SFProcessor {
+// NewSysFlowProcessor creates a new SysFlowProcessor instance.
+func NewSysFlowProcessor(hdl plugins.SFHandler) plugins.SFProcessor {
 	logger.Trace.Println("Calling NewSysFlowProc")
 	p := new(SysFlowProcessor)
-	p.Hdl = hdl
+	p.hdl = hdl
 	return p
+}
+
+// GetName returns the plugin name.
+func (s *SysFlowProcessor) GetName() string {
+	return pluginName
 }
 
 // NewSysFlowChan creates a new processor channel instance.
 func NewSysFlowChan(size int) interface{} {
-	return &sp.SFChannel{In: make(chan *sfgo.SysFlow, size)}
+	return &plugins.SFChannel{In: make(chan *sfgo.SysFlow, size)}
+}
+
+// Register registers plugin to plugin cache.
+func (s *SysFlowProcessor) Register(pc plugins.SFPluginCache) {
+	pc.AddProcessor(pluginName, NewSysFlowProcessor)
+	pc.AddChannel(channelName, NewSysFlowChan)
+	(&flattener.Flattener{}).Register(pc)
 }
 
 // Init initializes the processor with a configuration map.
-func (s *SysFlowProcessor) Init(conf map[string]string, tables interface{}) error {
-	s.tables = tables.(*cache.SFTables)
+func (s *SysFlowProcessor) Init(conf map[string]string) error {
+	s.tables = cache.GetInstance()
 	return nil
 }
 
 // SetOutChan sets the output channel of the plugin.
 func (s *SysFlowProcessor) SetOutChan(ch interface{}) {
-	s.OutChan = ch
-	s.Hdl.SetOutChan(ch)
+	s.hdl.SetOutChan(ch)
 }
 
 // Cleanup tears down the plugin resources.
 func (s *SysFlowProcessor) Cleanup() {
-	s.Hdl.Cleanup()
+	s.hdl.Cleanup()
 }
 
 // Process implements the main processor method of the plugin.
 func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
-	entEnabled := s.Hdl.IsEntityEnabled()
-	cha := ch.(*sp.SFChannel)
+	entEnabled := s.hdl.IsEntityEnabled()
+	cha := ch.(*plugins.SFChannel)
 	record := cha.In
 	defer wg.Done()
 	logger.Trace.Println("Starting SysFlow processing...")
@@ -67,47 +82,47 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 			s.hdr = hdr
 			s.tables.Reset()
 			if entEnabled {
-				s.Hdl.HandleHeader(s.hdr)
+				s.hdl.HandleHeader(s.hdr)
 			}
 		case sfgo.SF_CONT:
 			cont := sf.Rec.Container
 			s.tables.SetCont(cont.Id, cont)
 			if entEnabled {
-				s.Hdl.HandleContainer(s.hdr, cont)
+				s.hdl.HandleContainer(s.hdr, cont)
 			}
 		case sfgo.SF_PROCESS:
 			proc := sf.Rec.Process
 			s.tables.SetProc(*proc.Oid, proc)
 			if entEnabled {
 				cont := s.getContFromProc(proc)
-				s.Hdl.HandleProcess(s.hdr, cont, proc)
+				s.hdl.HandleProcess(s.hdr, cont, proc)
 			}
 		case sfgo.SF_FILE:
 			file := sf.Rec.File
 			s.tables.SetFile(file.Oid, file)
 			if entEnabled {
 				cont := s.getContFromFile(file)
-				s.Hdl.HandleFile(s.hdr, cont, file)
+				s.hdl.HandleFile(s.hdr, cont, file)
 			}
 		case sfgo.SF_PROC_EVT:
 			pe := sf.Rec.ProcessEvent
 			cont, proc := s.getContAndProc(pe.ProcOID)
-			s.Hdl.HandleProcEvt(s.hdr, cont, proc, pe)
+			s.hdl.HandleProcEvt(s.hdr, cont, proc, pe)
 		case sfgo.SF_NET_FLOW:
 			nf := sf.Rec.NetworkFlow
 			cont, proc := s.getContAndProc(nf.ProcOID)
-			s.Hdl.HandleNetFlow(s.hdr, cont, proc, nf)
+			s.hdl.HandleNetFlow(s.hdr, cont, proc, nf)
 		case sfgo.SF_FILE_FLOW:
 			ff := sf.Rec.FileFlow
 			cont, proc := s.getContAndProc(ff.ProcOID)
 			file := s.getFile(ff.FileOID)
-			s.Hdl.HandleFileFlow(s.hdr, cont, proc, file, ff)
+			s.hdl.HandleFileFlow(s.hdr, cont, proc, file, ff)
 		case sfgo.SF_FILE_EVT:
 			fe := sf.Rec.FileEvent
 			cont, proc := s.getContAndProc(fe.ProcOID)
 			file := s.getFile(fe.FileOID)
 			file2 := s.getOptFile(fe.NewFileOID)
-			s.Hdl.HandleFileEvt(s.hdr, cont, proc, file, file2, fe)
+			s.hdl.HandleFileEvt(s.hdr, cont, proc, file, file2, fe)
 		case sfgo.SF_NET_EVT:
 		default:
 			logger.Warn.Println("Error unsupported SysFlow Type: ", sf.Rec.UnionType)

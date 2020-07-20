@@ -1,0 +1,167 @@
+- macro: FileFlow
+  condition: sf.type=FF
+
+- macro: FileEvent
+  condition: sf.type=FE
+
+- macro: ProcessEvent
+  condition: sf.type=PE
+
+- macro: NetworkFlow
+  condition: sf.type=NF
+
+- macro: splunk_processes
+  condition: sf.proc.exe in (/opt/splunk/bin/splunkd, /opt/splunk/bin/mongod, /opt/splunk/bin/splunk-optimize, /opt/splunk/bin/python2.7)
+
+- macro: file_open_write
+  condition: FileFlow and sf.file.openflags in (WRONLY, RDWR, CREAT, APPEND)
+
+- macro: file_open_read
+  condition: FileFlow and sf.file.openflags in (RDONLY, RDWR)
+
+- macro: file_open
+  condition: FileFlow and sf.opflags in (OPEN)
+
+- macro: file_write
+  condition: FileFlow and sf.opflags in (WRITE)
+
+- macro: file_read
+  condition: FileFlow and sf.opflags in (READ) and not file_write
+
+- macro: excluded_file_read_flows
+  condition: (file_read or file_open_read) and sf.proc.exe in (/usr/sbin/sshd, /lib/systemd/systemd-journald, /usr/sbin/irqbalance, /lib/systemd/systemd, /usr/bin/dbus-daemon, /usr/bin/updatedb.mlocate, /lib/systemd/systemd-udevd, /usr/bin/apt-config, /lib/systemd/system-generators/systemd-sysv-generator, /usr/sbin/cron, /usr/bin/dpkg, /usr/bin/mandb, /bin/systemctl, /usr/bin/apt-get, /usr/bin/lsb_release, /usr/bin/dockerd, /bin/networkctl, /sbin/ldconfig.real, /lib/systemd/systemd-sysctl, /lib/systemd/systemd-networkd, /usr/local/sf-processor/bin/sfprocessor, /usr/bin/docker, /usr/bin/containerd-shim, /usr/bin/runc, /usr/sbin/syslog-ng, /lib/systemd/systemd-resolved)
+
+- macro: excluded_file_write_flows
+  condition: (file_write or file_open_write) and sf.proc.exe in (/usr/sbin/sshd, /usr/bin/dbus-daemon, /usr/sbin/syslog-ng, /usr/local/sf-processor/bin/sfprocessor, /usr/bin/dockerd, /lib/systemd/systemd-journald, /lib/systemd/systemd, /lib/systemd/systemd-udevd, /lib/systemd/systemd-logind, /lib/systemd/systemd-timesyncd, /lib/systemd/systemd-resolved, /lib/systemd/systemd-networkd)
+
+- rule: Directory created
+  desc: when a directory will be created
+  condition: FileEvent and sf.opflags = MKDIR
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+- rule: Directory removed
+  desc: when a directory will be removed
+  condition: FileEvent and sf.opflags = RMDIR
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+- rule: Hard link created
+  desc: when process creates hard link to an existing file
+  condition: FileEvent and sf.opflags = LINK and not splunk_processes
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+- rule: Soft link created
+  desc: when process creates soft link to an existing file
+  condition: FileEvent and sf.opflags = SYMLINK
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+- rule: File deleted
+  desc: when a file will be deleted
+  condition: FileEvent and sf.opflags = UNLINK and not sf.proc.exe in (/lib/systemd/systemd-udevd, /usr/bin/apt-get) and not splunk_processes
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+- rule: File renamed
+  desc: when a file will be renamed
+  condition: FileEvent and sf.opflags = RENAME and not sf.proc.exe in (/usr/bin/dpkg, /lib/systemd/systemd-udevd, /usr/sbin/logrotate, /usr/bin/dockerd) and not (splunk_processes)
+  action: [alert]
+  priority: low
+  tags: [test]
+
+- rule: UID of process was changed
+  desc: UID of process was changed
+  condition: ProcessEvent and sf.opflags = SETUID and not sf.proc.exe in (/usr/sbin/sshd)
+  action: [alert]
+  priority: low
+  tags: [test]
+
+- rule: Process cloned
+  desc: Process cloned
+  condition: ProcessEvent and sf.opflags = CLONE and not sf.proc.exe in (/usr/sbin/sshd, /usr/sbin/syslog-ng, /lib/systemd/systemd-journald, /lib/systemd/systemd-udevd, /usr/bin/apt-key, /opt/splunk/bin/splunkd)
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+- rule: Execution of a file
+  desc: Execution of a file
+  condition: ProcessEvent and sf.opflags = EXEC and not sf.proc.exe in (/usr/sbin/sshd, /opt/splunk/bin/splunk-optimize)
+  action: [alert]
+  priority: low
+  tags: [test]
+
+- rule: Process or thread exit
+  desc: Process or thread exit
+  condition: ProcessEvent and sf.opflags = EXIT and not sf.proc.exe in (/usr/sbin/sshd, /usr/sbin/syslog-ng, /lib/systemd/systemd-journald, /lib/systemd/systemd-udevd) and not splunk_processes
+  action: [alert]
+  priority: low
+  tags: [test]
+
+- rule: File Modified
+  desc: File Modified
+  condition: file_write and not (excluded_file_write_flows or splunk_processes)
+  action: [alert]
+  priority: low
+  tags: [test]
+
+- rule: File Opened with Write Permissions
+  desc: File Opened with Write Permissions
+  condition: file_open and file_open_write and not (file_write or excluded_file_write_flows or splunk_processes)
+  action: [alert]
+  priority: low
+  tags: [test]
+
+- rule: File Opened with Read Permissions
+  desc: File Opened with Read Permissions
+  condition: file_open and file_open_read and not (file_write or file_read or excluded_file_read_flows or splunk_processes)
+  action: [alert]
+  priority: low
+  tags: [test]
+
+- rule: File Read
+  desc: File Read 
+  condition: file_read and not (excluded_file_read_flows or splunk_processes)
+  action: [alert]
+  priority: low
+  tags: [test]
+
+- rule: File Closed
+  desc: File Closed
+  condition: FileFlow and sf.opflags = CLOSE
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+- macro: network_flows_from_log_forwarder_utilities
+  condition: NetworkFlow and sf.proc.exe in (/usr/local/sf-processor/bin/sfprocessor, /usr/sbin/syslog-ng) and sf.net.dport = 514
+
+- macro: network_flow_ingress_engress
+  condition: NetworkFlow and sf.opflags in (SEND, RECV) and not network_flows_from_log_forwarder_utilities
+
+- rule: Process Sending or Receiving Network Data
+  desc: Network Flow ingress or engress
+  condition: network_flow_ingress_engress
+  action: [alert]
+  priority: low
+  tags: [test]
+  
+- rule: Network Connection Created
+  desc: Network Connection Created
+  condition: NetworkFlow and sf.opflags in (CONNECT, ACCEPT) and not network_flow_ingress_engress
+  action: [alert]
+  priority: low
+  tags: [test]
+
+- rule: Network Connection Closed
+  desc: Network Connection Closed
+  condition: NetworkFlow and sf.opflags = CLOSE
+  action: [alert]
+  priority: low
+  tags: [test]

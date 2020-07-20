@@ -1,0 +1,19 @@
+- macro: open_write
+  condition: sf.file.is_open_write = true
+  
+- macro: open_read
+  condition: sf.file.is_open_read = true
+
+- rule: Open write
+  desc: Open write
+  condition: open_write
+  action: [alert]
+  priority: high
+  tags: [open-write]
+
+- rule: Open read
+  desc: Open read
+  condition: open_read
+  action: [alert]
+  priority: high
+  tags: [open-read]
