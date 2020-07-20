@@ -96,7 +96,7 @@ var Mapper = FieldMapper{
 	map[string]FieldMap{
 		SF_TYPE:                 mapRecType(),
 		SF_OPFLAGS:              mapOpFlags(),
-		SF_RET:                  mapInt(sfgo.RET_INT),
+		SF_RET:                  mapRet(),
 		SF_TS:                   mapInt(sfgo.TS_INT),
 		SF_ENDTS:                mapEndTs(),
 		SF_PROC_OID:             mapOID(sfgo.PROC_OID_HPID_INT, sfgo.PROC_OID_CREATETS_INT),
@@ -222,6 +222,19 @@ func mapOpFlags() FieldMap {
 		opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT)
 		rtype := mapRecType()(r).(string)
 		return strings.Join(utils.GetOpFlags(int32(opflags), rtype), LISTSEP)
+	}
+}
+
+func mapRet() FieldMap {
+	return func(r *Record) interface{} {
+		switch r.GetInt(sfgo.SF_REC_TYPE) {
+		case sfgo.PROC_EVT:
+			fallthrough
+		case sfgo.FILE_EVT:
+			return r.GetInt(sfgo.RET_INT)
+		default:
+			return sfgo.Zeros.Int64
+		}
 	}
 }
 

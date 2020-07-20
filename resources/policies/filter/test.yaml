@@ -17,3 +17,10 @@
   action: [alert]
   priority: high
   tags: [open-read]
+
+- rule: Events
+  desc: Events
+  condition: sf.type in (PE, FE)
+  action: [alert]
+  priority: high
+  tags: [events]
