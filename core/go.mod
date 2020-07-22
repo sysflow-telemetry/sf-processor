@@ -15,5 +15,4 @@ require (
 
 replace github.ibm.com/sysflow/goutils => ../modules/goutils
 
-//replace github.com/sysflow-telemetry/sf-apis/go => ../modules/sf-apis/go
-replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go
+replace github.com/sysflow-telemetry/sf-apis/go => ../modules/sf-apis/go
