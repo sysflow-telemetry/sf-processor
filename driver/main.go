@@ -14,9 +14,9 @@ import (
 	"runtime/pprof"
 	"sync"
 
-	"github.com/actgardner/gogen-avro/compiler"
-	"github.com/actgardner/gogen-avro/container"
-	"github.com/actgardner/gogen-avro/vm"
+	"github.com/actgardner/gogen-avro/v7/compiler"
+	"github.com/actgardner/gogen-avro/v7/container"
+	"github.com/actgardner/gogen-avro/v7/vm"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/goutils/logger"

@@ -190,7 +190,8 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.PROC_STATE_INT] = int64(proc.State)
 		fr.Ints[sfgo.PROC_OID_CREATETS_INT] = int64(proc.Oid.CreateTS)
 		fr.Ints[sfgo.PROC_OID_HPID_INT] = int64(proc.Oid.Hpid)
-		if proc.Poid.UnionType != sfgo.UnionNullOIDTypeEnumNull {
+		//if proc.Poid.UnionType != sfgo.UnionNullOIDTypeEnumNull {
+		if proc.Poid != nil {
 			fr.Ints[sfgo.PROC_POID_CREATETS_INT] = proc.Poid.OID.CreateTS
 			fr.Ints[sfgo.PROC_POID_HPID_INT] = proc.Poid.OID.Hpid
 		} else {
@@ -209,7 +210,8 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		} else {
 			fr.Ints[sfgo.PROC_TTY_INT] = 0
 		}
-		if proc.ContainerId.UnionType != sfgo.UnionNullStringTypeEnumNull {
+		//if proc.ContainerId.UnionType != sfgo.UnionNullStringTypeEnumNull {
+		if proc.ContainerId != nil {
 			fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = proc.ContainerId.String
 		} else {
 			fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
