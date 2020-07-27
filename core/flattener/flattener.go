@@ -127,7 +127,7 @@ func (g *Flattener) HandleFileEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 		fr.Ints[sfgo.SEC_FILE_TS_INT] = file2.Ts
 		fr.Ints[sfgo.SEC_FILE_RESTYPE_INT] = int64(file2.Restype)
 		fr.Strs[sfgo.SEC_FILE_PATH_STR] = file2.Path
-		if file2.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+		if file2.ContainerId != nil && file2.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			fr.Strs[sfgo.SEC_FILE_CONTAINERID_STRING_STR] = file2.ContainerId.String
 		} else {
 			fr.Strs[sfgo.SEC_FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
@@ -191,7 +191,7 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.PROC_OID_CREATETS_INT] = int64(proc.Oid.CreateTS)
 		fr.Ints[sfgo.PROC_OID_HPID_INT] = int64(proc.Oid.Hpid)
 		//if proc.Poid.UnionType != sfgo.UnionNullOIDTypeEnumNull {
-		if proc.Poid != nil {
+		if proc.Poid != nil && proc.Poid.UnionType == sfgo.UnionNullOIDTypeEnumOID {
 			fr.Ints[sfgo.PROC_POID_CREATETS_INT] = proc.Poid.OID.CreateTS
 			fr.Ints[sfgo.PROC_POID_HPID_INT] = proc.Poid.OID.Hpid
 		} else {
@@ -211,7 +211,7 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 			fr.Ints[sfgo.PROC_TTY_INT] = 0
 		}
 		//if proc.ContainerId.UnionType != sfgo.UnionNullStringTypeEnumNull {
-		if proc.ContainerId != nil {
+		if proc.ContainerId != nil && proc.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = proc.ContainerId.String
 		} else {
 			fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
@@ -238,7 +238,7 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.FILE_TS_INT] = file.Ts
 		fr.Ints[sfgo.FILE_RESTYPE_INT] = int64(file.Restype)
 		fr.Strs[sfgo.FILE_PATH_STR] = file.Path
-		if file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+		if file.ContainerId != nil && file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			fr.Strs[sfgo.FILE_CONTAINERID_STRING_STR] = file.ContainerId.String
 		} else {
 			fr.Strs[sfgo.FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String

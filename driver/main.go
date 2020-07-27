@@ -15,8 +15,9 @@ import (
 	"sync"
 
 	"github.com/actgardner/gogen-avro/v7/compiler"
-	"github.com/actgardner/gogen-avro/v7/container"
 	"github.com/actgardner/gogen-avro/v7/vm"
+	"github.com/linkedin/goavro"
+	"github.com/sysflow-telemetry/sf-apis/go/converter"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/goutils/logger"
@@ -83,12 +84,9 @@ func processInputFile(path string, pluginDir string, config string) {
 
 	records := sfChannel.In
 
-	sFlow := sfgo.NewSysFlow()
-	deser, err := compiler.CompileSchemaBytes([]byte(sFlow.Schema()), []byte(sFlow.Schema()))
-	if err != nil {
-		logger.Error.Println("compiler error: ", err)
-	}
 	logger.Trace.Println("Loading file: ", flag.Arg(0))
+
+	sfobjcvter := converter.NewSFObjectConverter()
 
 	files, err := getFiles(flag.Arg(0))
 	if err != nil {
@@ -103,22 +101,20 @@ func processInputFile(path string, pluginDir string, config string) {
 			return
 		}
 		reader := bufio.NewReader(f)
-		sreader, err := container.NewReader(reader)
+		sreader, err := goavro.NewOCFReader(reader)
 		if err != nil {
 			logger.Error.Println("reader error: ", err)
 			return
 		}
 
-		for {
-			sFlow = sfgo.NewSysFlow()
-			err = vm.Eval(sreader, deser, sFlow)
+		for sreader.Scan() {
+			datum, err := sreader.Read()
 			if err != nil {
-				if err.Error() != "EOF" {
-					logger.Error.Println("deserialize: ", err)
-				}
-				break
+				logger.Error.Println("datum reading error: ", err)
+				return
 			}
-			records <- sFlow
+
+			records <- sfobjcvter.ConvertToSysFlow(datum)
 		}
 		f.Close()
 	}
