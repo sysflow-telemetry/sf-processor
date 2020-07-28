@@ -1,0 +1,33 @@
+{
+   "_comment": "DO NOT EDIT THIS TEMPLATE (remove this attribute when copying)",
+   "pipeline":[
+     {
+      "processor": "sysflowreader",
+      "handler": "flattener",
+      "in": "sysflow sysflowchan",
+      "out": "flat flattenerchan"
+     },
+     {
+      "processor": "policyengine",
+      "in": "flat flattenerchan",
+      "out": "evt eventchan",
+      "policies": "file|dir path (default: /usr/local/sf-processor/conf/)",
+      "mode": "alert|filter (default: alert)"
+     },
+     {
+      "processor": "exporter",
+      "in": "evt eventchan",
+      "export": "terminal|file|syslog (default: terminal)",
+      "type": "alert|telemetry (default: alert)",
+      "format": "json",
+      "flat": "false|true (default: false)",
+      "path": "output file path (default: ./export.out)",
+      "proto": "rsyslog protocol tcp|udp|tcp+tls (default: tcp)",
+      "tag": "rsyslog tag (default: sysflow)",
+      "source": "rsyslog source hostname (default: hostname)",
+      "host": "rsyslog host (default: localhost)",
+      "port": "ryslog port (default: 514)",
+      "buffer": "event aggregation buffer (default: 0)"
+     }
+   ]
+}

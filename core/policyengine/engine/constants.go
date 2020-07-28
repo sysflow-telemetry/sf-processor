@@ -62,6 +62,7 @@ const (
 	SF_PROC_GROUP           string = "sf.proc.group"
 	SF_PROC_CREATETS        string = "sf.proc.createts"
 	SF_PROC_TTY             string = "sf.proc.tty"
+	SF_PROC_ENTRY           string = "sf.proc.entry"
 	SF_PROC_CMDLINE         string = "sf.proc.cmdline"
 	SF_PROC_ANAME           string = "sf.proc.aname"
 	SF_PROC_AEXE            string = "sf.proc.aexe"
@@ -78,6 +79,7 @@ const (
 	SF_PPROC_GROUP          string = "sf.pproc.group"
 	SF_PPROC_CREATETS       string = "sf.pproc.createts"
 	SF_PPROC_TTY            string = "sf.pproc.tty"
+	SF_PPROC_ENTRY          string = "sf.pproc.entry"
 	SF_PPROC_CMDLINE        string = "sf.pproc.cmdline"
 	SF_FILE_NAME            string = "sf.file.name"
 	SF_FILE_PATH            string = "sf.file.path"
@@ -110,4 +112,6 @@ const (
 	SF_CONTAINER_TYPE       string = "sf.container.type"
 	SF_CONTAINER_PRIVILEGED string = "sf.container.privileged"
 	SF_NODE_ID              string = "sf.node.id"
+	SF_NODE_IP              string = "sf.node.ip"
+	SF_SCHEMA_VERSION       string = "sf.schema.version"
 )

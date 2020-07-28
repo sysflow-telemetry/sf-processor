@@ -27,3 +27,6 @@ driver/sfprocessor
 *.vlog
 *.local.json
 *.DS_Store
+
+# Manifest
+driver/manifest.gobak

@@ -276,9 +276,10 @@ func main() {
 	configFile := flag.String("config", "/usr/local/sf-processor/conf/pipeline.json", "Path to pipeline configuration file")
 	logLevel := flag.String("log", "info", "Log level {trace|info|warn|error}")
 	pluginDir := flag.String("plugdir", PluginDir, "Dynamic plugins directory")
+	version := flag.Bool("version", false, "Outputs version information")
 
 	flag.Usage = func() {
-		fmt.Println("Usage: sysprocessor [-input <value>] [-log <value>] [-plugdir <value>] path")
+		fmt.Println("Usage: sysprocessor [[-version]|[-input <value>] [-log <value>] [-plugdir <value>] path]")
 		fmt.Println()
 		fmt.Println("Positional arguments:")
 		fmt.Println("  path string\n\tInput path")
@@ -290,15 +291,23 @@ func main() {
 
 	// parse args and validade positional args
 	flag.Parse()
-	if flag.NArg() < 1 {
+	if !*version && flag.NArg() < 1 {
 		flag.Usage()
 		os.Exit(1)
+	}
+
+	if *version {
+		hdr := sfgo.NewSFHeader()
+		hdr.SetDefault(0)
+		schemaVersion := hdr.Version
+		fmt.Printf("Version: %s+%s, Avro Schema Version: %v, Export Schema Version: %v\n", Version, BuildNumber, schemaVersion, JSONSchemaVersion)
+		os.Exit(0)
 	}
 
 	// retrieve positional args
 	path := flag.Arg(0)
 
-	// Initialize logger
+	// initialize logger
 	logger.InitLoggers(logger.GetLogLevelFromValue(*logLevel))
 
 	// CPU profiling
@@ -327,7 +336,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Memory profiling
+	// memory profiling
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
 		if err != nil {
