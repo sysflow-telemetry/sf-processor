@@ -167,8 +167,8 @@ var Mapper = FieldMapper{
 		SF_CONTAINER_TYPE:       mapContType(sfgo.CONT_TYPE_INT),
 		SF_CONTAINER_PRIVILEGED: mapInt(sfgo.CONT_PRIVILEGED_INT),
 		SF_NODE_ID:              mapStr(sfgo.SFHE_EXPORTER_STR),
-		//SF_NODE_IP:              mapStr(sfgo.SFHE_IP_STR), //TODO
-		SF_SCHEMA_VERSION: mapInt(sfgo.SFHE_VERSION_INT),
+		SF_NODE_IP:              mapStr(sfgo.SFHE_IP_STR),
+		SF_SCHEMA_VERSION:       mapInt(sfgo.SFHE_VERSION_INT),
 	},
 }
 

@@ -33,7 +33,7 @@ type PolicyInterpreter struct {
 }
 
 // NewPolicyInterpreter constructs a new interpreter instance.
-func NewPolicyInterpreter(conf map[string]string) PolicyInterpreter {
+func NewPolicyInterpreter(conf Config) PolicyInterpreter {
 	ah := NewActionHandler(conf)
 	return PolicyInterpreter{ah}
 }

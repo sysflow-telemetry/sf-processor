@@ -11,7 +11,7 @@
       "processor": "policyengine",
       "in": "flat flattenerchan",
       "out": "evt eventchan",
-      "policies": "/usr/local/sf-processor/policies/",
+      "policies": "/usr/local/sysflow/resources/policies/",
       "mode": "alert"
      },
      {

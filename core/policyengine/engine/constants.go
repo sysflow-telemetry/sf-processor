@@ -7,28 +7,6 @@
 //
 package engine
 
-// Configuration keys.
-const (
-	PoliciesConfigKey            string = "policies"
-	ModeConfigKey                string = "mode"
-	ContRuntimeTypeConfigKey     string = "runtime"
-	ContRuntimeEndpointConfigKey string = "runtimeEndpoint"
-	EnrichmentConfigKey          string = "enrichmentconfigpath"
-)
-
-// Mode constants.
-const (
-	AlertMode  string = "alert"
-	FilterMode string = "filter"
-)
-
-// Runtime constants.
-const (
-	Docker     string = "docker"
-	Crio       string = "crio"
-	Containerd string = "containerd"
-)
-
 // Parsing constants.
 const (
 	LISTSEP string = ","
@@ -120,5 +98,5 @@ const (
 	SF_CONTAINER_PRIVILEGED string = "sf.container.privileged"
 	SF_NODE_ID              string = "sf.node.id"
 	SF_NODE_IP              string = "sf.node.ip"
-	SF_SCHEMA_VERSION       string = "sf.schema.version"
+	SF_SCHEMA_VERSION       string = "sf.schema"
 )

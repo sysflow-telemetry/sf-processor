@@ -16,8 +16,6 @@ import (
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
-const schemaVersion = "0.1"
-
 // SysFlow record components
 const (
 	proc      = "proc"
@@ -50,6 +48,7 @@ type DataRecord struct {
 	Ret        int64    `json:"ret"`
 	Ts         int64    `json:"ts"`
 	Endts      int64    `json:"endts,omitempty"`
+	Schema     int64    `json:"schema,omitempty"`
 	*ProcData  `json:",omitempty"`
 	*PprocData `json:",omitempty"`
 	*NetData   `json:",omitempty"`
@@ -116,7 +115,7 @@ func (s TelemetryRecord) ToJSON() []byte {
 
 func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 	r := TelemetryRecord{}
-	r.Version = schemaVersion
+	r.Version = config.JSONSchemaVersion
 	if config.Flat {
 		r.FlatRecord = new(FlatRecord)
 		r.FlatRecord.Data = make(map[string]interface{})

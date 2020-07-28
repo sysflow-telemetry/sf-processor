@@ -19,11 +19,11 @@ BIN=sfprocessor
 OUTPUT=$(BIN)
 SRC=./driver
 
-.PHONY: deps
-build: deps
+.PHONY: build
+build: version deps
 	cd $(SRC) && $(GOBUILD) -o $(OUTPUT) -v
 
-.PHONY: build
+.PHONY: deps
 deps:
 	cd $(SRC) && $(GOGET) ./...
 
@@ -31,7 +31,7 @@ deps:
 version:
 	cp $(SRC)/manifest.go.in $(SRC)/manifest.go
 	sed -ibak -e "s/SYSFLOW_VERSION/$(SYSFLOW_VERSION)/" -e "s/\"JSON_SCHEMA_VERSION\"/$(SYSFLOW_JSON_SCHEMA_VERSION)/" -e "s/BUILD_NUMBER/$(SYSFLOW_BUILD_NUMBER)/" $(SRC)/manifest.go
-	rm $(SRC)/manifest.goback
+	rm -f $(SRC)/manifest.goback
 
 .PHONY: test
 test:
@@ -42,12 +42,12 @@ clean:
 	cd $(SRC) && $(GOCLEAN)
 	rm -f $(SRC)/$(BIN)
 
-.PHONY: build
+.PHONY: install
 install: build
-	mkdir -p /usr/local/sf-processor/bin /usr/local/sf-processor/conf /usr/local/sf-processor/policies
-	cp ./driver/sfprocessor /usr/local/sf-processor/bin/sfprocessor
-	cp ./driver/pipeline.json /usr/local/sf-processor/conf/pipeline.json
-	cp ./resources/policies/distribution/* /usr/local/sf-processor/policies/
+	mkdir -p /usr/local/sysflow/bin /usr/local/sysflow/conf /usr/local/sysflow/policies
+	cp ./driver/sfprocessor /usr/local/sysflow/bin/sfprocessor
+	cp ./driver/pipeline.json /usr/local/sysflow/conf/pipeline.json
+	cp ./resources/policies/distribution/* /usr/local/sysflow/policies/
 
 .PHONY: docker-build
 docker-build: build

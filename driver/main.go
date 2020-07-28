@@ -19,6 +19,7 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
+	"strconv"
 	"sync"
 
 	"github.com/actgardner/gogen-avro/v7/compiler"
@@ -195,6 +196,26 @@ func processInputStream(path string, pluginDir string, config string) {
 	wg.Wait()
 }
 
+// setManifestInfo sets manifest attributes to plugins configuration items.
+func setManifestInfo(conf *pipeline.Config) {
+	addGlobalConfigItem(conf, VersionKey, Version)
+	addGlobalConfigItem(conf, JSONSchemaVersionKey, JSONSchemaVersion)
+	addGlobalConfigItem(conf, BuildNumberKey, BuildNumber)
+}
+
+// addGlobalConfigItem adds a config item to all processors in the pipeline.
+func addGlobalConfigItem(conf *pipeline.Config, k string, v interface{}) {
+	for _, c := range conf.Pipeline {
+		if _, ok := c[pipeline.ProcConfig]; ok {
+			if s, ok := v.(string); ok {
+				c[k] = s
+			} else if i, ok := v.(int); ok {
+				c[k] = strconv.Itoa(i)
+			}
+		}
+	}
+}
+
 // LoadPipeline sets up the an edge processing pipeline based on configuration settings.
 func LoadPipeline(pluginDir string, config string) (interface{}, []plugins.SFProcessor, *sync.WaitGroup, []interface{}, []plugins.SFHandler, error) {
 	pl := pipeline.NewPluginCache(config)
@@ -214,6 +235,7 @@ func LoadPipeline(pluginDir string, config string) (interface{}, []plugins.SFPro
 		logger.Error.Println("Unable to load pipeline config: ", err)
 		return nil, nil, wg, nil, nil, err
 	}
+	setManifestInfo(conf)
 	var in interface{}
 	var out interface{}
 	var first interface{}
