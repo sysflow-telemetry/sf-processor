@@ -1,3 +1,10 @@
+//
+// Copyright (C) 2020 IBM Corporation.
+//
+// Authors:
+// Frederico Araujo <frederico.araujo@ibm.com>
+// Teryl Taylor <terylt@ibm.com>
+//
 // Code generated from Sfpl.g4 by ANTLR 4.7.2. DO NOT EDIT.
 
 package parser
