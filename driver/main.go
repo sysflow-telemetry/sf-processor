@@ -302,7 +302,7 @@ func main() {
 	inputType := flag.String("input", file.String(), fmt.Sprintf("Input type {%s|%s}", file, socket))
 	cpuprofile := flag.String("cpuprofile", "", "Write cpu profile to `file`")
 	memprofile := flag.String("memprofile", "", "Write memory profile to `file`")
-	configFile := flag.String("config", "/usr/local/sf-processor/conf/pipeline.json", "Path to pipeline configuration file")
+	configFile := flag.String("config", "pipeline.json", "Path to pipeline configuration file")
 	logLevel := flag.String("log", "info", "Log level {trace|info|warn|error}")
 	pluginDir := flag.String("plugdir", PluginDir, "Dynamic plugins directory")
 	version := flag.Bool("version", false, "Outputs version information")

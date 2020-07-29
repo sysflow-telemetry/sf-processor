@@ -62,6 +62,9 @@ ENV INPUT_TYPE=$inputtype
 ARG loglevel=info
 ENV LOG_LEVEL=$loglevel
 
+ARG configpath=/usr/local/sysflow/conf/pipeline.json
+ENV CONFIG_PATH=$configpath
+
 # Image labels
 LABEL "name"="SysFlow Processor"
 LABEL "vendor"="IBM"
@@ -82,4 +85,5 @@ COPY --from=base /usr/local/sysflow/ /usr/local/sysflow/
 CMD /usr/local/sysflow/bin/sfprocessor \
                             ${LOG_LEVEL:+-log} ${LOG_LEVEL} \
                             ${INPUT_TYPE:+-input} ${INPUT_TYPE} \
+                            ${CONFIG_PATH:+-config} ${CONFIG_PATH} \
                             ${FILE_PATH}
