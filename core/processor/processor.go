@@ -140,7 +140,7 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 }
 
 func (s *SysFlowProcessor) getContFromProc(proc *sfgo.Process) *sfgo.Container {
-	if proc.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+	if proc.ContainerId != nil && proc.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 		if c := s.tables.GetCont(proc.ContainerId.String); c != nil {
 			return c
 		}
@@ -151,7 +151,7 @@ func (s *SysFlowProcessor) getContFromProc(proc *sfgo.Process) *sfgo.Container {
 
 func (s *SysFlowProcessor) getContAndProc(oid *sfgo.OID) (*sfgo.Container, *sfgo.Process) {
 	if p := s.tables.GetProc(*oid); p != nil {
-		if p.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+		if p.ContainerId != nil && p.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			if c := s.tables.GetCont(p.ContainerId.String); c != nil {
 				return c, p
 			}
@@ -172,14 +172,14 @@ func (s *SysFlowProcessor) getFile(foid sfgo.FOID) *sfgo.File {
 }
 
 func (s *SysFlowProcessor) getOptFile(unf *sfgo.UnionNullFOID) *sfgo.File {
-	if unf.UnionType == sfgo.UnionNullFOIDTypeEnumFOID {
+	if unf != nil && unf.UnionType == sfgo.UnionNullFOIDTypeEnumFOID {
 		return s.getFile(unf.FOID)
 	}
 	return nil
 }
 
 func (s *SysFlowProcessor) getContFromFile(file *sfgo.File) *sfgo.Container {
-	if file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+	if file != nil && file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 		if c := s.tables.GetCont(file.ContainerId.String); c != nil {
 			return c
 		}
