@@ -308,7 +308,7 @@ func main() {
 	version := flag.Bool("version", false, "Outputs version information")
 
 	flag.Usage = func() {
-		fmt.Println("Usage: sysprocessor [[-version]|[-input <value>] [-log <value>] [-plugdir <value>] path]")
+		fmt.Println("Usage: sfprocessor [[-version]|[-input <value>] [-log <value>] [-plugdir <value>] path]")
 		fmt.Println()
 		fmt.Println("Positional arguments:")
 		fmt.Println("  path string\n\tInput path")

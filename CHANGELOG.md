@@ -13,9 +13,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 > - **Fixed**: for any bug fixes.
 > - **Security**: in case of vulnerabilities.
 
-## [[UNRELEASED](https://github.com/sysflow-telemetry/sf-collector/compare/0.1-rc1...HEAD)]
+## [[UNRELEASED](https://github.com/sysflow-telemetry/sf-collector/compare/0.1.0-rc4...HEAD)]
 
-## [0.1-rc1] - 2020-07-01
+## [0.1.0-rc4] - 2020-07-30
 
 ### Added
 
