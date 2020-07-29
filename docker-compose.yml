@@ -32,10 +32,11 @@ services:
       - /usr:/host/usr:ro
       - /mnt/data:/mnt/data
       - socket-vol:/sock/
-      - ./tests/traces:/tests/traces
+      - ./resources/traces:/tests/traces
     environment:
       EXPORTER_ID: local
-      FILTER: "\"container.type!=host and container.name!=sf-collector and container.name!=sf-processor\"" 
+      NODE_IP: "127.0.0.1"
+      FILTER: "container.type!=host and container.name!=sf-collector and container.name!=sf-processor" 
       INTERVAL: 300 
       SOCK_FILE: /sock/sysflow.sock
 volumes:
