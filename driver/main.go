@@ -1,3 +1,10 @@
+//
+// Copyright (C) 2020 IBM Corporation.
+//
+// Authors:
+// Frederico Araujo <frederico.araujo@ibm.com>
+// Teryl Taylor <terylt@ibm.com>
+//
 package main
 
 import (
@@ -12,11 +19,13 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
+	"strconv"
 	"sync"
 
-	"github.com/actgardner/gogen-avro/compiler"
-	"github.com/actgardner/gogen-avro/container"
-	"github.com/actgardner/gogen-avro/vm"
+	"github.com/actgardner/gogen-avro/v7/compiler"
+	"github.com/actgardner/gogen-avro/v7/vm"
+	"github.com/linkedin/goavro"
+	"github.com/sysflow-telemetry/sf-apis/go/converter"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/goutils/logger"
@@ -83,12 +92,9 @@ func processInputFile(path string, pluginDir string, config string) {
 
 	records := sfChannel.In
 
-	sFlow := sfgo.NewSysFlow()
-	deser, err := compiler.CompileSchemaBytes([]byte(sFlow.Schema()), []byte(sFlow.Schema()))
-	if err != nil {
-		logger.Error.Println("compiler error: ", err)
-	}
 	logger.Trace.Println("Loading file: ", flag.Arg(0))
+
+	sfobjcvter := converter.NewSFObjectConverter()
 
 	files, err := getFiles(flag.Arg(0))
 	if err != nil {
@@ -103,22 +109,20 @@ func processInputFile(path string, pluginDir string, config string) {
 			return
 		}
 		reader := bufio.NewReader(f)
-		sreader, err := container.NewReader(reader)
+		sreader, err := goavro.NewOCFReader(reader)
 		if err != nil {
 			logger.Error.Println("reader error: ", err)
 			return
 		}
 
-		for {
-			sFlow = sfgo.NewSysFlow()
-			err = vm.Eval(sreader, deser, sFlow)
+		for sreader.Scan() {
+			datum, err := sreader.Read()
 			if err != nil {
-				if err.Error() != "EOF" {
-					logger.Error.Println("deserialize: ", err)
-				}
-				break
+				logger.Error.Println("datum reading error: ", err)
+				return
 			}
-			records <- sFlow
+
+			records <- sfobjcvter.ConvertToSysFlow(datum)
 		}
 		f.Close()
 	}
@@ -192,6 +196,26 @@ func processInputStream(path string, pluginDir string, config string) {
 	wg.Wait()
 }
 
+// setManifestInfo sets manifest attributes to plugins configuration items.
+func setManifestInfo(conf *pipeline.Config) {
+	addGlobalConfigItem(conf, VersionKey, Version)
+	addGlobalConfigItem(conf, JSONSchemaVersionKey, JSONSchemaVersion)
+	addGlobalConfigItem(conf, BuildNumberKey, BuildNumber)
+}
+
+// addGlobalConfigItem adds a config item to all processors in the pipeline.
+func addGlobalConfigItem(conf *pipeline.Config, k string, v interface{}) {
+	for _, c := range conf.Pipeline {
+		if _, ok := c[pipeline.ProcConfig]; ok {
+			if s, ok := v.(string); ok {
+				c[k] = s
+			} else if i, ok := v.(int); ok {
+				c[k] = strconv.Itoa(i)
+			}
+		}
+	}
+}
+
 // LoadPipeline sets up the an edge processing pipeline based on configuration settings.
 func LoadPipeline(pluginDir string, config string) (interface{}, []plugins.SFProcessor, *sync.WaitGroup, []interface{}, []plugins.SFHandler, error) {
 	pl := pipeline.NewPluginCache(config)
@@ -211,6 +235,7 @@ func LoadPipeline(pluginDir string, config string) (interface{}, []plugins.SFPro
 		logger.Error.Println("Unable to load pipeline config: ", err)
 		return nil, nil, wg, nil, nil, err
 	}
+	setManifestInfo(conf)
 	var in interface{}
 	var out interface{}
 	var first interface{}
@@ -277,12 +302,13 @@ func main() {
 	inputType := flag.String("input", file.String(), fmt.Sprintf("Input type {%s|%s}", file, socket))
 	cpuprofile := flag.String("cpuprofile", "", "Write cpu profile to `file`")
 	memprofile := flag.String("memprofile", "", "Write memory profile to `file`")
-	configFile := flag.String("config", "/usr/local/sf-processor/conf/pipeline.json", "Path to pipeline configuration file")
+	configFile := flag.String("config", "pipeline.json", "Path to pipeline configuration file")
 	logLevel := flag.String("log", "info", "Log level {trace|info|warn|error}")
 	pluginDir := flag.String("plugdir", PluginDir, "Dynamic plugins directory")
+	version := flag.Bool("version", false, "Outputs version information")
 
 	flag.Usage = func() {
-		fmt.Println("Usage: sysprocessor [-input <value>] [-log <value>] [-plugdir <value>] path")
+		fmt.Println("Usage: sfprocessor [[-version]|[-input <value>] [-log <value>] [-plugdir <value>] path]")
 		fmt.Println()
 		fmt.Println("Positional arguments:")
 		fmt.Println("  path string\n\tInput path")
@@ -294,15 +320,23 @@ func main() {
 
 	// parse args and validade positional args
 	flag.Parse()
-	if flag.NArg() < 1 {
+	if !*version && flag.NArg() < 1 {
 		flag.Usage()
 		os.Exit(1)
+	}
+
+	if *version {
+		hdr := sfgo.NewSFHeader()
+		hdr.SetDefault(0)
+		schemaVersion := hdr.Version
+		fmt.Printf("Version: %s+%s, Avro Schema Version: %v, Export Schema Version: %v\n", Version, BuildNumber, schemaVersion, JSONSchemaVersion)
+		os.Exit(0)
 	}
 
 	// retrieve positional args
 	path := flag.Arg(0)
 
-	// Initialize logger
+	// initialize logger
 	logger.InitLoggers(logger.GetLogLevelFromValue(*logLevel))
 
 	// CPU profiling
@@ -331,7 +365,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Memory profiling
+	// memory profiling
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
 		if err != nil {

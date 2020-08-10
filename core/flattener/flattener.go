@@ -1,3 +1,10 @@
+//
+// Copyright (C) 2020 IBM Corporation.
+//
+// Authors:
+// Frederico Araujo <frederico.araujo@ibm.com>
+// Teryl Taylor <terylt@ibm.com>
+//
 package flattener
 
 import (
@@ -127,7 +134,7 @@ func (g *Flattener) HandleFileEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 		fr.Ints[sfgo.SEC_FILE_TS_INT] = file2.Ts
 		fr.Ints[sfgo.SEC_FILE_RESTYPE_INT] = int64(file2.Restype)
 		fr.Strs[sfgo.SEC_FILE_PATH_STR] = file2.Path
-		if file2.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+		if file2.ContainerId != nil && file2.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			fr.Strs[sfgo.SEC_FILE_CONTAINERID_STRING_STR] = file2.ContainerId.String
 		} else {
 			fr.Strs[sfgo.SEC_FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
@@ -161,10 +168,12 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 	if hdr != nil {
 		fr.Ints[sfgo.SFHE_VERSION_INT] = hdr.Version
 		fr.Strs[sfgo.SFHE_EXPORTER_STR] = hdr.Exporter
+		fr.Strs[sfgo.SFHE_IP_STR] = hdr.Ip
 	} else {
 		logger.Warn.Println("Event does not have a related header.  This should not happen.")
 		fr.Ints[sfgo.SFHE_VERSION_INT] = sfgo.Zeros.Int64
 		fr.Strs[sfgo.SFHE_EXPORTER_STR] = sfgo.Zeros.String
+		fr.Strs[sfgo.SFHE_IP_STR] = sfgo.Zeros.String
 	}
 	if cont != nil {
 		fr.Strs[sfgo.CONT_ID_STR] = cont.Id
@@ -190,7 +199,7 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.PROC_STATE_INT] = int64(proc.State)
 		fr.Ints[sfgo.PROC_OID_CREATETS_INT] = int64(proc.Oid.CreateTS)
 		fr.Ints[sfgo.PROC_OID_HPID_INT] = int64(proc.Oid.Hpid)
-		if proc.Poid.UnionType != sfgo.UnionNullOIDTypeEnumNull {
+		if proc.Poid != nil && proc.Poid.UnionType == sfgo.UnionNullOIDTypeEnumOID {
 			fr.Ints[sfgo.PROC_POID_CREATETS_INT] = proc.Poid.OID.CreateTS
 			fr.Ints[sfgo.PROC_POID_HPID_INT] = proc.Poid.OID.Hpid
 		} else {
@@ -209,7 +218,12 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		} else {
 			fr.Ints[sfgo.PROC_TTY_INT] = 0
 		}
-		if proc.ContainerId.UnionType != sfgo.UnionNullStringTypeEnumNull {
+		if proc.Entry {
+			fr.Ints[sfgo.PROC_ENTRY_INT] = 1
+		} else {
+			fr.Ints[sfgo.PROC_ENTRY_INT] = 0
+		}
+		if proc.ContainerId != nil && proc.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = proc.ContainerId.String
 		} else {
 			fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
@@ -229,6 +243,7 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.PROC_GID_INT] = sfgo.Zeros.Int64
 		fr.Strs[sfgo.PROC_GROUPNAME_STR] = sfgo.Zeros.String
 		fr.Ints[sfgo.PROC_TTY_INT] = sfgo.Zeros.Int64
+		fr.Ints[sfgo.PROC_ENTRY_INT] = sfgo.Zeros.Int64
 		fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
 	}
 	if file != nil {
@@ -236,7 +251,7 @@ func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.FILE_TS_INT] = file.Ts
 		fr.Ints[sfgo.FILE_RESTYPE_INT] = int64(file.Restype)
 		fr.Strs[sfgo.FILE_PATH_STR] = file.Path
-		if file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+		if file.ContainerId != nil && file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			fr.Strs[sfgo.FILE_CONTAINERID_STRING_STR] = file.ContainerId.String
 		} else {
 			fr.Strs[sfgo.FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String

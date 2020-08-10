@@ -1,3 +1,10 @@
+//
+// Copyright (C) 2020 IBM Corporation.
+//
+// Authors:
+// Frederico Araujo <frederico.araujo@ibm.com>
+// Teryl Taylor <terylt@ibm.com>
+//
 package policyengine
 
 import (
@@ -22,6 +29,7 @@ type PolicyEngine struct {
 	tables     *cache.SFTables
 	outCh      chan *engine.Record
 	filterOnly bool
+	config     engine.Config
 }
 
 // NewPolicyEngine constructs a new Policy Engine plugin.
@@ -47,24 +55,26 @@ func (s *PolicyEngine) Register(pc plugins.SFPluginCache) {
 
 // Init initializes the plugin.
 func (s *PolicyEngine) Init(conf map[string]string) error {
-	s.pi = engine.NewPolicyInterpreter(conf)
+	config, err := engine.CreateConfig(conf)
+	if err != nil {
+		return err
+	}
+	s.config = config
+	s.pi = engine.NewPolicyInterpreter(s.config)
 	s.tables = cache.GetInstance()
-	if mode, ok := conf[engine.ModeConfigKey]; ok && mode == engine.FilterMode {
+	if s.config.Mode == engine.FilterMode {
 		logger.Trace.Println("Setting policy engine in filter mode")
 		s.filterOnly = true
 	}
-	if path, ok := conf[engine.PoliciesConfigKey]; ok {
-		logger.Trace.Println("Loading policies from: ", path)
-		paths, err := ioutils.ListFilePaths(path, ".yaml")
-		if err == nil {
-			if len(paths) == 0 {
-				return errors.New("No policy files with extension .yaml found in path: " + path)
-			}
-			return s.pi.Compile(paths...)
+	logger.Trace.Println("Loading policies from: ", config.PoliciesPath)
+	paths, err := ioutils.ListFilePaths(config.PoliciesPath, ".yaml")
+	if err == nil {
+		if len(paths) == 0 {
+			return errors.New("No policy files with extension .yaml found in path: " + config.PoliciesPath)
 		}
-		return errors.New("Error while listing policies: " + err.Error())
+		return s.pi.Compile(paths...)
 	}
-	return errors.New("Configuration tag 'policies' missing from policy engine plugin settings")
+	return errors.New("Error while listing policies: " + err.Error())
 }
 
 // Process implements the main loop of the plugin.
@@ -76,9 +86,6 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 	for {
 		if fc, ok := <-in; ok {
 			s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc, s.tables), out)
-			// if match, r := s.pi.Process(true, s.filterOnly, engine.NewRecord(*fc, s.tables)); match {
-			// 	s.ch <- r
-			// }
 		} else {
 			logger.Trace.Println("Input channel closed. Shutting down.")
 			break

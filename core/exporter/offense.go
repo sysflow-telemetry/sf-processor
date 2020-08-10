@@ -1,7 +1,17 @@
+//
+// Copyright (C) 2020 IBM Corporation.
+//
+// Authors:
+// Frederico Araujo <frederico.araujo@ibm.com>
+// Teryl Taylor <terylt@ibm.com>
+//
 package exporter
 
 import (
 	"encoding/json"
+	"fmt"
+
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
@@ -25,11 +35,15 @@ func CreateOffenses(recs []*engine.Record, config Config) []Event {
 	var offenses = make([]Event, 0)
 	var cobs = make(map[string][]TelemetryRecord)
 	for i, o := range extractObservations(recs, config) {
-		contID := engine.Mapper.MapStr("sf.container.id")(recs[i])
+		groupID := engine.Mapper.MapStr(engine.SF_NODE_ID)(recs[i])
+		contID := engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(recs[i])
+		if contID != sfgo.Zeros.String {
+			groupID = fmt.Sprintf("%s/%s", groupID, contID)
+		}
 		if m, ok := cobs[contID]; ok {
-			cobs[contID] = append(m, o)
+			cobs[groupID] = append(m, o)
 		} else {
-			cobs[contID] = append(make([]TelemetryRecord, 0), o)
+			cobs[groupID] = append(make([]TelemetryRecord, 0), o)
 		}
 	}
 	for k, v := range cobs {

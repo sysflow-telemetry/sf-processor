@@ -1,11 +1,19 @@
+//
+// Copyright (C) 2020 IBM Corporation.
+//
+// Authors:
+// Frederico Araujo <frederico.araujo@ibm.com>
+// Teryl Taylor <terylt@ibm.com>
+//
 module github.ibm.com/sysflow/sf-processor/driver
 
 go 1.14
 
 require (
 	github.com/actgardner/gogen-avro v6.5.0+incompatible
+	github.com/actgardner/gogen-avro/v7 v7.1.1
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/golang/snappy v0.0.1 // indirect
+	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect

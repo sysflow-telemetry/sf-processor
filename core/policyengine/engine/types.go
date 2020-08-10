@@ -1,3 +1,10 @@
+//
+// Copyright (C) 2020 IBM Corporation.
+//
+// Authors:
+// Frederico Araujo <frederico.araujo@ibm.com>
+// Teryl Taylor <terylt@ibm.com>
+//
 package engine
 
 import (
@@ -94,6 +101,7 @@ const (
 	PProcGID
 	PProcGroup
 	PProcTTY
+	PProcEntry
 	PProcCmdLine
 	ProcAExe
 	ProcAName
@@ -118,7 +126,7 @@ func (r Record) GetProc(ID sfgo.OID) *sfgo.Process {
 
 func (r Record) getProcProv(ID sfgo.OID) []*sfgo.Process {
 	var ptree = make([]*sfgo.Process, 0)
-	if p := r.Cr.GetProc(ID); p != nil && p.Poid.UnionType != sfgo.UnionNullOIDTypeEnumNull {
+	if p := r.Cr.GetProc(ID); p != nil && p.Poid != nil && p.Poid.UnionType == sfgo.UnionNullOIDTypeEnumOID {
 		return append(append(ptree, p), r.getProcProv(*p.Poid.OID)...)
 	}
 	return ptree
@@ -174,6 +182,11 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 		case PProcTTY:
 			if len(ptree) > 1 {
 				return ptree[1].Tty
+			}
+			break
+		case PProcEntry:
+			if len(ptree) > 1 {
+				return ptree[1].Entry
 			}
 			break
 		case PProcCmdLine:

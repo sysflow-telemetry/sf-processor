@@ -1,3 +1,10 @@
+//
+// Copyright (C) 2020 IBM Corporation.
+//
+// Authors:
+// Frederico Araujo <frederico.araujo@ibm.com>
+// Teryl Taylor <terylt@ibm.com>
+//
 package engine
 
 import (
@@ -26,7 +33,7 @@ type PolicyInterpreter struct {
 }
 
 // NewPolicyInterpreter constructs a new interpreter instance.
-func NewPolicyInterpreter(conf map[string]string) PolicyInterpreter {
+func NewPolicyInterpreter(conf Config) PolicyInterpreter {
 	ah := NewActionHandler(conf)
 	return PolicyInterpreter{ah}
 }

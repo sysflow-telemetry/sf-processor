@@ -1,13 +1,20 @@
+//
+// Copyright (C) 2020 IBM Corporation.
+//
+// Authors:
+// Frederico Araujo <frederico.araujo@ibm.com>
+// Teryl Taylor <terylt@ibm.com>
+//
 package engine
 
 // ActionHandler type
 type ActionHandler struct {
-	conf map[string]string
+	conf Config
 	//fileHasher *FileHasher
 }
 
 // NewActionHandler creates a new handler.
-func NewActionHandler(conf map[string]string) ActionHandler {
+func NewActionHandler(conf Config) ActionHandler {
 	// var fh *FileHasher
 	// if c, ok := conf[EnrichmentConfigKey]; ok {
 	// 	fh = NewFileHasher()

@@ -1,3 +1,10 @@
+//
+// Copyright (C) 2020 IBM Corporation.
+//
+// Authors:
+// Frederico Araujo <frederico.araujo@ibm.com>
+// Teryl Taylor <terylt@ibm.com>
+//
 package engine
 
 import (
@@ -7,7 +14,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-apis/go/utils"
@@ -96,7 +102,7 @@ var Mapper = FieldMapper{
 	map[string]FieldMap{
 		SF_TYPE:                 mapRecType(),
 		SF_OPFLAGS:              mapOpFlags(),
-		SF_RET:                  mapInt(sfgo.RET_INT),
+		SF_RET:                  mapRet(),
 		SF_TS:                   mapInt(sfgo.TS_INT),
 		SF_ENDTS:                mapEndTs(),
 		SF_PROC_OID:             mapOID(sfgo.PROC_OID_HPID_INT, sfgo.PROC_OID_CREATETS_INT),
@@ -110,8 +116,8 @@ var Mapper = FieldMapper{
 		SF_PROC_GID:             mapInt(sfgo.PROC_GID_INT),
 		SF_PROC_GROUP:           mapStr(sfgo.PROC_GROUPNAME_STR),
 		SF_PROC_CREATETS:        mapInt(sfgo.PROC_OID_CREATETS_INT),
-		SF_PROC_DURATION:        mapDuration(sfgo.PROC_OID_CREATETS_INT),
 		SF_PROC_TTY:             mapInt(sfgo.PROC_TTY_INT),
+		SF_PROC_ENTRY:           mapEntry(sfgo.PROC_ENTRY_INT),
 		SF_PROC_CMDLINE:         mapJoin(sfgo.PROC_EXE_STR, sfgo.PROC_EXEARGS_STR),
 		SF_PROC_ANAME:           mapCachedValue(ProcAName),
 		SF_PROC_AEXE:            mapCachedValue(ProcAExe),
@@ -127,8 +133,8 @@ var Mapper = FieldMapper{
 		SF_PPROC_GID:            mapCachedValue(PProcGID),
 		SF_PPROC_GROUP:          mapCachedValue(PProcGroup),
 		SF_PPROC_CREATETS:       mapInt(sfgo.PROC_POID_CREATETS_INT),
-		SF_PPROC_DURATION:       mapDuration(sfgo.PROC_POID_CREATETS_INT),
 		SF_PPROC_TTY:            mapCachedValue(PProcTTY),
+		SF_PPROC_ENTRY:          mapCachedValue(PProcEntry),
 		SF_PPROC_CMDLINE:        mapCachedValue(PProcCmdLine),
 		SF_FILE_NAME:            mapName(sfgo.FILE_PATH_STR),
 		SF_FILE_PATH:            mapStr(sfgo.FILE_PATH_STR),
@@ -161,6 +167,8 @@ var Mapper = FieldMapper{
 		SF_CONTAINER_TYPE:       mapContType(sfgo.CONT_TYPE_INT),
 		SF_CONTAINER_PRIVILEGED: mapInt(sfgo.CONT_PRIVILEGED_INT),
 		SF_NODE_ID:              mapStr(sfgo.SFHE_EXPORTER_STR),
+		SF_NODE_IP:              mapStr(sfgo.SFHE_IP_STR),
+		SF_SCHEMA_VERSION:       mapInt(sfgo.SFHE_VERSION_INT),
 	},
 }
 
@@ -225,6 +233,19 @@ func mapOpFlags() FieldMap {
 	}
 }
 
+func mapRet() FieldMap {
+	return func(r *Record) interface{} {
+		switch r.GetInt(sfgo.SF_REC_TYPE) {
+		case sfgo.PROC_EVT:
+			fallthrough
+		case sfgo.FILE_EVT:
+			return r.GetInt(sfgo.RET_INT)
+		default:
+			return sfgo.Zeros.Int64
+		}
+	}
+}
+
 func mapEndTs() FieldMap {
 	return func(r *Record) interface{} {
 		switch r.GetInt(sfgo.SF_REC_TYPE) {
@@ -238,9 +259,12 @@ func mapEndTs() FieldMap {
 	}
 }
 
-func mapDuration(attr sfgo.Attribute) FieldMap {
+func mapEntry(attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		return time.Now().UnixNano() - r.GetInt(attr)
+		if r.GetInt(attr) == 1 {
+			return true
+		}
+		return false
 	}
 }
 
