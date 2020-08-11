@@ -57,10 +57,11 @@ type Mode int
 const (
 	AlertMode Mode = iota
 	FilterMode
+	BypassMode
 )
 
 func (s Mode) String() string {
-	return [...]string{"alert", "filter"}[s]
+	return [...]string{"alert", "filter", "bypass"}[s]
 }
 
 func parseModeConfig(s string) Mode {
@@ -69,6 +70,9 @@ func parseModeConfig(s string) Mode {
 	}
 	if FilterMode.String() == s {
 		return FilterMode
+	}
+	if BypassMode.String() == s {
+		return BypassMode
 	}
 	return AlertMode
 }

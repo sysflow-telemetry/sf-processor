@@ -30,6 +30,7 @@ type PolicyEngine struct {
 	tables     *cache.SFTables
 	outCh      chan *engine.Record
 	filterOnly bool
+	bypass     bool
 	config     engine.Config
 }
 
@@ -66,6 +67,9 @@ func (s *PolicyEngine) Init(conf map[string]string) error {
 	if s.config.Mode == engine.FilterMode {
 		logger.Trace.Println("Setting policy engine in filter mode")
 		s.filterOnly = true
+	} else if s.config.Mode == engine.BypassMode {
+		logger.Trace.Println("Setting policy engine in bypass mode")
+		s.bypass = true
 	}
 	logger.Trace.Println("Loading policies from: ", config.PoliciesPath)
 	paths, err := ioutils.ListFilePaths(config.PoliciesPath, ".yaml")
@@ -86,7 +90,11 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 	out := func(r *engine.Record) { s.outCh <- r }
 	for {
 		if fc, ok := <-in; ok {
-			s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc, s.tables), out)
+			if s.bypass {
+				out(engine.NewRecord(*fc, s.tables))
+			} else {
+				s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc, s.tables), out)
+			}
 		} else {
 			logger.Trace.Println("Input channel closed. Shutting down.")
 			break

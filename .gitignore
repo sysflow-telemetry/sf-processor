@@ -29,5 +29,5 @@ driver/sfprocessor
 *.DS_Store
 
 # Manifest
-driver/manifest.go
-driver/manifest.gobak
+driver/manifest/manifest.go
+driver/manifest/manifest.gobak
