@@ -1,11 +1,9 @@
 package windows
 
 import (
+	"errors"
 	"fmt"
 	"io"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.ibm.com/sysflow/goutils/logger"
@@ -14,6 +12,7 @@ import (
 	"github.com/elastic/beats/v7/winlogbeat/checkpoint"
 	"github.com/elastic/beats/v7/winlogbeat/eventlog"
 	"github.ibm.com/sysflow/sf-processor/core/flattener"
+	"github.ibm.com/sysflow/sf-processor/driver/driver"
 	"github.ibm.com/sysflow/sf-processor/driver/pipeline"
 	"github.ibm.com/sysflow/sf-processor/driver/windows/sysmon"
 )
@@ -24,47 +23,27 @@ const (
 	cChannelSize = 100000
 )
 
-func initSigTerm(running *bool) {
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-c
-		fmt.Println("\r- Ctrl+C pressed in Terminal")
-		*running = false
-	}()
+// WinEvtDriver represents a Windows Event Data Source
+type WinEvtDriver struct {
+	pipeline *pipeline.Pipeline
 }
 
-/*func processOutput(sfChan *plugins.SFChannel, wg *sync.WaitGroup) {
-	hdl := writer.NewSysFlowWriter()
-	conf := map[string]string{"file": "./output.avro"}
-	err := hdl.Init(conf)
-	if err != nil {
-		logger.Error.Println(err)
-		os.Exit(1)
-	}
-	processor := processor.NewSysFlowProcessor(hdl)
-	err = processor.Init(conf)
-	if err != nil {
-		logger.Error.Println(err)
-		os.Exit(1)
-	}
-	processor.Process(sfChan, wg)
-	processor.Cleanup()
-}*/
+// NewWinEvtDriver creates a new windows event driver
+func NewWinEvtDriver() driver.Driver {
+	return &WinEvtDriver{}
+}
 
-// ProcessWinEvtLogs processes windows event logs and creates and exports them into the pipeline
-func ProcessWinEvtLogs(pluginDir string, config string) {
-	channel, pipeline, wg, channels, hdlers, err := pipeline.LoadPipeline(pluginDir, config)
-	if err != nil {
-		logger.Error.Println("pipeline error:", err)
-		return
-	}
-	logger.Trace.Printf("Loaded %d stages\n", len(pipeline))
-	logger.Trace.Printf("Loaded %d channels\n", len(channels))
-	logger.Trace.Printf("Loaded %d hdlrs\n", len(hdlers))
-	running := true
-	initSigTerm(&running)
+// Init initializes the driver.
+func (w *WinEvtDriver) Init(pipeline *pipeline.Pipeline) error {
+	w.pipeline = pipeline
+	w.pipeline.AddChannel("flattenerchan", new(flattener.EFRChannel))
+	return nil
+}
+
+// Run processes windows event logs and creates and exports them into the pipeline
+func (w *WinEvtDriver) Run(path string, running *bool) error {
 	conf := make(map[string]interface{})
+	channel := w.pipeline.GetRootChannel()
 	efrChannel := channel.(*flattener.EFRChannel)
 	sm := sysmon.NewSMProcessor(efrChannel)
 	conf[cAPI] = ""
@@ -72,19 +51,19 @@ func ProcessWinEvtLogs(pluginDir string, config string) {
 	cfg, err := common.NewConfigFrom(conf)
 	if err != nil {
 		logger.Error.Println("winevtlog provider config error:", err)
-		return
+		return err
 	}
 
 	eventLog, err := eventlog.New(cfg)
 	if err != nil {
 		logger.Error.Println("Failed to create new event log error:", err)
-		return
+		return err
 	}
 	cp := checkpoint.EventLogState{}
 	err = eventLog.Open(cp)
 	if err != nil {
 		fmt.Printf("failed to open windows event log: %v", err)
-		return
+		return err
 	}
 	logger.Trace.Printf("Windows Event Log '%s' opened successfully", eventLog.Name())
 	// setup closing the API if either the run function is signaled asynchronously
@@ -97,14 +76,14 @@ func ProcessWinEvtLogs(pluginDir string, config string) {
 	defer cancelFn()
 	*/
 	// read loop
-	for running {
+	for *running {
 		records, err := eventLog.Read()
 		switch err {
 		case nil:
 			break
 		case io.EOF:
 			logger.Trace.Printf("End of Winlog event stream reached: %v", err)
-			return
+			return nil
 		default:
 			// only log error if we are not shutting down
 			/*	if cancelCtx.Err() != nil {
@@ -112,7 +91,7 @@ func ProcessWinEvtLogs(pluginDir string, config string) {
 			}*/
 
 			logger.Error.Printf("Error occured while reading from Windows Event Log '%v': %v", eventLog.Name(), err)
-			return
+			return errors.New("Unknown Error occurred while looping through windows evt")
 		}
 
 		if len(records) == 0 {
@@ -122,6 +101,6 @@ func ProcessWinEvtLogs(pluginDir string, config string) {
 		sm.Process(records)
 	}
 	close(efrChannel.In)
-	wg.Wait()
-
+	w.pipeline.Wait()
+	return nil
 }
