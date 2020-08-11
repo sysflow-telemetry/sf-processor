@@ -29,8 +29,8 @@ deps:
 
 .PHONY: version
 version:
-	cp $(SRC)/manifest.go.in $(SRC)/manifest.go
-	sed -ibak -e "s/SYSFLOW_VERSION/$(SYSFLOW_VERSION)/" -e "s/\"JSON_SCHEMA_VERSION\"/$(SYSFLOW_JSON_SCHEMA_VERSION)/" -e "s/BUILD_NUMBER/$(SYSFLOW_BUILD_NUMBER)/" $(SRC)/manifest.go
+	cp $(SRC)/manifest/manifest.go.in $(SRC)/manifest/manifest.go
+	sed -ibak -e "s/SYSFLOW_VERSION/$(SYSFLOW_VERSION)/" -e "s/\"JSON_SCHEMA_VERSION\"/$(SYSFLOW_JSON_SCHEMA_VERSION)/" -e "s/BUILD_NUMBER/$(SYSFLOW_BUILD_NUMBER)/" $(SRC)/manifest/manifest.go
 	rm -f $(SRC)/manifest.goback
 
 .PHONY: test

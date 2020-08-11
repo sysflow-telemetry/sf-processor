@@ -19,8 +19,6 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
-	"strconv"
-	"sync"
 
 	"github.com/actgardner/gogen-avro/v7/compiler"
 	"github.com/actgardner/gogen-avro/v7/vm"
@@ -34,7 +32,6 @@ import (
 
 // Driver constants
 const (
-	ChanSize   = 100000
 	SockFile   = "/var/run/sysflow.sock"
 	BuffSize   = 16384
 	OOBuffSize = 1024
@@ -46,10 +43,11 @@ type inputType int
 const (
 	file inputType = iota
 	socket
+	winlog
 )
 
 func (it inputType) String() string {
-	return [...]string{"file", "socket"}[it]
+	return [...]string{"file", "socket", "winlog"}[it]
 }
 
 func getFiles(filename string) ([]string, error) {
@@ -80,7 +78,7 @@ func getFiles(filename string) ([]string, error) {
 }
 
 func processInputFile(path string, pluginDir string, config string) {
-	channel, pipeline, wg, channels, hdlers, err := LoadPipeline(pluginDir, config)
+	channel, pipeline, wg, channels, hdlers, err := pipeline.LoadPipeline(pluginDir, config)
 	if err != nil {
 		logger.Error.Println("pipeline error:", err)
 		return
@@ -144,7 +142,7 @@ func processInputStream(path string, pluginDir string, config string) {
 	}
 	defer l.Close()
 
-	channel, pipeline, wg, channels, hdlers, err := LoadPipeline(pluginDir, config)
+	channel, pipeline, wg, channels, hdlers, err := pipeline.LoadPipeline(pluginDir, config)
 	if err != nil {
 		logger.Error.Println("pipeline error:", err)
 		return
@@ -196,110 +194,9 @@ func processInputStream(path string, pluginDir string, config string) {
 	wg.Wait()
 }
 
-// setManifestInfo sets manifest attributes to plugins configuration items.
-func setManifestInfo(conf *pipeline.Config) {
-	addGlobalConfigItem(conf, VersionKey, Version)
-	addGlobalConfigItem(conf, JSONSchemaVersionKey, JSONSchemaVersion)
-	addGlobalConfigItem(conf, BuildNumberKey, BuildNumber)
-}
-
-// addGlobalConfigItem adds a config item to all processors in the pipeline.
-func addGlobalConfigItem(conf *pipeline.Config, k string, v interface{}) {
-	for _, c := range conf.Pipeline {
-		if _, ok := c[pipeline.ProcConfig]; ok {
-			if s, ok := v.(string); ok {
-				c[k] = s
-			} else if i, ok := v.(int); ok {
-				c[k] = strconv.Itoa(i)
-			}
-		}
-	}
-}
-
-// LoadPipeline sets up the an edge processing pipeline based on configuration settings.
-func LoadPipeline(pluginDir string, config string) (interface{}, []plugins.SFProcessor, *sync.WaitGroup, []interface{}, []plugins.SFHandler, error) {
-	pl := pipeline.NewPluginCache(config)
-	wg := new(sync.WaitGroup)
-
-	var processors []plugins.SFProcessor
-	var channels []interface{}
-	var hdlrs []plugins.SFHandler
-
-	if err := pl.LoadPlugins(pluginDir); err != nil {
-		logger.Error.Println("Unable to load dynamic plugins: ", err)
-		return nil, nil, wg, nil, nil, err
-	}
-
-	conf, err := pl.GetConfig()
-	if err != nil {
-		logger.Error.Println("Unable to load pipeline config: ", err)
-		return nil, nil, wg, nil, nil, err
-	}
-	setManifestInfo(conf)
-	var in interface{}
-	var out interface{}
-	var first interface{}
-	for idx, p := range conf.Pipeline {
-		hdler := false
-		var hdl plugins.SFHandler
-		if val, ok := p[pipeline.HdlConfig]; ok {
-			hdl, err = pl.GetHandler(val)
-			if err != nil {
-				logger.Error.Println(err)
-				return nil, nil, wg, nil, nil, err
-			}
-			hdlrs = append(hdlrs, hdl)
-			xType := fmt.Sprintf("%T", hdl)
-			logger.Trace.Println(xType)
-			hdler = true
-		}
-		var prc plugins.SFProcessor
-		if val, ok := p[pipeline.ProcConfig]; ok {
-			prc, err = pl.GetProcessor(val, hdl, hdler)
-			if err != nil {
-				logger.Error.Println(err)
-				return nil, nil, wg, nil, nil, err
-			}
-			tp := fmt.Sprintf("%T", prc)
-			logger.Trace.Println(tp)
-			err = prc.Init(p)
-			if err != nil {
-				logger.Error.Println(err)
-				return nil, nil, wg, nil, nil, err
-			}
-		} else {
-			logger.Error.Println("processor or handler tag must exist in plugin config")
-			return nil, nil, wg, nil, nil, err
-		}
-		if v, o := p[pipeline.InChanConfig]; o {
-			in, err = pl.GetChan(v, ChanSize)
-			channels = append(channels, in)
-			chp := fmt.Sprintf("%T", in)
-			logger.Trace.Println(chp)
-		} else {
-			logger.Error.Println("in tag must exist in plugin config")
-			return nil, nil, wg, nil, nil, errors.New("in tag must exist in plugin config")
-		}
-		if v, o := p[pipeline.OutChanConfig]; o {
-			out, err = pl.GetChan(v, ChanSize)
-			chp := fmt.Sprintf("%T", out)
-			channels = append(channels, out)
-			logger.Trace.Println(chp)
-			prc.SetOutChan(out)
-		}
-		processors = append(processors, prc)
-		wg.Add(1)
-		go prc.Process(in, wg)
-		if idx == 0 {
-			first = in
-		}
-	}
-	return first, processors, wg, channels, hdlrs, nil
-}
-
 func main() {
 	// setup arg parsing
-	inputType := flag.String("input", file.String(), fmt.Sprintf("Input type {%s|%s}", file, socket))
+	inputType := flag.String("input", file.String(), fmt.Sprintf("Input type {%s|%s|%s}", file, socket, winlog))
 	cpuprofile := flag.String("cpuprofile", "", "Write cpu profile to `file`")
 	memprofile := flag.String("memprofile", "", "Write memory profile to `file`")
 	configFile := flag.String("config", "pipeline.json", "Path to pipeline configuration file")

@@ -15,6 +15,7 @@ import (
 	"github.ibm.com/sysflow/goutils/ioutils"
 	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/cache"
+	"github.ibm.com/sysflow/sf-processor/core/flattener"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
@@ -79,7 +80,7 @@ func (s *PolicyEngine) Init(conf map[string]string) error {
 
 // Process implements the main loop of the plugin.
 func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
-	in := ch.(*plugins.FlatChannel).In
+	in := ch.(*flattener.EFRChannel).In
 	defer wg.Done()
 	logger.Trace.Println("Starting policy engine with capacity: ", cap(in))
 	out := func(r *engine.Record) { s.outCh <- r }
