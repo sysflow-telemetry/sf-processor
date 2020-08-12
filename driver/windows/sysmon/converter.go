@@ -40,7 +40,7 @@ func NewEnrichedFlatRecord() *flattener.EnrichedFlatRecord {
 	efr.Strs[flattener.EXT_WIN_IDX] = make([]string, flattener.NUM_EXT_PROC_ATTRS)
 
 	efr.Ints[flattener.HASH_IDX] = nil
-	efr.Strs[flattener.HASH_IDX] = make([]string, flattener.PROC_IMP_HASH)
+	efr.Strs[flattener.HASH_IDX] = make([]string, flattener.NUM_HASHES)
 	return efr
 
 }

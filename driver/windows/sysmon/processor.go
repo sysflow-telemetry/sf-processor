@@ -203,7 +203,7 @@ func (s *SMProcessor) Process(records []eventlog.Record) {
 			//s.printRecord(record)
 			s.processExited(record)
 		default:
-			s.printRecord(record)
+			//s.printRecord(record)
 		}
 	}
 	//event := record.XML

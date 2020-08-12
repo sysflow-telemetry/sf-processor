@@ -21,15 +21,22 @@ const (
 	//Indexes into enriched flat record
 	SYSFLOW_IDX = 0
 	EXT_WIN_IDX = 1
-	HASH_IDX    = 3
+	HASH_IDX    = 2
 )
 
+// EnrichedFlatRecord is an enriched flat record
 type EnrichedFlatRecord struct {
 	Sources []int64
 	Ints    [][]int64
 	Strs    [][]string
 }
 
+// EFRChannel enriched flat channel
 type EFRChannel struct {
 	In chan *EnrichedFlatRecord
+}
+
+// NewEnFlattenerChan creates a new channel with given capacity.
+func NewEnFlattenerChan(size int) interface{} {
+	return &EFRChannel{In: make(chan *EnrichedFlatRecord, size)}
 }

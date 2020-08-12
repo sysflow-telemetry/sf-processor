@@ -70,6 +70,7 @@ func (s *PolicyEngine) Init(conf map[string]string) error {
 	} else if s.config.Mode == engine.BypassMode {
 		logger.Trace.Println("Setting policy engine in bypass mode")
 		s.bypass = true
+		return nil
 	}
 	logger.Trace.Println("Loading policies from: ", config.PoliciesPath)
 	paths, err := ioutils.ListFilePaths(config.PoliciesPath, ".yaml")

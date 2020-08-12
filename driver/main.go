@@ -133,10 +133,19 @@ func main() {
 	err := drv.Init(pl)
 	if err != nil {
 		logger.Error.Println("Driver initialization error: " + err.Error())
+		return
 	}
+
+	err = pl.Load()
+	if err != nil {
+		logger.Error.Println("Unable to load pipeline error: " + err.Error())
+		return
+	}
+	pl.PrintPipeline()
 	err = drv.Run(path, &running)
 	if err != nil {
 		logger.Error.Println("Driver initialization error: " + err.Error())
+		return
 	}
 
 	// memory profiling

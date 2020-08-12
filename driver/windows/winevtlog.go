@@ -36,7 +36,7 @@ func NewWinEvtDriver() driver.Driver {
 // Init initializes the driver.
 func (w *WinEvtDriver) Init(pipeline *pipeline.Pipeline) error {
 	w.pipeline = pipeline
-	w.pipeline.AddChannel("flattenerchan", new(flattener.EFRChannel))
+	w.pipeline.AddChannel("enflattenerchan", flattener.NewEnFlattenerChan)
 	return nil
 }
 
