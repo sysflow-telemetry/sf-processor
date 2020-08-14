@@ -1,7 +1,10 @@
 package sysmon
 
 import (
+	"encoding/binary"
+	"errors"
 	"fmt"
+	"net"
 	"path/filepath"
 	"strings"
 	"time"
@@ -80,3 +83,11 @@ func createSFProcess(proc *sfgo.Process) *sfgo.SysFlow {
 	return sf
 }
 
+func ip2Int(ipAddr string) (uint32, error) {
+	ip := net.ParseIP(ipAddr)
+	if ip == nil {
+		return 0, errors.New("wrong ipAddr format")
+	}
+	ip = ip.To4()
+	return binary.BigEndian.Uint32(ip), nil
+}

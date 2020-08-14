@@ -6,6 +6,7 @@ import (
 
 	"github.com/elastic/beats/v7/winlogbeat/eventlog"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
+	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/cache"
 	"github.ibm.com/sysflow/sf-processor/core/flattener"
 )
@@ -17,15 +18,18 @@ type SMProcessor struct {
 	procTable ProcessTable
 	tables    *cache.SFTables
 	converter *Converter
+	protoMap  map[string]int64
 }
 
 // NewSMProcessor instantiates a new SMProcessor object.
 func NewSMProcessor(channel *flattener.EFRChannel) *SMProcessor {
+	protoMap := map[string]int64{"tcp": 6, "udp": 17}
 	return &SMProcessor{
 		efrChan:   channel.In,
 		procTable: make(ProcessTable),
 		tables:    cache.GetInstance(),
 		converter: NewConverter(channel.In),
+		protoMap:  protoMap,
 	}
 }
 
@@ -81,10 +85,10 @@ func (s *SMProcessor) processExited(record eventlog.Record) {
 
 	if val, ok := s.procTable[procGUID]; ok {
 		s.tables.SetProc(*val.Process.Oid, val.Process)
-		s.converter.createSFProcEvent(val, ts,
+		s.converter.createSFProcEvent(record, val, ts,
 			val.Process.Oid.Hpid, sfgo.OP_EXIT, 0)
 	} else {
-		fmt.Printf("Uh oh! Process not in process table %s %d\n", image, processID)
+		fmt.Printf("Uh oh! Process not in process table for exit process %s %d\n", image, processID)
 	}
 }
 
@@ -114,9 +118,9 @@ func (s *SMProcessor) processCreated(record eventlog.Record) {
 		case cCurrentDirectory:
 			procObj.CurrentDirectory = pairs.Value
 		case cLogonGUID:
-			procObj.LoginGUID = pairs.Value
+			procObj.LogonGUID = pairs.Value
 		case cLogonID:
-			procObj.LoginID = pairs.Value
+			procObj.LogonID = pairs.Value
 		case cCommandLine:
 			procObj.CommandLine = pairs.Value
 		case cTerminalSessionID:
@@ -157,7 +161,7 @@ func (s *SMProcessor) processCreated(record eventlog.Record) {
 		ppObj.Written = true
 	}*/
 	if ppObj != nil {
-		s.converter.createSFProcEvent(ppObj, record.TimeCreated.SystemTime.UnixNano(),
+		s.converter.createSFProcEvent(record, ppObj, record.TimeCreated.SystemTime.UnixNano(),
 			ppObj.Process.Oid.Hpid, sfgo.OP_CLONE, int32(procObj.Process.Oid.Hpid))
 		procExe := procObj.Process.Exe
 		procExeArgs := procObj.Process.ExeArgs
@@ -165,21 +169,277 @@ func (s *SMProcessor) processCreated(record eventlog.Record) {
 		procObj.Process.ExeArgs = ppObj.Process.ExeArgs
 		procObj.Process.Poid = createPOID(ppObj.Process.Oid)
 		s.tables.SetProc(*procObj.Process.Oid, procObj.Process)
-		s.converter.createSFProcEvent(procObj, record.TimeCreated.SystemTime.UnixNano(),
+		s.converter.createSFProcEvent(record, procObj, record.TimeCreated.SystemTime.UnixNano(),
 			procObj.Process.Oid.Hpid, sfgo.OP_CLONE, 0)
 		procObj.Process.Exe = procExe
 		procObj.Process.ExeArgs = procExeArgs
 		if procObj.Process.Exe != ppObj.Process.Exe || procObj.Process.ExeArgs != ppObj.Process.ExeArgs {
 			procObj.Process.State = sfgo.SFObjectStateMODIFIED
 			s.tables.SetProc(*procObj.Process.Oid, procObj.Process)
-			s.converter.createSFProcEvent(procObj, record.TimeCreated.SystemTime.UnixNano(),
+			s.converter.createSFProcEvent(record, procObj, record.TimeCreated.SystemTime.UnixNano(),
 				procObj.Process.Oid.Hpid, sfgo.OP_EXEC, 0)
 		}
 	} else {
-		s.converter.createSFProcEvent(procObj, record.TimeCreated.SystemTime.UnixNano(),
+		s.converter.createSFProcEvent(record, procObj, record.TimeCreated.SystemTime.UnixNano(),
 			procObj.Process.Oid.Hpid, sfgo.OP_EXEC, 0)
 	}
 	s.procTable[procObj.GUID] = procObj
+}
+
+//{[{RuleName -} {UtcTime 2020-08-05 01:23:09.526} {ProcessGuid {8ce7f76f-56ea-5f23-0100-000000000f00}} {ProcessId 4} {Image System}
+//{User NT AUTHORITY\SYSTEM} {Protocol tcp} {Initiated true} {SourceIsIpv6 false} {SourceIp 10.191.226.105} {SourceHostname windy2.sl.cloud9.ibm.com} {SourcePort 63815} {SourcePortName -} {DestinationIsIpv
+//6 false} {DestinationIp 10.162.185.211} {DestinationHostname -} {DestinationPort 445} {DestinationPortName microsoft-ds}]}
+func (s *SMProcessor) createNetworkConnection(record eventlog.Record) {
+	var procGUID string
+	var ts int64
+	var image string
+	var processID int64
+	var proto int64
+	opFlags := sfgo.OP_CONNECT
+	var sourceIP uint32 = 0
+	var sourcePort int64
+	var destIP uint32 = 0
+	var destPort int64
+	extNetworkAttrsStr := make([]string, flattener.NUM_EXT_NET_STR)
+	for _, pairs := range record.EventData.Pairs {
+		switch pairs.Key {
+		case cUtcTime:
+			//fmt.Printf("UTC Time type: %T\n", pairs.Value)
+			ts = GetTimestamp(pairs.Value)
+		case cProcessGUID:
+			procGUID = pairs.Value
+		case cImage:
+			image = pairs.Value
+		case cProcessID:
+			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
+				processID = n
+			} else {
+				logger.Warn.Println("Unable to parse ProcessId sysmon attribute: " + err.Error())
+			}
+		case cProtocol:
+			if prot, ok := s.protoMap[pairs.Value]; ok {
+				proto = prot
+			} else {
+				proto = 0
+			}
+		case cInitiated:
+			if b, err := strconv.ParseBool(pairs.Value); err == nil {
+				if !b {
+					opFlags = sfgo.OP_ACCEPT
+				}
+			} else {
+				logger.Warn.Println("Unable to parse Initiated sysmon attribute: " + err.Error())
+			}
+		case cSourceIsIpv6:
+			if b, err := strconv.ParseBool(pairs.Value); err == nil {
+				if b {
+					logger.Warn.Println("Do not currently support IPv6")
+					return
+				}
+			} else {
+				logger.Warn.Println("Unable to parse SourceIsIpv6 sysmon attribute: " + err.Error())
+			}
+		case cSourceIP:
+			ip, err := ip2Int(pairs.Value)
+			if err == nil {
+				sourceIP = ip
+			} else {
+				logger.Warn.Println("Unable to parse SourceIp sysmon attribute: " + err.Error())
+			}
+		case cSourceHostname:
+			extNetworkAttrsStr[flattener.NET_SOURCE_HOST_NAME_STR] = pairs.Value
+		case cSourcePort:
+			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
+				sourcePort = n
+			} else {
+				logger.Warn.Println("Unable to parse SourcePort sysmon attribute: " + err.Error())
+			}
+		case cSourcePortName:
+			extNetworkAttrsStr[flattener.NET_SOURCE_PORT_NAME_STR] = pairs.Value
+		case cDestinationIsIpv6:
+			if b, err := strconv.ParseBool(pairs.Value); err == nil {
+				if b {
+					logger.Warn.Println("Do not currently support IPv6")
+					return
+				}
+			} else {
+				logger.Warn.Println("Unable to parse SourceIsIpv6 sysmon attribute: " + err.Error())
+			}
+
+		case cDestinationIP:
+			ip, err := ip2Int(pairs.Value)
+			if err == nil {
+				destIP = ip
+			} else {
+				logger.Warn.Println("Unable to parse SourceIp sysmon attribute: " + err.Error())
+			}
+		case cDestinationHostname:
+			extNetworkAttrsStr[flattener.NET_DEST_HOST_NAME_STR] = pairs.Value
+		case cDestinationPort:
+			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
+				destPort = n
+			} else {
+				logger.Warn.Println("Unable to parse SourcePort sysmon attribute: " + err.Error())
+			}
+		case cDestinationPortName:
+			extNetworkAttrsStr[flattener.NET_DEST_PORT_NAME_STR] = pairs.Value
+		}
+	}
+	if val, ok := s.procTable[procGUID]; ok {
+		s.tables.SetProc(*val.Process.Oid, val.Process)
+		s.converter.createSFNetworkFlow(record, val, ts, ts,
+			val.Process.Oid.Hpid, opFlags, sourceIP, sourcePort, destIP, destPort, proto, extNetworkAttrsStr)
+	} else {
+		fmt.Printf("Uh oh! Process not in process table for exit process %s %d\n", image, processID)
+	}
+
+}
+
+func (s *SMProcessor) loadImage(record eventlog.Record) {
+	var procGUID string
+	var ts int64
+	var image string
+	var processID int64
+	var imageLoaded string
+	var hashes string
+	var signed bool = false
+	var signature string
+	var sigStatus string
+	for _, pairs := range record.EventData.Pairs {
+		switch pairs.Key {
+		case cUtcTime:
+			//fmt.Printf("UTC Time type: %T\n", pairs.Value)
+			ts = GetTimestamp(pairs.Value)
+		case cProcessGUID:
+			procGUID = pairs.Value
+		case cImage:
+			image = pairs.Value
+		case cProcessID:
+			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
+				processID = n
+			} else {
+				logger.Warn.Println("Unable to parse ProcessId sysmon attribute: " + err.Error())
+			}
+		case cImageLoaded:
+			imageLoaded = pairs.Value
+		case cHashes:
+			hashes = pairs.Value
+		case cSigned:
+			if b, err := strconv.ParseBool(pairs.Value); err == nil {
+				signed = b
+			} else {
+				logger.Warn.Println("Unable to parse signed sysmon attribute: " + err.Error())
+			}
+		case cSignature:
+			signature = pairs.Value
+		case cSignatureStatus:
+			sigStatus = pairs.Value
+		}
+
+	}
+
+	if val, ok := s.procTable[procGUID]; ok {
+		s.tables.SetProc(*val.Process.Oid, val.Process)
+		s.converter.createSFFileFlow(record, val, ts, ts,
+			val.Process.Oid.Hpid, sfgo.OP_OPEN|sfgo.OP_READ_RECV|sfgo.OP_CLOSE,
+			imageLoaded, sfgo.O_RDONLY, signed, signature, sigStatus, 'i', hashes, "")
+	} else {
+		fmt.Printf("Uh oh! Process not in process table for load image %s %d\n", image, processID)
+	}
+}
+
+//{[{RuleName EXE} {UtcTime 2020-08-05 01:20:46.027} {ProcessGuid {8ce7f76f-096d-5f2a-2ea5-000000000f00}} {ProcessId 8836} {Image c:\go\pkg\tool\windows_amd64\link.exe} {TargetFilename C:\Users\terylt_ibm.com\AppData\Local\Temp\go-build916057974\b001\exe\a.out.exe} {CreationUtcTime 2020-08-05 01:20:46.027}]}
+func (s *SMProcessor) createFile(record eventlog.Record) {
+	var procGUID string
+	var ts int64
+	//var creationTS int64
+	var image string
+	var processID int64
+	var fileName string
+	for _, pairs := range record.EventData.Pairs {
+		switch pairs.Key {
+		case cUtcTime:
+			//fmt.Printf("UTC Time type: %T\n", pairs.Value)
+			ts = GetTimestamp(pairs.Value)
+		case cProcessGUID:
+			procGUID = pairs.Value
+		case cImage:
+			image = pairs.Value
+		case cProcessID:
+			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
+				processID = n
+			} else {
+				logger.Warn.Println("Unable to parse ProcessId sysmon attribute: " + err.Error())
+			}
+		case cTargetFilename:
+			fileName = pairs.Value
+			//case cCreationUtcTime:
+			//	creationTS = GetTimestamp(pairs.Value)
+		}
+	}
+	if val, ok := s.procTable[procGUID]; ok {
+		s.tables.SetProc(*val.Process.Oid, val.Process)
+		s.converter.createSFFileFlow(record, val, ts, ts,
+			val.Process.Oid.Hpid, sfgo.OP_OPEN,
+			fileName, sfgo.O_CREAT, false, "", "", 'f', "", "")
+	} else {
+		fmt.Printf("Uh oh! Process not in process table for create file %s %d\n", image, processID)
+	}
+
+}
+
+//[{RuleName T1183,IFEO} {EventType DeleteValue} {UtcTime 2020-08-05 02:53:04.922} {ProcessGuid {8ce7f76f-56f2-5f23-2300-000000000f00}} {ProcessId 1852} {Image C:\Windows\system32\svchost.exe} {TargetObject HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\LSASS.exe\AuditLevel}]}
+//{[{RuleName T1031,T1050} {EventType SetValue} {UtcTime 2020-08-05 01:54:56.049} {ProcessGuid {8ce7f76f-56ea-5f23-0100-000000000f00}} {ProcessId 4} {Image System} {TargetObject HKLM\SYSTEM\CrowdStrike\{36903b4a-6f88-46c6-a6f6-3a0de10f42b9}\{0000000e-0000-0000-0000-000000000000}\{00000000-000001a9}\start} {Details Binary Data}]}
+func (s *SMProcessor) modifyRegistryValue(record eventlog.Record) {
+	var procGUID string
+	var ts int64
+	//var creationTS int64
+	var image string
+	var processID int64
+	var fileName string
+	var eventType string
+	var details string
+	for _, pairs := range record.EventData.Pairs {
+		switch pairs.Key {
+		case cUtcTime:
+			//fmt.Printf("UTC Time type: %T\n", pairs.Value)
+			ts = GetTimestamp(pairs.Value)
+		case cProcessGUID:
+			procGUID = pairs.Value
+		case cImage:
+			image = pairs.Value
+		case cProcessID:
+			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
+				processID = n
+			} else {
+				logger.Warn.Println("Unable to parse ProcessId sysmon attribute: " + err.Error())
+			}
+		case cEventType:
+			eventType = pairs.Value
+		case cTargetObject:
+			fileName = pairs.Value
+		case cDetails:
+			details = pairs.Value
+		}
+	}
+	if val, ok := s.procTable[procGUID]; ok {
+		s.tables.SetProc(*val.Process.Oid, val.Process)
+		switch eventType {
+		case cSetValue:
+			s.converter.createSFFileFlow(record, val, ts, ts,
+				val.Process.Oid.Hpid, sfgo.OP_OPEN|sfgo.OP_WRITE_SEND|sfgo.OP_CLOSE,
+				fileName, sfgo.O_WRONLY, false, "", "", 'r', "", details)
+		case cDeleteValue:
+			s.converter.createSFFileEvent(record, val, ts,
+				val.Process.Oid.Hpid, sfgo.OP_UNLINK,
+				fileName, false, "", "", 'r', "", details)
+
+		default:
+			logger.Warn.Println("Registry Event Type not supported: " + eventType)
+		}
+	} else {
+		fmt.Printf("Uh oh! Process not in process table for modify registry %s %d\n", image, processID)
+	}
 }
 
 func (s *SMProcessor) printRecord(record eventlog.Record) {
@@ -202,8 +462,21 @@ func (s *SMProcessor) Process(records []eventlog.Record) {
 		case cSysmonProcessExit:
 			//s.printRecord(record)
 			s.processExited(record)
+		case cSysmonLoadImage:
+			s.loadImage(record)
+		case cSysmonNetworkConnection:
+			s.createNetworkConnection(record)
+		case cSysmonFileCreated:
+			s.createFile(record)
+		case cSysmonSetRegistryValue:
+			s.modifyRegistryValue(record)
+		case cSysmonCreateDeleteRegistryObject:
+			s.modifyRegistryValue(record)
+		case cSysmonProcessAccess:
+		case cSysmonPipeCreated:
+		case cSysmonPipeConnected:
 		default:
-			//s.printRecord(record)
+			s.printRecord(record)
 		}
 	}
 	//event := record.XML

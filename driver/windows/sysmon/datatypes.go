@@ -11,8 +11,8 @@ type ProcessObj struct {
 	Image              string
 	CurrentDirectory   string
 	CommandLine        string
-	LoginGUID          string
-	LoginID            string
+	LogonGUID          string
+	LogonID            string
 	TerminalSessionID  string
 	Integrity          string
 	Hashes             string
@@ -20,6 +20,9 @@ type ProcessObj struct {
 	ParentProcessID    string
 	ParentProcessImage string
 	ParentCommandLine  string
+	Signature          string
+	SignatureStatus    string
+	Signed             bool
 	Written            bool
 }
 
