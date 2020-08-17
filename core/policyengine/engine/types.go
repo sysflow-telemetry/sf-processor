@@ -111,13 +111,23 @@ const (
 )
 
 // GetInt returns an integer value from internal flat record.
-func (r Record) GetInt(attr sfgo.Attribute) int64 {
-	return r.Fr.Ints[flattener.SYSFLOW_IDX][attr]
+func (r Record) GetInt(attr sfgo.Attribute, src flattener.Source) int64 {
+	for idx, s := range r.Fr.Sources {
+		if s == src {
+			return r.Fr.Ints[idx][attr]
+		}
+	}
+	return sfgo.Zeros.Int64
 }
 
 // GetStr returns a string value from internal flat record.
-func (r Record) GetStr(attr sfgo.Attribute) string {
-	return strings.TrimSpace(r.Fr.Strs[flattener.SYSFLOW_IDX][attr])
+func (r Record) GetStr(attr sfgo.Attribute, src flattener.Source) string {
+	for idx, s := range r.Fr.Sources {
+		if s == src {
+			return strings.TrimSpace(r.Fr.Strs[idx][attr])
+		}
+	}
+	return sfgo.Zeros.String
 }
 
 // GetProc returns a process object by ID.

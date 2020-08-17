@@ -100,3 +100,83 @@ const (
 	SF_NODE_IP              string = "sf.node.ip"
 	SF_SCHEMA_VERSION       string = "sf.schema"
 )
+
+// extension proc attributes
+const (
+	EXT_PROC_GUID_STR                = "ext.proc.guid"
+	EXT_PROC_IMAGE_STR               = "ext.proc.image"
+	EXT_PROC_CURR_DIRECTORY_STR      = "ext.proc.curdir"
+	EXT_PROC_LOGON_GUID_STR          = "ext.proc.logonguid"
+	EXT_PROC_LOGON_ID_STR            = "ext.proc.logonid"
+	EXT_PROC_TERMINAL_SESSION_ID_STR = "ext.proc.termsessid"
+	EXT_PROC_INTEGRITY_LEVEL_STR     = "ext.proc.integrity"
+	EXT_PROC_SIGNATURE_STR           = "ext.proc.signature"
+	EXT_PROC_SIGNATURE_STATUS_STR    = "ext.proc.sigstatus"
+	EXT_PROC_SHA1_HASH_STR           = "ext.proc.sha1"
+	EXT_PROC_MD5_HASH_STR            = "ext.proc.md5"
+	EXT_PROC_SHA256_HASH_STR         = "ext.proc.sha256"
+	EXT_PROC_IMP_HASH_STR            = "ext.proc.imphash"
+	EXT_PROC_SIGNED_INT              = "ext.proc.signed"
+)
+
+//extension file attributes
+const (
+	EXT_FILE_SHA1_HASH_STR        = "ext.file.sha1"
+	EXT_FILE_MD5_HASH_STR         = "ext.file.md5"
+	EXT_FILE_SHA256_HASH_STR      = "ext.file.sha256"
+	EXT_FILE_IMP_HASH_STR         = "ext.file.imp"
+	EXT_FILE_SIGNATURE_STR        = "ext.file.signature"
+	EXT_FILE_SIGNATURE_STATUS_STR = "ext.file.sigstatus"
+	EXT_FILE_DETAILS_STR          = "ext.registry.details"
+	EXT_FILE_SIGNED_INT           = "ext.file.signed"
+)
+
+// extensions for network
+const (
+	EXT_NET_SOURCE_HOST_NAME_STR = "ext.net.srchostname"
+	EXT_NET_SOURCE_PORT_NAME_STR = "ext.net.srcportname"
+	EXT_NET_DEST_HOST_NAME_STR   = "ext.net.desthostname"
+	EXT_NET_DEST_PORT_NAME_STR   = "ext.net.destportname"
+)
+
+// extensions for events
+const (
+	EXT_TARG_PROC_STATE_INT              = "ext.targetproc.state"
+	EXT_TARG_PROC_OID_CREATETS_INT       = "ext.targetproc.createts"
+	EXT_TARG_PROC_OID_HPID_INT           = "ext.targetproc.pid"
+	EXT_TARG_PROC_POID_CREATETS_INT      = "ext.targetpproc.createts"
+	EXT_TARG_PROC_POID_HPID_INT          = "ext.targetpproc.pid"
+	EXT_TARG_PROC_TS_INT                 = "ext.targetproc.ts"
+	EXT_TARG_PROC_EXE_STR                = "ext.targetproc.exe"
+	EXT_TARG_PROC_EXEARGS_STR            = "ext.targetproc.args"
+	EXT_TARG_PROC_UID_INT                = "ext.targetproc.uid"
+	EXT_TARG_PROC_USERNAME_STR           = "ext.targetproc.user"
+	EXT_TARG_PROC_GID_INT                = "ext.targetproc.gid"
+	EXT_TARG_PROC_GROUPNAME_STR          = "ext.targetproc.group"
+	EXT_TARG_PROC_TTY_INT                = "ext.targetproc.tty"
+	EXT_TARG_PROC_CONTAINERID_STRING_STR = "ext.targetcontainer.id"
+	EXT_TARG_PROC_ENTRY_INT              = "ext.targetproc.entry"
+
+	EXT_TARG_PROC_GUID_STR                = "ext.targetproc.guid"
+	EXT_TARG_PROC_IMAGE_STR               = "ext.targetproc.image"
+	EXT_TARG_PROC_CURR_DIRECTORY_STR      = "ext.targetproc.curdir"
+	EXT_TARG_PROC_LOGON_GUID_STR          = "ext.targetproc.logonguid"
+	EXT_TARG_PROC_LOGON_ID_STR            = "ext.targetproc.logonid"
+	EXT_TARG_PROC_TERMINAL_SESSION_ID_STR = "ext.targetproc.termsessid"
+	EXT_TARG_PROC_INTEGRITY_LEVEL_STR     = "ext.targetproc.integrity"
+	EXT_TARG_PROC_SIGNATURE_STR           = "ext.targetproc.signature"
+	EXT_TARG_PROC_SIGNATURE_STATUS_STR    = "ext.targetproc.sigstatus"
+	EXT_TARG_PROC_SHA1_HASH_STR           = "ext.targetproc.sha1"
+	EXT_TARG_PROC_MD5_HASH_STR            = "ext.targetproc.md5"
+	EXT_TARG_PROC_SHA256_HASH_STR         = "ext.targetproc.sha256"
+	EXT_TARG_PROC_IMP_HASH_STR            = "ext.targetproc.imphash"
+	EXT_TARG_PROC_START_ADDR_STR          = "ext.targetproc.startaddr"
+	EXT_TARG_PROC_START_MODULE_STR        = "ext.targetproc.startmod"
+	EXT_TARG_PROC_START_FUNCTION_STR      = "ext.targetproc.startfunc"
+	EXT_TARG_PROC_GRANT_ACCESS_STR        = "ext.targetproc.grantaccess"
+	EXT_TARG_PROC_CALL_TRACE_STR          = "ext.targetproc.calltrace"
+	EXT_TARG_PROC_ACCESS_TYPE_STR         = "ext.targetproc.accesstype"
+
+	EXT_TARG_PROC_SIGNED_INT        = "ext.targetproc.signed"
+	EXT_TARG_PROC_NEW_THREAD_ID_INT = "ext.targetproc.newthreadid"
+)

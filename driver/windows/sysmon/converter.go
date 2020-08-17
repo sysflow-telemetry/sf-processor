@@ -27,7 +27,7 @@ func NewConverter(efrChan chan *flattener.EnrichedFlatRecord) *Converter {
 // NewEnrichedFlatRecord returns a new enriched flat record
 func NewEnrichedFlatRecord() *flattener.EnrichedFlatRecord {
 	efr := new(flattener.EnrichedFlatRecord)
-	efr.Sources = make([]int64, 3)
+	efr.Sources = make([]flattener.Source, 3)
 	efr.Ints = make([][]int64, 3)
 	efr.Strs = make([][]string, 3)
 	efr.Sources[flattener.SYSFLOW_IDX] = flattener.SYSFLOW_SRC
@@ -58,6 +58,87 @@ func NewEnSysFlowFlatRecord() *flattener.EnrichedFlatRecord {
 	efr.Ints[flattener.PROC_IDX] = make([]int64, flattener.NUM_EXT_PROC_ATTRS_INT)
 	efr.Strs[flattener.PROC_IDX] = make([]string, flattener.NUM_EXT_PROC_ATTRS_STR)
 	return efr
+}
+
+func (s *Converter) fillExtProcess(procObj *ProcessObj, intFields []int64, strFields []string) {
+	//Fill SysFlow Fields
+	proc := procObj.Process
+	if proc != nil {
+		intFields[flattener.EVT_TARG_PROC_STATE_INT] = int64(proc.State)
+		intFields[flattener.EVT_TARG_PROC_OID_CREATETS_INT] = int64(proc.Oid.CreateTS)
+		intFields[flattener.EVT_TARG_PROC_OID_HPID_INT] = int64(proc.Oid.Hpid)
+		if proc.Poid != nil && proc.Poid.UnionType == sfgo.UnionNullOIDTypeEnumOID {
+			intFields[flattener.EVT_TARG_PROC_POID_CREATETS_INT] = proc.Poid.OID.CreateTS
+			intFields[flattener.EVT_TARG_PROC_POID_HPID_INT] = proc.Poid.OID.Hpid
+		} else {
+			intFields[flattener.EVT_TARG_PROC_POID_CREATETS_INT] = sfgo.Zeros.Int64
+			intFields[flattener.EVT_TARG_PROC_POID_HPID_INT] = sfgo.Zeros.Int64
+		}
+		intFields[flattener.EVT_TARG_PROC_TS_INT] = proc.Ts
+		strFields[flattener.EVT_TARG_PROC_EXE_STR] = proc.Exe
+		strFields[flattener.EVT_TARG_PROC_EXEARGS_STR] = proc.ExeArgs
+		intFields[flattener.EVT_TARG_PROC_UID_INT] = int64(proc.Uid)
+		strFields[flattener.EVT_TARG_PROC_USERNAME_STR] = proc.UserName
+		intFields[flattener.EVT_TARG_PROC_GID_INT] = int64(proc.Gid)
+		strFields[flattener.EVT_TARG_PROC_GROUPNAME_STR] = proc.GroupName
+		if proc.Tty {
+			intFields[flattener.EVT_TARG_PROC_TTY_INT] = 1
+		} else {
+			intFields[flattener.EVT_TARG_PROC_TTY_INT] = 0
+		}
+		if proc.Entry {
+			intFields[flattener.EVT_TARG_PROC_ENTRY_INT] = 1
+		} else {
+			intFields[flattener.EVT_TARG_PROC_ENTRY_INT] = 0
+		}
+		if proc.ContainerId != nil && proc.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+			strFields[flattener.EVT_TARG_PROC_CONTAINERID_STRING_STR] = proc.ContainerId.String
+		} else {
+			strFields[flattener.EVT_TARG_PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
+		}
+	} else {
+		logger.Warn.Println("Event does not have a related process.  This should not happen.")
+		intFields[flattener.EVT_TARG_PROC_STATE_INT] = sfgo.Zeros.Int64
+		intFields[flattener.EVT_TARG_PROC_OID_CREATETS_INT] = sfgo.Zeros.Int64
+		intFields[flattener.EVT_TARG_PROC_OID_HPID_INT] = sfgo.Zeros.Int64
+		intFields[flattener.EVT_TARG_PROC_POID_CREATETS_INT] = sfgo.Zeros.Int64
+		intFields[flattener.EVT_TARG_PROC_POID_HPID_INT] = sfgo.Zeros.Int64
+		intFields[flattener.EVT_TARG_PROC_TS_INT] = sfgo.Zeros.Int64
+		strFields[flattener.EVT_TARG_PROC_EXE_STR] = sfgo.Zeros.String
+		strFields[flattener.EVT_TARG_PROC_EXEARGS_STR] = sfgo.Zeros.String
+		intFields[flattener.EVT_TARG_PROC_UID_INT] = sfgo.Zeros.Int64
+		strFields[flattener.EVT_TARG_PROC_USERNAME_STR] = sfgo.Zeros.String
+		intFields[flattener.EVT_TARG_PROC_GID_INT] = sfgo.Zeros.Int64
+		strFields[flattener.EVT_TARG_PROC_GROUPNAME_STR] = sfgo.Zeros.String
+		intFields[flattener.EVT_TARG_PROC_TTY_INT] = sfgo.Zeros.Int64
+		intFields[flattener.EVT_TARG_PROC_ENTRY_INT] = sfgo.Zeros.Int64
+		strFields[flattener.EVT_TARG_PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
+	}
+
+	strFields[flattener.EVT_TARG_PROC_GUID_STR] = procObj.GUID
+	strFields[flattener.EVT_TARG_PROC_IMAGE_STR] = procObj.Image
+	strFields[flattener.EVT_TARG_PROC_CURR_DIRECTORY_STR] = procObj.CurrentDirectory
+	strFields[flattener.EVT_TARG_PROC_LOGON_GUID_STR] = procObj.LogonGUID
+	strFields[flattener.EVT_TARG_PROC_LOGON_ID_STR] = procObj.LogonID
+	strFields[flattener.EVT_TARG_PROC_TERMINAL_SESSION_ID_STR] = procObj.TerminalSessionID
+	strFields[flattener.EVT_TARG_PROC_INTEGRITY_LEVEL_STR] = procObj.Integrity
+
+	//Fill Hashing Fields
+	hashes := s.hashParser.FindStringSubmatch(procObj.Hashes)
+	if len(hashes) == 5 {
+		strFields[flattener.EVT_TARG_PROC_SHA1_HASH_STR] = hashes[flattener.SHA1_HASH_STR+1]
+		strFields[flattener.EVT_TARG_PROC_MD5_HASH_STR] = hashes[flattener.MD5_HASH_STR+1]
+		strFields[flattener.EVT_TARG_PROC_SHA256_HASH_STR] = hashes[flattener.SHA256_HASH_STR+1]
+		strFields[flattener.EVT_TARG_PROC_IMP_HASH_STR] = hashes[flattener.IMP_HASH_STR+1]
+	}
+	strFields[flattener.EVT_TARG_PROC_SIGNATURE_STR] = procObj.Signature
+	strFields[flattener.EVT_TARG_PROC_SIGNATURE_STATUS_STR] = procObj.SignatureStatus
+	if procObj.Signed {
+		intFields[flattener.EVT_TARG_PROC_SIGNED_INT] = 1
+	} else {
+		intFields[flattener.EVT_TARG_PROC_SIGNED_INT] = 0
+	}
+
 }
 
 func (s *Converter) fillProcess(fr *flattener.EnrichedFlatRecord, procObj *ProcessObj) {
@@ -139,7 +220,7 @@ func (s *Converter) fillProcess(fr *flattener.EnrichedFlatRecord, procObj *Proce
 		extStrFields[flattener.PROC_IMP_HASH_STR] = hashes[flattener.IMP_HASH_STR+1]
 	}
 	extStrFields[flattener.PROC_SIGNATURE_STR] = procObj.Signature
-	extStrFields[flattener.PROC_SIGNATURE_STATUS] = procObj.SignatureStatus
+	extStrFields[flattener.PROC_SIGNATURE_STATUS_STR] = procObj.SignatureStatus
 	if procObj.Signed {
 		extIntFields[flattener.PROC_SIGNED_INT] = 1
 	} else {
@@ -148,13 +229,20 @@ func (s *Converter) fillProcess(fr *flattener.EnrichedFlatRecord, procObj *Proce
 
 }
 
-func (s *Converter) fillProcessEvent(efr *flattener.EnrichedFlatRecord, ts int64, tid int64, opFlags int32, ret int32) {
+func (s *Converter) fillProcessEvent(efr *flattener.EnrichedFlatRecord, ts int64, tid int64, opFlags int32, ret int32, intFs []int64, strFs []string) {
 	intFields := efr.Ints[flattener.SYSFLOW_IDX]
 	intFields[sfgo.SF_REC_TYPE] = sfgo.PROC_EVT
 	intFields[sfgo.EV_PROC_TS_INT] = ts
 	intFields[sfgo.EV_PROC_TID_INT] = tid
 	intFields[sfgo.EV_PROC_OPFLAGS_INT] = int64(opFlags)
 	intFields[sfgo.EV_PROC_RET_INT] = int64(ret)
+
+	if intFs != nil && strFs != nil {
+		efr.Sources = append(efr.Sources, flattener.TARG_PROC_SRC)
+		efr.Ints = append(efr.Ints, intFs)
+		efr.Strs = append(efr.Strs, strFs)
+	}
+
 }
 
 func (s *Converter) fillHeader(efr *flattener.EnrichedFlatRecord, record eventlog.Record) {
@@ -194,11 +282,11 @@ func (s *Converter) fillFile(efr *flattener.EnrichedFlatRecord, ts int64, fileNa
 
 }
 
-func (s *Converter) createSFProcEvent(record eventlog.Record, procObj *ProcessObj, ts int64, tid int64, opFlags int32, ret int32) {
+func (s *Converter) createSFProcEvent(record eventlog.Record, procObj *ProcessObj, ts int64, tid int64, opFlags int32, ret int32, intFs []int64, strFs []string) {
 	efr := NewEnSysFlowFlatRecord()
 	s.fillHeader(efr, record)
 	s.fillProcess(efr, procObj)
-	s.fillProcessEvent(efr, ts, tid, opFlags, ret)
+	s.fillProcessEvent(efr, ts, tid, opFlags, ret, intFs, strFs)
 	s.efrChan <- efr
 }
 
@@ -281,105 +369,3 @@ func (s *Converter) createSFNetworkFlow(record eventlog.Record, procObj *Process
 	efr.Ints = append(efr.Ints, nil)
 	s.efrChan <- efr
 }
-
-/*
-func (g *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file *sfgo.File, fr *sfgo.FlatRecord) {
-	if hdr != nil {
-		fr.Ints[sfgo.SFHE_VERSION_INT] = hdr.Version
-		fr.Strs[sfgo.SFHE_EXPORTER_STR] = hdr.Exporter
-		fr.Strs[sfgo.SFHE_IP_STR] = hdr.Ip
-	} else {
-		logger.Warn.Println("Event does not have a related header.  This should not happen.")
-		fr.Ints[sfgo.SFHE_VERSION_INT] = sfgo.Zeros.Int64
-		fr.Strs[sfgo.SFHE_EXPORTER_STR] = sfgo.Zeros.String
-		fr.Strs[sfgo.SFHE_IP_STR] = sfgo.Zeros.String
-	}
-	if cont != nil {
-		fr.Strs[sfgo.CONT_ID_STR] = cont.Id
-		fr.Strs[sfgo.CONT_NAME_STR] = cont.Name
-		fr.Strs[sfgo.CONT_IMAGE_STR] = cont.Image
-		fr.Strs[sfgo.CONT_IMAGEID_STR] = cont.Imageid
-		fr.Ints[sfgo.CONT_TYPE_INT] = int64(cont.Type)
-		if cont.Privileged {
-			fr.Ints[sfgo.CONT_PRIVILEGED_INT] = 1
-		} else {
-			fr.Ints[sfgo.CONT_PRIVILEGED_INT] = 0
-		}
-	} else {
-		fr.Strs[sfgo.CONT_ID_STR] = sfgo.Zeros.String
-		fr.Strs[sfgo.CONT_NAME_STR] = sfgo.Zeros.String
-		fr.Strs[sfgo.CONT_IMAGE_STR] = sfgo.Zeros.String
-		fr.Strs[sfgo.CONT_IMAGEID_STR] = sfgo.Zeros.String
-		fr.Ints[sfgo.CONT_TYPE_INT] = sfgo.Zeros.Int64
-		fr.Ints[sfgo.CONT_PRIVILEGED_INT] = sfgo.Zeros.Int64
-
-	}
-	if proc != nil {
-		fr.Ints[sfgo.PROC_STATE_INT] = int64(proc.State)
-		fr.Ints[sfgo.PROC_OID_CREATETS_INT] = int64(proc.Oid.CreateTS)
-		fr.Ints[sfgo.PROC_OID_HPID_INT] = int64(proc.Oid.Hpid)
-		if proc.Poid != nil && proc.Poid.UnionType == sfgo.UnionNullOIDTypeEnumOID {
-			fr.Ints[sfgo.PROC_POID_CREATETS_INT] = proc.Poid.OID.CreateTS
-			fr.Ints[sfgo.PROC_POID_HPID_INT] = proc.Poid.OID.Hpid
-		} else {
-			fr.Ints[sfgo.PROC_POID_CREATETS_INT] = sfgo.Zeros.Int64
-			fr.Ints[sfgo.PROC_POID_HPID_INT] = sfgo.Zeros.Int64
-		}
-		fr.Ints[sfgo.PROC_TS_INT] = proc.Ts
-		fr.Strs[sfgo.PROC_EXE_STR] = proc.Exe
-		fr.Strs[sfgo.PROC_EXEARGS_STR] = proc.ExeArgs
-		fr.Ints[sfgo.PROC_UID_INT] = int64(proc.Uid)
-		fr.Strs[sfgo.PROC_USERNAME_STR] = proc.UserName
-		fr.Ints[sfgo.PROC_GID_INT] = int64(proc.Gid)
-		fr.Strs[sfgo.PROC_GROUPNAME_STR] = proc.GroupName
-		if proc.Tty {
-			fr.Ints[sfgo.PROC_TTY_INT] = 1
-		} else {
-			fr.Ints[sfgo.PROC_TTY_INT] = 0
-		}
-		if proc.Entry {
-			fr.Ints[sfgo.PROC_ENTRY_INT] = 1
-		} else {
-			fr.Ints[sfgo.PROC_ENTRY_INT] = 0
-		}
-		if proc.ContainerId != nil && proc.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
-			fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = proc.ContainerId.String
-		} else {
-			fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
-		}
-	} else {
-		logger.Warn.Println("Event does not have a related process.  This should not happen.")
-		fr.Ints[sfgo.PROC_STATE_INT] = sfgo.Zeros.Int64
-		fr.Ints[sfgo.PROC_OID_CREATETS_INT] = sfgo.Zeros.Int64
-		fr.Ints[sfgo.PROC_OID_HPID_INT] = sfgo.Zeros.Int64
-		fr.Ints[sfgo.PROC_POID_CREATETS_INT] = sfgo.Zeros.Int64
-		fr.Ints[sfgo.PROC_POID_HPID_INT] = sfgo.Zeros.Int64
-		fr.Ints[sfgo.PROC_TS_INT] = sfgo.Zeros.Int64
-		fr.Strs[sfgo.PROC_EXE_STR] = sfgo.Zeros.String
-		fr.Strs[sfgo.PROC_EXEARGS_STR] = sfgo.Zeros.String
-		fr.Ints[sfgo.PROC_UID_INT] = sfgo.Zeros.Int64
-		fr.Strs[sfgo.PROC_USERNAME_STR] = sfgo.Zeros.String
-		fr.Ints[sfgo.PROC_GID_INT] = sfgo.Zeros.Int64
-		fr.Strs[sfgo.PROC_GROUPNAME_STR] = sfgo.Zeros.String
-		fr.Ints[sfgo.PROC_TTY_INT] = sfgo.Zeros.Int64
-		fr.Ints[sfgo.PROC_ENTRY_INT] = sfgo.Zeros.Int64
-		fr.Strs[sfgo.PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
-	}
-	if file != nil {
-		fr.Ints[sfgo.FILE_STATE_INT] = int64(file.State)
-		fr.Ints[sfgo.FILE_TS_INT] = file.Ts
-		fr.Ints[sfgo.FILE_RESTYPE_INT] = int64(file.Restype)
-		fr.Strs[sfgo.FILE_PATH_STR] = file.Path
-		if file.ContainerId != nil && file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
-			fr.Strs[sfgo.FILE_CONTAINERID_STRING_STR] = file.ContainerId.String
-		} else {
-			fr.Strs[sfgo.FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
-		}
-	} else {
-		fr.Ints[sfgo.FILE_STATE_INT] = sfgo.Zeros.Int64
-		fr.Ints[sfgo.FILE_TS_INT] = sfgo.Zeros.Int64
-		fr.Ints[sfgo.FILE_RESTYPE_INT] = sfgo.Zeros.Int64
-		fr.Strs[sfgo.FILE_PATH_STR] = sfgo.Zeros.String
-		fr.Strs[sfgo.FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
-	}
-}*/

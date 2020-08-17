@@ -86,7 +86,7 @@ func (s *SMProcessor) processExited(record eventlog.Record) {
 	if val, ok := s.procTable[procGUID]; ok {
 		s.tables.SetProc(*val.Process.Oid, val.Process)
 		s.converter.createSFProcEvent(record, val, ts,
-			val.Process.Oid.Hpid, sfgo.OP_EXIT, 0)
+			val.Process.Oid.Hpid, sfgo.OP_EXIT, 0, nil, nil)
 	} else {
 		fmt.Printf("Uh oh! Process not in process table for exit process %s %d\n", image, processID)
 	}
@@ -162,7 +162,7 @@ func (s *SMProcessor) processCreated(record eventlog.Record) {
 	}*/
 	if ppObj != nil {
 		s.converter.createSFProcEvent(record, ppObj, record.TimeCreated.SystemTime.UnixNano(),
-			ppObj.Process.Oid.Hpid, sfgo.OP_CLONE, int32(procObj.Process.Oid.Hpid))
+			ppObj.Process.Oid.Hpid, sfgo.OP_CLONE, int32(procObj.Process.Oid.Hpid), nil, nil)
 		procExe := procObj.Process.Exe
 		procExeArgs := procObj.Process.ExeArgs
 		procObj.Process.Exe = ppObj.Process.Exe
@@ -170,18 +170,18 @@ func (s *SMProcessor) processCreated(record eventlog.Record) {
 		procObj.Process.Poid = createPOID(ppObj.Process.Oid)
 		s.tables.SetProc(*procObj.Process.Oid, procObj.Process)
 		s.converter.createSFProcEvent(record, procObj, record.TimeCreated.SystemTime.UnixNano(),
-			procObj.Process.Oid.Hpid, sfgo.OP_CLONE, 0)
+			procObj.Process.Oid.Hpid, sfgo.OP_CLONE, 0, nil, nil)
 		procObj.Process.Exe = procExe
 		procObj.Process.ExeArgs = procExeArgs
 		if procObj.Process.Exe != ppObj.Process.Exe || procObj.Process.ExeArgs != ppObj.Process.ExeArgs {
 			procObj.Process.State = sfgo.SFObjectStateMODIFIED
 			s.tables.SetProc(*procObj.Process.Oid, procObj.Process)
 			s.converter.createSFProcEvent(record, procObj, record.TimeCreated.SystemTime.UnixNano(),
-				procObj.Process.Oid.Hpid, sfgo.OP_EXEC, 0)
+				procObj.Process.Oid.Hpid, sfgo.OP_EXEC, 0, nil, nil)
 		}
 	} else {
 		s.converter.createSFProcEvent(record, procObj, record.TimeCreated.SystemTime.UnixNano(),
-			procObj.Process.Oid.Hpid, sfgo.OP_EXEC, 0)
+			procObj.Process.Oid.Hpid, sfgo.OP_EXEC, 0, nil, nil)
 	}
 	s.procTable[procObj.GUID] = procObj
 }
@@ -291,6 +291,93 @@ func (s *SMProcessor) createNetworkConnection(record eventlog.Record) {
 			val.Process.Oid.Hpid, opFlags, sourceIP, sourcePort, destIP, destPort, proto, extNetworkAttrsStr)
 	} else {
 		fmt.Printf("Uh oh! Process not in process table for exit process %s %d\n", image, processID)
+	}
+
+}
+
+func (s *SMProcessor) accessRemoteProcess(record eventlog.Record, evtID int) {
+	var sourceProcGUID string
+	var targetProcGUID string
+	var ts int64
+	var sourceImage string
+	var targetImage string
+	var sourceProcessID int64
+	var targetProcessID int64
+	var sourceThreadID int64
+	intFields := make([]int64, flattener.NUM_EXT_EVT_INT)
+	strFields := make([]string, flattener.NUM_EXT_EVT_STR)
+	var procObj *ProcessObj
+
+	for _, pairs := range record.EventData.Pairs {
+		switch pairs.Key {
+		case cUtcTime:
+			//fmt.Printf("UTC Time type: %T\n", pairs.Value)
+			ts = GetTimestamp(pairs.Value)
+		case cSourceProcessGUID:
+			sourceProcGUID = pairs.Value
+		case cSourceImage:
+			sourceImage = pairs.Value
+		case cSourceProcessID:
+			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
+				sourceProcessID = n
+			} else {
+				logger.Warn.Println("Unable to parse ProcessId sysmon attribute: " + err.Error())
+			}
+		case cTargetProcessGUID:
+			targetProcGUID = pairs.Value
+		case cTargetImage:
+			targetImage = pairs.Value
+		case cTargetProcessID:
+			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
+				targetProcessID = n
+			} else {
+				logger.Warn.Println("Unable to parse ProcessId sysmon attribute: " + err.Error())
+			}
+		case cNewThreadID:
+			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
+				intFields[flattener.EVT_TARG_PROC_NEW_THREAD_ID_INT] = n
+			} else {
+				logger.Warn.Println("Unable to parse ProcessId sysmon attribute: " + err.Error())
+			}
+		case cStartAddress:
+			strFields[flattener.EVT_TARG_PROC_START_ADDR_STR] = pairs.Value
+		case cStartModule:
+			strFields[flattener.EVT_TARG_PROC_START_MODULE_STR] = pairs.Value
+		case cStartFunction:
+			strFields[flattener.EVT_TARG_PROC_START_FUNCTION_STR] = pairs.Value
+		case cSourceThreadID:
+			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
+				sourceThreadID = n
+			} else {
+				logger.Warn.Println("Unable to parse ProcessId sysmon attribute: " + err.Error())
+			}
+		case cGrantedAccess:
+			strFields[flattener.EVT_TARG_PROC_GRANT_ACCESS_STR] = pairs.Value
+		case cCallTrace:
+			strFields[flattener.EVT_TARG_PROC_CALL_TRACE_STR] = pairs.Value
+		}
+	}
+	if val, ok := s.procTable[sourceProcGUID]; ok {
+		s.tables.SetProc(*val.Process.Oid, val.Process)
+		procObj = val
+	} else {
+		fmt.Printf("Uh oh! Process not in process table for access process %s %d\n", sourceImage, sourceProcessID)
+		return
+	}
+	if val, ok := s.procTable[targetProcGUID]; ok {
+		s.tables.SetProc(*val.Process.Oid, val.Process)
+		s.converter.fillExtProcess(val, intFields, strFields)
+	} else {
+		fmt.Printf("Uh oh! Process not in process table for load image %s %d\n", targetImage, targetProcessID)
+	}
+	if evtID == cSysmonProcessAccess {
+		strFields[flattener.EVT_TARG_PROC_ACCESS_TYPE_STR] = "AP"
+		s.converter.createSFProcEvent(record, procObj, ts,
+			sourceThreadID, flattener.OP_PTRACE, 0, intFields, strFields)
+	} else {
+		strFields[flattener.EVT_TARG_PROC_ACCESS_TYPE_STR] = "RT"
+		s.converter.createSFProcEvent(record, procObj, ts,
+			procObj.Process.Oid.Hpid, flattener.OP_PTRACE, 0, intFields, strFields)
 	}
 
 }
@@ -473,6 +560,9 @@ func (s *SMProcessor) Process(records []eventlog.Record) {
 		case cSysmonCreateDeleteRegistryObject:
 			s.modifyRegistryValue(record)
 		case cSysmonProcessAccess:
+			s.accessRemoteProcess(record, cSysmonProcessAccess)
+		case cSysmonCreateRemoteThread:
+			s.accessRemoteProcess(record, cSysmonCreateRemoteThread)
 		case cSysmonPipeCreated:
 		case cSysmonPipeConnected:
 		default:

@@ -5,10 +5,11 @@ const (
 	cSysmonNetworkConnection          = 3
 	cSysmonProcessExit                = 5
 	cSysmonLoadImage                  = 7
+	cSysmonCreateRemoteThread         = 8
 	cSysmonProcessAccess              = 10
-	cSysmonSetRegistryValue           = 13
-	cSysmonCreateDeleteRegistryObject = 12
 	cSysmonFileCreated                = 11
+	cSysmonCreateDeleteRegistryObject = 12
+	cSysmonSetRegistryValue           = 13
 	cSysmonPipeCreated                = 17
 	cSysmonPipeConnected              = 18
 	cEvtLogProvider                   = "Microsoft-Windows-Sysmon/Operational"
@@ -53,6 +54,20 @@ const (
 
 	cTargetObject = "TargetObject"
 	cDetails      = "Details"
+
+	cSourceProcessGUID = "SourceProcessGuid"
+	cSourceProcessID   = "SourceProcessId"
+	cSourceImage       = "SourceImage"
+	cSourceThreadID    = "SourceThreadId"
+	cTargetProcessGUID = "TargetProcessGuid"
+	cTargetProcessID   = "TargetProcessId"
+	cTargetImage       = "TargetImage"
+	cNewThreadID       = "NewThreadId"
+	cStartAddress      = "StartAddress"
+	cStartModule       = "StartModule"
+	cStartFunction     = "StartFunction"
+	cGrantedAccess     = "GrantedAccess"
+	cCallTrace         = "CallTrace"
 
 	cEventType = "EventType"
 
