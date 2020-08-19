@@ -89,5 +89,5 @@ func ip2Int(ipAddr string) (uint32, error) {
 		return 0, errors.New("wrong ipAddr format")
 	}
 	ip = ip.To4()
-	return binary.BigEndian.Uint32(ip), nil
+	return binary.LittleEndian.Uint32(ip), nil
 }
