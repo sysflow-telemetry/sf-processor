@@ -118,7 +118,9 @@ func (s *Exporter) exportAsJSON(events []Event) {
 		if s.config.Export == StdOutExport {
 			fmt.Println(e.ToJSONStr())
 		} else if s.config.Export == SyslogExport {
-			s.sysl.Alert(e.ToJSONStr())
+			if err := s.sysl.Alert(e.ToJSONStr()); err != nil {
+				logger.Error.Println("Can't export to syslog:\n", err)
+			}
 		} else if s.config.Export == FileExport {
 			f, err := os.OpenFile(s.config.Path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
