@@ -5,12 +5,23 @@
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
 //
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 module github.ibm.com/sysflow/sf-processor/driver
 
 go 1.14
 
 require (
-	github.com/actgardner/gogen-avro v6.5.0+incompatible
 	github.com/actgardner/gogen-avro/v7 v7.1.1
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/linkedin/goavro v2.1.0+incompatible
@@ -26,6 +37,7 @@ require (
 	github.ibm.com/sysflow/sf-processor/core v0.0.0-20200417193244-61d8d9d5918f
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
+	gopkg.in/linkedin/goavro.v1 v1.0.5 // indirect
 )
 
 replace github.ibm.com/sysflow/sf-processor/core => ../core
