@@ -185,7 +185,7 @@ var Mapper = FieldMapper{
 		EXT_PROC_MD5_HASH_STR:            mapStr(flattener.PROC_MD5_HASH_STR, flattener.PROCESS_SRC),
 		EXT_PROC_SHA256_HASH_STR:         mapStr(flattener.PROC_SHA256_HASH_STR, flattener.PROCESS_SRC),
 		EXT_PROC_IMP_HASH_STR:            mapStr(flattener.PROC_IMP_HASH_STR, flattener.PROCESS_SRC),
-		EXT_PROC_SIGNED_INT:              mapEntry(flattener.PROC_SIGNED_INT, flattener.PROCESS_SRC),
+		EXT_PROC_SIGNED_INT:              mapInt(flattener.PROC_SIGNED_INT, flattener.PROCESS_SRC),
 
 		//Ext files
 		EXT_FILE_SIGNATURE_STR:        mapStr(flattener.FILE_SIGNATURE_STR, flattener.FILE_SRC),
@@ -194,7 +194,7 @@ var Mapper = FieldMapper{
 		EXT_FILE_MD5_HASH_STR:         mapStr(flattener.FILE_MD5_HASH_STR, flattener.FILE_SRC),
 		EXT_FILE_SHA256_HASH_STR:      mapStr(flattener.FILE_SHA256_HASH_STR, flattener.FILE_SRC),
 		EXT_FILE_IMP_HASH_STR:         mapStr(flattener.FILE_IMP_HASH_STR, flattener.FILE_SRC),
-		EXT_FILE_SIGNED_INT:           mapEntry(flattener.FILE_SIGNED_INT, flattener.FILE_SRC),
+		EXT_FILE_SIGNED_INT:           mapInt(flattener.FILE_SIGNED_INT, flattener.FILE_SRC),
 
 		//Ext network
 		EXT_NET_SOURCE_HOST_NAME_STR: mapStr(flattener.NET_SOURCE_HOST_NAME_STR, flattener.NETWORK_SRC),
@@ -232,7 +232,7 @@ var Mapper = FieldMapper{
 		EXT_TARG_PROC_MD5_HASH_STR:            mapStr(flattener.EVT_TARG_PROC_MD5_HASH_STR, flattener.TARG_PROC_SRC),
 		EXT_TARG_PROC_SHA256_HASH_STR:         mapStr(flattener.EVT_TARG_PROC_SHA256_HASH_STR, flattener.TARG_PROC_SRC),
 		EXT_TARG_PROC_IMP_HASH_STR:            mapStr(flattener.EVT_TARG_PROC_IMP_HASH_STR, flattener.TARG_PROC_SRC),
-		EXT_TARG_PROC_SIGNED_INT:              mapEntry(flattener.EVT_TARG_PROC_SIGNED_INT, flattener.TARG_PROC_SRC),
+		EXT_TARG_PROC_SIGNED_INT:              mapInt(flattener.EVT_TARG_PROC_SIGNED_INT, flattener.TARG_PROC_SRC),
 		EXT_TARG_PROC_START_ADDR_STR:          mapStr(flattener.EVT_TARG_PROC_START_ADDR_STR, flattener.TARG_PROC_SRC),
 		EXT_TARG_PROC_START_MODULE_STR:        mapStr(flattener.EVT_TARG_PROC_START_MODULE_STR, flattener.TARG_PROC_SRC),
 		EXT_TARG_PROC_START_FUNCTION_STR:      mapStr(flattener.EVT_TARG_PROC_START_FUNCTION_STR, flattener.TARG_PROC_SRC),

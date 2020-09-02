@@ -88,7 +88,7 @@ func (s *SMProcessor) processExited(record eventlog.Record) {
 		s.converter.createSFProcEvent(record, val, ts,
 			val.Process.Oid.Hpid, sfgo.OP_EXIT, 0, nil, nil)
 	} else {
-		fmt.Printf("Uh oh! Process not in process table for exit process %s %d\n", image, processID)
+		logger.Trace.Printf("Uh oh! Process not in process table for exit process %s %d", image, processID)
 	}
 }
 
@@ -143,10 +143,11 @@ func (s *SMProcessor) processCreated(record eventlog.Record) {
 	procObj.Process.Ts = record.TimeCreated.SystemTime.UnixNano()
 	procObj.Process.Tty = false
 	procObj.Process.Entry = (procObj.Process.Oid.Hpid == 1)
-	cmd, args := GetExeAndArgs(procObj.CommandLine)
-	procObj.Process.Exe = cmd
+	_, args := GetExeAndArgs(procObj.CommandLine)
+	procObj.Process.Exe = procObj.Image
 	procObj.Process.ExeArgs = args
 	procObj.Process.State = sfgo.SFObjectStateCREATED
+	procObj.Signed = -1
 	var ppObj *ProcessObj
 	if len(procObj.ParentProcessGUID) > 0 {
 		if val, ok := s.procTable[procObj.ParentProcessGUID]; ok {
@@ -290,7 +291,7 @@ func (s *SMProcessor) createNetworkConnection(record eventlog.Record) {
 		s.converter.createSFNetworkFlow(record, val, ts, ts,
 			val.Process.Oid.Hpid, opFlags, sourceIP, sourcePort, destIP, destPort, proto, extNetworkAttrsStr)
 	} else {
-		fmt.Printf("Uh oh! Process not in process table for exit process %s %d\n", image, processID)
+		logger.Trace.Printf("Uh oh! Process not in process table for exit process %s %d", image, processID)
 	}
 
 }
@@ -361,14 +362,14 @@ func (s *SMProcessor) accessRemoteProcess(record eventlog.Record, evtID int) {
 		s.tables.SetProc(*val.Process.Oid, val.Process)
 		procObj = val
 	} else {
-		fmt.Printf("Uh oh! Process not in process table for access process %s %d\n", sourceImage, sourceProcessID)
+		logger.Trace.Printf("Uh oh! Process not in process table for access process %s %d", sourceImage, sourceProcessID)
 		return
 	}
 	if val, ok := s.procTable[targetProcGUID]; ok {
 		s.tables.SetProc(*val.Process.Oid, val.Process)
 		s.converter.fillExtProcess(val, intFields, strFields)
 	} else {
-		fmt.Printf("Uh oh! Process not in process table for load image %s %d\n", targetImage, targetProcessID)
+		logger.Trace.Printf("Uh oh! Process not in process table for load image %s %d", targetImage, targetProcessID)
 	}
 	if evtID == cSysmonProcessAccess {
 		strFields[flattener.EVT_TARG_PROC_ACCESS_TYPE_STR] = "AP"
@@ -431,7 +432,7 @@ func (s *SMProcessor) loadImage(record eventlog.Record) {
 			val.Process.Oid.Hpid, sfgo.OP_OPEN|sfgo.OP_READ_RECV|sfgo.OP_CLOSE,
 			imageLoaded, sfgo.O_RDONLY, signed, signature, sigStatus, 'i', hashes, "")
 	} else {
-		fmt.Printf("Uh oh! Process not in process table for load image %s %d\n", image, processID)
+		logger.Trace.Printf("Uh oh! Process not in process table for load image %s %d", image, processID)
 	}
 }
 
@@ -470,7 +471,7 @@ func (s *SMProcessor) createFile(record eventlog.Record) {
 			val.Process.Oid.Hpid, sfgo.OP_OPEN,
 			fileName, sfgo.O_CREAT, false, "", "", 'f', "", "")
 	} else {
-		fmt.Printf("Uh oh! Process not in process table for create file %s %d\n", image, processID)
+		logger.Trace.Printf("Uh oh! Process not in process table for create file %s %d", image, processID)
 	}
 
 }
@@ -522,10 +523,10 @@ func (s *SMProcessor) modifyRegistryValue(record eventlog.Record) {
 				fileName, false, "", "", 'r', "", details)
 
 		default:
-			logger.Warn.Println("Registry Event Type not supported: " + eventType)
+			logger.Trace.Println("Registry Event Type not supported: " + eventType)
 		}
 	} else {
-		fmt.Printf("Uh oh! Process not in process table for modify registry %s %d\n", image, processID)
+		logger.Trace.Printf("Uh oh! Process not in process table for modify registry %s %d", image, processID)
 	}
 }
 

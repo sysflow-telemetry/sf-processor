@@ -1,6 +1,7 @@
 package sysmon
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/elastic/beats/v7/winlogbeat/eventlog"
@@ -133,11 +134,7 @@ func (s *Converter) fillExtProcess(procObj *ProcessObj, intFields []int64, strFi
 	}
 	strFields[flattener.EVT_TARG_PROC_SIGNATURE_STR] = procObj.Signature
 	strFields[flattener.EVT_TARG_PROC_SIGNATURE_STATUS_STR] = procObj.SignatureStatus
-	if procObj.Signed {
-		intFields[flattener.EVT_TARG_PROC_SIGNED_INT] = 1
-	} else {
-		intFields[flattener.EVT_TARG_PROC_SIGNED_INT] = 0
-	}
+	intFields[flattener.EVT_TARG_PROC_SIGNED_INT] = procObj.Signed
 
 }
 
@@ -221,11 +218,7 @@ func (s *Converter) fillProcess(fr *flattener.EnrichedFlatRecord, procObj *Proce
 	}
 	extStrFields[flattener.PROC_SIGNATURE_STR] = procObj.Signature
 	extStrFields[flattener.PROC_SIGNATURE_STATUS_STR] = procObj.SignatureStatus
-	if procObj.Signed {
-		extIntFields[flattener.PROC_SIGNED_INT] = 1
-	} else {
-		extIntFields[flattener.PROC_SIGNED_INT] = 0
-	}
+	extIntFields[flattener.PROC_SIGNED_INT] = procObj.Signed
 
 }
 
@@ -310,8 +303,13 @@ func (s *Converter) createSFFileFlow(record eventlog.Record, procObj *ProcessObj
 	efr := NewEnrichedFlatRecord()
 	s.fillHeader(efr, record)
 	if fileType == 'i' && procObj.Process.Exe == fileName {
+		fmt.Printf("Assigning signed, signature, and status values to process %s %s %s\n", procObj.Process.Exe, signature, sigStatus)
 		procObj.Hashes = fileHashes
-		procObj.Signed = signed
+		if signed {
+			procObj.Signed = 1
+		} else {
+			procObj.Signed = 0
+		}
 		procObj.Signature = signature
 		procObj.SignatureStatus = sigStatus
 	}

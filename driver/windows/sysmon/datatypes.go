@@ -22,7 +22,7 @@ type ProcessObj struct {
 	ParentCommandLine  string
 	Signature          string
 	SignatureStatus    string
-	Signed             bool
+	Signed             int64
 	Written            bool
 }
 
