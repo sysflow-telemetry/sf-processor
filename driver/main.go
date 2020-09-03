@@ -5,6 +5,18 @@
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
 //
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package main
 
 import (
@@ -17,6 +29,7 @@ import (
 	"runtime/pprof"
 	"syscall"
 
+	"github.ibm.com/sysflow/sf-processor/driver/manifest"
 	"github.ibm.com/sysflow/sf-processor/driver/sysflow"
 	"github.ibm.com/sysflow/sf-processor/driver/windows"
 
@@ -90,7 +103,7 @@ func main() {
 		hdr := sfgo.NewSFHeader()
 		hdr.SetDefault(0)
 		schemaVersion := hdr.Version
-		fmt.Printf("Version: %s+%s, Avro Schema Version: %v, Export Schema Version: %v\n", Version, BuildNumber, schemaVersion, JSONSchemaVersion)
+		fmt.Printf("Version: %s+%s, Avro Schema Version: %v, Export Schema Version: %v\n", manifest.Version, manifest.BuildNumber, schemaVersion, manifest.JSONSchemaVersion)
 		os.Exit(0)
 	}
 
