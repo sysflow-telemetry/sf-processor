@@ -34,6 +34,7 @@ import (
 	"github.ibm.com/sysflow/sf-processor/core/exporter"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine"
 	"github.ibm.com/sysflow/sf-processor/core/processor"
+	"github.ibm.com/sysflow/sf-processor/core/statistic"
 )
 
 // PluginCache defines a data strucure for managing plugins.
@@ -65,6 +66,7 @@ func (p *PluginCache) init() {
 	(&processor.SysFlowProcessor{}).Register(p)
 	(&policyengine.PolicyEngine{}).Register(p)
 	(&exporter.Exporter{}).Register(p)
+	(*statistic.StatisticExporter)(nil).Register(p)
 }
 
 // LoadPlugins loads dynamic plugins to plugin cache from dir path.
