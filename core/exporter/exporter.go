@@ -5,6 +5,18 @@
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
 //
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package exporter
 
 import (
@@ -12,6 +24,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	syslog "github.com/RackSec/srslog"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
@@ -77,20 +90,39 @@ func (s *Exporter) Process(ch interface{}, wg *sync.WaitGroup) {
 	cha := ch.(*engine.RecordChannel)
 	record := cha.In
 	defer wg.Done()
+
+	maxIdle := 1 * time.Second
+	ticker := time.NewTicker(maxIdle)
+	defer ticker.Stop()
+	lastFlush := time.Now()
+
 	logger.Trace.Printf("Starting Exporter in mode %s with channel capacity %d", s.config.Export.String(), cap(record))
+RecLoop:
 	for {
-		fc, ok := <-record
-		if !ok {
-			s.process()
-			logger.Trace.Println("Channel closed. Shutting down.")
-			break
-		}
-		s.counter++
-		s.recs = append(s.recs, fc)
-		if s.counter > s.config.EventBuffer {
-			s.process()
-			s.recs = make([]*engine.Record, 0)
-			s.counter = 0
+		select {
+		case fc, ok := <-record:
+			if ok {
+				s.counter++
+				s.recs = append(s.recs, fc)
+				if s.counter > s.config.EventBuffer {
+					s.process()
+					s.recs = make([]*engine.Record, 0)
+					s.counter = 0
+					lastFlush = time.Now()
+				}
+			} else {
+				s.process()
+				logger.Trace.Println("Channel closed. Shutting down.")
+				break RecLoop
+			}
+		case <-ticker.C:
+			// force flush records after 1sec idle
+			if time.Now().Sub(lastFlush) > maxIdle && s.counter > 0 {
+				s.process()
+				s.recs = make([]*engine.Record, 0)
+				s.counter = 0
+				lastFlush = time.Now()
+			}
 		}
 	}
 	logger.Trace.Println("Exiting Syslogger")
@@ -114,21 +146,29 @@ func (s *Exporter) export(events []Event) {
 }
 
 func (s *Exporter) exportAsJSON(events []Event) {
-	for _, e := range events {
-		if s.config.Export == StdOutExport {
-			fmt.Println(e.ToJSONStr())
-		} else if s.config.Export == SyslogExport {
-			if err := s.sysl.Alert(e.ToJSONStr()); err != nil {
+	switch s.config.Export {
+	case StdOutExport:
+		for _, evt := range events {
+			fmt.Println(evt.ToJSONStr())
+		}
+	case SyslogExport:
+		for _, evt := range events {
+      if err := s.sysl.Alert(e.ToJSONStr()); err != nil {
 				logger.Error.Println("Can't export to syslog:\n", err)
+        break;
 			}
-		} else if s.config.Export == FileExport {
-			f, err := os.OpenFile(s.config.Path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-			if err != nil {
-				logger.Error.Println("Can't open trace file:\n", err)
-			}
-			defer f.Close()
-			if _, err := f.WriteString(e.ToJSONStr() + "\n"); err != nil {
+		}
+	case FileExport:
+		f, err := os.OpenFile(s.config.Path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			logger.Error.Println("Can't open trace file:", err)
+			break
+		}
+		defer f.Close()
+		for _, evt := range events {
+			if _, err := fmt.Fprintln(f, evt.ToJSONStr()); nil != err {
 				logger.Error.Println("Can't write to trace file:\n", err)
+				break
 			}
 		}
 	}

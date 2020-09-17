@@ -31,7 +31,7 @@ deps:
 version:
 	cp $(SRC)/manifest.go.in $(SRC)/manifest.go
 	sed -ibak -e "s/SYSFLOW_VERSION/$(SYSFLOW_VERSION)/" -e "s/\"JSON_SCHEMA_VERSION\"/$(SYSFLOW_JSON_SCHEMA_VERSION)/" -e "s/BUILD_NUMBER/$(SYSFLOW_BUILD_NUMBER)/" $(SRC)/manifest.go
-	rm -f $(SRC)/manifest.goback
+	rm -f $(SRC)/manifest.gobak
 
 .PHONY: test
 test:
