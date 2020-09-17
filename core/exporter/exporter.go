@@ -153,9 +153,9 @@ func (s *Exporter) exportAsJSON(events []Event) {
 		}
 	case SyslogExport:
 		for _, evt := range events {
-      if err := s.sysl.Alert(e.ToJSONStr()); err != nil {
+			if err := s.sysl.Alert(evt.ToJSONStr()); err != nil {
 				logger.Error.Println("Can't export to syslog:\n", err)
-        break;
+				break
 			}
 		}
 	case FileExport:
