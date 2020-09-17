@@ -153,7 +153,10 @@ func (s *Exporter) exportAsJSON(events []Event) {
 		}
 	case SyslogExport:
 		for _, evt := range events {
-			s.sysl.Alert(evt.ToJSONStr())
+			if err := s.sysl.Alert(evt.ToJSONStr()); err != nil {
+				logger.Error.Println("Can't export to syslog:\n", err)
+				break
+			}
 		}
 	case FileExport:
 		f, err := os.OpenFile(s.config.Path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
