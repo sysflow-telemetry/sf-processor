@@ -32,6 +32,7 @@ import (
 	"github.ibm.com/sysflow/goutils/ioutils"
 	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/exporter"
+	"github.ibm.com/sysflow/sf-processor/core/ground"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine"
 	"github.ibm.com/sysflow/sf-processor/core/processor"
 	"github.ibm.com/sysflow/sf-processor/core/statistic"
@@ -67,6 +68,7 @@ func (p *PluginCache) init() {
 	(&policyengine.PolicyEngine{}).Register(p)
 	(&exporter.Exporter{}).Register(p)
 	(*statistic.StatisticExporter)(nil).Register(p)
+	(*ground.Grounder)(nil).Register(p)
 }
 
 // LoadPlugins loads dynamic plugins to plugin cache from dir path.
