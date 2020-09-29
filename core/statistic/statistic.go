@@ -25,12 +25,13 @@ import (
 	"time"
 
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
 const (
-	pluginName = "statistic"
+	pluginName  = "statistic"
 	channelName = "statchan"
 )
 
@@ -41,6 +42,7 @@ type statistics struct {
 // StatisticExporter defines a driver for the statistic exporter plugin.
 type StatisticExporter struct {
 	config      Config
+	outFlatCh   chan<- *sfgo.FlatRecord
 	outRecordCh chan<- *engine.Record
 	stat        statistics
 	period      time.Duration
@@ -60,7 +62,6 @@ func (_ *StatisticExporter) GetName() string {
 func NewStatisticChan(size int) interface{} {
 	return &engine.RecordChannel{In: make(chan *engine.Record, size)}
 }
-
 
 // Register registers plugin to plugin cache.
 func (_ *StatisticExporter) Register(pc plugins.SFPluginCache) {
@@ -84,6 +85,9 @@ func (s *StatisticExporter) Process(inputCh interface{}, wg *sync.WaitGroup) {
 	defer s.Cleanup()
 	defer wg.Done()
 	switch ch := inputCh.(type) {
+	case *plugins.FlatChannel:
+		logger.Trace.Println("Statistic exporter receive from flat channel")
+		s.processFlatChan(ch.In)
 	case *engine.RecordChannel:
 		logger.Trace.Println("Statistic exporter receive from record channel")
 		s.processRecordChan(ch.In)
@@ -96,6 +100,9 @@ func (s *StatisticExporter) Process(inputCh interface{}, wg *sync.WaitGroup) {
 // SetOutChan sets the output channel of the plugin.
 func (s *StatisticExporter) SetOutChan(outputCh interface{}) {
 	switch ch := outputCh.(type) {
+	case *plugins.FlatChannel:
+		logger.Trace.Println("Statistic exporter output to flat channel")
+		s.outFlatCh = ch.In
 	case *engine.RecordChannel:
 		logger.Trace.Println("Statistic exporter output to record channel")
 		s.outRecordCh = ch.In
@@ -108,6 +115,10 @@ func (s *StatisticExporter) SetOutChan(outputCh interface{}) {
 func (s *StatisticExporter) Cleanup() {}
 
 func (s *StatisticExporter) processRecordChan(inputCh <-chan *engine.Record) {
+	if nil == s.outRecordCh {
+		logger.Error.Println("input and output channel types are different")
+		return
+	}
 	ticker := time.NewTicker(s.period)
 	defer ticker.Stop()
 	for {
@@ -118,6 +129,31 @@ func (s *StatisticExporter) processRecordChan(inputCh <-chan *engine.Record) {
 					s.stat.Total++
 				}
 				s.outRecordCh <- rec
+			} else {
+				s.flushStatistics()
+				return
+			}
+		case <-ticker.C:
+			s.flushStatistics()
+		}
+	}
+}
+
+func (s *StatisticExporter) processFlatChan(inputCh <-chan *sfgo.FlatRecord) {
+	if nil == s.outFlatCh {
+		logger.Error.Println("input and output channel types are different")
+		return
+	}
+	ticker := time.NewTicker(s.period)
+	defer ticker.Stop()
+	for {
+		select {
+		case rec, ok := <-inputCh:
+			if ok {
+				if s.stat.Total < math.MaxUint64 {
+					s.stat.Total++
+				}
+				s.outFlatCh <- rec
 			} else {
 				s.flushStatistics()
 				return
