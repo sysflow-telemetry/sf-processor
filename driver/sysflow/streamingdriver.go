@@ -29,8 +29,10 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/goutils/logger"
-	"github.ibm.com/sysflow/sf-processor/driver/driver"
-	"github.ibm.com/sysflow/sf-processor/driver/pipeline"
+)
+
+const (
+	streamDriverName = "socket"
 )
 
 const (
@@ -42,23 +44,33 @@ const (
 
 // StreamingDriver represents a streaming sysflow datasource
 type StreamingDriver struct {
-	pipeline *pipeline.Pipeline
+	pipeline plugins.SFPipeline
 }
 
 // NewStreamingDriver creates a new streaming driver object
-func NewStreamingDriver() driver.Driver {
+func NewStreamingDriver() plugins.SFDriver {
 	return &StreamingDriver{}
 }
 
+// GetName returns the driver name.
+func (s *StreamingDriver) GetName() string {
+	return streamDriverName
+}
+
+// Register registers driver to plugin cache
+func (s *StreamingDriver) Register(pc plugins.SFPluginCache) {
+	pc.AddDriver(streamDriverName, NewStreamingDriver)
+}
+
 // Init initializes the driver
-func (f *StreamingDriver) Init(pipeline *pipeline.Pipeline) error {
-	f.pipeline = pipeline
+func (s *StreamingDriver) Init(pipeline plugins.SFPipeline) error {
+	s.pipeline = pipeline
 	return nil
 }
 
 // Run runs the driver
-func (f *StreamingDriver) Run(path string, running *bool) error {
-	channel := f.pipeline.GetRootChannel()
+func (s *StreamingDriver) Run(path string, running *bool) error {
+	channel := s.pipeline.GetRootChannel()
 	sfChannel := channel.(*plugins.SFChannel)
 
 	records := sfChannel.In
@@ -67,7 +79,7 @@ func (f *StreamingDriver) Run(path string, running *bool) error {
 		return err
 	}
 
-	l, err := net.ListenUnix("unixpacket", &net.UnixAddr{path, "unixpacket"})
+	l, err := net.ListenUnix("unixpacket", &net.UnixAddr{Net: path, Name: "unixpacket"})
 	if err != nil {
 		logger.Error.Println("listen error:", err)
 		return err
@@ -111,6 +123,6 @@ func (f *StreamingDriver) Run(path string, running *bool) error {
 	}
 	logger.Trace.Println("Closing main channel")
 	close(records)
-	f.pipeline.Wait()
+	s.pipeline.Wait()
 	return nil
 }

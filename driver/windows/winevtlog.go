@@ -30,10 +30,14 @@ import (
 	"github.com/elastic/beats/v7/libbeat/common"
 	"github.com/elastic/beats/v7/winlogbeat/checkpoint"
 	"github.com/elastic/beats/v7/winlogbeat/eventlog"
+	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.ibm.com/sysflow/sf-processor/core/flattener"
-	"github.ibm.com/sysflow/sf-processor/driver/driver"
-	"github.ibm.com/sysflow/sf-processor/driver/pipeline"
 	"github.ibm.com/sysflow/sf-processor/driver/windows/sysmon"
+)
+
+const (
+	driverName  = "winlog"
+	channelName = "flattenerchan"
 )
 
 const (
@@ -44,27 +48,36 @@ const (
 
 // WinEvtDriver represents a Windows Event Data Source
 type WinEvtDriver struct {
-	pipeline *pipeline.Pipeline
+	pipeline plugins.SFPipeline
 }
 
 // NewWinEvtDriver creates a new windows event driver
-func NewWinEvtDriver() driver.Driver {
+func NewWinEvtDriver() plugins.SFDriver {
 	return &WinEvtDriver{}
 }
 
+// GetName returns the driver name.
+func (s *WinEvtDriver) GetName() string {
+	return driverName
+}
+
+// Register registers driver to plugin cache
+func (s *WinEvtDriver) Register(pc plugins.SFPluginCache) {
+	pc.AddDriver(driverName, NewWinEvtDriver)
+}
+
 // Init initializes the driver.
-func (w *WinEvtDriver) Init(pipeline *pipeline.Pipeline) error {
-	w.pipeline = pipeline
-	w.pipeline.AddChannel("enflattenerchan", flattener.NewEnFlattenerChan)
+func (s *WinEvtDriver) Init(pipeline plugins.SFPipeline) error {
+	s.pipeline = pipeline
+	s.pipeline.AddChannel(channelName, flattener.NewFlattenerChan)
 	return nil
 }
 
 // Run processes windows event logs and creates and exports them into the pipeline
-func (w *WinEvtDriver) Run(path string, running *bool) error {
+func (s *WinEvtDriver) Run(path string, running *bool) error {
 	conf := make(map[string]interface{})
-	channel := w.pipeline.GetRootChannel()
-	efrChannel := channel.(*flattener.EFRChannel)
-	sm := sysmon.NewSMProcessor(efrChannel)
+	in := s.pipeline.GetRootChannel().(*flattener.FlatChannel)
+	sm := sysmon.NewSMProcessor(in)
 	conf[cAPI] = ""
 	conf[cName] = sm.GetProvider()
 	cfg, err := common.NewConfigFrom(conf)
@@ -119,7 +132,7 @@ func (w *WinEvtDriver) Run(path string, running *bool) error {
 		}
 		sm.Process(records)
 	}
-	close(efrChannel.In)
-	w.pipeline.Wait()
+	close(in.In)
+	s.pipeline.Wait()
 	return nil
 }

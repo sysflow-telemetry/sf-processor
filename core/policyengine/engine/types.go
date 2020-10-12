@@ -26,7 +26,6 @@ import (
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/sf-processor/core/cache"
-	"github.ibm.com/sysflow/sf-processor/core/flattener"
 )
 
 // Action type for enumeration.
@@ -80,14 +79,14 @@ type Filter struct {
 
 // Record type
 type Record struct {
-	Fr    flattener.EnrichedFlatRecord
+	Fr    sfgo.FlatRecord
 	Cr    *cache.SFTables
 	Ptree map[sfgo.OID][]*sfgo.Process
 	Ctx   Context
 }
 
 // NewRecord creates a new Record isntance.
-func NewRecord(fr flattener.EnrichedFlatRecord, cr *cache.SFTables) *Record {
+func NewRecord(fr sfgo.FlatRecord, cr *cache.SFTables) *Record {
 	var r = new(Record)
 	r.Fr = fr
 	r.Cr = cr
@@ -123,7 +122,7 @@ const (
 )
 
 // GetInt returns an integer value from internal flat record.
-func (r Record) GetInt(attr sfgo.Attribute, src flattener.Source) int64 {
+func (r Record) GetInt(attr sfgo.Attribute, src sfgo.Source) int64 {
 	for idx, s := range r.Fr.Sources {
 		if s == src {
 			return r.Fr.Ints[idx][attr]
@@ -133,7 +132,7 @@ func (r Record) GetInt(attr sfgo.Attribute, src flattener.Source) int64 {
 }
 
 // GetStr returns a string value from internal flat record.
-func (r Record) GetStr(attr sfgo.Attribute, src flattener.Source) string {
+func (r Record) GetStr(attr sfgo.Attribute, src sfgo.Source) string {
 	for idx, s := range r.Fr.Sources {
 		if s == src {
 			return strings.TrimSpace(r.Fr.Strs[idx][attr])

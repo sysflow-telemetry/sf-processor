@@ -30,7 +30,6 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-apis/go/utils"
 	"github.ibm.com/sysflow/goutils/logger"
-	"github.ibm.com/sysflow/sf-processor/core/flattener"
 )
 
 // FieldMap is a functional type denoting a SysFlow attribute mapper.
@@ -113,159 +112,159 @@ var Fields = getFields()
 // Mapper defines a global attribute mapper instance.
 var Mapper = FieldMapper{
 	map[string]FieldMap{
-		SF_TYPE:                  mapRecType(flattener.SYSFLOW_SRC),
-		SF_OPFLAGS:               mapOpFlags(flattener.SYSFLOW_SRC),
-		SF_RET:                   mapRet(flattener.SYSFLOW_SRC),
-		SF_TS:                    mapInt(flattener.SYSFLOW_SRC, sfgo.TS_INT),
-		SF_ENDTS:                 mapEndTs(flattener.SYSFLOW_SRC),
-		SF_PROC_OID:              mapOID(flattener.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT, sfgo.PROC_OID_CREATETS_INT),
-		SF_PROC_PID:              mapInt(flattener.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
-		SF_PROC_NAME:             mapName(flattener.SYSFLOW_SRC, sfgo.PROC_EXE_STR),
-		SF_PROC_EXE:              mapStr(flattener.SYSFLOW_SRC, sfgo.PROC_EXE_STR),
-		SF_PROC_ARGS:             mapStr(flattener.SYSFLOW_SRC, sfgo.PROC_EXEARGS_STR),
-		SF_PROC_UID:              mapInt(flattener.SYSFLOW_SRC, sfgo.PROC_UID_INT),
-		SF_PROC_USER:             mapStr(flattener.SYSFLOW_SRC, sfgo.PROC_USERNAME_STR),
-		SF_PROC_TID:              mapInt(flattener.SYSFLOW_SRC, sfgo.TID_INT),
-		SF_PROC_GID:              mapInt(flattener.SYSFLOW_SRC, sfgo.PROC_GID_INT),
-		SF_PROC_GROUP:            mapStr(flattener.SYSFLOW_SRC, sfgo.PROC_GROUPNAME_STR),
-		SF_PROC_CREATETS:         mapInt(flattener.SYSFLOW_SRC, sfgo.PROC_OID_CREATETS_INT),
-		SF_PROC_TTY:              mapInt(flattener.SYSFLOW_SRC, sfgo.PROC_TTY_INT),
-		SF_PROC_ENTRY:            mapEntry(flattener.SYSFLOW_SRC, sfgo.PROC_ENTRY_INT),
-		SF_PROC_CMDLINE:          mapJoin(flattener.SYSFLOW_SRC, sfgo.PROC_EXE_STR, sfgo.PROC_EXEARGS_STR),
-		SF_PROC_ANAME:            mapCachedValue(flattener.SYSFLOW_SRC, ProcAName),
-		SF_PROC_AEXE:             mapCachedValue(flattener.SYSFLOW_SRC, ProcAExe),
-		SF_PROC_ACMDLINE:         mapCachedValue(flattener.SYSFLOW_SRC, ProcACmdLine),
-		SF_PROC_APID:             mapCachedValue(flattener.SYSFLOW_SRC, ProcAPID),
-		SF_PPROC_OID:             mapOID(flattener.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT, sfgo.PROC_POID_CREATETS_INT),
-		SF_PPROC_PID:             mapInt(flattener.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT),
-		SF_PPROC_NAME:            mapCachedValue(flattener.SYSFLOW_SRC, PProcName),
-		SF_PPROC_EXE:             mapCachedValue(flattener.SYSFLOW_SRC, PProcExe),
-		SF_PPROC_ARGS:            mapCachedValue(flattener.SYSFLOW_SRC, PProcArgs),
-		SF_PPROC_UID:             mapCachedValue(flattener.SYSFLOW_SRC, PProcUID),
-		SF_PPROC_USER:            mapCachedValue(flattener.SYSFLOW_SRC, PProcUser),
-		SF_PPROC_GID:             mapCachedValue(flattener.SYSFLOW_SRC, PProcGID),
-		SF_PPROC_GROUP:           mapCachedValue(flattener.SYSFLOW_SRC, PProcGroup),
-		SF_PPROC_CREATETS:        mapInt(flattener.SYSFLOW_SRC, sfgo.PROC_POID_CREATETS_INT),
-		SF_PPROC_TTY:             mapCachedValue(flattener.SYSFLOW_SRC, PProcTTY),
-		SF_PPROC_ENTRY:           mapCachedValue(flattener.SYSFLOW_SRC, PProcEntry),
-		SF_PPROC_CMDLINE:         mapCachedValue(flattener.SYSFLOW_SRC, PProcCmdLine),
-		SF_FILE_NAME:             mapName(flattener.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		SF_FILE_PATH:             mapStr(flattener.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		SF_FILE_CANONICALPATH:    mapLinkPath(flattener.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		SF_FILE_OID:              mapOID(flattener.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		SF_FILE_DIRECTORY:        mapDir(flattener.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		SF_FILE_NEWNAME:          mapName(flattener.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
-		SF_FILE_NEWPATH:          mapStr(flattener.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
-		SF_FILE_NEWCANONICALPATH: mapLinkPath(flattener.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
-		SF_FILE_NEWOID:           mapOID(flattener.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
-		SF_FILE_NEWDIRECTORY:     mapDir(flattener.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
-		SF_FILE_TYPE:             mapFileType(flattener.SYSFLOW_SRC, sfgo.FILE_RESTYPE_INT),
-		SF_FILE_IS_OPEN_WRITE:    mapIsOpenWrite(flattener.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
-		SF_FILE_IS_OPEN_READ:     mapIsOpenRead(flattener.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
-		SF_FILE_FD:               mapInt(flattener.SYSFLOW_SRC, sfgo.FL_FILE_FD_INT),
-		SF_FILE_OPENFLAGS:        mapOpenFlags(flattener.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
-		SF_NET_PROTO:             mapInt(flattener.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		SF_NET_PROTONAME:         mapProto(flattener.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		SF_NET_SPORT:             mapInt(flattener.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT),
-		SF_NET_DPORT:             mapInt(flattener.SYSFLOW_SRC, sfgo.FL_NETW_DPORT_INT),
-		SF_NET_PORT:              mapPort(flattener.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT, sfgo.FL_NETW_DPORT_INT),
-		SF_NET_SIP:               mapIP(flattener.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT),
-		SF_NET_DIP:               mapIP(flattener.SYSFLOW_SRC, sfgo.FL_NETW_DIP_INT),
-		SF_NET_IP:                mapIP(flattener.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT, sfgo.FL_NETW_DIP_INT),
-		SF_FLOW_RBYTES:           mapSum(flattener.SYSFLOW_SRC, sfgo.FL_FILE_NUMRRECVBYTES_INT, sfgo.FL_NETW_NUMRRECVBYTES_INT),
-		SF_FLOW_ROPS:             mapSum(flattener.SYSFLOW_SRC, sfgo.FL_FILE_NUMRRECVOPS_INT, sfgo.FL_NETW_NUMRRECVOPS_INT),
-		SF_FLOW_WBYTES:           mapSum(flattener.SYSFLOW_SRC, sfgo.FL_FILE_NUMWSENDBYTES_INT, sfgo.FL_NETW_NUMWSENDBYTES_INT),
-		SF_FLOW_WOPS:             mapSum(flattener.SYSFLOW_SRC, sfgo.FL_FILE_NUMWSENDOPS_INT, sfgo.FL_NETW_NUMWSENDOPS_INT),
-		SF_CONTAINER_ID:          mapStr(flattener.SYSFLOW_SRC, sfgo.CONT_ID_STR),
-		SF_CONTAINER_NAME:        mapStr(flattener.SYSFLOW_SRC, sfgo.CONT_NAME_STR),
-		SF_CONTAINER_IMAGEID:     mapStr(flattener.SYSFLOW_SRC, sfgo.CONT_IMAGEID_STR),
-		SF_CONTAINER_IMAGE:       mapStr(flattener.SYSFLOW_SRC, sfgo.CONT_IMAGE_STR),
-		SF_CONTAINER_TYPE:        mapContType(flattener.SYSFLOW_SRC, sfgo.CONT_TYPE_INT),
-		SF_CONTAINER_PRIVILEGED:  mapInt(flattener.SYSFLOW_SRC, sfgo.CONT_PRIVILEGED_INT),
-		SF_NODE_ID:               mapStr(flattener.SYSFLOW_SRC, sfgo.SFHE_EXPORTER_STR),
-		SF_NODE_IP:               mapStr(flattener.SYSFLOW_SRC, sfgo.SFHE_IP_STR),
-		SF_SCHEMA_VERSION:        mapInt(flattener.SYSFLOW_SRC, sfgo.SFHE_VERSION_INT),
+		SF_TYPE:                  mapRecType(sfgo.SYSFLOW_SRC),
+		SF_OPFLAGS:               mapOpFlags(sfgo.SYSFLOW_SRC),
+		SF_RET:                   mapRet(sfgo.SYSFLOW_SRC),
+		SF_TS:                    mapInt(sfgo.SYSFLOW_SRC, sfgo.TS_INT),
+		SF_ENDTS:                 mapEndTs(sfgo.SYSFLOW_SRC),
+		SF_PROC_OID:              mapOID(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT, sfgo.PROC_OID_CREATETS_INT),
+		SF_PROC_PID:              mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
+		SF_PROC_NAME:             mapName(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR),
+		SF_PROC_EXE:              mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR),
+		SF_PROC_ARGS:             mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXEARGS_STR),
+		SF_PROC_UID:              mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT),
+		SF_PROC_USER:             mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_USERNAME_STR),
+		SF_PROC_TID:              mapInt(sfgo.SYSFLOW_SRC, sfgo.TID_INT),
+		SF_PROC_GID:              mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_GID_INT),
+		SF_PROC_GROUP:            mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_GROUPNAME_STR),
+		SF_PROC_CREATETS:         mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_CREATETS_INT),
+		SF_PROC_TTY:              mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_TTY_INT),
+		SF_PROC_ENTRY:            mapEntry(sfgo.SYSFLOW_SRC, sfgo.PROC_ENTRY_INT),
+		SF_PROC_CMDLINE:          mapJoin(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR, sfgo.PROC_EXEARGS_STR),
+		SF_PROC_ANAME:            mapCachedValue(sfgo.SYSFLOW_SRC, ProcAName),
+		SF_PROC_AEXE:             mapCachedValue(sfgo.SYSFLOW_SRC, ProcAExe),
+		SF_PROC_ACMDLINE:         mapCachedValue(sfgo.SYSFLOW_SRC, ProcACmdLine),
+		SF_PROC_APID:             mapCachedValue(sfgo.SYSFLOW_SRC, ProcAPID),
+		SF_PPROC_OID:             mapOID(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT, sfgo.PROC_POID_CREATETS_INT),
+		SF_PPROC_PID:             mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT),
+		SF_PPROC_NAME:            mapCachedValue(sfgo.SYSFLOW_SRC, PProcName),
+		SF_PPROC_EXE:             mapCachedValue(sfgo.SYSFLOW_SRC, PProcExe),
+		SF_PPROC_ARGS:            mapCachedValue(sfgo.SYSFLOW_SRC, PProcArgs),
+		SF_PPROC_UID:             mapCachedValue(sfgo.SYSFLOW_SRC, PProcUID),
+		SF_PPROC_USER:            mapCachedValue(sfgo.SYSFLOW_SRC, PProcUser),
+		SF_PPROC_GID:             mapCachedValue(sfgo.SYSFLOW_SRC, PProcGID),
+		SF_PPROC_GROUP:           mapCachedValue(sfgo.SYSFLOW_SRC, PProcGroup),
+		SF_PPROC_CREATETS:        mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_CREATETS_INT),
+		SF_PPROC_TTY:             mapCachedValue(sfgo.SYSFLOW_SRC, PProcTTY),
+		SF_PPROC_ENTRY:           mapCachedValue(sfgo.SYSFLOW_SRC, PProcEntry),
+		SF_PPROC_CMDLINE:         mapCachedValue(sfgo.SYSFLOW_SRC, PProcCmdLine),
+		SF_FILE_NAME:             mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		SF_FILE_PATH:             mapStr(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		SF_FILE_CANONICALPATH:    mapLinkPath(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		SF_FILE_OID:              mapOID(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		SF_FILE_DIRECTORY:        mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		SF_FILE_NEWNAME:          mapName(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
+		SF_FILE_NEWPATH:          mapStr(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
+		SF_FILE_NEWCANONICALPATH: mapLinkPath(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
+		SF_FILE_NEWOID:           mapOID(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
+		SF_FILE_NEWDIRECTORY:     mapDir(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
+		SF_FILE_TYPE:             mapFileType(sfgo.SYSFLOW_SRC, sfgo.FILE_RESTYPE_INT),
+		SF_FILE_IS_OPEN_WRITE:    mapIsOpenWrite(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
+		SF_FILE_IS_OPEN_READ:     mapIsOpenRead(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
+		SF_FILE_FD:               mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_FD_INT),
+		SF_FILE_OPENFLAGS:        mapOpenFlags(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
+		SF_NET_PROTO:             mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		SF_NET_PROTONAME:         mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		SF_NET_SPORT:             mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT),
+		SF_NET_DPORT:             mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DPORT_INT),
+		SF_NET_PORT:              mapPort(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT, sfgo.FL_NETW_DPORT_INT),
+		SF_NET_SIP:               mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT),
+		SF_NET_DIP:               mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DIP_INT),
+		SF_NET_IP:                mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT, sfgo.FL_NETW_DIP_INT),
+		SF_FLOW_RBYTES:           mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMRRECVBYTES_INT, sfgo.FL_NETW_NUMRRECVBYTES_INT),
+		SF_FLOW_ROPS:             mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMRRECVOPS_INT, sfgo.FL_NETW_NUMRRECVOPS_INT),
+		SF_FLOW_WBYTES:           mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMWSENDBYTES_INT, sfgo.FL_NETW_NUMWSENDBYTES_INT),
+		SF_FLOW_WOPS:             mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMWSENDOPS_INT, sfgo.FL_NETW_NUMWSENDOPS_INT),
+		SF_CONTAINER_ID:          mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_ID_STR),
+		SF_CONTAINER_NAME:        mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_NAME_STR),
+		SF_CONTAINER_IMAGEID:     mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGEID_STR),
+		SF_CONTAINER_IMAGE:       mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGE_STR),
+		SF_CONTAINER_TYPE:        mapContType(sfgo.SYSFLOW_SRC, sfgo.CONT_TYPE_INT),
+		SF_CONTAINER_PRIVILEGED:  mapInt(sfgo.SYSFLOW_SRC, sfgo.CONT_PRIVILEGED_INT),
+		SF_NODE_ID:               mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_EXPORTER_STR),
+		SF_NODE_IP:               mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_IP_STR),
+		SF_SCHEMA_VERSION:        mapInt(sfgo.SYSFLOW_SRC, sfgo.SFHE_VERSION_INT),
 
 		//Ext processes
-		EXT_PROC_GUID_STR:                mapStr(flattener.PROCESS_SRC, flattener.PROC_GUID_STR),
-		EXT_PROC_IMAGE_STR:               mapStr(flattener.PROCESS_SRC, flattener.PROC_IMAGE_STR),
-		EXT_PROC_CURR_DIRECTORY_STR:      mapDir(flattener.PROCESS_SRC, flattener.PROC_CURR_DIRECTORY_STR),
-		EXT_PROC_LOGON_GUID_STR:          mapStr(flattener.PROCESS_SRC, flattener.PROC_LOGON_GUID_STR),
-		EXT_PROC_LOGON_ID_STR:            mapStr(flattener.PROCESS_SRC, flattener.PROC_LOGON_ID_STR),
-		EXT_PROC_TERMINAL_SESSION_ID_STR: mapStr(flattener.PROCESS_SRC, flattener.PROC_TERMINAL_SESSION_ID_STR),
-		EXT_PROC_INTEGRITY_LEVEL_STR:     mapStr(flattener.PROCESS_SRC, flattener.PROC_INTEGRITY_LEVEL_STR),
-		EXT_PROC_SIGNATURE_STR:           mapStr(flattener.PROCESS_SRC, flattener.PROC_SIGNATURE_STR),
-		EXT_PROC_SIGNATURE_STATUS_STR:    mapStr(flattener.PROCESS_SRC, flattener.PROC_SIGNATURE_STATUS_STR),
-		EXT_PROC_SHA1_HASH_STR:           mapStr(flattener.PROCESS_SRC, flattener.PROC_SHA1_HASH_STR),
-		EXT_PROC_MD5_HASH_STR:            mapStr(flattener.PROCESS_SRC, flattener.PROC_MD5_HASH_STR),
-		EXT_PROC_SHA256_HASH_STR:         mapStr(flattener.PROCESS_SRC, flattener.PROC_SHA256_HASH_STR),
-		EXT_PROC_IMP_HASH_STR:            mapStr(flattener.PROCESS_SRC, flattener.PROC_IMP_HASH_STR),
-		EXT_PROC_SIGNED_INT:              mapInt(flattener.PROCESS_SRC, flattener.PROC_SIGNED_INT),
+		EXT_PROC_GUID_STR:                mapStr(sfgo.PROCESS_SRC, sfgo.PROC_GUID_STR),
+		EXT_PROC_IMAGE_STR:               mapStr(sfgo.PROCESS_SRC, sfgo.PROC_IMAGE_STR),
+		EXT_PROC_CURR_DIRECTORY_STR:      mapDir(sfgo.PROCESS_SRC, sfgo.PROC_CURR_DIRECTORY_STR),
+		EXT_PROC_LOGON_GUID_STR:          mapStr(sfgo.PROCESS_SRC, sfgo.PROC_LOGON_GUID_STR),
+		EXT_PROC_LOGON_ID_STR:            mapStr(sfgo.PROCESS_SRC, sfgo.PROC_LOGON_ID_STR),
+		EXT_PROC_TERMINAL_SESSION_ID_STR: mapStr(sfgo.PROCESS_SRC, sfgo.PROC_TERMINAL_SESSION_ID_STR),
+		EXT_PROC_INTEGRITY_LEVEL_STR:     mapStr(sfgo.PROCESS_SRC, sfgo.PROC_INTEGRITY_LEVEL_STR),
+		EXT_PROC_SIGNATURE_STR:           mapStr(sfgo.PROCESS_SRC, sfgo.PROC_SIGNATURE_STR),
+		EXT_PROC_SIGNATURE_STATUS_STR:    mapStr(sfgo.PROCESS_SRC, sfgo.PROC_SIGNATURE_STATUS_STR),
+		EXT_PROC_SHA1_HASH_STR:           mapStr(sfgo.PROCESS_SRC, sfgo.PROC_SHA1_HASH_STR),
+		EXT_PROC_MD5_HASH_STR:            mapStr(sfgo.PROCESS_SRC, sfgo.PROC_MD5_HASH_STR),
+		EXT_PROC_SHA256_HASH_STR:         mapStr(sfgo.PROCESS_SRC, sfgo.PROC_SHA256_HASH_STR),
+		EXT_PROC_IMP_HASH_STR:            mapStr(sfgo.PROCESS_SRC, sfgo.PROC_IMP_HASH_STR),
+		EXT_PROC_SIGNED_INT:              mapInt(sfgo.PROCESS_SRC, sfgo.PROC_SIGNED_INT),
 
 		//Ext files
-		EXT_FILE_SIGNATURE_STR:        mapStr(flattener.FILE_SRC, flattener.FILE_SIGNATURE_STR),
-		EXT_FILE_SIGNATURE_STATUS_STR: mapStr(flattener.FILE_SRC, flattener.FILE_SIGNATURE_STATUS_STR),
-		EXT_FILE_SHA1_HASH_STR:        mapStr(flattener.FILE_SRC, flattener.FILE_SHA1_HASH_STR),
-		EXT_FILE_MD5_HASH_STR:         mapStr(flattener.FILE_SRC, flattener.FILE_MD5_HASH_STR),
-		EXT_FILE_SHA256_HASH_STR:      mapStr(flattener.FILE_SRC, flattener.FILE_SHA256_HASH_STR),
-		EXT_FILE_IMP_HASH_STR:         mapStr(flattener.FILE_SRC, flattener.FILE_IMP_HASH_STR),
-		EXT_FILE_SIGNED_INT:           mapInt(flattener.FILE_SRC, flattener.FILE_SIGNED_INT),
+		EXT_FILE_SIGNATURE_STR:        mapStr(sfgo.FILE_SRC, sfgo.FILE_SIGNATURE_STR),
+		EXT_FILE_SIGNATURE_STATUS_STR: mapStr(sfgo.FILE_SRC, sfgo.FILE_SIGNATURE_STATUS_STR),
+		EXT_FILE_SHA1_HASH_STR:        mapStr(sfgo.FILE_SRC, sfgo.FILE_SHA1_HASH_STR),
+		EXT_FILE_MD5_HASH_STR:         mapStr(sfgo.FILE_SRC, sfgo.FILE_MD5_HASH_STR),
+		EXT_FILE_SHA256_HASH_STR:      mapStr(sfgo.FILE_SRC, sfgo.FILE_SHA256_HASH_STR),
+		EXT_FILE_IMP_HASH_STR:         mapStr(sfgo.FILE_SRC, sfgo.FILE_IMP_HASH_STR),
+		EXT_FILE_SIGNED_INT:           mapInt(sfgo.FILE_SRC, sfgo.FILE_SIGNED_INT),
 
 		//Ext network
-		EXT_NET_SOURCE_HOST_NAME_STR: mapStr(flattener.NETWORK_SRC, flattener.NET_SOURCE_HOST_NAME_STR),
-		EXT_NET_SOURCE_PORT_NAME_STR: mapStr(flattener.NETWORK_SRC, flattener.NET_SOURCE_PORT_NAME_STR),
-		EXT_NET_DEST_HOST_NAME_STR:   mapStr(flattener.NETWORK_SRC, flattener.NET_DEST_HOST_NAME_STR),
-		EXT_NET_DEST_PORT_NAME_STR:   mapStr(flattener.NETWORK_SRC, flattener.NET_DEST_PORT_NAME_STR),
+		EXT_NET_SOURCE_HOST_NAME_STR: mapStr(sfgo.NETWORK_SRC, sfgo.NET_SOURCE_HOST_NAME_STR),
+		EXT_NET_SOURCE_PORT_NAME_STR: mapStr(sfgo.NETWORK_SRC, sfgo.NET_SOURCE_PORT_NAME_STR),
+		EXT_NET_DEST_HOST_NAME_STR:   mapStr(sfgo.NETWORK_SRC, sfgo.NET_DEST_HOST_NAME_STR),
+		EXT_NET_DEST_PORT_NAME_STR:   mapStr(sfgo.NETWORK_SRC, sfgo.NET_DEST_PORT_NAME_STR),
 
 		//Ext target proc
-		EXT_TARG_PROC_OID_CREATETS_INT:       mapInt(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_OID_CREATETS_INT),
-		EXT_TARG_PROC_OID_HPID_INT:           mapInt(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_OID_HPID_INT),
-		EXT_TARG_PROC_TS_INT:                 mapInt(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_TS_INT),
-		EXT_TARG_PROC_POID_CREATETS_INT:      mapInt(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_POID_CREATETS_INT),
-		EXT_TARG_PROC_POID_HPID_INT:          mapInt(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_POID_HPID_INT),
-		EXT_TARG_PROC_EXE_STR:                mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_EXE_STR),
-		EXT_TARG_PROC_EXEARGS_STR:            mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_EXEARGS_STR),
-		EXT_TARG_PROC_UID_INT:                mapInt(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_UID_INT),
-		EXT_TARG_PROC_GID_INT:                mapInt(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_GID_INT),
-		EXT_TARG_PROC_USERNAME_STR:           mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_USERNAME_STR),
-		EXT_TARG_PROC_GROUPNAME_STR:          mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_GROUPNAME_STR),
-		EXT_TARG_PROC_TTY_INT:                mapInt(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_TTY_INT),
-		EXT_TARG_PROC_CONTAINERID_STRING_STR: mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_CONTAINERID_STRING_STR),
-		EXT_TARG_PROC_ENTRY_INT:              mapEntry(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_ENTRY_INT),
+		EXT_TARG_PROC_OID_CREATETS_INT:       mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_OID_CREATETS_INT),
+		EXT_TARG_PROC_OID_HPID_INT:           mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_OID_HPID_INT),
+		EXT_TARG_PROC_TS_INT:                 mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_TS_INT),
+		EXT_TARG_PROC_POID_CREATETS_INT:      mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_POID_CREATETS_INT),
+		EXT_TARG_PROC_POID_HPID_INT:          mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_POID_HPID_INT),
+		EXT_TARG_PROC_EXE_STR:                mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_EXE_STR),
+		EXT_TARG_PROC_EXEARGS_STR:            mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_EXEARGS_STR),
+		EXT_TARG_PROC_UID_INT:                mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_UID_INT),
+		EXT_TARG_PROC_GID_INT:                mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_GID_INT),
+		EXT_TARG_PROC_USERNAME_STR:           mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_USERNAME_STR),
+		EXT_TARG_PROC_GROUPNAME_STR:          mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_GROUPNAME_STR),
+		EXT_TARG_PROC_TTY_INT:                mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_TTY_INT),
+		EXT_TARG_PROC_CONTAINERID_STRING_STR: mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_CONTAINERID_STRING_STR),
+		EXT_TARG_PROC_ENTRY_INT:              mapEntry(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_ENTRY_INT),
 
-		EXT_TARG_PROC_GUID_STR:                mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_GUID_STR),
-		EXT_TARG_PROC_IMAGE_STR:               mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_IMAGE_STR),
-		EXT_TARG_PROC_CURR_DIRECTORY_STR:      mapDir(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_CURR_DIRECTORY_STR),
-		EXT_TARG_PROC_LOGON_GUID_STR:          mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_LOGON_GUID_STR),
-		EXT_TARG_PROC_LOGON_ID_STR:            mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_LOGON_ID_STR),
-		EXT_TARG_PROC_TERMINAL_SESSION_ID_STR: mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_TERMINAL_SESSION_ID_STR),
-		EXT_TARG_PROC_INTEGRITY_LEVEL_STR:     mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_INTEGRITY_LEVEL_STR),
-		EXT_TARG_PROC_SIGNATURE_STR:           mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_SIGNATURE_STR),
-		EXT_TARG_PROC_SIGNATURE_STATUS_STR:    mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_SIGNATURE_STATUS_STR),
-		EXT_TARG_PROC_SHA1_HASH_STR:           mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_SHA1_HASH_STR),
-		EXT_TARG_PROC_MD5_HASH_STR:            mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_MD5_HASH_STR),
-		EXT_TARG_PROC_SHA256_HASH_STR:         mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_SHA256_HASH_STR),
-		EXT_TARG_PROC_IMP_HASH_STR:            mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_IMP_HASH_STR),
-		EXT_TARG_PROC_SIGNED_INT:              mapInt(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_SIGNED_INT),
-		EXT_TARG_PROC_START_ADDR_STR:          mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_START_ADDR_STR),
-		EXT_TARG_PROC_START_MODULE_STR:        mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_START_MODULE_STR),
-		EXT_TARG_PROC_START_FUNCTION_STR:      mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_START_FUNCTION_STR),
-		EXT_TARG_PROC_GRANT_ACCESS_STR:        mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_GRANT_ACCESS_STR),
-		EXT_TARG_PROC_CALL_TRACE_STR:          mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_CALL_TRACE_STR),
-		EXT_TARG_PROC_ACCESS_TYPE_STR:         mapStr(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_ACCESS_TYPE_STR),
-		EXT_TARG_PROC_NEW_THREAD_ID_INT:       mapInt(flattener.TARG_PROC_SRC, flattener.EVT_TARG_PROC_NEW_THREAD_ID_INT),
+		EXT_TARG_PROC_GUID_STR:                mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_GUID_STR),
+		EXT_TARG_PROC_IMAGE_STR:               mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_IMAGE_STR),
+		EXT_TARG_PROC_CURR_DIRECTORY_STR:      mapDir(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_CURR_DIRECTORY_STR),
+		EXT_TARG_PROC_LOGON_GUID_STR:          mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_LOGON_GUID_STR),
+		EXT_TARG_PROC_LOGON_ID_STR:            mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_LOGON_ID_STR),
+		EXT_TARG_PROC_TERMINAL_SESSION_ID_STR: mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_TERMINAL_SESSION_ID_STR),
+		EXT_TARG_PROC_INTEGRITY_LEVEL_STR:     mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_INTEGRITY_LEVEL_STR),
+		EXT_TARG_PROC_SIGNATURE_STR:           mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SIGNATURE_STR),
+		EXT_TARG_PROC_SIGNATURE_STATUS_STR:    mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SIGNATURE_STATUS_STR),
+		EXT_TARG_PROC_SHA1_HASH_STR:           mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SHA1_HASH_STR),
+		EXT_TARG_PROC_MD5_HASH_STR:            mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_MD5_HASH_STR),
+		EXT_TARG_PROC_SHA256_HASH_STR:         mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SHA256_HASH_STR),
+		EXT_TARG_PROC_IMP_HASH_STR:            mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_IMP_HASH_STR),
+		EXT_TARG_PROC_SIGNED_INT:              mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SIGNED_INT),
+		EXT_TARG_PROC_START_ADDR_STR:          mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_START_ADDR_STR),
+		EXT_TARG_PROC_START_MODULE_STR:        mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_START_MODULE_STR),
+		EXT_TARG_PROC_START_FUNCTION_STR:      mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_START_FUNCTION_STR),
+		EXT_TARG_PROC_GRANT_ACCESS_STR:        mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_GRANT_ACCESS_STR),
+		EXT_TARG_PROC_CALL_TRACE_STR:          mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_CALL_TRACE_STR),
+		EXT_TARG_PROC_ACCESS_TYPE_STR:         mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_ACCESS_TYPE_STR),
+		EXT_TARG_PROC_NEW_THREAD_ID_INT:       mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_NEW_THREAD_ID_INT),
 	},
 }
 
-func mapStr(src flattener.Source, attr sfgo.Attribute) FieldMap {
+func mapStr(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} { return r.GetStr(attr, src) }
 }
 
-func mapInt(src flattener.Source, attr sfgo.Attribute) FieldMap {
+func mapInt(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} { return r.GetInt(attr, src) }
 }
 
-func mapSum(src flattener.Source, attrs ...sfgo.Attribute) FieldMap {
+func mapSum(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		var sum int64 = 0
 		for _, attr := range attrs {
@@ -275,7 +274,7 @@ func mapSum(src flattener.Source, attrs ...sfgo.Attribute) FieldMap {
 	}
 }
 
-func mapJoin(src flattener.Source, attrs ...sfgo.Attribute) FieldMap {
+func mapJoin(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		var join string = r.GetStr(attrs[0], src)
 		for _, attr := range attrs[1:] {
@@ -285,7 +284,7 @@ func mapJoin(src flattener.Source, attrs ...sfgo.Attribute) FieldMap {
 	}
 }
 
-func mapRecType(src flattener.Source) FieldMap {
+func mapRecType(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
 		switch r.GetInt(sfgo.SF_REC_TYPE, src) {
 		case sfgo.PROC:
@@ -310,7 +309,7 @@ func mapRecType(src flattener.Source) FieldMap {
 	}
 }
 
-func mapOpFlags(src flattener.Source) FieldMap {
+func mapOpFlags(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
 		opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT, src)
 		rtype := mapRecType(src)(r).(string)
@@ -318,7 +317,7 @@ func mapOpFlags(src flattener.Source) FieldMap {
 	}
 }
 
-func mapRet(src flattener.Source) FieldMap {
+func mapRet(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
 		switch r.GetInt(sfgo.SF_REC_TYPE, src) {
 		case sfgo.PROC_EVT:
@@ -331,7 +330,7 @@ func mapRet(src flattener.Source) FieldMap {
 	}
 }
 
-func mapEndTs(src flattener.Source) FieldMap {
+func mapEndTs(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
 		switch r.GetInt(sfgo.SF_REC_TYPE, src) {
 		case sfgo.FILE_FLOW:
@@ -344,7 +343,7 @@ func mapEndTs(src flattener.Source) FieldMap {
 	}
 }
 
-func mapEntry(src flattener.Source, attr sfgo.Attribute) FieldMap {
+func mapEntry(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		if r.GetInt(attr, src) == 1 {
 			return true
@@ -353,19 +352,19 @@ func mapEntry(src flattener.Source, attr sfgo.Attribute) FieldMap {
 	}
 }
 
-func mapName(src flattener.Source, attr sfgo.Attribute) FieldMap {
+func mapName(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		return filepath.Base(r.GetStr(attr, src))
 	}
 }
 
-func mapDir(src flattener.Source, attr sfgo.Attribute) FieldMap {
+func mapDir(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		return filepath.Dir(r.GetStr(attr, src))
 	}
 }
 
-func mapLinkPath(src flattener.Source, attr sfgo.Attribute) FieldMap {
+func mapLinkPath(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		orig := r.GetStr(attr, src)
 		// Possible format: aabbccddeeff0011->aabbccddeeff0011 /path/to/target.file
@@ -378,13 +377,13 @@ func mapLinkPath(src flattener.Source, attr sfgo.Attribute) FieldMap {
 	}
 }
 
-func mapFileType(src flattener.Source, attr sfgo.Attribute) FieldMap {
+func mapFileType(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		return utils.GetFileType(r.GetInt(attr, src))
 	}
 }
 
-func mapIsOpenWrite(src flattener.Source, attr sfgo.Attribute) FieldMap {
+func mapIsOpenWrite(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		if utils.IsOpenWrite(r.GetInt(attr, src)) {
 			return true
@@ -393,7 +392,7 @@ func mapIsOpenWrite(src flattener.Source, attr sfgo.Attribute) FieldMap {
 	}
 }
 
-func mapIsOpenRead(src flattener.Source, attr sfgo.Attribute) FieldMap {
+func mapIsOpenRead(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		if utils.IsOpenRead(r.GetInt(attr, src)) {
 			return true
@@ -402,19 +401,19 @@ func mapIsOpenRead(src flattener.Source, attr sfgo.Attribute) FieldMap {
 	}
 }
 
-func mapOpenFlags(src flattener.Source, attr sfgo.Attribute) FieldMap {
+func mapOpenFlags(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		return strings.Join(utils.GetOpenFlags(r.GetInt(attr, src)), LISTSEP)
 	}
 }
 
-func mapProto(src flattener.Source, attr sfgo.Attribute) FieldMap {
+func mapProto(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		return r.GetInt(attr, src)
 	}
 }
 
-func mapPort(src flattener.Source, attrs ...sfgo.Attribute) FieldMap {
+func mapPort(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		var ports = make([]string, 0)
 		for _, attr := range attrs {
@@ -425,7 +424,7 @@ func mapPort(src flattener.Source, attrs ...sfgo.Attribute) FieldMap {
 	}
 }
 
-func mapIP(src flattener.Source, attrs ...sfgo.Attribute) FieldMap {
+func mapIP(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		var ips = make([]string, 0)
 		for _, attr := range attrs {
@@ -436,20 +435,20 @@ func mapIP(src flattener.Source, attrs ...sfgo.Attribute) FieldMap {
 	}
 }
 
-func mapContType(src flattener.Source, attr sfgo.Attribute) FieldMap {
+func mapContType(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		return utils.GetContType(r.GetInt(attr, src))
 	}
 }
 
-func mapCachedValue(src flattener.Source, attr RecAttribute) FieldMap {
+func mapCachedValue(src sfgo.Source, attr RecAttribute) FieldMap {
 	return func(r *Record) interface{} {
 		oid := sfgo.OID{CreateTS: r.GetInt(sfgo.PROC_OID_CREATETS_INT, src), Hpid: r.GetInt(sfgo.PROC_OID_HPID_INT, src)}
 		return r.GetCachedValue(oid, attr)
 	}
 }
 
-func mapOID(src flattener.Source, attrs ...sfgo.Attribute) FieldMap {
+func mapOID(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		h := xxhash.New()
 		for _, attr := range attrs {

@@ -31,17 +31,20 @@ import (
 // Pipeline represents a loaded plugin pipeline
 type Pipeline struct {
 	wg          *sync.WaitGroup
+	driver      plugins.SFDriver
 	processors  []plugins.SFProcessor
 	channels    []interface{}
-	hdlrs       []plugins.SFHandler
+	handlers    []plugins.SFHandler
 	pluginCache *PluginCache
 	config      string
 	pluginDir   string
+	driverDir   string
 }
 
 // New creates a new pipeline object
-func New(pluginDir string, config string) *Pipeline {
+func New(driverDir string, pluginDir string, config string) *Pipeline {
 	return &Pipeline{config: config,
+		driverDir:   driverDir,
 		pluginDir:   pluginDir,
 		wg:          new(sync.WaitGroup),
 		pluginCache: NewPluginCache(config),
@@ -61,11 +64,11 @@ func (pl *Pipeline) GetNumProcessors() int {
 
 // GetNumHandlers returns the number of handlers in the pipeline
 func (pl *Pipeline) GetNumHandlers() int {
-	return len(pl.hdlrs)
+	return len(pl.handlers)
 }
 
 // GetPluginCache returns the plugin cache for the pipeline
-func (pl *Pipeline) GetPluginCache() *PluginCache {
+func (pl *Pipeline) GetPluginCache() plugins.SFPluginCache {
 	return pl.pluginCache
 }
 
@@ -75,18 +78,26 @@ func (pl *Pipeline) AddChannel(channelName string, channel interface{}) {
 }
 
 // Load loads and enables the pipeline
-func (pl *Pipeline) Load() error {
+func (pl *Pipeline) Load(driverName string) (plugins.SFDriver, error) {
+	if err := pl.pluginCache.LoadDrivers(pl.driverDir); err != nil {
+		logger.Error.Println("Unable to load dynamic driver: ", err)
+		return nil, err
+	}
 	if err := pl.pluginCache.LoadPlugins(pl.pluginDir); err != nil {
 		logger.Error.Println("Unable to load dynamic plugins: ", err)
-		return err
+		return nil, err
 	}
-
 	conf, err := pl.pluginCache.GetConfig()
 	if err != nil {
 		logger.Error.Println("Unable to load pipeline config: ", err)
-		return err
+		return nil, err
 	}
 	setManifestInfo(conf)
+	var driver plugins.SFDriver
+	if driver, err = pl.pluginCache.GetDriver(driverName); err != nil {
+		logger.Error.Println("Unable to load driver: ", err)
+		return nil, err
+	}
 	var in interface{}
 	var out interface{}
 	for _, p := range conf.Pipeline {
@@ -96,9 +107,9 @@ func (pl *Pipeline) Load() error {
 			hdl, err = pl.pluginCache.GetHandler(val)
 			if err != nil {
 				logger.Error.Println(err)
-				return err
+				return nil, err
 			}
-			pl.hdlrs = append(pl.hdlrs, hdl)
+			pl.handlers = append(pl.handlers, hdl)
 			xType := fmt.Sprintf("%T", hdl)
 			logger.Trace.Println(xType)
 			hdler = true
@@ -108,18 +119,18 @@ func (pl *Pipeline) Load() error {
 			prc, err = pl.pluginCache.GetProcessor(val, hdl, hdler)
 			if err != nil {
 				logger.Error.Println(err)
-				return err
+				return nil, err
 			}
 			tp := fmt.Sprintf("%T", prc)
 			logger.Trace.Println(tp)
 			err = prc.Init(p)
 			if err != nil {
 				logger.Error.Println(err)
-				return err
+				return nil, err
 			}
 		} else {
 			logger.Error.Println("processor or handler tag must exist in plugin config")
-			return err
+			return nil, err
 		}
 		if v, o := p[InChanConfig]; o {
 			in, err = pl.pluginCache.GetChan(v, ChanSize)
@@ -128,7 +139,7 @@ func (pl *Pipeline) Load() error {
 			logger.Trace.Println(chp)
 		} else {
 			logger.Error.Println("in tag must exist in plugin config")
-			return errors.New("in tag must exist in plugin config")
+			return nil, errors.New("in tag must exist in plugin config")
 		}
 		if v, o := p[OutChanConfig]; o {
 			out, err = pl.pluginCache.GetChan(v, ChanSize)
@@ -141,7 +152,7 @@ func (pl *Pipeline) Load() error {
 		pl.wg.Add(1)
 		go prc.Process(in, pl.wg)
 	}
-	return nil
+	return driver, nil
 }
 
 // GetRootChannel returns the first channel in the pipeline
@@ -152,12 +163,14 @@ func (pl *Pipeline) GetRootChannel() interface{} {
 	return nil
 }
 
+// PrintPipeline outputs summary information about the loaded pipeline
 func (pl *Pipeline) PrintPipeline() {
 	logger.Trace.Printf("Loaded %d stages\n", len(pl.processors))
 	logger.Trace.Printf("Loaded %d channels\n", len(pl.channels))
-	logger.Trace.Printf("Loaded %d hdlrs\n", len(pl.hdlrs))
+	logger.Trace.Printf("Loaded %d handlers\n", len(pl.handlers))
 }
 
+// Wait calls on pipeline's waitgroup
 func (pl *Pipeline) Wait() {
 	pl.wg.Wait()
 }

@@ -26,57 +26,56 @@ import (
 	"github.com/elastic/beats/v7/winlogbeat/eventlog"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/goutils/logger"
-	"github.ibm.com/sysflow/sf-processor/core/flattener"
 )
 
 // Converter converts SysmonAttributes into Flattened objects
 type Converter struct {
 	hashParser *regexp.Regexp
-	efrChan    chan *flattener.EnrichedFlatRecord
+	frChan     chan *sfgo.FlatRecord
 }
 
-//  NewConverter creates a new sysmon converter object
-func NewConverter(efrChan chan *flattener.EnrichedFlatRecord) *Converter {
+// NewConverter creates a new sysmon converter object
+func NewConverter(frChan chan *sfgo.FlatRecord) *Converter {
 	return &Converter{
 		hashParser: regexp.MustCompile(cHashRegex),
-		efrChan:    efrChan,
+		frChan:     frChan,
 	}
 
 }
 
 // NewEnrichedFlatRecord returns a new enriched flat record
-func NewEnrichedFlatRecord() *flattener.EnrichedFlatRecord {
-	efr := new(flattener.EnrichedFlatRecord)
-	efr.Sources = make([]flattener.Source, 3)
+func NewEnrichedFlatRecord() *sfgo.FlatRecord {
+	efr := new(sfgo.FlatRecord)
+	efr.Sources = make([]sfgo.Source, 3)
 	efr.Ints = make([][]int64, 3)
 	efr.Strs = make([][]string, 3)
-	efr.Sources[flattener.SYSFLOW_IDX] = flattener.SYSFLOW_SRC
-	efr.Sources[flattener.PROC_IDX] = flattener.PROCESS_SRC
-	efr.Sources[flattener.FILE_IDX] = flattener.FILE_SRC
+	efr.Sources[sfgo.SYSFLOW_IDX] = sfgo.SYSFLOW_SRC
+	efr.Sources[sfgo.PROC_IDX] = sfgo.PROCESS_SRC
+	efr.Sources[sfgo.FILE_IDX] = sfgo.FILE_SRC
 
-	efr.Ints[flattener.SYSFLOW_IDX] = make([]int64, sfgo.INT_ARRAY_SIZE)
-	efr.Strs[flattener.SYSFLOW_IDX] = make([]string, sfgo.STR_ARRAY_SIZE)
+	efr.Ints[sfgo.SYSFLOW_IDX] = make([]int64, sfgo.INT_ARRAY_SIZE)
+	efr.Strs[sfgo.SYSFLOW_IDX] = make([]string, sfgo.STR_ARRAY_SIZE)
 
-	efr.Ints[flattener.PROC_IDX] = make([]int64, flattener.NUM_EXT_PROC_ATTRS_INT)
-	efr.Strs[flattener.PROC_IDX] = make([]string, flattener.NUM_EXT_PROC_ATTRS_STR)
+	efr.Ints[sfgo.PROC_IDX] = make([]int64, sfgo.NUM_EXT_PROC_ATTRS_INT)
+	efr.Strs[sfgo.PROC_IDX] = make([]string, sfgo.NUM_EXT_PROC_ATTRS_STR)
 
-	efr.Ints[flattener.FILE_IDX] = make([]int64, flattener.NUM_EXT_FILE_INT)
-	efr.Strs[flattener.FILE_IDX] = make([]string, flattener.NUM_EXT_FILE_STR)
+	efr.Ints[sfgo.FILE_IDX] = make([]int64, sfgo.NUM_EXT_FILE_INT)
+	efr.Strs[sfgo.FILE_IDX] = make([]string, sfgo.NUM_EXT_FILE_STR)
 	return efr
 
 }
 
 // NewEnSysFlowFlatRecord returns a new sysflow flat record
-func NewEnSysFlowFlatRecord() *flattener.EnrichedFlatRecord {
-	efr := new(flattener.EnrichedFlatRecord)
-	efr.Sources = append(efr.Sources, flattener.SYSFLOW_SRC)
-	efr.Sources = append(efr.Sources, flattener.PROCESS_SRC)
+func NewEnSysFlowFlatRecord() *sfgo.FlatRecord {
+	efr := new(sfgo.FlatRecord)
+	efr.Sources = append(efr.Sources, sfgo.SYSFLOW_SRC)
+	efr.Sources = append(efr.Sources, sfgo.PROCESS_SRC)
 	efr.Ints = make([][]int64, 2, 3)
 	efr.Strs = make([][]string, 2, 3)
-	efr.Ints[flattener.SYSFLOW_IDX] = make([]int64, sfgo.INT_ARRAY_SIZE)
-	efr.Strs[flattener.SYSFLOW_IDX] = make([]string, sfgo.STR_ARRAY_SIZE)
-	efr.Ints[flattener.PROC_IDX] = make([]int64, flattener.NUM_EXT_PROC_ATTRS_INT)
-	efr.Strs[flattener.PROC_IDX] = make([]string, flattener.NUM_EXT_PROC_ATTRS_STR)
+	efr.Ints[sfgo.SYSFLOW_IDX] = make([]int64, sfgo.INT_ARRAY_SIZE)
+	efr.Strs[sfgo.SYSFLOW_IDX] = make([]string, sfgo.STR_ARRAY_SIZE)
+	efr.Ints[sfgo.PROC_IDX] = make([]int64, sfgo.NUM_EXT_PROC_ATTRS_INT)
+	efr.Strs[sfgo.PROC_IDX] = make([]string, sfgo.NUM_EXT_PROC_ATTRS_STR)
 	return efr
 }
 
@@ -84,83 +83,83 @@ func (s *Converter) fillExtProcess(procObj *ProcessObj, intFields []int64, strFi
 	//Fill SysFlow Fields
 	proc := procObj.Process
 	if proc != nil {
-		intFields[flattener.EVT_TARG_PROC_STATE_INT] = int64(proc.State)
-		intFields[flattener.EVT_TARG_PROC_OID_CREATETS_INT] = int64(proc.Oid.CreateTS)
-		intFields[flattener.EVT_TARG_PROC_OID_HPID_INT] = int64(proc.Oid.Hpid)
+		intFields[sfgo.EVT_TARG_PROC_STATE_INT] = int64(proc.State)
+		intFields[sfgo.EVT_TARG_PROC_OID_CREATETS_INT] = int64(proc.Oid.CreateTS)
+		intFields[sfgo.EVT_TARG_PROC_OID_HPID_INT] = int64(proc.Oid.Hpid)
 		if proc.Poid != nil && proc.Poid.UnionType == sfgo.UnionNullOIDTypeEnumOID {
-			intFields[flattener.EVT_TARG_PROC_POID_CREATETS_INT] = proc.Poid.OID.CreateTS
-			intFields[flattener.EVT_TARG_PROC_POID_HPID_INT] = proc.Poid.OID.Hpid
+			intFields[sfgo.EVT_TARG_PROC_POID_CREATETS_INT] = proc.Poid.OID.CreateTS
+			intFields[sfgo.EVT_TARG_PROC_POID_HPID_INT] = proc.Poid.OID.Hpid
 		} else {
-			intFields[flattener.EVT_TARG_PROC_POID_CREATETS_INT] = sfgo.Zeros.Int64
-			intFields[flattener.EVT_TARG_PROC_POID_HPID_INT] = sfgo.Zeros.Int64
+			intFields[sfgo.EVT_TARG_PROC_POID_CREATETS_INT] = sfgo.Zeros.Int64
+			intFields[sfgo.EVT_TARG_PROC_POID_HPID_INT] = sfgo.Zeros.Int64
 		}
-		intFields[flattener.EVT_TARG_PROC_TS_INT] = proc.Ts
-		strFields[flattener.EVT_TARG_PROC_EXE_STR] = proc.Exe
-		strFields[flattener.EVT_TARG_PROC_EXEARGS_STR] = proc.ExeArgs
-		intFields[flattener.EVT_TARG_PROC_UID_INT] = int64(proc.Uid)
-		strFields[flattener.EVT_TARG_PROC_USERNAME_STR] = proc.UserName
-		intFields[flattener.EVT_TARG_PROC_GID_INT] = int64(proc.Gid)
-		strFields[flattener.EVT_TARG_PROC_GROUPNAME_STR] = proc.GroupName
+		intFields[sfgo.EVT_TARG_PROC_TS_INT] = proc.Ts
+		strFields[sfgo.EVT_TARG_PROC_EXE_STR] = proc.Exe
+		strFields[sfgo.EVT_TARG_PROC_EXEARGS_STR] = proc.ExeArgs
+		intFields[sfgo.EVT_TARG_PROC_UID_INT] = int64(proc.Uid)
+		strFields[sfgo.EVT_TARG_PROC_USERNAME_STR] = proc.UserName
+		intFields[sfgo.EVT_TARG_PROC_GID_INT] = int64(proc.Gid)
+		strFields[sfgo.EVT_TARG_PROC_GROUPNAME_STR] = proc.GroupName
 		if proc.Tty {
-			intFields[flattener.EVT_TARG_PROC_TTY_INT] = 1
+			intFields[sfgo.EVT_TARG_PROC_TTY_INT] = 1
 		} else {
-			intFields[flattener.EVT_TARG_PROC_TTY_INT] = 0
+			intFields[sfgo.EVT_TARG_PROC_TTY_INT] = 0
 		}
 		if proc.Entry {
-			intFields[flattener.EVT_TARG_PROC_ENTRY_INT] = 1
+			intFields[sfgo.EVT_TARG_PROC_ENTRY_INT] = 1
 		} else {
-			intFields[flattener.EVT_TARG_PROC_ENTRY_INT] = 0
+			intFields[sfgo.EVT_TARG_PROC_ENTRY_INT] = 0
 		}
 		if proc.ContainerId != nil && proc.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
-			strFields[flattener.EVT_TARG_PROC_CONTAINERID_STRING_STR] = proc.ContainerId.String
+			strFields[sfgo.EVT_TARG_PROC_CONTAINERID_STRING_STR] = proc.ContainerId.String
 		} else {
-			strFields[flattener.EVT_TARG_PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
+			strFields[sfgo.EVT_TARG_PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
 		}
 	} else {
 		logger.Warn.Println("Event does not have a related process.  This should not happen.")
-		intFields[flattener.EVT_TARG_PROC_STATE_INT] = sfgo.Zeros.Int64
-		intFields[flattener.EVT_TARG_PROC_OID_CREATETS_INT] = sfgo.Zeros.Int64
-		intFields[flattener.EVT_TARG_PROC_OID_HPID_INT] = sfgo.Zeros.Int64
-		intFields[flattener.EVT_TARG_PROC_POID_CREATETS_INT] = sfgo.Zeros.Int64
-		intFields[flattener.EVT_TARG_PROC_POID_HPID_INT] = sfgo.Zeros.Int64
-		intFields[flattener.EVT_TARG_PROC_TS_INT] = sfgo.Zeros.Int64
-		strFields[flattener.EVT_TARG_PROC_EXE_STR] = sfgo.Zeros.String
-		strFields[flattener.EVT_TARG_PROC_EXEARGS_STR] = sfgo.Zeros.String
-		intFields[flattener.EVT_TARG_PROC_UID_INT] = sfgo.Zeros.Int64
-		strFields[flattener.EVT_TARG_PROC_USERNAME_STR] = sfgo.Zeros.String
-		intFields[flattener.EVT_TARG_PROC_GID_INT] = sfgo.Zeros.Int64
-		strFields[flattener.EVT_TARG_PROC_GROUPNAME_STR] = sfgo.Zeros.String
-		intFields[flattener.EVT_TARG_PROC_TTY_INT] = sfgo.Zeros.Int64
-		intFields[flattener.EVT_TARG_PROC_ENTRY_INT] = sfgo.Zeros.Int64
-		strFields[flattener.EVT_TARG_PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
+		intFields[sfgo.EVT_TARG_PROC_STATE_INT] = sfgo.Zeros.Int64
+		intFields[sfgo.EVT_TARG_PROC_OID_CREATETS_INT] = sfgo.Zeros.Int64
+		intFields[sfgo.EVT_TARG_PROC_OID_HPID_INT] = sfgo.Zeros.Int64
+		intFields[sfgo.EVT_TARG_PROC_POID_CREATETS_INT] = sfgo.Zeros.Int64
+		intFields[sfgo.EVT_TARG_PROC_POID_HPID_INT] = sfgo.Zeros.Int64
+		intFields[sfgo.EVT_TARG_PROC_TS_INT] = sfgo.Zeros.Int64
+		strFields[sfgo.EVT_TARG_PROC_EXE_STR] = sfgo.Zeros.String
+		strFields[sfgo.EVT_TARG_PROC_EXEARGS_STR] = sfgo.Zeros.String
+		intFields[sfgo.EVT_TARG_PROC_UID_INT] = sfgo.Zeros.Int64
+		strFields[sfgo.EVT_TARG_PROC_USERNAME_STR] = sfgo.Zeros.String
+		intFields[sfgo.EVT_TARG_PROC_GID_INT] = sfgo.Zeros.Int64
+		strFields[sfgo.EVT_TARG_PROC_GROUPNAME_STR] = sfgo.Zeros.String
+		intFields[sfgo.EVT_TARG_PROC_TTY_INT] = sfgo.Zeros.Int64
+		intFields[sfgo.EVT_TARG_PROC_ENTRY_INT] = sfgo.Zeros.Int64
+		strFields[sfgo.EVT_TARG_PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
 	}
 
-	strFields[flattener.EVT_TARG_PROC_GUID_STR] = procObj.GUID
-	strFields[flattener.EVT_TARG_PROC_IMAGE_STR] = procObj.Image
-	strFields[flattener.EVT_TARG_PROC_CURR_DIRECTORY_STR] = procObj.CurrentDirectory
-	strFields[flattener.EVT_TARG_PROC_LOGON_GUID_STR] = procObj.LogonGUID
-	strFields[flattener.EVT_TARG_PROC_LOGON_ID_STR] = procObj.LogonID
-	strFields[flattener.EVT_TARG_PROC_TERMINAL_SESSION_ID_STR] = procObj.TerminalSessionID
-	strFields[flattener.EVT_TARG_PROC_INTEGRITY_LEVEL_STR] = procObj.Integrity
+	strFields[sfgo.EVT_TARG_PROC_GUID_STR] = procObj.GUID
+	strFields[sfgo.EVT_TARG_PROC_IMAGE_STR] = procObj.Image
+	strFields[sfgo.EVT_TARG_PROC_CURR_DIRECTORY_STR] = procObj.CurrentDirectory
+	strFields[sfgo.EVT_TARG_PROC_LOGON_GUID_STR] = procObj.LogonGUID
+	strFields[sfgo.EVT_TARG_PROC_LOGON_ID_STR] = procObj.LogonID
+	strFields[sfgo.EVT_TARG_PROC_TERMINAL_SESSION_ID_STR] = procObj.TerminalSessionID
+	strFields[sfgo.EVT_TARG_PROC_INTEGRITY_LEVEL_STR] = procObj.Integrity
 
 	//Fill Hashing Fields
 	hashes := s.hashParser.FindStringSubmatch(procObj.Hashes)
 	if len(hashes) == 5 {
-		strFields[flattener.EVT_TARG_PROC_SHA1_HASH_STR] = hashes[flattener.SHA1_HASH_STR+1]
-		strFields[flattener.EVT_TARG_PROC_MD5_HASH_STR] = hashes[flattener.MD5_HASH_STR+1]
-		strFields[flattener.EVT_TARG_PROC_SHA256_HASH_STR] = hashes[flattener.SHA256_HASH_STR+1]
-		strFields[flattener.EVT_TARG_PROC_IMP_HASH_STR] = hashes[flattener.IMP_HASH_STR+1]
+		strFields[sfgo.EVT_TARG_PROC_SHA1_HASH_STR] = hashes[sfgo.SHA1_HASH_STR+1]
+		strFields[sfgo.EVT_TARG_PROC_MD5_HASH_STR] = hashes[sfgo.MD5_HASH_STR+1]
+		strFields[sfgo.EVT_TARG_PROC_SHA256_HASH_STR] = hashes[sfgo.SHA256_HASH_STR+1]
+		strFields[sfgo.EVT_TARG_PROC_IMP_HASH_STR] = hashes[sfgo.IMP_HASH_STR+1]
 	}
-	strFields[flattener.EVT_TARG_PROC_SIGNATURE_STR] = procObj.Signature
-	strFields[flattener.EVT_TARG_PROC_SIGNATURE_STATUS_STR] = procObj.SignatureStatus
-	intFields[flattener.EVT_TARG_PROC_SIGNED_INT] = procObj.Signed
+	strFields[sfgo.EVT_TARG_PROC_SIGNATURE_STR] = procObj.Signature
+	strFields[sfgo.EVT_TARG_PROC_SIGNATURE_STATUS_STR] = procObj.SignatureStatus
+	intFields[sfgo.EVT_TARG_PROC_SIGNED_INT] = procObj.Signed
 
 }
 
-func (s *Converter) fillProcess(fr *flattener.EnrichedFlatRecord, procObj *ProcessObj) {
+func (s *Converter) fillProcess(fr *sfgo.FlatRecord, procObj *ProcessObj) {
 	//Fill SysFlow Fields
-	intFields := fr.Ints[flattener.SYSFLOW_IDX]
-	strFields := fr.Strs[flattener.SYSFLOW_IDX]
+	intFields := fr.Ints[sfgo.SYSFLOW_IDX]
+	strFields := fr.Strs[sfgo.SYSFLOW_IDX]
 	proc := procObj.Process
 	if proc != nil {
 		intFields[sfgo.PROC_STATE_INT] = int64(proc.State)
@@ -216,33 +215,33 @@ func (s *Converter) fillProcess(fr *flattener.EnrichedFlatRecord, procObj *Proce
 
 	//Fill Extended Windows Fields
 	//extIntFields := fr.Ints[1]
-	extStrFields := fr.Strs[flattener.PROC_IDX]
-	extIntFields := fr.Ints[flattener.PROC_IDX]
+	extStrFields := fr.Strs[sfgo.PROC_IDX]
+	extIntFields := fr.Ints[sfgo.PROC_IDX]
 
-	extStrFields[flattener.PROC_GUID_STR] = procObj.GUID
-	extStrFields[flattener.PROC_IMAGE_STR] = procObj.Image
-	extStrFields[flattener.PROC_CURR_DIRECTORY_STR] = procObj.CurrentDirectory
-	extStrFields[flattener.PROC_LOGON_GUID_STR] = procObj.LogonGUID
-	extStrFields[flattener.PROC_LOGON_ID_STR] = procObj.LogonID
-	extStrFields[flattener.PROC_TERMINAL_SESSION_ID_STR] = procObj.TerminalSessionID
-	extStrFields[flattener.PROC_INTEGRITY_LEVEL_STR] = procObj.Integrity
+	extStrFields[sfgo.PROC_GUID_STR] = procObj.GUID
+	extStrFields[sfgo.PROC_IMAGE_STR] = procObj.Image
+	extStrFields[sfgo.PROC_CURR_DIRECTORY_STR] = procObj.CurrentDirectory
+	extStrFields[sfgo.PROC_LOGON_GUID_STR] = procObj.LogonGUID
+	extStrFields[sfgo.PROC_LOGON_ID_STR] = procObj.LogonID
+	extStrFields[sfgo.PROC_TERMINAL_SESSION_ID_STR] = procObj.TerminalSessionID
+	extStrFields[sfgo.PROC_INTEGRITY_LEVEL_STR] = procObj.Integrity
 
 	//Fill Hashing Fields
 	hashes := s.hashParser.FindStringSubmatch(procObj.Hashes)
 	if len(hashes) == 5 {
-		extStrFields[flattener.PROC_SHA1_HASH_STR] = hashes[flattener.SHA1_HASH_STR+1]
-		extStrFields[flattener.PROC_MD5_HASH_STR] = hashes[flattener.MD5_HASH_STR+1]
-		extStrFields[flattener.PROC_SHA256_HASH_STR] = hashes[flattener.SHA256_HASH_STR+1]
-		extStrFields[flattener.PROC_IMP_HASH_STR] = hashes[flattener.IMP_HASH_STR+1]
+		extStrFields[sfgo.PROC_SHA1_HASH_STR] = hashes[sfgo.SHA1_HASH_STR+1]
+		extStrFields[sfgo.PROC_MD5_HASH_STR] = hashes[sfgo.MD5_HASH_STR+1]
+		extStrFields[sfgo.PROC_SHA256_HASH_STR] = hashes[sfgo.SHA256_HASH_STR+1]
+		extStrFields[sfgo.PROC_IMP_HASH_STR] = hashes[sfgo.IMP_HASH_STR+1]
 	}
-	extStrFields[flattener.PROC_SIGNATURE_STR] = procObj.Signature
-	extStrFields[flattener.PROC_SIGNATURE_STATUS_STR] = procObj.SignatureStatus
-	extIntFields[flattener.PROC_SIGNED_INT] = procObj.Signed
+	extStrFields[sfgo.PROC_SIGNATURE_STR] = procObj.Signature
+	extStrFields[sfgo.PROC_SIGNATURE_STATUS_STR] = procObj.SignatureStatus
+	extIntFields[sfgo.PROC_SIGNED_INT] = procObj.Signed
 
 }
 
-func (s *Converter) fillProcessEvent(efr *flattener.EnrichedFlatRecord, ts int64, tid int64, opFlags int32, ret int32, intFs []int64, strFs []string) {
-	intFields := efr.Ints[flattener.SYSFLOW_IDX]
+func (s *Converter) fillProcessEvent(efr *sfgo.FlatRecord, ts int64, tid int64, opFlags int32, ret int32, intFs []int64, strFs []string) {
+	intFields := efr.Ints[sfgo.SYSFLOW_IDX]
 	intFields[sfgo.SF_REC_TYPE] = sfgo.PROC_EVT
 	intFields[sfgo.EV_PROC_TS_INT] = ts
 	intFields[sfgo.EV_PROC_TID_INT] = tid
@@ -250,46 +249,46 @@ func (s *Converter) fillProcessEvent(efr *flattener.EnrichedFlatRecord, ts int64
 	intFields[sfgo.EV_PROC_RET_INT] = int64(ret)
 
 	if intFs != nil && strFs != nil {
-		efr.Sources = append(efr.Sources, flattener.TARG_PROC_SRC)
+		efr.Sources = append(efr.Sources, sfgo.TARG_PROC_SRC)
 		efr.Ints = append(efr.Ints, intFs)
 		efr.Strs = append(efr.Strs, strFs)
 	}
 
 }
 
-func (s *Converter) fillHeader(efr *flattener.EnrichedFlatRecord, record eventlog.Record) {
-	intFields := efr.Ints[flattener.SYSFLOW_IDX]
-	strFields := efr.Strs[flattener.SYSFLOW_IDX]
+func (s *Converter) fillHeader(efr *sfgo.FlatRecord, record eventlog.Record) {
+	intFields := efr.Ints[sfgo.SYSFLOW_IDX]
+	strFields := efr.Strs[sfgo.SYSFLOW_IDX]
 	intFields[sfgo.SFHE_VERSION_INT] = 0
 	strFields[sfgo.SFHE_EXPORTER_STR] = record.Provider.Name
 	strFields[sfgo.SFHE_IP_STR] = record.Computer
 }
 
-func (s *Converter) fillFile(efr *flattener.EnrichedFlatRecord, ts int64, fileName string, fileType byte, fileHashes string, signed bool, signature string, sigStatus string, details string) {
-	intFields := efr.Ints[flattener.SYSFLOW_IDX]
-	strFields := efr.Strs[flattener.SYSFLOW_IDX]
+func (s *Converter) fillFile(efr *sfgo.FlatRecord, ts int64, fileName string, fileType byte, fileHashes string, signed bool, signature string, sigStatus string, details string) {
+	intFields := efr.Ints[sfgo.SYSFLOW_IDX]
+	strFields := efr.Strs[sfgo.SYSFLOW_IDX]
 	intFields[sfgo.FILE_STATE_INT] = int64(sfgo.SFObjectStateCREATED)
 	intFields[sfgo.FILE_TS_INT] = ts
 	intFields[sfgo.FILE_RESTYPE_INT] = int64(fileType)
 	strFields[sfgo.FILE_PATH_STR] = fileName
 
-	hashStrFields := efr.Strs[flattener.FILE_IDX]
-	hashIntFields := efr.Ints[flattener.FILE_IDX]
+	hashStrFields := efr.Strs[sfgo.FILE_IDX]
+	hashIntFields := efr.Ints[sfgo.FILE_IDX]
 	//Fill Hashing Fields
 	hashes := s.hashParser.FindStringSubmatch(fileHashes)
 	if len(hashes) == 5 {
-		hashStrFields[flattener.FILE_SHA1_HASH_STR] = hashes[flattener.SHA1_HASH_STR+1]
-		hashStrFields[flattener.FILE_MD5_HASH_STR] = hashes[flattener.MD5_HASH_STR+1]
-		hashStrFields[flattener.FILE_SHA256_HASH_STR] = hashes[flattener.SHA256_HASH_STR+1]
-		hashStrFields[flattener.FILE_IMP_HASH_STR] = hashes[flattener.IMP_HASH_STR+1]
+		hashStrFields[sfgo.FILE_SHA1_HASH_STR] = hashes[sfgo.SHA1_HASH_STR+1]
+		hashStrFields[sfgo.FILE_MD5_HASH_STR] = hashes[sfgo.MD5_HASH_STR+1]
+		hashStrFields[sfgo.FILE_SHA256_HASH_STR] = hashes[sfgo.SHA256_HASH_STR+1]
+		hashStrFields[sfgo.FILE_IMP_HASH_STR] = hashes[sfgo.IMP_HASH_STR+1]
 	}
-	hashStrFields[flattener.FILE_SIGNATURE_STR] = signature
-	hashStrFields[flattener.FILE_SIGNATURE_STATUS_STR] = sigStatus
-	hashStrFields[flattener.FILE_DETAILS_STR] = details
+	hashStrFields[sfgo.FILE_SIGNATURE_STR] = signature
+	hashStrFields[sfgo.FILE_SIGNATURE_STATUS_STR] = sigStatus
+	hashStrFields[sfgo.FILE_DETAILS_STR] = details
 	if signed {
-		hashIntFields[flattener.FILE_SIGNED_INT] = 1
+		hashIntFields[sfgo.FILE_SIGNED_INT] = 1
 	} else {
-		hashIntFields[flattener.FILE_SIGNED_INT] = 0
+		hashIntFields[sfgo.FILE_SIGNED_INT] = 0
 	}
 
 }
@@ -299,11 +298,11 @@ func (s *Converter) createSFProcEvent(record eventlog.Record, procObj *ProcessOb
 	s.fillHeader(efr, record)
 	s.fillProcess(efr, procObj)
 	s.fillProcessEvent(efr, ts, tid, opFlags, ret, intFs, strFs)
-	s.efrChan <- efr
+	s.frChan <- efr
 }
 
-func (s *Converter) fillFileFlow(efr *flattener.EnrichedFlatRecord, ts int64, tid int64, opFlags int32, endTs int64, openFlags int32) {
-	intFields := efr.Ints[flattener.SYSFLOW_IDX]
+func (s *Converter) fillFileFlow(efr *sfgo.FlatRecord, ts int64, tid int64, opFlags int32, endTs int64, openFlags int32) {
+	intFields := efr.Ints[sfgo.SYSFLOW_IDX]
 	intFields[sfgo.SF_REC_TYPE] = sfgo.FILE_FLOW
 	intFields[sfgo.FL_FILE_TS_INT] = ts
 	intFields[sfgo.FL_FILE_TID_INT] = tid
@@ -335,11 +334,11 @@ func (s *Converter) createSFFileFlow(record eventlog.Record, procObj *ProcessObj
 	s.fillProcess(efr, procObj)
 	s.fillFile(efr, ts, fileName, fileType, fileHashes, signed, signature, sigStatus, details)
 	s.fillFileFlow(efr, ts, tid, opFlags, endTs, openFlags)
-	s.efrChan <- efr
+	s.frChan <- efr
 }
 
-func (s *Converter) fillFileEvt(efr *flattener.EnrichedFlatRecord, ts int64, tid int64, opFlags int32, ret int64) {
-	intFields := efr.Ints[flattener.SYSFLOW_IDX]
+func (s *Converter) fillFileEvt(efr *sfgo.FlatRecord, ts int64, tid int64, opFlags int32, ret int64) {
+	intFields := efr.Ints[sfgo.SYSFLOW_IDX]
 	intFields[sfgo.SF_REC_TYPE] = sfgo.FILE_EVT
 	intFields[sfgo.EV_FILE_TS_INT] = ts
 	intFields[sfgo.EV_FILE_TID_INT] = tid
@@ -354,11 +353,11 @@ func (s *Converter) createSFFileEvent(record eventlog.Record, procObj *ProcessOb
 	s.fillProcess(efr, procObj)
 	s.fillFile(efr, ts, fileName, fileType, fileHashes, signed, signature, sigStatus, details)
 	s.fillFileEvt(efr, ts, tid, opFlags, 0)
-	s.efrChan <- efr
+	s.frChan <- efr
 }
 
-func (s *Converter) fillNetFlow(efr *flattener.EnrichedFlatRecord, ts int64, endTs int64, tid int64, opFlags int, sip uint32, sport int64, dip uint32, dport int64, proto int64) {
-	intFields := efr.Ints[flattener.SYSFLOW_IDX]
+func (s *Converter) fillNetFlow(efr *sfgo.FlatRecord, ts int64, endTs int64, tid int64, opFlags int, sip uint32, sport int64, dip uint32, dport int64, proto int64) {
+	intFields := efr.Ints[sfgo.SYSFLOW_IDX]
 	intFields[sfgo.SF_REC_TYPE] = sfgo.NET_FLOW
 	intFields[sfgo.FL_NETW_TS_INT] = ts
 	intFields[sfgo.FL_NETW_TID_INT] = tid
@@ -381,8 +380,8 @@ func (s *Converter) createSFNetworkFlow(record eventlog.Record, procObj *Process
 	s.fillHeader(efr, record)
 	s.fillProcess(efr, procObj)
 	s.fillNetFlow(efr, ts, endTs, tid, opFlags, sip, sport, dip, dport, proto)
-	efr.Sources = append(efr.Sources, flattener.NETWORK_SRC)
+	efr.Sources = append(efr.Sources, sfgo.NETWORK_SRC)
 	efr.Strs = append(efr.Strs, networkEnrich)
 	efr.Ints = append(efr.Ints, nil)
-	s.efrChan <- efr
+	s.frChan <- efr
 }

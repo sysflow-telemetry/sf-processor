@@ -29,8 +29,10 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/converter"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.ibm.com/sysflow/goutils/logger"
-	"github.ibm.com/sysflow/sf-processor/driver/driver"
-	"github.ibm.com/sysflow/sf-processor/driver/pipeline"
+)
+
+const (
+	fileDriverName = "file"
 )
 
 func getFiles(filename string) ([]string, error) {
@@ -62,23 +64,33 @@ func getFiles(filename string) ([]string, error) {
 
 // FileDriver represents reading a sysflow file from source
 type FileDriver struct {
-	pipeline *pipeline.Pipeline
+	pipeline plugins.SFPipeline
 }
 
 // NewFileDriver creates a new file driver object
-func NewFileDriver() driver.Driver {
+func NewFileDriver() plugins.SFDriver {
 	return &FileDriver{}
 }
 
+// GetName returns the driver name.
+func (s *FileDriver) GetName() string {
+	return fileDriverName
+}
+
+// Register registers driver to plugin cache
+func (s *FileDriver) Register(pc plugins.SFPluginCache) {
+	pc.AddDriver(fileDriverName, NewFileDriver)
+}
+
 // Init initializes the file driver with the pipeline
-func (f *FileDriver) Init(pipeline *pipeline.Pipeline) error {
-	f.pipeline = pipeline
+func (s *FileDriver) Init(pipeline plugins.SFPipeline) error {
+	s.pipeline = pipeline
 	return nil
 }
 
 // Run runs the file driver
-func (f *FileDriver) Run(path string, running *bool) error {
-	channel := f.pipeline.GetRootChannel()
+func (s *FileDriver) Run(path string, running *bool) error {
+	channel := s.pipeline.GetRootChannel()
 	sfChannel := channel.(*plugins.SFChannel)
 
 	records := sfChannel.In
@@ -122,6 +134,6 @@ func (f *FileDriver) Run(path string, running *bool) error {
 	}
 	logger.Trace.Println("Closing main channel")
 	close(records)
-	f.pipeline.Wait()
+	s.pipeline.Wait()
 	return nil
 }

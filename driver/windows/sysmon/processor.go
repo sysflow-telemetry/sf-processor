@@ -33,7 +33,7 @@ import (
 // SMProcessor is an object for processing sysmon events and
 // converting them into sysflow.
 type SMProcessor struct {
-	efrChan   chan *flattener.EnrichedFlatRecord
+	frChan    chan *sfgo.FlatRecord
 	procTable ProcessTable
 	tables    *cache.SFTables
 	converter *Converter
@@ -41,10 +41,10 @@ type SMProcessor struct {
 }
 
 // NewSMProcessor instantiates a new SMProcessor object.
-func NewSMProcessor(channel *flattener.EFRChannel) *SMProcessor {
+func NewSMProcessor(channel *flattener.FlatChannel) *SMProcessor {
 	protoMap := map[string]int64{"tcp": 6, "udp": 17}
 	return &SMProcessor{
-		efrChan:   channel.In,
+		frChan:    channel.In,
 		procTable: make(ProcessTable),
 		tables:    cache.GetInstance(),
 		converter: NewConverter(channel.In),
@@ -220,7 +220,7 @@ func (s *SMProcessor) createNetworkConnection(record eventlog.Record) {
 	var sourcePort int64
 	var destIP uint32 = 0
 	var destPort int64
-	extNetworkAttrsStr := make([]string, flattener.NUM_EXT_NET_STR)
+	extNetworkAttrsStr := make([]string, sfgo.NUM_EXT_NET_STR)
 	for _, pairs := range record.EventData.Pairs {
 		switch pairs.Key {
 		case cUtcTime:
@@ -267,7 +267,7 @@ func (s *SMProcessor) createNetworkConnection(record eventlog.Record) {
 				logger.Warn.Println("Unable to parse SourceIp sysmon attribute: " + err.Error())
 			}
 		case cSourceHostname:
-			extNetworkAttrsStr[flattener.NET_SOURCE_HOST_NAME_STR] = pairs.Value
+			extNetworkAttrsStr[sfgo.NET_SOURCE_HOST_NAME_STR] = pairs.Value
 		case cSourcePort:
 			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
 				sourcePort = n
@@ -275,7 +275,7 @@ func (s *SMProcessor) createNetworkConnection(record eventlog.Record) {
 				logger.Warn.Println("Unable to parse SourcePort sysmon attribute: " + err.Error())
 			}
 		case cSourcePortName:
-			extNetworkAttrsStr[flattener.NET_SOURCE_PORT_NAME_STR] = pairs.Value
+			extNetworkAttrsStr[sfgo.NET_SOURCE_PORT_NAME_STR] = pairs.Value
 		case cDestinationIsIpv6:
 			if b, err := strconv.ParseBool(pairs.Value); err == nil {
 				if b {
@@ -294,7 +294,7 @@ func (s *SMProcessor) createNetworkConnection(record eventlog.Record) {
 				logger.Warn.Println("Unable to parse SourceIp sysmon attribute: " + err.Error())
 			}
 		case cDestinationHostname:
-			extNetworkAttrsStr[flattener.NET_DEST_HOST_NAME_STR] = pairs.Value
+			extNetworkAttrsStr[sfgo.NET_DEST_HOST_NAME_STR] = pairs.Value
 		case cDestinationPort:
 			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
 				destPort = n
@@ -302,7 +302,7 @@ func (s *SMProcessor) createNetworkConnection(record eventlog.Record) {
 				logger.Warn.Println("Unable to parse SourcePort sysmon attribute: " + err.Error())
 			}
 		case cDestinationPortName:
-			extNetworkAttrsStr[flattener.NET_DEST_PORT_NAME_STR] = pairs.Value
+			extNetworkAttrsStr[sfgo.NET_DEST_PORT_NAME_STR] = pairs.Value
 		}
 	}
 	if val, ok := s.procTable[procGUID]; ok {
@@ -324,8 +324,8 @@ func (s *SMProcessor) accessRemoteProcess(record eventlog.Record, evtID int) {
 	var sourceProcessID int64
 	var targetProcessID int64
 	var sourceThreadID int64
-	intFields := make([]int64, flattener.NUM_EXT_EVT_INT)
-	strFields := make([]string, flattener.NUM_EXT_EVT_STR)
+	intFields := make([]int64, sfgo.NUM_EXT_EVT_INT)
+	strFields := make([]string, sfgo.NUM_EXT_EVT_STR)
 	var procObj *ProcessObj
 
 	for _, pairs := range record.EventData.Pairs {
@@ -355,16 +355,16 @@ func (s *SMProcessor) accessRemoteProcess(record eventlog.Record, evtID int) {
 			}
 		case cNewThreadID:
 			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
-				intFields[flattener.EVT_TARG_PROC_NEW_THREAD_ID_INT] = n
+				intFields[sfgo.EVT_TARG_PROC_NEW_THREAD_ID_INT] = n
 			} else {
 				logger.Warn.Println("Unable to parse ProcessId sysmon attribute: " + err.Error())
 			}
 		case cStartAddress:
-			strFields[flattener.EVT_TARG_PROC_START_ADDR_STR] = pairs.Value
+			strFields[sfgo.EVT_TARG_PROC_START_ADDR_STR] = pairs.Value
 		case cStartModule:
-			strFields[flattener.EVT_TARG_PROC_START_MODULE_STR] = pairs.Value
+			strFields[sfgo.EVT_TARG_PROC_START_MODULE_STR] = pairs.Value
 		case cStartFunction:
-			strFields[flattener.EVT_TARG_PROC_START_FUNCTION_STR] = pairs.Value
+			strFields[sfgo.EVT_TARG_PROC_START_FUNCTION_STR] = pairs.Value
 		case cSourceThreadID:
 			if n, err := strconv.ParseInt(pairs.Value, 10, 64); err == nil {
 				sourceThreadID = n
@@ -372,9 +372,9 @@ func (s *SMProcessor) accessRemoteProcess(record eventlog.Record, evtID int) {
 				logger.Warn.Println("Unable to parse ProcessId sysmon attribute: " + err.Error())
 			}
 		case cGrantedAccess:
-			strFields[flattener.EVT_TARG_PROC_GRANT_ACCESS_STR] = pairs.Value
+			strFields[sfgo.EVT_TARG_PROC_GRANT_ACCESS_STR] = pairs.Value
 		case cCallTrace:
-			strFields[flattener.EVT_TARG_PROC_CALL_TRACE_STR] = pairs.Value
+			strFields[sfgo.EVT_TARG_PROC_CALL_TRACE_STR] = pairs.Value
 		}
 	}
 	if val, ok := s.procTable[sourceProcGUID]; ok {
@@ -391,13 +391,13 @@ func (s *SMProcessor) accessRemoteProcess(record eventlog.Record, evtID int) {
 		logger.Trace.Printf("Uh oh! Process not in process table for load image %s %d", targetImage, targetProcessID)
 	}
 	if evtID == cSysmonProcessAccess {
-		strFields[flattener.EVT_TARG_PROC_ACCESS_TYPE_STR] = "AP"
+		strFields[sfgo.EVT_TARG_PROC_ACCESS_TYPE_STR] = "AP"
 		s.converter.createSFProcEvent(record, procObj, ts,
-			sourceThreadID, flattener.OP_PTRACE, 0, intFields, strFields)
+			sourceThreadID, sfgo.OP_PTRACE, 0, intFields, strFields)
 	} else {
-		strFields[flattener.EVT_TARG_PROC_ACCESS_TYPE_STR] = "RT"
+		strFields[sfgo.EVT_TARG_PROC_ACCESS_TYPE_STR] = "RT"
 		s.converter.createSFProcEvent(record, procObj, ts,
-			procObj.Process.Oid.Hpid, flattener.OP_PTRACE, 0, intFields, strFields)
+			procObj.Process.Oid.Hpid, sfgo.OP_PTRACE, 0, intFields, strFields)
 	}
 
 }

@@ -97,7 +97,7 @@ func (s *PolicyEngine) Init(conf map[string]string) error {
 
 // Process implements the main loop of the plugin.
 func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
-	in := ch.(*flattener.EFRChannel).In
+	in := ch.(*flattener.FlatChannel).In
 	defer wg.Done()
 	logger.Trace.Println("Starting policy engine with capacity: ", cap(in))
 	out := func(r *engine.Record) { s.outCh <- r }

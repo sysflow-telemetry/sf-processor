@@ -56,8 +56,8 @@ ARG RELEASE=dev
 ARG filePath=/sock/sysflow.sock
 ENV FILE_PATH=$filepath
 
-ARG inputtype=socket
-ENV INPUT_TYPE=$inputtype
+ARG driver=socket
+ENV DRIVER=$driver
 
 ARG loglevel=info
 ENV LOG_LEVEL=$loglevel
@@ -84,6 +84,6 @@ COPY --from=base /usr/local/sysflow/ /usr/local/sysflow/
 # Entrypoint
 CMD /usr/local/sysflow/bin/sfprocessor \
                             ${LOG_LEVEL:+-log} ${LOG_LEVEL} \
-                            ${INPUT_TYPE:+-input} ${INPUT_TYPE} \
+                            ${DRIVER:+-driver} ${DRIVER} \
                             ${CONFIG_PATH:+-config} ${CONFIG_PATH} \
                             ${FILE_PATH}

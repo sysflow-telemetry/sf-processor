@@ -30,59 +30,40 @@ import (
 	"syscall"
 
 	"github.ibm.com/sysflow/sf-processor/driver/manifest"
-	"github.ibm.com/sysflow/sf-processor/driver/sysflow"
-	"github.ibm.com/sysflow/sf-processor/driver/windows"
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/goutils/logger"
-	"github.ibm.com/sysflow/sf-processor/driver/driver"
 	"github.ibm.com/sysflow/sf-processor/driver/pipeline"
 )
-
-// Driver constants
-const (
-	SockFile   = "/var/run/sysflow.sock"
-	BuffSize   = 16384
-	OOBuffSize = 1024
-	PluginDir  = "../resources/plugins"
-)
-
-type inputType int
-
-const (
-	file inputType = iota
-	socket
-	winlog
-)
-
-func (it inputType) String() string {
-	return [...]string{"file", "socket", "winlog"}[it]
-}
 
 func initSigTerm(running *bool) {
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		fmt.Println("\r- Ctrl+C pressed in Terminal")
+		fmt.Println("\r- Ctrl+C pressed in terminal")
 		*running = false
 	}()
 }
 
 func main() {
+
+	// setup interruption handler
 	running := true
 	initSigTerm(&running)
+
 	// setup arg parsing
-	inputType := flag.String("input", file.String(), fmt.Sprintf("Input type {%s|%s|%s}", file, socket, winlog))
+	inputType := flag.String("driver", "file", fmt.Sprintf("Driver name {file|socket|<custom>}"))
 	cpuprofile := flag.String("cpuprofile", "", "Write cpu profile to `file`")
 	memprofile := flag.String("memprofile", "", "Write memory profile to `file`")
 	configFile := flag.String("config", "pipeline.json", "Path to pipeline configuration file")
 	logLevel := flag.String("log", "info", "Log level {trace|info|warn|error}")
-	pluginDir := flag.String("plugdir", PluginDir, "Dynamic plugins directory")
+	driverDir := flag.String("driverdir", pipeline.DriverDir, "Dynamic driver directory")
+	pluginDir := flag.String("plugdir", pipeline.PluginDir, "Dynamic plugins directory")
 	version := flag.Bool("version", false, "Outputs version information")
 
 	flag.Usage = func() {
-		fmt.Println("Usage: sfprocessor [[-version]|[-input <value>] [-log <value>] [-plugdir <value>] path]")
+		fmt.Println("Usage: sfprocessor [[-version]|[-driver <value>] [-log <value>] [-driverdir <value>] [-plugdir <value>] path]")
 		fmt.Println()
 		fmt.Println("Positional arguments:")
 		fmt.Println("  path string\n\tInput path")
@@ -99,6 +80,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// prints version information and exits
 	if *version {
 		hdr := sfgo.NewSFHeader()
 		hdr.SetDefault(0)
@@ -126,35 +108,25 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	pl := pipeline.New(*pluginDir, *configFile)
-	var drv driver.Driver
-	// process input
-	switch *inputType {
-	case file.String():
-		drv = sysflow.NewFileDriver()
-		break
-	case socket.String():
-		drv = sysflow.NewStreamingDriver()
-		break
-	case winlog.String():
-		drv = windows.NewWinEvtDriver()
-		break
-	default:
-		logger.Error.Println("Unrecognized input type: ", *inputType)
-		os.Exit(1)
+	// load pipeline
+	pl := pipeline.New(*driverDir, *pluginDir, *configFile)
+	drv, err := pl.Load(*inputType)
+	if err != nil {
+		logger.Error.Println("Unable to load pipeline error: " + err.Error())
+		return
 	}
-	err := drv.Init(pl)
+
+	// initialize driver
+	err = drv.Init(pl)
 	if err != nil {
 		logger.Error.Println("Driver initialization error: " + err.Error())
 		return
 	}
 
-	err = pl.Load()
-	if err != nil {
-		logger.Error.Println("Unable to load pipeline error: " + err.Error())
-		return
-	}
+	// log summary of loaded pipeline
 	pl.PrintPipeline()
+
+	// start processing
 	err = drv.Run(path, &running)
 	if err != nil {
 		logger.Error.Println("Driver initialization error: " + err.Error())
