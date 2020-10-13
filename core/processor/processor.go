@@ -77,11 +77,6 @@ func (s *SysFlowProcessor) SetOutChan(ch interface{}) {
 	s.hdl.SetOutChan(ch)
 }
 
-// Cleanup tears down the plugin resources.
-func (s *SysFlowProcessor) Cleanup() {
-	s.hdl.Cleanup()
-}
-
 // Process implements the main processor method of the plugin.
 func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 	entEnabled := s.hdl.IsEntityEnabled()
@@ -148,7 +143,12 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 
 		}
 	}
-	s.Cleanup()
+}
+
+// Cleanup tears down the plugin resources.
+func (s *SysFlowProcessor) Cleanup() {
+	logger.Trace.Println("Exiting ", pluginName)
+	s.hdl.Cleanup()
 }
 
 func (s *SysFlowProcessor) getContFromProc(proc *sfgo.Process) *sfgo.Container {

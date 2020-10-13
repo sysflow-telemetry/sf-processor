@@ -150,7 +150,7 @@ func (pl *Pipeline) Load(driverName string) (plugins.SFDriver, error) {
 		}
 		pl.processors = append(pl.processors, prc)
 		pl.wg.Add(1)
-		go prc.Process(in, pl.wg)
+		go pl.process(prc, in)
 	}
 	return driver, nil
 }
@@ -173,4 +173,10 @@ func (pl *Pipeline) PrintPipeline() {
 // Wait calls on pipeline's waitgroup
 func (pl *Pipeline) Wait() {
 	pl.wg.Wait()
+}
+
+// Proxy function for handling transparent cleanup of resources
+func (pl *Pipeline) process(prc plugins.SFProcessor, in interface{}) {
+	prc.Process(in, pl.wg)
+	prc.Cleanup()
 }

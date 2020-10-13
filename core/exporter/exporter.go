@@ -105,7 +105,6 @@ func (s *Exporter) Process(ch interface{}, wg *sync.WaitGroup) {
 			s.counter = 0
 		}
 	}
-	logger.Trace.Println("Exiting Syslogger")
 }
 
 func (s *Exporter) process() {
@@ -148,7 +147,9 @@ func (s *Exporter) exportAsJSON(events []Event) {
 func (s *Exporter) SetOutChan(ch interface{}) {}
 
 // Cleanup tears down plugin resources.
-func (s *Exporter) Cleanup() {}
+func (s *Exporter) Cleanup() {
+	logger.Trace.Println("Exiting ", pluginName)
+}
 
 // This function is not run when module is used as a plugin.
 func main() {}

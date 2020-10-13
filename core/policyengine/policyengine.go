@@ -113,8 +113,6 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 			break
 		}
 	}
-	logger.Trace.Println("Exiting policy engine")
-	s.Cleanup()
 }
 
 // SetOutChan sets the output channel of the plugin.
@@ -124,5 +122,6 @@ func (s *PolicyEngine) SetOutChan(ch interface{}) {
 
 // Cleanup clean up the plugin resources.
 func (s *PolicyEngine) Cleanup() {
+	logger.Trace.Println("Exiting ", pluginName)
 	close(s.outCh)
 }
