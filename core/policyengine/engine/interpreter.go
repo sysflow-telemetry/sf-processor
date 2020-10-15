@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.ibm.com/sysflow/goutils/logger"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/lang/parser"
 )
 
@@ -176,8 +176,8 @@ func (listener *sfplListener) ExitPrule(ctx *parser.PruleContext) {
 		Name:      listener.getOffChannelText(ctx.Text(0)),
 		Desc:      listener.getOffChannelText(ctx.Text(1)),
 		condition: listener.visitExpression(ctx.Expression()),
-		Actions:   listener.getActions(ctx.Text(2).GetText()),
-		Tags:      listener.getTags(ctx.Items()),
+		Actions:   listener.getActions(ctx),
+		Tags:      listener.getTags(ctx.Items(0)),
 		Priority:  listener.getPriority(ctx.SEVERITY().GetText()),
 	}
 	rules[r.Name] = r
@@ -192,7 +192,10 @@ func (listener *sfplListener) getOffChannelText(ctx parser.ITextContext) string 
 
 func (listener *sfplListener) getTags(ctx parser.IItemsContext) []EnrichmentTag {
 	var tags = make([]EnrichmentTag, 0)
-	return append(tags, listener.extractListFromItems(ctx))
+	if ctx != nil {
+		return append(tags, listener.extractListFromItems(ctx))
+	}
+	return tags
 }
 
 func (listener *sfplListener) getPriority(p string) Priority {
@@ -210,20 +213,25 @@ func (listener *sfplListener) getPriority(p string) Priority {
 	return Low
 }
 
-func (listener *sfplListener) getActions(astr string) []Action {
+func (listener *sfplListener) getActions(ctx *parser.PruleContext) []Action {
 	var actions []Action
-	l := listener.extractList(astr)
-	for _, v := range l {
-		switch strings.ToLower(v) {
-		case Alert.String():
-			actions = append(actions, Alert)
-		case Tag.String():
-			actions = append(actions, Tag)
-		case Hash.String():
-			actions = append(actions, Hash)
-		default:
-			logger.Warn.Println("Unrecognized action value ", v)
-			break
+	if ctx.OUTPUT() != nil {
+		actions = append(actions, Alert)
+	} else if ctx.ACTION() != nil {
+		astr := ctx.Text(2).GetText()
+		l := listener.extractList(astr)
+		for _, v := range l {
+			switch strings.ToLower(v) {
+			case Alert.String():
+				actions = append(actions, Alert)
+			case Tag.String():
+				actions = append(actions, Tag)
+			case Hash.String():
+				actions = append(actions, Hash)
+			default:
+				logger.Warn.Println("Unrecognized action value ", v)
+				break
+			}
 		}
 	}
 	return actions
@@ -239,7 +247,10 @@ func (listener *sfplListener) extractList(str string) []string {
 }
 
 func (listener *sfplListener) extractListFromItems(ctx parser.IItemsContext) []string {
-	return listener.extractList(ctx.GetText())
+	if ctx != nil {
+		return listener.extractList(ctx.GetText())
+	}
+	return []string{}
 }
 
 func (listener *sfplListener) extractListFromAtoms(ctxs []parser.IAtomContext) []string {

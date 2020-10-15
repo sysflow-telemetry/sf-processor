@@ -29,10 +29,9 @@ import (
 	"runtime/pprof"
 	"syscall"
 
-	"github.ibm.com/sysflow/sf-processor/driver/manifest"
-
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/goutils/logger"
+	"github.ibm.com/sysflow/sf-processor/driver/manifest"
 	"github.ibm.com/sysflow/sf-processor/driver/pipeline"
 )
 

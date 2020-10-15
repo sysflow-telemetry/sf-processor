@@ -12,13 +12,16 @@ ACTION: 'action';
 OUTPUT: 'output';
 PRIORITY: 'priority';
 TAGS: 'tags';
+ENABLED: 'enabled';
+WARNEVTTYPE: 'warn_evttypes';
+SKIPUNKNOWN: 'skip-if-unknown-filter';
 
 policy
 	: (prule | pfilter | pmacro | plist)+ EOF
 	;
 
 prule
-	: DECL RULE DEF text DESC DEF text COND DEF expression (ACTION|OUTPUT) DEF text PRIORITY DEF SEVERITY TAGS DEF items 
+	: DECL RULE DEF text DESC DEF text COND DEF expression (ACTION|OUTPUT) DEF text PRIORITY DEF SEVERITY (TAGS DEF items | ENABLED DEF BOOL | WARNEVTTYPE DEF BOOL | SKIPUNKNOWN DEF BOOL)*
 	;
 
 pfilter
@@ -66,6 +69,7 @@ atom
 	: ID
 	| PATH
 	| NUMBER
+	| TAG
 	| STRING
 	| '<' /* event direction */
 	| '>' /* event direction */
@@ -77,7 +81,9 @@ text
 	      p.GetCurrentToken().GetText() == "action" ||
 	      p.GetCurrentToken().GetText() == "output" ||
 	      p.GetCurrentToken().GetText() == "priority" ||
-	      p.GetCurrentToken().GetText() == "tags")}? .)+
+	      p.GetCurrentToken().GetText() == "tags" ||
+		  p.GetCurrentToken().GetText() == "warn_evttypes" ||
+		  p.GetCurrentToken().GetText() == "skip-if-unknown-filter")}? .)+
 	;
 	
 binary_operator 
@@ -185,9 +191,25 @@ DEF
 	;
 
 SEVERITY
+	: SFSEVERITY
+	| FSEVERITY	
+	;
+
+SFSEVERITY
 	: 'high'
 	| 'medium'
-	| 'low'	
+	| 'low'		
+	;
+
+FSEVERITY
+	: 'emergency'
+	| 'alert'
+	| 'critical'
+	| 'error'
+	| 'warning'
+	| 'notice'
+	| 'informational'
+	| 'debug'
 	;
 
 ID
@@ -208,6 +230,15 @@ STRING
     | '\\"' (STRING|STRLIT) '\\"'
     | '\'\'' (STRING|STRLIT) '\'\''
     ;
+
+BOOL
+	: 'false'
+	| 'true'
+	;
+
+TAG
+	: ID ':' ID
+	;
 
 fragment STRLIT 
     //: .*? 

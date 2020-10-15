@@ -515,7 +515,7 @@
 - rule: Unauthorized installer detected
   desc: Use of package installer detected in container
   condition: sf.type = PE and sf.opflags = EXEC and              
-             sf.proc.name pmatch (package_mgmt_binaries, java_package_installer) and container          
+             (sf.proc.name pmatch (package_mgmt_binaries) or java_package_installer) and container          
   action: [alert]
   priority: medium
   tags: [actionable-offense, suspicious-process]
@@ -527,14 +527,6 @@
   action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
-
-# - rule: Dowloaded file enrichment 
-#   desc: Downloader is being run inside the container. Could be downloading something malicious
-#   condition: sf.type = FF and sf.opflags = WRITE and
-#              sf.proc.name pmatch (downloader_binaries)
-#   action: [hash]
-#   priority: high
-#   tags: [actionable-offense, suspicious-process]
 
 - rule: Remote copy program detected
   desc: Remote copy is occurring inside the container. Could be data exfiltration

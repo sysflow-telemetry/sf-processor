@@ -27,8 +27,8 @@ import (
 
 	"github.com/linkedin/goavro"
 	"github.com/sysflow-telemetry/sf-apis/go/converter"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
-	"github.ibm.com/sysflow/goutils/logger"
 )
 
 const (

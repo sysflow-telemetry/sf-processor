@@ -59,6 +59,12 @@ ENV FILE_PATH=$filepath
 ARG driver=socket
 ENV DRIVER=$driver
 
+ARG driver_dir=/usr/local/sysflow/resources/drivers
+ENV DRIVER_DIR=$driver_dir
+
+ARG plugin_dir=/usr/local/sysflow/resources/plugins
+ENV PLUGIN_DIR=$plugin_dir
+
 ARG loglevel=info
 ENV LOG_LEVEL=$loglevel
 
@@ -85,5 +91,7 @@ COPY --from=base /usr/local/sysflow/ /usr/local/sysflow/
 CMD /usr/local/sysflow/bin/sfprocessor \
                             ${LOG_LEVEL:+-log} ${LOG_LEVEL} \
                             ${DRIVER:+-driver} ${DRIVER} \
+                            ${DRIVER_DIR:+-driverdir} ${DRIVER_DIR} \
+                            ${PLUGIN_DIR:+-plugdir} ${PLUGIN_DIR} \
                             ${CONFIG_PATH:+-config} ${CONFIG_PATH} \
                             ${FILE_PATH}

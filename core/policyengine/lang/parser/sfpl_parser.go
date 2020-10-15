@@ -1,24 +1,5 @@
-//
-// Copyright (C) 2020 IBM Corporation.
-//
-// Authors:
-// Frederico Araujo <frederico.araujo@ibm.com>
-// Teryl Taylor <terylt@ibm.com>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// Code generated from Sfpl.g4 by ANTLR 4.7.2. DO NOT EDIT.
-//
+// Code generated from Sfpl.g4 by ANTLR 4.8. DO NOT EDIT.
+
 package parser // Sfpl
 import (
 	"fmt"
@@ -34,93 +15,103 @@ var _ = reflect.Copy
 var _ = strconv.Itoa
 
 var parserATN = []uint16{
-	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 45, 167,
+	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 52, 180,
 	4, 2, 9, 2, 4, 3, 9, 3, 4, 4, 9, 4, 4, 5, 9, 5, 4, 6, 9, 6, 4, 7, 9, 7,
 	4, 8, 9, 8, 4, 9, 9, 9, 4, 10, 9, 10, 4, 11, 9, 11, 4, 12, 9, 12, 4, 13,
 	9, 13, 4, 14, 9, 14, 4, 15, 9, 15, 4, 16, 9, 16, 3, 2, 3, 2, 3, 2, 3, 2,
 	6, 2, 37, 10, 2, 13, 2, 14, 2, 38, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4,
-	3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 6, 3, 6, 3, 6, 3, 6,
-	3, 6, 3, 6, 3, 6, 3, 6, 3, 7, 3, 7, 3, 8, 3, 8, 3, 8, 7, 8, 92, 10, 8,
-	12, 8, 14, 8, 95, 11, 8, 3, 9, 3, 9, 3, 9, 7, 9, 100, 10, 9, 12, 9, 14,
-	9, 103, 11, 9, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10,
-	3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 5, 10, 120, 10, 10, 3,
-	10, 3, 10, 3, 10, 5, 10, 125, 10, 10, 7, 10, 127, 10, 10, 12, 10, 14, 10,
-	130, 11, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 5, 10, 138, 10,
-	10, 3, 11, 3, 11, 3, 11, 3, 11, 7, 11, 144, 10, 11, 12, 11, 14, 11, 147,
-	11, 11, 5, 11, 149, 10, 11, 3, 11, 3, 11, 3, 12, 3, 12, 3, 13, 3, 13, 3,
-	14, 3, 14, 6, 14, 159, 10, 14, 13, 14, 14, 14, 160, 3, 15, 3, 15, 3, 16,
-	3, 16, 3, 16, 2, 2, 17, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26,
-	28, 30, 2, 6, 3, 2, 11, 12, 4, 2, 24, 24, 28, 28, 5, 2, 18, 18, 20, 20,
-	38, 41, 4, 2, 18, 23, 25, 27, 2, 168, 2, 36, 3, 2, 2, 2, 4, 42, 3, 2, 2,
-	2, 6, 62, 3, 2, 2, 2, 8, 70, 3, 2, 2, 2, 10, 78, 3, 2, 2, 2, 12, 86, 3,
-	2, 2, 2, 14, 88, 3, 2, 2, 2, 16, 96, 3, 2, 2, 2, 18, 137, 3, 2, 2, 2, 20,
-	139, 3, 2, 2, 2, 22, 152, 3, 2, 2, 2, 24, 154, 3, 2, 2, 2, 26, 158, 3,
-	2, 2, 2, 28, 162, 3, 2, 2, 2, 30, 164, 3, 2, 2, 2, 32, 37, 5, 4, 3, 2,
-	33, 37, 5, 6, 4, 2, 34, 37, 5, 8, 5, 2, 35, 37, 5, 10, 6, 2, 36, 32, 3,
-	2, 2, 2, 36, 33, 3, 2, 2, 2, 36, 34, 3, 2, 2, 2, 36, 35, 3, 2, 2, 2, 37,
-	38, 3, 2, 2, 2, 38, 36, 3, 2, 2, 2, 38, 39, 3, 2, 2, 2, 39, 40, 3, 2, 2,
-	2, 40, 41, 7, 2, 2, 3, 41, 3, 3, 2, 2, 2, 42, 43, 7, 35, 2, 2, 43, 44,
-	7, 3, 2, 2, 44, 45, 7, 36, 2, 2, 45, 46, 5, 26, 14, 2, 46, 47, 7, 10, 2,
-	2, 47, 48, 7, 36, 2, 2, 48, 49, 5, 26, 14, 2, 49, 50, 7, 9, 2, 2, 50, 51,
-	7, 36, 2, 2, 51, 52, 5, 12, 7, 2, 52, 53, 9, 2, 2, 2, 53, 54, 7, 36, 2,
-	2, 54, 55, 5, 26, 14, 2, 55, 56, 7, 13, 2, 2, 56, 57, 7, 36, 2, 2, 57,
-	58, 7, 37, 2, 2, 58, 59, 7, 14, 2, 2, 59, 60, 7, 36, 2, 2, 60, 61, 5, 20,
-	11, 2, 61, 5, 3, 2, 2, 2, 62, 63, 7, 35, 2, 2, 63, 64, 7, 4, 2, 2, 64,
-	65, 7, 36, 2, 2, 65, 66, 7, 38, 2, 2, 66, 67, 7, 9, 2, 2, 67, 68, 7, 36,
-	2, 2, 68, 69, 5, 12, 7, 2, 69, 7, 3, 2, 2, 2, 70, 71, 7, 35, 2, 2, 71,
-	72, 7, 5, 2, 2, 72, 73, 7, 36, 2, 2, 73, 74, 7, 38, 2, 2, 74, 75, 7, 9,
-	2, 2, 75, 76, 7, 36, 2, 2, 76, 77, 5, 12, 7, 2, 77, 9, 3, 2, 2, 2, 78,
-	79, 7, 35, 2, 2, 79, 80, 7, 6, 2, 2, 80, 81, 7, 36, 2, 2, 81, 82, 7, 38,
-	2, 2, 82, 83, 7, 8, 2, 2, 83, 84, 7, 36, 2, 2, 84, 85, 5, 20, 11, 2, 85,
-	11, 3, 2, 2, 2, 86, 87, 5, 14, 8, 2, 87, 13, 3, 2, 2, 2, 88, 93, 5, 16,
-	9, 2, 89, 90, 7, 16, 2, 2, 90, 92, 5, 16, 9, 2, 91, 89, 3, 2, 2, 2, 92,
-	95, 3, 2, 2, 2, 93, 91, 3, 2, 2, 2, 93, 94, 3, 2, 2, 2, 94, 15, 3, 2, 2,
-	2, 95, 93, 3, 2, 2, 2, 96, 101, 5, 18, 10, 2, 97, 98, 7, 15, 2, 2, 98,
-	100, 5, 18, 10, 2, 99, 97, 3, 2, 2, 2, 100, 103, 3, 2, 2, 2, 101, 99, 3,
-	2, 2, 2, 101, 102, 3, 2, 2, 2, 102, 17, 3, 2, 2, 2, 103, 101, 3, 2, 2,
-	2, 104, 138, 5, 22, 12, 2, 105, 106, 7, 17, 2, 2, 106, 138, 5, 18, 10,
-	2, 107, 108, 5, 24, 13, 2, 108, 109, 5, 30, 16, 2, 109, 138, 3, 2, 2, 2,
-	110, 111, 5, 24, 13, 2, 111, 112, 5, 28, 15, 2, 112, 113, 5, 24, 13, 2,
-	113, 138, 3, 2, 2, 2, 114, 115, 5, 24, 13, 2, 115, 116, 9, 3, 2, 2, 116,
-	119, 7, 32, 2, 2, 117, 120, 5, 24, 13, 2, 118, 120, 5, 20, 11, 2, 119,
-	117, 3, 2, 2, 2, 119, 118, 3, 2, 2, 2, 120, 128, 3, 2, 2, 2, 121, 124,
-	7, 34, 2, 2, 122, 125, 5, 24, 13, 2, 123, 125, 5, 20, 11, 2, 124, 122,
-	3, 2, 2, 2, 124, 123, 3, 2, 2, 2, 125, 127, 3, 2, 2, 2, 126, 121, 3, 2,
-	2, 2, 127, 130, 3, 2, 2, 2, 128, 126, 3, 2, 2, 2, 128, 129, 3, 2, 2, 2,
-	129, 131, 3, 2, 2, 2, 130, 128, 3, 2, 2, 2, 131, 132, 7, 33, 2, 2, 132,
-	138, 3, 2, 2, 2, 133, 134, 7, 32, 2, 2, 134, 135, 5, 12, 7, 2, 135, 136,
-	7, 33, 2, 2, 136, 138, 3, 2, 2, 2, 137, 104, 3, 2, 2, 2, 137, 105, 3, 2,
-	2, 2, 137, 107, 3, 2, 2, 2, 137, 110, 3, 2, 2, 2, 137, 114, 3, 2, 2, 2,
-	137, 133, 3, 2, 2, 2, 138, 19, 3, 2, 2, 2, 139, 148, 7, 30, 2, 2, 140,
-	145, 5, 24, 13, 2, 141, 142, 7, 34, 2, 2, 142, 144, 5, 24, 13, 2, 143,
-	141, 3, 2, 2, 2, 144, 147, 3, 2, 2, 2, 145, 143, 3, 2, 2, 2, 145, 146,
-	3, 2, 2, 2, 146, 149, 3, 2, 2, 2, 147, 145, 3, 2, 2, 2, 148, 140, 3, 2,
-	2, 2, 148, 149, 3, 2, 2, 2, 149, 150, 3, 2, 2, 2, 150, 151, 7, 31, 2, 2,
-	151, 21, 3, 2, 2, 2, 152, 153, 7, 38, 2, 2, 153, 23, 3, 2, 2, 2, 154, 155,
-	9, 4, 2, 2, 155, 25, 3, 2, 2, 2, 156, 157, 6, 14, 2, 2, 157, 159, 11, 2,
-	2, 2, 158, 156, 3, 2, 2, 2, 159, 160, 3, 2, 2, 2, 160, 158, 3, 2, 2, 2,
-	160, 161, 3, 2, 2, 2, 161, 27, 3, 2, 2, 2, 162, 163, 9, 5, 2, 2, 163, 29,
-	3, 2, 2, 2, 164, 165, 7, 29, 2, 2, 165, 31, 3, 2, 2, 2, 13, 36, 38, 93,
-	101, 119, 124, 128, 137, 145, 148, 160,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	7, 3, 71, 10, 3, 12, 3, 14, 3, 74, 11, 3, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4,
+	3, 4, 3, 4, 3, 4, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 6,
+	3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 7, 3, 7, 3, 8, 3, 8, 3, 8,
+	7, 8, 105, 10, 8, 12, 8, 14, 8, 108, 11, 8, 3, 9, 3, 9, 3, 9, 7, 9, 113,
+	10, 9, 12, 9, 14, 9, 116, 11, 9, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3,
+	10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 5, 10,
+	133, 10, 10, 3, 10, 3, 10, 3, 10, 5, 10, 138, 10, 10, 7, 10, 140, 10, 10,
+	12, 10, 14, 10, 143, 11, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10,
+	5, 10, 151, 10, 10, 3, 11, 3, 11, 3, 11, 3, 11, 7, 11, 157, 10, 11, 12,
+	11, 14, 11, 160, 11, 11, 5, 11, 162, 10, 11, 3, 11, 3, 11, 3, 12, 3, 12,
+	3, 13, 3, 13, 3, 14, 3, 14, 6, 14, 172, 10, 14, 13, 14, 14, 14, 173, 3,
+	15, 3, 15, 3, 16, 3, 16, 3, 16, 2, 2, 17, 2, 4, 6, 8, 10, 12, 14, 16, 18,
+	20, 22, 24, 26, 28, 30, 2, 6, 3, 2, 11, 12, 4, 2, 27, 27, 31, 31, 6, 2,
+	21, 21, 23, 23, 43, 46, 48, 48, 4, 2, 21, 26, 28, 30, 2, 185, 2, 36, 3,
+	2, 2, 2, 4, 42, 3, 2, 2, 2, 6, 75, 3, 2, 2, 2, 8, 83, 3, 2, 2, 2, 10, 91,
+	3, 2, 2, 2, 12, 99, 3, 2, 2, 2, 14, 101, 3, 2, 2, 2, 16, 109, 3, 2, 2,
+	2, 18, 150, 3, 2, 2, 2, 20, 152, 3, 2, 2, 2, 22, 165, 3, 2, 2, 2, 24, 167,
+	3, 2, 2, 2, 26, 171, 3, 2, 2, 2, 28, 175, 3, 2, 2, 2, 30, 177, 3, 2, 2,
+	2, 32, 37, 5, 4, 3, 2, 33, 37, 5, 6, 4, 2, 34, 37, 5, 8, 5, 2, 35, 37,
+	5, 10, 6, 2, 36, 32, 3, 2, 2, 2, 36, 33, 3, 2, 2, 2, 36, 34, 3, 2, 2, 2,
+	36, 35, 3, 2, 2, 2, 37, 38, 3, 2, 2, 2, 38, 36, 3, 2, 2, 2, 38, 39, 3,
+	2, 2, 2, 39, 40, 3, 2, 2, 2, 40, 41, 7, 2, 2, 3, 41, 3, 3, 2, 2, 2, 42,
+	43, 7, 38, 2, 2, 43, 44, 7, 3, 2, 2, 44, 45, 7, 39, 2, 2, 45, 46, 5, 26,
+	14, 2, 46, 47, 7, 10, 2, 2, 47, 48, 7, 39, 2, 2, 48, 49, 5, 26, 14, 2,
+	49, 50, 7, 9, 2, 2, 50, 51, 7, 39, 2, 2, 51, 52, 5, 12, 7, 2, 52, 53, 9,
+	2, 2, 2, 53, 54, 7, 39, 2, 2, 54, 55, 5, 26, 14, 2, 55, 56, 7, 13, 2, 2,
+	56, 57, 7, 39, 2, 2, 57, 72, 7, 40, 2, 2, 58, 59, 7, 14, 2, 2, 59, 60,
+	7, 39, 2, 2, 60, 71, 5, 20, 11, 2, 61, 62, 7, 15, 2, 2, 62, 63, 7, 39,
+	2, 2, 63, 71, 7, 47, 2, 2, 64, 65, 7, 16, 2, 2, 65, 66, 7, 39, 2, 2, 66,
+	71, 7, 47, 2, 2, 67, 68, 7, 17, 2, 2, 68, 69, 7, 39, 2, 2, 69, 71, 7, 47,
+	2, 2, 70, 58, 3, 2, 2, 2, 70, 61, 3, 2, 2, 2, 70, 64, 3, 2, 2, 2, 70, 67,
+	3, 2, 2, 2, 71, 74, 3, 2, 2, 2, 72, 70, 3, 2, 2, 2, 72, 73, 3, 2, 2, 2,
+	73, 5, 3, 2, 2, 2, 74, 72, 3, 2, 2, 2, 75, 76, 7, 38, 2, 2, 76, 77, 7,
+	4, 2, 2, 77, 78, 7, 39, 2, 2, 78, 79, 7, 43, 2, 2, 79, 80, 7, 9, 2, 2,
+	80, 81, 7, 39, 2, 2, 81, 82, 5, 12, 7, 2, 82, 7, 3, 2, 2, 2, 83, 84, 7,
+	38, 2, 2, 84, 85, 7, 5, 2, 2, 85, 86, 7, 39, 2, 2, 86, 87, 7, 43, 2, 2,
+	87, 88, 7, 9, 2, 2, 88, 89, 7, 39, 2, 2, 89, 90, 5, 12, 7, 2, 90, 9, 3,
+	2, 2, 2, 91, 92, 7, 38, 2, 2, 92, 93, 7, 6, 2, 2, 93, 94, 7, 39, 2, 2,
+	94, 95, 7, 43, 2, 2, 95, 96, 7, 8, 2, 2, 96, 97, 7, 39, 2, 2, 97, 98, 5,
+	20, 11, 2, 98, 11, 3, 2, 2, 2, 99, 100, 5, 14, 8, 2, 100, 13, 3, 2, 2,
+	2, 101, 106, 5, 16, 9, 2, 102, 103, 7, 19, 2, 2, 103, 105, 5, 16, 9, 2,
+	104, 102, 3, 2, 2, 2, 105, 108, 3, 2, 2, 2, 106, 104, 3, 2, 2, 2, 106,
+	107, 3, 2, 2, 2, 107, 15, 3, 2, 2, 2, 108, 106, 3, 2, 2, 2, 109, 114, 5,
+	18, 10, 2, 110, 111, 7, 18, 2, 2, 111, 113, 5, 18, 10, 2, 112, 110, 3,
+	2, 2, 2, 113, 116, 3, 2, 2, 2, 114, 112, 3, 2, 2, 2, 114, 115, 3, 2, 2,
+	2, 115, 17, 3, 2, 2, 2, 116, 114, 3, 2, 2, 2, 117, 151, 5, 22, 12, 2, 118,
+	119, 7, 20, 2, 2, 119, 151, 5, 18, 10, 2, 120, 121, 5, 24, 13, 2, 121,
+	122, 5, 30, 16, 2, 122, 151, 3, 2, 2, 2, 123, 124, 5, 24, 13, 2, 124, 125,
+	5, 28, 15, 2, 125, 126, 5, 24, 13, 2, 126, 151, 3, 2, 2, 2, 127, 128, 5,
+	24, 13, 2, 128, 129, 9, 3, 2, 2, 129, 132, 7, 35, 2, 2, 130, 133, 5, 24,
+	13, 2, 131, 133, 5, 20, 11, 2, 132, 130, 3, 2, 2, 2, 132, 131, 3, 2, 2,
+	2, 133, 141, 3, 2, 2, 2, 134, 137, 7, 37, 2, 2, 135, 138, 5, 24, 13, 2,
+	136, 138, 5, 20, 11, 2, 137, 135, 3, 2, 2, 2, 137, 136, 3, 2, 2, 2, 138,
+	140, 3, 2, 2, 2, 139, 134, 3, 2, 2, 2, 140, 143, 3, 2, 2, 2, 141, 139,
+	3, 2, 2, 2, 141, 142, 3, 2, 2, 2, 142, 144, 3, 2, 2, 2, 143, 141, 3, 2,
+	2, 2, 144, 145, 7, 36, 2, 2, 145, 151, 3, 2, 2, 2, 146, 147, 7, 35, 2,
+	2, 147, 148, 5, 12, 7, 2, 148, 149, 7, 36, 2, 2, 149, 151, 3, 2, 2, 2,
+	150, 117, 3, 2, 2, 2, 150, 118, 3, 2, 2, 2, 150, 120, 3, 2, 2, 2, 150,
+	123, 3, 2, 2, 2, 150, 127, 3, 2, 2, 2, 150, 146, 3, 2, 2, 2, 151, 19, 3,
+	2, 2, 2, 152, 161, 7, 33, 2, 2, 153, 158, 5, 24, 13, 2, 154, 155, 7, 37,
+	2, 2, 155, 157, 5, 24, 13, 2, 156, 154, 3, 2, 2, 2, 157, 160, 3, 2, 2,
+	2, 158, 156, 3, 2, 2, 2, 158, 159, 3, 2, 2, 2, 159, 162, 3, 2, 2, 2, 160,
+	158, 3, 2, 2, 2, 161, 153, 3, 2, 2, 2, 161, 162, 3, 2, 2, 2, 162, 163,
+	3, 2, 2, 2, 163, 164, 7, 34, 2, 2, 164, 21, 3, 2, 2, 2, 165, 166, 7, 43,
+	2, 2, 166, 23, 3, 2, 2, 2, 167, 168, 9, 4, 2, 2, 168, 25, 3, 2, 2, 2, 169,
+	170, 6, 14, 2, 2, 170, 172, 11, 2, 2, 2, 171, 169, 3, 2, 2, 2, 172, 173,
+	3, 2, 2, 2, 173, 171, 3, 2, 2, 2, 173, 174, 3, 2, 2, 2, 174, 27, 3, 2,
+	2, 2, 175, 176, 9, 5, 2, 2, 176, 29, 3, 2, 2, 2, 177, 178, 7, 32, 2, 2,
+	178, 31, 3, 2, 2, 2, 15, 36, 38, 70, 72, 106, 114, 132, 137, 141, 150,
+	158, 161, 173,
 }
 var deserializer = antlr.NewATNDeserializer(nil)
 var deserializedATN = deserializer.DeserializeFromUInt16(parserATN)
 
 var literalNames = []string{
 	"", "'rule'", "'filter'", "'macro'", "'list'", "'name'", "'items'", "'condition'",
-	"'desc'", "'action'", "'output'", "'priority'", "'tags'", "'and'", "'or'",
-	"'not'", "'<'", "'<='", "'>'", "'>='", "'='", "'!='", "'in'", "'contains'",
-	"'icontains'", "'startswith'", "'pmatch'", "'exists'", "'['", "']'", "'('",
-	"')'", "','", "'-'",
+	"'desc'", "'action'", "'output'", "'priority'", "'tags'", "'enabled'",
+	"'warn_evttypes'", "'skip-if-unknown-filter'", "'and'", "'or'", "'not'",
+	"'<'", "'<='", "'>'", "'>='", "'='", "'!='", "'in'", "'contains'", "'icontains'",
+	"'startswith'", "'pmatch'", "'exists'", "'['", "']'", "'('", "')'", "','",
+	"'-'",
 }
 var symbolicNames = []string{
 	"", "RULE", "FILTER", "MACRO", "LIST", "NAME", "ITEMS", "COND", "DESC",
-	"ACTION", "OUTPUT", "PRIORITY", "TAGS", "AND", "OR", "NOT", "LT", "LE",
-	"GT", "GE", "EQ", "NEQ", "IN", "CONTAINS", "ICONTAINS", "STARTSWITH", "PMATCH",
-	"EXISTS", "LBRACK", "RBRACK", "LPAREN", "RPAREN", "LISTSEP", "DECL", "DEF",
-	"SEVERITY", "ID", "NUMBER", "PATH", "STRING", "WS", "NL", "COMMENT", "ANY",
+	"ACTION", "OUTPUT", "PRIORITY", "TAGS", "ENABLED", "WARNEVTTYPE", "SKIPUNKNOWN",
+	"AND", "OR", "NOT", "LT", "LE", "GT", "GE", "EQ", "NEQ", "IN", "CONTAINS",
+	"ICONTAINS", "STARTSWITH", "PMATCH", "EXISTS", "LBRACK", "RBRACK", "LPAREN",
+	"RPAREN", "LISTSEP", "DECL", "DEF", "SEVERITY", "SFSEVERITY", "FSEVERITY",
+	"ID", "NUMBER", "PATH", "STRING", "BOOL", "TAG", "WS", "NL", "COMMENT",
+	"ANY",
 }
 
 var ruleNames = []string{
@@ -156,50 +147,57 @@ func NewSfplParser(input antlr.TokenStream) *SfplParser {
 
 // SfplParser tokens.
 const (
-	SfplParserEOF        = antlr.TokenEOF
-	SfplParserRULE       = 1
-	SfplParserFILTER     = 2
-	SfplParserMACRO      = 3
-	SfplParserLIST       = 4
-	SfplParserNAME       = 5
-	SfplParserITEMS      = 6
-	SfplParserCOND       = 7
-	SfplParserDESC       = 8
-	SfplParserACTION     = 9
-	SfplParserOUTPUT     = 10
-	SfplParserPRIORITY   = 11
-	SfplParserTAGS       = 12
-	SfplParserAND        = 13
-	SfplParserOR         = 14
-	SfplParserNOT        = 15
-	SfplParserLT         = 16
-	SfplParserLE         = 17
-	SfplParserGT         = 18
-	SfplParserGE         = 19
-	SfplParserEQ         = 20
-	SfplParserNEQ        = 21
-	SfplParserIN         = 22
-	SfplParserCONTAINS   = 23
-	SfplParserICONTAINS  = 24
-	SfplParserSTARTSWITH = 25
-	SfplParserPMATCH     = 26
-	SfplParserEXISTS     = 27
-	SfplParserLBRACK     = 28
-	SfplParserRBRACK     = 29
-	SfplParserLPAREN     = 30
-	SfplParserRPAREN     = 31
-	SfplParserLISTSEP    = 32
-	SfplParserDECL       = 33
-	SfplParserDEF        = 34
-	SfplParserSEVERITY   = 35
-	SfplParserID         = 36
-	SfplParserNUMBER     = 37
-	SfplParserPATH       = 38
-	SfplParserSTRING     = 39
-	SfplParserWS         = 40
-	SfplParserNL         = 41
-	SfplParserCOMMENT    = 42
-	SfplParserANY        = 43
+	SfplParserEOF         = antlr.TokenEOF
+	SfplParserRULE        = 1
+	SfplParserFILTER      = 2
+	SfplParserMACRO       = 3
+	SfplParserLIST        = 4
+	SfplParserNAME        = 5
+	SfplParserITEMS       = 6
+	SfplParserCOND        = 7
+	SfplParserDESC        = 8
+	SfplParserACTION      = 9
+	SfplParserOUTPUT      = 10
+	SfplParserPRIORITY    = 11
+	SfplParserTAGS        = 12
+	SfplParserENABLED     = 13
+	SfplParserWARNEVTTYPE = 14
+	SfplParserSKIPUNKNOWN = 15
+	SfplParserAND         = 16
+	SfplParserOR          = 17
+	SfplParserNOT         = 18
+	SfplParserLT          = 19
+	SfplParserLE          = 20
+	SfplParserGT          = 21
+	SfplParserGE          = 22
+	SfplParserEQ          = 23
+	SfplParserNEQ         = 24
+	SfplParserIN          = 25
+	SfplParserCONTAINS    = 26
+	SfplParserICONTAINS   = 27
+	SfplParserSTARTSWITH  = 28
+	SfplParserPMATCH      = 29
+	SfplParserEXISTS      = 30
+	SfplParserLBRACK      = 31
+	SfplParserRBRACK      = 32
+	SfplParserLPAREN      = 33
+	SfplParserRPAREN      = 34
+	SfplParserLISTSEP     = 35
+	SfplParserDECL        = 36
+	SfplParserDEF         = 37
+	SfplParserSEVERITY    = 38
+	SfplParserSFSEVERITY  = 39
+	SfplParserFSEVERITY   = 40
+	SfplParserID          = 41
+	SfplParserNUMBER      = 42
+	SfplParserPATH        = 43
+	SfplParserSTRING      = 44
+	SfplParserBOOL        = 45
+	SfplParserTAG         = 46
+	SfplParserWS          = 47
+	SfplParserNL          = 48
+	SfplParserCOMMENT     = 49
+	SfplParserANY         = 50
 )
 
 // SfplParser rules.
@@ -556,12 +554,37 @@ func (s *PruleContext) SEVERITY() antlr.TerminalNode {
 	return s.GetToken(SfplParserSEVERITY, 0)
 }
 
-func (s *PruleContext) TAGS() antlr.TerminalNode {
-	return s.GetToken(SfplParserTAGS, 0)
+func (s *PruleContext) ACTION() antlr.TerminalNode {
+	return s.GetToken(SfplParserACTION, 0)
 }
 
-func (s *PruleContext) Items() IItemsContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IItemsContext)(nil)).Elem(), 0)
+func (s *PruleContext) OUTPUT() antlr.TerminalNode {
+	return s.GetToken(SfplParserOUTPUT, 0)
+}
+
+func (s *PruleContext) AllTAGS() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserTAGS)
+}
+
+func (s *PruleContext) TAGS(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserTAGS, i)
+}
+
+func (s *PruleContext) AllItems() []IItemsContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IItemsContext)(nil)).Elem())
+	var tst = make([]IItemsContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IItemsContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *PruleContext) Items(i int) IItemsContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IItemsContext)(nil)).Elem(), i)
 
 	if t == nil {
 		return nil
@@ -570,12 +593,36 @@ func (s *PruleContext) Items() IItemsContext {
 	return t.(IItemsContext)
 }
 
-func (s *PruleContext) ACTION() antlr.TerminalNode {
-	return s.GetToken(SfplParserACTION, 0)
+func (s *PruleContext) AllENABLED() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserENABLED)
 }
 
-func (s *PruleContext) OUTPUT() antlr.TerminalNode {
-	return s.GetToken(SfplParserOUTPUT, 0)
+func (s *PruleContext) ENABLED(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserENABLED, i)
+}
+
+func (s *PruleContext) AllBOOL() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserBOOL)
+}
+
+func (s *PruleContext) BOOL(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserBOOL, i)
+}
+
+func (s *PruleContext) AllWARNEVTTYPE() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserWARNEVTTYPE)
+}
+
+func (s *PruleContext) WARNEVTTYPE(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserWARNEVTTYPE, i)
+}
+
+func (s *PruleContext) AllSKIPUNKNOWN() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserSKIPUNKNOWN)
+}
+
+func (s *PruleContext) SKIPUNKNOWN(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserSKIPUNKNOWN, i)
 }
 
 func (s *PruleContext) GetRuleContext() antlr.RuleContext {
@@ -701,17 +748,78 @@ func (p *SfplParser) Prule() (localctx IPruleContext) {
 		p.SetState(55)
 		p.Match(SfplParserSEVERITY)
 	}
-	{
-		p.SetState(56)
-		p.Match(SfplParserTAGS)
-	}
-	{
-		p.SetState(57)
-		p.Match(SfplParserDEF)
-	}
-	{
-		p.SetState(58)
-		p.Items()
+	p.SetState(70)
+	p.GetErrorHandler().Sync(p)
+	_la = p.GetTokenStream().LA(1)
+
+	for ((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<SfplParserTAGS)|(1<<SfplParserENABLED)|(1<<SfplParserWARNEVTTYPE)|(1<<SfplParserSKIPUNKNOWN))) != 0 {
+		p.SetState(68)
+		p.GetErrorHandler().Sync(p)
+
+		switch p.GetTokenStream().LA(1) {
+		case SfplParserTAGS:
+			{
+				p.SetState(56)
+				p.Match(SfplParserTAGS)
+			}
+			{
+				p.SetState(57)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(58)
+				p.Items()
+			}
+
+		case SfplParserENABLED:
+			{
+				p.SetState(59)
+				p.Match(SfplParserENABLED)
+			}
+			{
+				p.SetState(60)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(61)
+				p.Match(SfplParserBOOL)
+			}
+
+		case SfplParserWARNEVTTYPE:
+			{
+				p.SetState(62)
+				p.Match(SfplParserWARNEVTTYPE)
+			}
+			{
+				p.SetState(63)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(64)
+				p.Match(SfplParserBOOL)
+			}
+
+		case SfplParserSKIPUNKNOWN:
+			{
+				p.SetState(65)
+				p.Match(SfplParserSKIPUNKNOWN)
+			}
+			{
+				p.SetState(66)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(67)
+				p.Match(SfplParserBOOL)
+			}
+
+		default:
+			panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
+		}
+
+		p.SetState(72)
+		p.GetErrorHandler().Sync(p)
+		_la = p.GetTokenStream().LA(1)
 	}
 
 	return localctx
@@ -841,31 +949,31 @@ func (p *SfplParser) Pfilter() (localctx IPfilterContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(60)
+		p.SetState(73)
 		p.Match(SfplParserDECL)
 	}
 	{
-		p.SetState(61)
+		p.SetState(74)
 		p.Match(SfplParserFILTER)
 	}
 	{
-		p.SetState(62)
+		p.SetState(75)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(63)
+		p.SetState(76)
 		p.Match(SfplParserID)
 	}
 	{
-		p.SetState(64)
+		p.SetState(77)
 		p.Match(SfplParserCOND)
 	}
 	{
-		p.SetState(65)
+		p.SetState(78)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(66)
+		p.SetState(79)
 		p.Expression()
 	}
 
@@ -996,31 +1104,31 @@ func (p *SfplParser) Pmacro() (localctx IPmacroContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(68)
+		p.SetState(81)
 		p.Match(SfplParserDECL)
 	}
 	{
-		p.SetState(69)
+		p.SetState(82)
 		p.Match(SfplParserMACRO)
 	}
 	{
-		p.SetState(70)
+		p.SetState(83)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(71)
+		p.SetState(84)
 		p.Match(SfplParserID)
 	}
 	{
-		p.SetState(72)
+		p.SetState(85)
 		p.Match(SfplParserCOND)
 	}
 	{
-		p.SetState(73)
+		p.SetState(86)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(74)
+		p.SetState(87)
 		p.Expression()
 	}
 
@@ -1151,31 +1259,31 @@ func (p *SfplParser) Plist() (localctx IPlistContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(76)
+		p.SetState(89)
 		p.Match(SfplParserDECL)
 	}
 	{
-		p.SetState(77)
+		p.SetState(90)
 		p.Match(SfplParserLIST)
 	}
 	{
-		p.SetState(78)
+		p.SetState(91)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(79)
+		p.SetState(92)
 		p.Match(SfplParserID)
 	}
 	{
-		p.SetState(80)
+		p.SetState(93)
 		p.Match(SfplParserITEMS)
 	}
 	{
-		p.SetState(81)
+		p.SetState(94)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(82)
+		p.SetState(95)
 		p.Items()
 	}
 
@@ -1282,7 +1390,7 @@ func (p *SfplParser) Expression() (localctx IExpressionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(84)
+		p.SetState(97)
 		p.Or_expression()
 	}
 
@@ -1411,24 +1519,24 @@ func (p *SfplParser) Or_expression() (localctx IOr_expressionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(86)
+		p.SetState(99)
 		p.And_expression()
 	}
-	p.SetState(91)
+	p.SetState(104)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	for _la == SfplParserOR {
 		{
-			p.SetState(87)
+			p.SetState(100)
 			p.Match(SfplParserOR)
 		}
 		{
-			p.SetState(88)
+			p.SetState(101)
 			p.And_expression()
 		}
 
-		p.SetState(93)
+		p.SetState(106)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
@@ -1558,24 +1666,24 @@ func (p *SfplParser) And_expression() (localctx IAnd_expressionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(94)
+		p.SetState(107)
 		p.Term()
 	}
-	p.SetState(99)
+	p.SetState(112)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	for _la == SfplParserAND {
 		{
-			p.SetState(95)
+			p.SetState(108)
 			p.Match(SfplParserAND)
 		}
 		{
-			p.SetState(96)
+			p.SetState(109)
 			p.Term()
 		}
 
-		p.SetState(101)
+		p.SetState(114)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
@@ -1796,61 +1904,61 @@ func (p *SfplParser) Term() (localctx ITermContext) {
 		}
 	}()
 
-	p.SetState(135)
+	p.SetState(148)
 	p.GetErrorHandler().Sync(p)
-	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 7, p.GetParserRuleContext()) {
+	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 9, p.GetParserRuleContext()) {
 	case 1:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(102)
+			p.SetState(115)
 			p.Variable()
 		}
 
 	case 2:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(103)
+			p.SetState(116)
 			p.Match(SfplParserNOT)
 		}
 		{
-			p.SetState(104)
+			p.SetState(117)
 			p.Term()
 		}
 
 	case 3:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(105)
+			p.SetState(118)
 			p.Atom()
 		}
 		{
-			p.SetState(106)
+			p.SetState(119)
 			p.Unary_operator()
 		}
 
 	case 4:
 		p.EnterOuterAlt(localctx, 4)
 		{
-			p.SetState(108)
+			p.SetState(121)
 			p.Atom()
 		}
 		{
-			p.SetState(109)
+			p.SetState(122)
 			p.Binary_operator()
 		}
 		{
-			p.SetState(110)
+			p.SetState(123)
 			p.Atom()
 		}
 
 	case 5:
 		p.EnterOuterAlt(localctx, 5)
 		{
-			p.SetState(112)
+			p.SetState(125)
 			p.Atom()
 		}
 		{
-			p.SetState(113)
+			p.SetState(126)
 			_la = p.GetTokenStream().LA(1)
 
 			if !(_la == SfplParserIN || _la == SfplParserPMATCH) {
@@ -1861,50 +1969,50 @@ func (p *SfplParser) Term() (localctx ITermContext) {
 			}
 		}
 		{
-			p.SetState(114)
+			p.SetState(127)
 			p.Match(SfplParserLPAREN)
 		}
-		p.SetState(117)
+		p.SetState(130)
 		p.GetErrorHandler().Sync(p)
 
 		switch p.GetTokenStream().LA(1) {
-		case SfplParserLT, SfplParserGT, SfplParserID, SfplParserNUMBER, SfplParserPATH, SfplParserSTRING:
+		case SfplParserLT, SfplParserGT, SfplParserID, SfplParserNUMBER, SfplParserPATH, SfplParserSTRING, SfplParserTAG:
 			{
-				p.SetState(115)
+				p.SetState(128)
 				p.Atom()
 			}
 
 		case SfplParserLBRACK:
 			{
-				p.SetState(116)
+				p.SetState(129)
 				p.Items()
 			}
 
 		default:
 			panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
 		}
-		p.SetState(126)
+		p.SetState(139)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
 		for _la == SfplParserLISTSEP {
 			{
-				p.SetState(119)
+				p.SetState(132)
 				p.Match(SfplParserLISTSEP)
 			}
-			p.SetState(122)
+			p.SetState(135)
 			p.GetErrorHandler().Sync(p)
 
 			switch p.GetTokenStream().LA(1) {
-			case SfplParserLT, SfplParserGT, SfplParserID, SfplParserNUMBER, SfplParserPATH, SfplParserSTRING:
+			case SfplParserLT, SfplParserGT, SfplParserID, SfplParserNUMBER, SfplParserPATH, SfplParserSTRING, SfplParserTAG:
 				{
-					p.SetState(120)
+					p.SetState(133)
 					p.Atom()
 				}
 
 			case SfplParserLBRACK:
 				{
-					p.SetState(121)
+					p.SetState(134)
 					p.Items()
 				}
 
@@ -1912,27 +2020,27 @@ func (p *SfplParser) Term() (localctx ITermContext) {
 				panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
 			}
 
-			p.SetState(128)
+			p.SetState(141)
 			p.GetErrorHandler().Sync(p)
 			_la = p.GetTokenStream().LA(1)
 		}
 		{
-			p.SetState(129)
+			p.SetState(142)
 			p.Match(SfplParserRPAREN)
 		}
 
 	case 6:
 		p.EnterOuterAlt(localctx, 6)
 		{
-			p.SetState(131)
+			p.SetState(144)
 			p.Match(SfplParserLPAREN)
 		}
 		{
-			p.SetState(132)
+			p.SetState(145)
 			p.Expression()
 		}
 		{
-			p.SetState(133)
+			p.SetState(146)
 			p.Match(SfplParserRPAREN)
 		}
 
@@ -2071,40 +2179,40 @@ func (p *SfplParser) Items() (localctx IItemsContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(137)
+		p.SetState(150)
 		p.Match(SfplParserLBRACK)
 	}
-	p.SetState(146)
+	p.SetState(159)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
-	if ((_la-16)&-(0x1f+1)) == 0 && ((1<<uint((_la-16)))&((1<<(SfplParserLT-16))|(1<<(SfplParserGT-16))|(1<<(SfplParserID-16))|(1<<(SfplParserNUMBER-16))|(1<<(SfplParserPATH-16))|(1<<(SfplParserSTRING-16)))) != 0 {
+	if ((_la-19)&-(0x1f+1)) == 0 && ((1<<uint((_la-19)))&((1<<(SfplParserLT-19))|(1<<(SfplParserGT-19))|(1<<(SfplParserID-19))|(1<<(SfplParserNUMBER-19))|(1<<(SfplParserPATH-19))|(1<<(SfplParserSTRING-19))|(1<<(SfplParserTAG-19)))) != 0 {
 		{
-			p.SetState(138)
+			p.SetState(151)
 			p.Atom()
 		}
-		p.SetState(143)
+		p.SetState(156)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
 		for _la == SfplParserLISTSEP {
 			{
-				p.SetState(139)
+				p.SetState(152)
 				p.Match(SfplParserLISTSEP)
 			}
 			{
-				p.SetState(140)
+				p.SetState(153)
 				p.Atom()
 			}
 
-			p.SetState(145)
+			p.SetState(158)
 			p.GetErrorHandler().Sync(p)
 			_la = p.GetTokenStream().LA(1)
 		}
 
 	}
 	{
-		p.SetState(148)
+		p.SetState(161)
 		p.Match(SfplParserRBRACK)
 	}
 
@@ -2205,7 +2313,7 @@ func (p *SfplParser) Variable() (localctx IVariableContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(150)
+		p.SetState(163)
 		p.Match(SfplParserID)
 	}
 
@@ -2260,6 +2368,10 @@ func (s *AtomContext) PATH() antlr.TerminalNode {
 
 func (s *AtomContext) NUMBER() antlr.TerminalNode {
 	return s.GetToken(SfplParserNUMBER, 0)
+}
+
+func (s *AtomContext) TAG() antlr.TerminalNode {
+	return s.GetToken(SfplParserTAG, 0)
 }
 
 func (s *AtomContext) STRING() antlr.TerminalNode {
@@ -2327,10 +2439,10 @@ func (p *SfplParser) Atom() (localctx IAtomContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(152)
+		p.SetState(165)
 		_la = p.GetTokenStream().LA(1)
 
-		if !(((_la-16)&-(0x1f+1)) == 0 && ((1<<uint((_la-16)))&((1<<(SfplParserLT-16))|(1<<(SfplParserGT-16))|(1<<(SfplParserID-16))|(1<<(SfplParserNUMBER-16))|(1<<(SfplParserPATH-16))|(1<<(SfplParserSTRING-16)))) != 0) {
+		if !(((_la-19)&-(0x1f+1)) == 0 && ((1<<uint((_la-19)))&((1<<(SfplParserLT-19))|(1<<(SfplParserGT-19))|(1<<(SfplParserID-19))|(1<<(SfplParserNUMBER-19))|(1<<(SfplParserPATH-19))|(1<<(SfplParserSTRING-19))|(1<<(SfplParserTAG-19)))) != 0) {
 			p.GetErrorHandler().RecoverInline(p)
 		} else {
 			p.GetErrorHandler().ReportMatch(p)
@@ -2431,32 +2543,34 @@ func (p *SfplParser) Text() (localctx ITextContext) {
 	var _alt int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(156)
+	p.SetState(169)
 	p.GetErrorHandler().Sync(p)
 	_alt = 1
 	for ok := true; ok; ok = _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
 		switch _alt {
 		case 1:
-			p.SetState(154)
+			p.SetState(167)
 
 			if !(!(p.GetCurrentToken().GetText() == "desc" ||
 				p.GetCurrentToken().GetText() == "condition" ||
 				p.GetCurrentToken().GetText() == "action" ||
 				p.GetCurrentToken().GetText() == "output" ||
 				p.GetCurrentToken().GetText() == "priority" ||
-				p.GetCurrentToken().GetText() == "tags")) {
-				panic(antlr.NewFailedPredicateException(p, "!(p.GetCurrentToken().GetText() == \"desc\" ||\n\t      p.GetCurrentToken().GetText() == \"condition\" ||\n\t      p.GetCurrentToken().GetText() == \"action\" ||\n\t      p.GetCurrentToken().GetText() == \"output\" ||\n\t      p.GetCurrentToken().GetText() == \"priority\" ||\n\t      p.GetCurrentToken().GetText() == \"tags\")", ""))
+				p.GetCurrentToken().GetText() == "tags" ||
+				p.GetCurrentToken().GetText() == "warn_evttypes" ||
+				p.GetCurrentToken().GetText() == "skip-if-unknown-filter")) {
+				panic(antlr.NewFailedPredicateException(p, "!(p.GetCurrentToken().GetText() == \"desc\" ||\n\t      p.GetCurrentToken().GetText() == \"condition\" ||\n\t      p.GetCurrentToken().GetText() == \"action\" ||\n\t      p.GetCurrentToken().GetText() == \"output\" ||\n\t      p.GetCurrentToken().GetText() == \"priority\" ||\n\t      p.GetCurrentToken().GetText() == \"tags\" ||\n\t\t  p.GetCurrentToken().GetText() == \"warn_evttypes\" ||\n\t\t  p.GetCurrentToken().GetText() == \"skip-if-unknown-filter\")", ""))
 			}
-			p.SetState(155)
+			p.SetState(168)
 			p.MatchWildcard()
 
 		default:
 			panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
 		}
 
-		p.SetState(158)
+		p.SetState(171)
 		p.GetErrorHandler().Sync(p)
-		_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 10, p.GetParserRuleContext())
+		_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 12, p.GetParserRuleContext())
 	}
 
 	return localctx
@@ -2589,7 +2703,7 @@ func (p *SfplParser) Binary_operator() (localctx IBinary_operatorContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(160)
+		p.SetState(173)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<SfplParserLT)|(1<<SfplParserLE)|(1<<SfplParserGT)|(1<<SfplParserGE)|(1<<SfplParserEQ)|(1<<SfplParserNEQ)|(1<<SfplParserCONTAINS)|(1<<SfplParserICONTAINS)|(1<<SfplParserSTARTSWITH))) != 0) {
@@ -2697,7 +2811,7 @@ func (p *SfplParser) Unary_operator() (localctx IUnary_operatorContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(162)
+		p.SetState(175)
 		p.Match(SfplParserEXISTS)
 	}
 
@@ -2726,7 +2840,9 @@ func (p *SfplParser) Text_Sempred(localctx antlr.RuleContext, predIndex int) boo
 			p.GetCurrentToken().GetText() == "action" ||
 			p.GetCurrentToken().GetText() == "output" ||
 			p.GetCurrentToken().GetText() == "priority" ||
-			p.GetCurrentToken().GetText() == "tags")
+			p.GetCurrentToken().GetText() == "tags" ||
+			p.GetCurrentToken().GetText() == "warn_evttypes" ||
+			p.GetCurrentToken().GetText() == "skip-if-unknown-filter")
 
 	default:
 		panic("No predicate with index: " + fmt.Sprint(predIndex))

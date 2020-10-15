@@ -27,15 +27,14 @@ import (
 	"plugin"
 	"strings"
 
-	"github.ibm.com/sysflow/sf-processor/driver/sysflow"
-
 	"github.com/spf13/viper"
+	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
-	"github.ibm.com/sysflow/goutils/ioutils"
-	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/exporter"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine"
 	"github.ibm.com/sysflow/sf-processor/core/processor"
+	"github.ibm.com/sysflow/sf-processor/driver/sysflow"
 )
 
 // PluginCache defines a data strucure for managing plugins.

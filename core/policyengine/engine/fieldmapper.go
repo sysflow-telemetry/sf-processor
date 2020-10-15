@@ -27,9 +27,8 @@ import (
 	"strings"
 
 	"github.com/cespare/xxhash"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.com/sysflow-telemetry/sf-apis/go/utils"
-	"github.ibm.com/sysflow/goutils/logger"
 )
 
 // FieldMap is a functional type denoting a SysFlow attribute mapper.
@@ -394,7 +393,7 @@ func mapOpFlags(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
 		opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT, src)
 		rtype := mapRecType(src)(r).(string)
-		return strings.Join(utils.GetOpFlags(int32(opflags), rtype), LISTSEP)
+		return strings.Join(sfgo.GetOpFlags(int32(opflags), rtype), LISTSEP)
 	}
 }
 
@@ -460,13 +459,13 @@ func mapLinkPath(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 
 func mapFileType(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		return utils.GetFileType(r.GetInt(attr, src))
+		return sfgo.GetFileType(r.GetInt(attr, src))
 	}
 }
 
 func mapIsOpenWrite(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		if utils.IsOpenWrite(r.GetInt(attr, src)) {
+		if sfgo.IsOpenWrite(r.GetInt(attr, src)) {
 			return true
 		}
 		return false
@@ -475,7 +474,7 @@ func mapIsOpenWrite(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 
 func mapIsOpenRead(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		if utils.IsOpenRead(r.GetInt(attr, src)) {
+		if sfgo.IsOpenRead(r.GetInt(attr, src)) {
 			return true
 		}
 		return false
@@ -484,7 +483,7 @@ func mapIsOpenRead(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 
 func mapOpenFlags(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		return strings.Join(utils.GetOpenFlags(r.GetInt(attr, src)), LISTSEP)
+		return strings.Join(sfgo.GetOpenFlags(r.GetInt(attr, src)), LISTSEP)
 	}
 }
 
@@ -509,7 +508,7 @@ func mapIP(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		var ips = make([]string, 0)
 		for _, attr := range attrs {
-			ips = append(ips, utils.GetIPStr(int32(r.GetInt(attr, src))))
+			ips = append(ips, sfgo.GetIPStr(int32(r.GetInt(attr, src))))
 		}
 		// logger.Info.Println(ips)
 		return strings.Join(ips, LISTSEP)
@@ -518,7 +517,7 @@ func mapIP(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 
 func mapContType(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		return utils.GetContType(r.GetInt(attr, src))
+		return sfgo.GetContType(r.GetInt(attr, src))
 	}
 }
 

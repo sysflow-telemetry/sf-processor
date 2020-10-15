@@ -24,7 +24,6 @@ import (
 	"fmt"
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 

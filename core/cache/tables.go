@@ -26,8 +26,8 @@ import (
 	"github.com/cespare/xxhash"
 	cqueue "github.com/enriquebris/goconcurrentqueue"
 	cmap "github.com/orcaman/concurrent-map"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/goutils/logger"
 )
 
 const (
