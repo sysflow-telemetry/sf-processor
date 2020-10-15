@@ -43,7 +43,7 @@ require (
 
 replace github.ibm.com/sysflow/sf-processor/core => ../core
 
-replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go
+replace github.com/sysflow-telemetry/sf-apis/go => ../modules/sf-apis/go
 
 replace (
 	github.com/Shopify/sarama => github.com/elastic/sarama v1.19.1-0.20200629123429-0e7b69039eec

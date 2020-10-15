@@ -31,5 +31,5 @@ require (
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200618213240-a59f3a148871	
 )
 
-//replace github.com/sysflow-telemetry/sf-apis/go => ../modules/sf-apis/go
-replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go
+replace github.com/sysflow-telemetry/sf-apis/go => ../modules/sf-apis/go
+
