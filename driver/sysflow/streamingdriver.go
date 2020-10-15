@@ -79,7 +79,7 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 		return err
 	}
 
-	l, err := net.ListenUnix("unixpacket", &net.UnixAddr{Net: path, Name: "unixpacket"})
+	l, err := net.ListenUnix("unixpacket", &net.UnixAddr{Name: path, Net: "unixpacket"})
 	if err != nil {
 		logger.Error.Println("listen error:", err)
 		return err
