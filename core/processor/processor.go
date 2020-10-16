@@ -140,7 +140,6 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 		case sfgo.SF_NET_EVT:
 		default:
 			logger.Warn.Println("Error unsupported SysFlow Type: ", sf.Rec.UnionType)
-
 		}
 	}
 }

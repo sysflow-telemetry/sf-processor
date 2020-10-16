@@ -65,6 +65,7 @@ func getFiles(filename string) ([]string, error) {
 // FileDriver represents reading a sysflow file from source
 type FileDriver struct {
 	pipeline plugins.SFPipeline
+	file     *os.File
 }
 
 // NewFileDriver creates a new file driver object
@@ -92,7 +93,6 @@ func (s *FileDriver) Init(pipeline plugins.SFPipeline) error {
 func (s *FileDriver) Run(path string, running *bool) error {
 	channel := s.pipeline.GetRootChannel()
 	sfChannel := channel.(*plugins.SFChannel)
-
 	records := sfChannel.In
 
 	logger.Trace.Println("Loading file: ", path)
@@ -101,39 +101,48 @@ func (s *FileDriver) Run(path string, running *bool) error {
 
 	files, err := getFiles(path)
 	if err != nil {
-		logger.Error.Println("files error: ", err)
+		logger.Error.Println("Files error: ", err)
 		return err
 	}
 	for _, fn := range files {
 		logger.Trace.Println("Loading file: " + fn)
-		f, err := os.Open(fn)
+		s.file, err = os.Open(fn)
 		if err != nil {
-			logger.Error.Println("file open error: ", err)
+			logger.Error.Println("File open error: ", err)
 			return err
 		}
-		reader := bufio.NewReader(f)
+		reader := bufio.NewReader(s.file)
 		sreader, err := goavro.NewOCFReader(reader)
 		if err != nil {
-			logger.Error.Println("reader error: ", err)
+			logger.Error.Println("Reader error: ", err)
 			return err
 		}
-
 		for sreader.Scan() {
-			datum, err := sreader.Read()
-			if err != nil {
-				logger.Error.Println("datum reading error: ", err)
-				return err
-			}
 			if !*running {
 				break
 			}
-
+			datum, err := sreader.Read()
+			if err != nil {
+				logger.Error.Println("Datum reading error: ", err)
+				break
+			}
 			records <- sfobjcvter.ConvertToSysFlow(datum)
 		}
-		f.Close()
+		s.file.Close()
+		if !*running {
+			break
+		}
 	}
-	logger.Trace.Println("Closing main channel")
+	logger.Warn.Println("Closing main channel")
 	close(records)
 	s.pipeline.Wait()
 	return nil
+}
+
+// Cleanup tears down the driver resources.
+func (s *FileDriver) Cleanup() {
+	logger.Trace.Println("Exiting ", fileDriverName)
+	if s.file != nil {
+		s.file.Close()
+	}
 }

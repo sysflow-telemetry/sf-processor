@@ -45,6 +45,7 @@ const (
 // StreamingDriver represents a streaming sysflow datasource
 type StreamingDriver struct {
 	pipeline plugins.SFPipeline
+	conn     *net.UnixConn
 }
 
 // NewStreamingDriver creates a new streaming driver object
@@ -97,14 +98,14 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 		buf := make([]byte, BuffSize)
 		oobuf := make([]byte, OOBuffSize)
 		reader := bytes.NewReader(buf)
-		conn, err := l.AcceptUnix()
+		s.conn, err = l.AcceptUnix()
 		if err != nil {
 			logger.Error.Println("accept error:", err)
 			break
 		}
-		for {
+		for *running {
 			sFlow = sfgo.NewSysFlow()
-			_, _, flags, _, err := conn.ReadMsgUnix(buf[:], oobuf[:])
+			_, _, flags, _, err := s.conn.ReadMsgUnix(buf[:], oobuf[:])
 			if err != nil {
 				logger.Error.Println("read error:", err)
 				break
@@ -120,9 +121,18 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 				logger.Error.Println("Flag error ReadMsgUnix:", flags)
 			}
 		}
+		s.conn.Close()
 	}
 	logger.Trace.Println("Closing main channel")
 	close(records)
 	s.pipeline.Wait()
 	return nil
+}
+
+// Cleanup tears down the driver resources.
+func (s *StreamingDriver) Cleanup() {
+	logger.Trace.Println("Exiting ", streamDriverName)
+	if s.conn != nil {
+		s.conn.Close()
+	}
 }

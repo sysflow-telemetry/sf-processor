@@ -30,26 +30,30 @@ import (
 	"syscall"
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
+	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/sf-processor/driver/manifest"
 	"github.ibm.com/sysflow/sf-processor/driver/pipeline"
 )
 
-func initSigTerm(running *bool) {
+var pl plugins.SFPipeline
+
+func initSigTerm() {
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
 		fmt.Println("\r- Ctrl+C pressed in terminal")
-		*running = false
+		if pl != nil {
+			pl.Shutdown()
+		}
 	}()
 }
 
 func main() {
 
 	// setup interruption handler
-	running := true
-	initSigTerm(&running)
+	initSigTerm()
 
 	// setup arg parsing
 	inputType := flag.String("driver", "file", fmt.Sprintf("Driver name {file|socket|<custom>}"))
@@ -98,37 +102,30 @@ func main() {
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
-			log.Fatal("could not create CPU profile: ", err)
+			log.Fatal("Could not create CPU profile: ", err)
 		}
 		defer f.Close() // error handling omitted
 		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("could not start CPU profile: ", err)
+			log.Fatal("Could not start CPU profile: ", err)
 		}
 		defer pprof.StopCPUProfile()
 	}
 
 	// load pipeline
-	pl := pipeline.New(*driverDir, *pluginDir, *configFile)
-	drv, err := pl.Load(*inputType)
+	pl = pipeline.New(*driverDir, *pluginDir, *configFile)
+	err := pl.Load(*inputType)
 	if err != nil {
 		logger.Error.Println("Unable to load pipeline error: " + err.Error())
 		return
 	}
 
-	// initialize driver
-	err = drv.Init(pl)
-	if err != nil {
-		logger.Error.Println("Driver initialization error: " + err.Error())
-		return
-	}
-
 	// log summary of loaded pipeline
-	pl.PrintPipeline()
+	pl.Print()
 
-	// start processing
-	err = drv.Run(path, &running)
+	// initialize the pipeline
+	err = pl.Init(path)
 	if err != nil {
-		logger.Error.Println("Driver initialization error: " + err.Error())
+		logger.Error.Println("Error caught while starting the pipeline: " + err.Error())
 		return
 	}
 
@@ -136,12 +133,12 @@ func main() {
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
 		if err != nil {
-			log.Fatal("could not create memory profile: ", err)
+			log.Fatal("Could not create memory profile: ", err)
 		}
 		defer f.Close() // error handling omitted
 		runtime.GC()    // get up-to-date statistics
 		if err := pprof.WriteHeapProfile(f); err != nil {
-			log.Fatal("could not write memory profile: ", err)
+			log.Fatal("Could not write memory profile: ", err)
 		}
 	}
 }

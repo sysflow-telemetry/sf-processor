@@ -138,7 +138,7 @@ func (p *PluginCache) GetConfig() (*Config, error) {
 		return nil, err
 	}
 	if s.IsDir() {
-		return nil, errors.New("pipeline config file is not a file")
+		return nil, errors.New("Pipeline config file is not a file")
 	}
 	dir := filepath.Dir(p.configFile)
 	p.config.SetConfigName(strings.TrimSuffix(filepath.Base(p.configFile), filepath.Ext(p.configFile)))

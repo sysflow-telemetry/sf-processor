@@ -123,5 +123,7 @@ func (s *PolicyEngine) SetOutChan(ch interface{}) {
 // Cleanup clean up the plugin resources.
 func (s *PolicyEngine) Cleanup() {
 	logger.Trace.Println("Exiting ", pluginName)
-	close(s.outCh)
+	if s.outCh != nil {
+		close(s.outCh)
+	}
 }

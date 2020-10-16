@@ -74,7 +74,9 @@ func (s *Flattener) SetOutChan(chObj interface{}) {
 // Cleanup tears down resources.
 func (s *Flattener) Cleanup() {
 	logger.Trace.Println("Calling Cleanup on Flattener channel")
-	close(s.outCh)
+	if s.outCh != nil {
+		close(s.outCh)
+	}
 }
 
 // HandleHeader processes Header entities.
