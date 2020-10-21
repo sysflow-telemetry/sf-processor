@@ -42,16 +42,14 @@
   condition: sf.opflags = MKDIR
   action: [alert]
   priority: low
-  prefilter: [FE]
-  tags: [filter]
+  prefilter: [FE]  
   
 - rule: Directory removed
   desc: when a directory will be removed
   condition: sf.opflags = RMDIR
   action: [alert]
   priority: low
-  prefilter: [FE]
-  tags: [filter]
+  prefilter: [FE]  
   
 - rule: Hard link created
   desc: when process creates hard link to an existing file
@@ -59,124 +57,108 @@
   action: [alert]
   priority: low
   prefilter: [FE]
-  tags: [filter]
-  
+    
 - rule: Soft link created
   desc: when process creates soft link to an existing file
   condition: sf.opflags = SYMLINK
   action: [alert]
   priority: low
   prefilter: [FE]
-  tags: [filter]
-  
+    
 - rule: File deleted
   desc: when a file will be deleted
   condition: sf.opflags = UNLINK and not sf.proc.exe in (/lib/systemd/systemd-udevd, /usr/bin/apt-get) and not splunk_processes
   action: [alert]
   priority: low
   prefilter: [FE]
-  tags: [filter]
-  
+    
 - rule: File renamed
   desc: when a file will be renamed
   condition: sf.opflags = RENAME and not sf.proc.exe in (/usr/bin/dpkg, /lib/systemd/systemd-udevd, /usr/sbin/logrotate, /usr/bin/dockerd) and not (splunk_processes)
   action: [alert]
   priority: low
   prefilter: [FE]
-  tags: [test]
-
+  
 - rule: UID of process was changed
   desc: UID of process was changed
   condition: sf.opflags = SETUID and not sf.proc.exe in (/usr/sbin/sshd)
   action: [alert]
   priority: low
   prefilter: [PE]
-  tags: [filter]
-
+  
 - rule: Process cloned
   desc: Process cloned
   condition: sf.opflags = CLONE and not sf.proc.exe in (/usr/sbin/sshd, /usr/sbin/syslog-ng, /lib/systemd/systemd-journald, /lib/systemd/systemd-udevd, /usr/bin/apt-key, /opt/splunk/bin/splunkd)
   action: [alert]
   priority: low
   prefilter: [PE]
-  tags: [filter]
-  
+    
 - rule: Execution of a file
   desc: Execution of a file
   condition: sf.opflags = EXEC and not sf.proc.exe in (/usr/sbin/sshd, /opt/splunk/bin/splunk-optimize)
   action: [alert]
   priority: low
   prefilter: [PE]
-  tags: [filter]
-
+  
 - rule: Process or thread exit
   desc: Process or thread exit
   condition: sf.opflags = EXIT and not sf.proc.exe in (/usr/sbin/sshd, /usr/sbin/syslog-ng, /lib/systemd/systemd-journald, /lib/systemd/systemd-udevd) and not splunk_processes
   action: [alert]
   priority: low
   prefilter: [PE]
-  tags: [filter]
-
+  
 - rule: File Modified
   desc: File Modified
   condition: file_write and not (excluded_file_write_flows or splunk_processes)
   action: [alert]
   priority: low
   prefilter: [FF]
-  tags: [filter]
-
+  
 - rule: File Opened with Write Permissions
   desc: File Opened with Write Permissions
   condition: file_open and file_open_write and not (file_write or excluded_file_write_flows or splunk_processes)
   action: [alert]
   priority: low
   prefilter: [FF]
-  tags: [filter]
-
+  
 - rule: File Opened with Read Permissions
   desc: File Opened with Read Permissions
   condition: file_open and file_open_read and not (file_write or file_read or excluded_file_read_flows or splunk_processes)
   action: [alert]
   priority: low
   prefilter: [FF]
-  tags: [filter]
-
+  
 - rule: File Read
   desc: File Read 
   condition: file_read and not (excluded_file_read_flows or splunk_processes)
   action: [alert]
   priority: low
   prefilter: [FF]
-  tags: [filter]
-
+  
 - rule: File Closed
   desc: File Closed
   condition: FileFlow and sf.opflags = CLOSE
   action: [alert]
   priority: low
   prefilter: [FF]
-  tags: [filter]
-
+  
 - rule: Process Sending or Receiving Network Data
   desc: Network Flow ingress or engress
   condition: network_flow_ingress_engress
   action: [alert]
   priority: low
   prefilter: [NF]
-  tags: [filter]
-  
+   
 - rule: Network Connection Created
   desc: Network Connection Created
   condition: NetworkFlow and sf.opflags in (CONNECT, ACCEPT) and not network_flow_ingress_engress
   action: [alert]
   priority: low
   prefilter: [NF]
-  tags: [filter]
-
+  
 - rule: Network Connection Closed
   desc: Network Connection Closed
   condition: NetworkFlow and sf.opflags = CLOSE
   action: [alert]
   priority: low
   prefilter: [NF]
-  tags: [filter]

@@ -12,6 +12,7 @@ ACTION: 'action';
 OUTPUT: 'output';
 PRIORITY: 'priority';
 TAGS: 'tags';
+PREFILTER: 'prefilter';
 ENABLED: 'enabled';
 WARNEVTTYPE: 'warn_evttypes';
 SKIPUNKNOWN: 'skip-if-unknown-filter';
@@ -21,11 +22,11 @@ policy
 	;
 
 prule
-	: DECL RULE DEF text DESC DEF text COND DEF expression (ACTION|OUTPUT) DEF text PRIORITY DEF SEVERITY (TAGS DEF items | ENABLED DEF BOOL | WARNEVTTYPE DEF BOOL | SKIPUNKNOWN DEF BOOL)*
+	: DECL RULE DEF text DESC DEF text COND DEF expression (ACTION|OUTPUT) DEF text PRIORITY DEF severity (TAGS DEF tags | PREFILTER DEF prefilter | ENABLED DEF enabled | WARNEVTTYPE DEF warnevttype | SKIPUNKNOWN DEF skipunknown)*
 	;
 
 pfilter
-	: DECL FILTER DEF ID COND DEF expression
+	: DECL FILTER DEF ID COND DEF expression (ENABLED DEF enabled)?
 	;
 
 pmacro
@@ -60,7 +61,31 @@ term
 items 
 	: LBRACK (atom (LISTSEP atom)*)? RBRACK
 	;
-	
+
+tags
+	: LBRACK (atom (LISTSEP atom)*)? RBRACK
+	;
+
+prefilter
+	: items
+	;
+
+severity
+	: SEVERITY
+	;
+
+enabled
+	: atom
+	;
+
+warnevttype
+	: atom
+	;
+
+skipunknown
+	: atom
+	;
+
 variable
 	: ID
 	;		
@@ -70,7 +95,7 @@ atom
 	| PATH
 	| NUMBER
 	| TAG
-	| STRING
+	| STRING	
 	| '<' /* event direction */
 	| '>' /* event direction */
 	;
@@ -82,6 +107,8 @@ text
 	      p.GetCurrentToken().GetText() == "output" ||
 	      p.GetCurrentToken().GetText() == "priority" ||
 	      p.GetCurrentToken().GetText() == "tags" ||
+		  p.GetCurrentToken().GetText() == "prefilter" ||
+		  p.GetCurrentToken().GetText() == "enabled" ||
 		  p.GetCurrentToken().GetText() == "warn_evttypes" ||
 		  p.GetCurrentToken().GetText() == "skip-if-unknown-filter")}? .)+
 	;
@@ -230,11 +257,6 @@ STRING
     | '\\"' (STRING|STRLIT) '\\"'
     | '\'\'' (STRING|STRLIT) '\'\''
     ;
-
-BOOL
-	: 'false'
-	| 'true'
-	;
 
 TAG
 	: ID ':' ID

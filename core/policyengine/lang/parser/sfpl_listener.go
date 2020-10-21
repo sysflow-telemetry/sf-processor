@@ -37,6 +37,24 @@ type SfplListener interface {
 	// EnterItems is called when entering the items production.
 	EnterItems(c *ItemsContext)
 
+	// EnterTags is called when entering the tags production.
+	EnterTags(c *TagsContext)
+
+	// EnterPrefilter is called when entering the prefilter production.
+	EnterPrefilter(c *PrefilterContext)
+
+	// EnterSeverity is called when entering the severity production.
+	EnterSeverity(c *SeverityContext)
+
+	// EnterEnabled is called when entering the enabled production.
+	EnterEnabled(c *EnabledContext)
+
+	// EnterWarnevttype is called when entering the warnevttype production.
+	EnterWarnevttype(c *WarnevttypeContext)
+
+	// EnterSkipunknown is called when entering the skipunknown production.
+	EnterSkipunknown(c *SkipunknownContext)
+
 	// EnterVariable is called when entering the variable production.
 	EnterVariable(c *VariableContext)
 
@@ -81,6 +99,24 @@ type SfplListener interface {
 
 	// ExitItems is called when exiting the items production.
 	ExitItems(c *ItemsContext)
+
+	// ExitTags is called when exiting the tags production.
+	ExitTags(c *TagsContext)
+
+	// ExitPrefilter is called when exiting the prefilter production.
+	ExitPrefilter(c *PrefilterContext)
+
+	// ExitSeverity is called when exiting the severity production.
+	ExitSeverity(c *SeverityContext)
+
+	// ExitEnabled is called when exiting the enabled production.
+	ExitEnabled(c *EnabledContext)
+
+	// ExitWarnevttype is called when exiting the warnevttype production.
+	ExitWarnevttype(c *WarnevttypeContext)
+
+	// ExitSkipunknown is called when exiting the skipunknown production.
+	ExitSkipunknown(c *SkipunknownContext)
 
 	// ExitVariable is called when exiting the variable production.
 	ExitVariable(c *VariableContext)

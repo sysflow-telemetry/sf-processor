@@ -21,6 +21,7 @@ package engine
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
@@ -29,8 +30,8 @@ import (
 )
 
 // Parsed rule and filter object maps.
-var rules = make(map[string]Rule)
-var filters = make(map[string]Filter)
+var rules = make([]Rule, 0)
+var filters = make([]Filter, 0)
 
 // Accessory parsing maps.
 var lists = make(map[string][]string)
@@ -91,7 +92,8 @@ func (pi PolicyInterpreter) ProcessAsync(applyFilters bool, filterOnly bool, r *
 		out(r)
 	}
 	for _, rule := range rules {
-		if rule.condition.Eval(r) {
+		//fmt.Println("Rule: ", rule.Name, rule.Enabled, rule.isApplicable(r))
+		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
 			pi.ahdl.HandleActionAsync(rule, r, out)
 		}
 	}
@@ -107,25 +109,7 @@ func (pi PolicyInterpreter) Process(applyFilters bool, filterOnly bool, r *Recor
 		return true, r
 	}
 	for _, rule := range rules {
-		if rule.condition.Eval(r) {
-			pi.ahdl.HandleAction(rule, r)
-			match = true
-		}
-	}
-	return match, r
-}
-
-// ProcessRule executes compiled policy rule p against record r.
-func (pi PolicyInterpreter) ProcessRule(applyFilters bool, filterOnly bool, r *Record, ruleNames ...string) (bool, *Record) {
-	match := false
-	if applyFilters && pi.EvalFilters(r) {
-		return match, nil
-	}
-	if filterOnly {
-		return true, r
-	}
-	for _, rname := range ruleNames {
-		if rule, ok := rules[rname]; ok && rule.condition.Eval(r) {
+		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
 			pi.ahdl.HandleAction(rule, r)
 			match = true
 		}
@@ -136,7 +120,7 @@ func (pi PolicyInterpreter) ProcessRule(applyFilters bool, filterOnly bool, r *R
 // EvalFilters executes compiled policy filters against record r.
 func (pi PolicyInterpreter) EvalFilters(r *Record) bool {
 	for _, f := range filters {
-		if f.condition.Eval(r) {
+		if f.Enabled && f.condition.Eval(r) {
 			return true
 		}
 	}
@@ -163,10 +147,11 @@ func (listener *sfplListener) ExitPmacro(ctx *parser.PmacroContext) {
 func (listener *sfplListener) ExitPfilter(ctx *parser.PfilterContext) {
 	logger.Trace.Println("Parsing filter ", ctx.GetText())
 	f := Filter{
-		name:      ctx.ID().GetText(),
+		Name:      ctx.ID().GetText(),
 		condition: listener.visitExpression(ctx.Expression()),
+		Enabled:   ctx.ENABLED() == nil || listener.getEnabledFlag(ctx.Enabled()),
 	}
-	filters[f.name] = f
+	filters = append(filters, f)
 }
 
 // ExitFilter is called when production filter is exited.
@@ -177,10 +162,21 @@ func (listener *sfplListener) ExitPrule(ctx *parser.PruleContext) {
 		Desc:      listener.getOffChannelText(ctx.Text(1)),
 		condition: listener.visitExpression(ctx.Expression()),
 		Actions:   listener.getActions(ctx),
-		Tags:      listener.getTags(ctx.Items(0)),
-		Priority:  listener.getPriority(ctx.SEVERITY().GetText()),
+		Tags:      listener.getTags(ctx),
+		Priority:  listener.getPriority(ctx.Severity().GetText()),
+		Prefilter: listener.getPrefilter(ctx),
+		Enabled:   ctx.ENABLED(0) == nil || listener.getEnabledFlag(ctx.Enabled(0)),
 	}
-	rules[r.Name] = r
+	rules = append(rules, r)
+}
+
+func (listener *sfplListener) getEnabledFlag(ctx parser.IEnabledContext) bool {
+	flag := trimBoundingQuotes(ctx.GetText())
+	if b, err := strconv.ParseBool(flag); err == nil {
+		return b
+	}
+	logger.Warn.Println("Unrecognized enabled flag: ", flag)
+	return true
 }
 
 func (listener *sfplListener) getOffChannelText(ctx parser.ITextContext) string {
@@ -190,12 +186,22 @@ func (listener *sfplListener) getOffChannelText(ctx parser.ITextContext) string 
 	return ctx.GetStart().GetInputStream().GetTextFromInterval(&interval)
 }
 
-func (listener *sfplListener) getTags(ctx parser.IItemsContext) []EnrichmentTag {
+func (listener *sfplListener) getTags(ctx *parser.PruleContext) []EnrichmentTag {
 	var tags = make([]EnrichmentTag, 0)
-	if ctx != nil {
-		return append(tags, listener.extractListFromItems(ctx))
+	ictx := ctx.Tags(0)
+	if ictx != nil {
+		return append(tags, listener.extractTags(ictx))
 	}
 	return tags
+}
+
+func (listener *sfplListener) getPrefilter(ctx *parser.PruleContext) []string {
+	var pfs = make([]string, 0)
+	ictx := ctx.Prefilter(0)
+	if ictx != nil {
+		return append(pfs, listener.extractList(ictx.GetText())...)
+	}
+	return pfs
 }
 
 func (listener *sfplListener) getPriority(p string) Priority {
@@ -205,6 +211,20 @@ func (listener *sfplListener) getPriority(p string) Priority {
 	case Medium.String():
 		return Medium
 	case High.String():
+		return High
+	case FPriorityDebug:
+		return Low
+	case FPriorityInfo:
+		return Low
+	case FPriorityNotice:
+		return Low
+	case FPriorityWarning:
+		return Medium
+	case FPriorityError:
+		return High
+	case FPriorityCritical:
+		return High
+	case FPriorityEmergency:
 		return High
 	default:
 		logger.Warn.Printf("Unrecognized priority value %s. Deferring to %s\n", p, Low.String())
@@ -247,6 +267,13 @@ func (listener *sfplListener) extractList(str string) []string {
 }
 
 func (listener *sfplListener) extractListFromItems(ctx parser.IItemsContext) []string {
+	if ctx != nil {
+		return listener.extractList(ctx.GetText())
+	}
+	return []string{}
+}
+
+func (listener *sfplListener) extractTags(ctx parser.ITagsContext) []string {
 	if ctx != nil {
 		return listener.extractList(ctx.GetText())
 	}

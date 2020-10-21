@@ -69,12 +69,28 @@ type Rule struct {
 	Actions   []Action
 	Tags      []EnrichmentTag
 	Priority  Priority
+	Prefilter []string
+	Enabled   bool
+}
+
+func (s Rule) isApplicable(r *Record) bool {
+	if len(s.Prefilter) == 0 {
+		return true
+	}
+	rtype := Mapper.MapStr(SF_TYPE)(r)
+	for _, pf := range s.Prefilter {
+		if rtype == pf {
+			return true
+		}
+	}
+	return false
 }
 
 // Filter type
 type Filter struct {
-	name      string
+	Name      string
 	condition Criterion
+	Enabled   bool
 }
 
 // Record type

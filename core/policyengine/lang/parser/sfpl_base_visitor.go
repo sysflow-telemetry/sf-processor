@@ -47,6 +47,30 @@ func (v *BaseSfplVisitor) VisitItems(ctx *ItemsContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseSfplVisitor) VisitTags(ctx *TagsContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseSfplVisitor) VisitPrefilter(ctx *PrefilterContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseSfplVisitor) VisitSeverity(ctx *SeverityContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseSfplVisitor) VisitEnabled(ctx *EnabledContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseSfplVisitor) VisitWarnevttype(ctx *WarnevttypeContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseSfplVisitor) VisitSkipunknown(ctx *SkipunknownContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseSfplVisitor) VisitVariable(ctx *VariableContext) interface{} {
 	return v.VisitChildren(ctx)
 }

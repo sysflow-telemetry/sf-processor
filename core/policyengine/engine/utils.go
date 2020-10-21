@@ -17,28 +17,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package engine_test
+package engine
 
-import (
-	"os"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
-	"github.com/sysflow-telemetry/sf-apis/go/logger"
-	. "github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
-)
-
-var pi PolicyInterpreter
-
-func SetupInterpreter(m *testing.M) {
-	pi = PolicyInterpreter{}
-	os.Exit(m.Run())
-}
-
-func TestCompile(t *testing.T) {
-	logger.Trace.Println("Running test compile")
-	paths, err := ioutils.ListFilePaths("../../../resources/policies/tests/ma.yaml", ".yaml")
-	assert.NoError(t, err)
-	assert.NoError(t, pi.Compile(paths...))
+func trimBoundingQuotes(s string) string {
+	if len(s) > 0 && (s[0] == '"' || s[0] == '\'') {
+		s = s[1:]
+	}
+	if len(s) > 0 && (s[len(s)-1] == '"' || s[len(s)-1] == '\'') {
+		s = s[:len(s)-1]
+	}
+	return s
 }

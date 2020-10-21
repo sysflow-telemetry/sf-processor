@@ -37,6 +37,24 @@ type SfplVisitor interface {
 	// Visit a parse tree produced by SfplParser#items.
 	VisitItems(ctx *ItemsContext) interface{}
 
+	// Visit a parse tree produced by SfplParser#tags.
+	VisitTags(ctx *TagsContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#prefilter.
+	VisitPrefilter(ctx *PrefilterContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#severity.
+	VisitSeverity(ctx *SeverityContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#enabled.
+	VisitEnabled(ctx *EnabledContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#warnevttype.
+	VisitWarnevttype(ctx *WarnevttypeContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#skipunknown.
+	VisitSkipunknown(ctx *SkipunknownContext) interface{}
+
 	// Visit a parse tree produced by SfplParser#variable.
 	VisitVariable(ctx *VariableContext) interface{}
 

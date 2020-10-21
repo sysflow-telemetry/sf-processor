@@ -40,6 +40,18 @@ const (
 	TyUnknow string = ""
 )
 
+// Falco priority values.
+const (
+	FPriorityEmergency = "emergency"
+	FPriorityAlert     = "alert"
+	FPriorityCritical  = "critical"
+	FPriorityError     = "error"
+	FPriorityWarning   = "warning"
+	FPriorityNotice    = "notice"
+	FPriorityInfo      = "informational"
+	FPriorityDebug     = "debug"
+)
+
 // SysFlow attribute names.
 const (
 	SF_TYPE                  string = "sf.type"
