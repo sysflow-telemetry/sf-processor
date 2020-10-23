@@ -171,7 +171,6 @@ func getExportedMappers() map[string]FieldMap {
 		SF_FILE_FD:               mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_FD_INT),
 		SF_FILE_OPENFLAGS:        mapOpenFlags(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
 		SF_NET_PROTO:             mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		SF_NET_PROTONAME:         mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
 		SF_NET_SPORT:             mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT),
 		SF_NET_DPORT:             mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DPORT_INT),
 		SF_NET_PORT:              mapPort(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT, sfgo.FL_NETW_DPORT_INT),
@@ -280,15 +279,15 @@ func getNonExportedMappers() map[string]FieldMap {
 		FALCO_EVT_IS_OPEN_WRITE: mapIsOpenWrite(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
 		FALCO_EVT_UID:           mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT),
 		FALCO_FD_TYPECHAR:       mapFileType(sfgo.SYSFLOW_SRC, sfgo.FILE_RESTYPE_INT),
-		FALCO_FD_DIRECTORY:      mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
-		FALCO_FD_NAME:           mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
-		FALCO_FD_FILENAME:       mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
-		FALCO_FD_PROTO:          mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		FALCO_FD_LPROTO:         mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		FALCO_FD_L4PROTO:        mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		FALCO_FD_RPROTO:         mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		FALCO_FD_SPROTO:         mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		FALCO_FD_CPROTO:         mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		FALCO_FD_DIRECTORY:      mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		FALCO_FD_NAME:           mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		FALCO_FD_FILENAME:       mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		FALCO_FD_PROTO:          mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		FALCO_FD_LPROTO:         mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		FALCO_FD_L4PROTO:        mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		FALCO_FD_RPROTO:         mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		FALCO_FD_SPROTO:         mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		FALCO_FD_CPROTO:         mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
 		FALCO_FD_SPORT:          mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT),
 		FALCO_FD_DPORT:          mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DPORT_INT),
 		FALCO_FD_SIP:            mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT),
@@ -484,7 +483,7 @@ func mapOpenFlags(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 
 func mapProto(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		return r.GetInt(attr, src)
+		return sfgo.GetProto(r.GetInt(attr, src))
 	}
 }
 
