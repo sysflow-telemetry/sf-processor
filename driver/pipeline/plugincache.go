@@ -35,11 +35,8 @@ import (
 	"github.ibm.com/sysflow/sf-processor/core/ground"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine"
 	"github.ibm.com/sysflow/sf-processor/core/processor"
-<<<<<<< HEAD
-	"github.ibm.com/sysflow/sf-processor/driver/sysflow"
-=======
 	"github.ibm.com/sysflow/sf-processor/core/statistic"
->>>>>>> dev
+	"github.ibm.com/sysflow/sf-processor/driver/sysflow"
 )
 
 // PluginCache defines a data strucure for managing plugins.

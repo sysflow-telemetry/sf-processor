@@ -24,9 +24,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
@@ -42,7 +42,7 @@ type statistics struct {
 // StatisticExporter defines a driver for the statistic exporter plugin.
 type StatisticExporter struct {
 	config      Config
-	outFlatCh   chan<- *sfgo.FlatRecord
+	outFlatCh   chan<- *sfgo.SysFlow
 	outRecordCh chan<- *engine.Record
 	stat        statistics
 	period      time.Duration
@@ -85,7 +85,7 @@ func (s *StatisticExporter) Process(inputCh interface{}, wg *sync.WaitGroup) {
 	defer s.Cleanup()
 	defer wg.Done()
 	switch ch := inputCh.(type) {
-	case *plugins.FlatChannel:
+	case *plugins.SFChannel:
 		logger.Trace.Println("Statistic exporter receive from flat channel")
 		s.processFlatChan(ch.In)
 	case *engine.RecordChannel:
@@ -100,7 +100,7 @@ func (s *StatisticExporter) Process(inputCh interface{}, wg *sync.WaitGroup) {
 // SetOutChan sets the output channel of the plugin.
 func (s *StatisticExporter) SetOutChan(outputCh interface{}) {
 	switch ch := outputCh.(type) {
-	case *plugins.FlatChannel:
+	case *plugins.SFChannel:
 		logger.Trace.Println("Statistic exporter output to flat channel")
 		s.outFlatCh = ch.In
 	case *engine.RecordChannel:
@@ -139,7 +139,7 @@ func (s *StatisticExporter) processRecordChan(inputCh <-chan *engine.Record) {
 	}
 }
 
-func (s *StatisticExporter) processFlatChan(inputCh <-chan *sfgo.FlatRecord) {
+func (s *StatisticExporter) processFlatChan(inputCh <-chan *sfgo.SysFlow) {
 	if nil == s.outFlatCh {
 		logger.Error.Println("input and output channel types are different")
 		return

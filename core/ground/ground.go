@@ -22,14 +22,14 @@ package ground
 import (
 	"sync"
 
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
-	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
 const pluginName = "ground"
 
-// Ground defines a plugin to consume any incoming messages and do nothing.
+// Grounder defines a plugin to consume any incoming messages and do nothing.
 type Grounder struct{}
 
 // NewGrounder constructs a new Ground plugin.
@@ -57,7 +57,7 @@ func (g *Grounder) Process(inputCh interface{}, wg *sync.WaitGroup) {
 	defer g.Cleanup()
 	defer wg.Done()
 	switch ch := inputCh.(type) {
-	case *plugins.FlatChannel:
+	case *plugins.SFChannel:
 		for _ = range ch.In { // consume and do nothing
 		}
 	case *engine.RecordChannel:
