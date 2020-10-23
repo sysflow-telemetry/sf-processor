@@ -191,7 +191,12 @@ func getExportedMappers() map[string]FieldMap {
 		SF_NODE_ID:               mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_EXPORTER_STR),
 		SF_NODE_IP:               mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_IP_STR),
 		SF_SCHEMA_VERSION:        mapInt(sfgo.SYSFLOW_SRC, sfgo.SFHE_VERSION_INT),
+	}
+}
 
+// getExtendedMappers defines all mappers for extended attributes.
+func getExtendedMappers() map[string]FieldMap {
+	return map[string]FieldMap{
 		//Ext processes
 		EXT_PROC_GUID_STR:                mapStr(sfgo.PROCESS_SRC, sfgo.PROC_GUID_STR),
 		EXT_PROC_IMAGE_STR:               mapStr(sfgo.PROCESS_SRC, sfgo.PROC_IMAGE_STR),

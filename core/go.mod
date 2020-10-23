@@ -32,4 +32,3 @@ require (
 )
 
 replace github.com/sysflow-telemetry/sf-apis/go => ../modules/sf-apis/go
-
