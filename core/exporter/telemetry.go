@@ -132,7 +132,7 @@ func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 		r.FlatRecord = new(FlatRecord)
 		r.FlatRecord.Data = make(map[string]interface{})
 		for _, k := range engine.Fields {
-			r.Data[k] = engine.Mapper.Mappers[k](rec)
+			r.Data[k] = engine.Mapper.Mappers[k].Map(rec)
 		}
 	} else {
 		r.DataRecord = new(DataRecord)
@@ -142,7 +142,7 @@ func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 		ctExists := !reflect.ValueOf(ct).IsZero()
 		for _, k := range engine.Fields {
 			kc := strings.Split(k, ".")
-			value := extractValue(k, engine.Mapper.Mappers[k](rec))
+			value := extractValue(k, engine.Mapper.Mappers[k].Map(rec))
 			if len(kc) == 2 {
 				switch value.(type) {
 				case string:

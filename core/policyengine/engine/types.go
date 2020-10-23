@@ -117,7 +117,7 @@ type RecordChannel struct {
 }
 
 // RecAttribute denotes a record attribute enumeration.
-type RecAttribute int
+type RecAttribute int8
 
 // List of auxialiary record attributes enumerations.
 const (

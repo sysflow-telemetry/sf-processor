@@ -29,12 +29,12 @@ require (
 	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
-	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.3
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20200618213240-a59f3a148871
+	github.ibm.com/sysflow/goutils v0.0.0-20200619144433-a13c12f45010 // indirect
 	github.ibm.com/sysflow/sf-processor/core v0.0.0-20200417193244-61d8d9d5918f
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
@@ -44,6 +44,7 @@ require (
 replace github.ibm.com/sysflow/sf-processor/core => ../core
 
 replace github.com/sysflow-telemetry/sf-apis/go => ../modules/sf-apis/go
+
 //replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go
 
 replace (

@@ -20,15 +20,12 @@
 package exporter
 
 import (
-	"crypto/tls"
-	"fmt"
-	"os"
+	"errors"
 	"sync"
 
 	syslog "github.com/RackSec/srslog"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
-	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
@@ -38,15 +35,19 @@ const (
 
 // Exporter defines a syslogger plugin.
 type Exporter struct {
-	recs    []*engine.Record
-	counter int
-	sysl    *syslog.Writer
-	config  Config
+	recs             []*engine.Record
+	counter          int
+	sysl             *syslog.Writer
+	config           Config
+	exporter         *JSONExporter
+	exportProto      ExportProtocol
+	exportProtoCache map[string]interface{}
 }
 
 // NewExporter creates a new plugin instance.
 func NewExporter() plugins.SFProcessor {
-	return new(Exporter)
+	e := &Exporter{exportProtoCache: make(map[string]interface{})}
+	return e
 }
 
 // GetName returns the plugin name.
@@ -59,28 +60,36 @@ func (s *Exporter) Register(pc plugins.SFPluginCache) {
 	pc.AddProcessor(pluginName, NewExporter)
 }
 
+// AddExportProtocol registers an export protocol object with the Exporter
+func (s *Exporter) AddExportProtocol(protoName string, ep interface{}) {
+	s.exportProtoCache[protoName] = ep
+}
+
+func (s *Exporter) initProtos() {
+	(&SyslogProto{}).Register(s)
+	(&TerminalProto{}).Register(s)
+	(&TextFileProto{}).Register(s)
+	(&NullProto{}).Register(s)
+
+}
+
 // Init initializes the plugin with a configuration map and cache.
 func (s *Exporter) Init(conf map[string]string) error {
 	var err error
 	s.config = CreateConfig(conf)
-	if s.config.Export == FileExport {
-		os.Remove(s.config.Path)
-	} else if s.config.Export == SyslogExport {
-		raddr := fmt.Sprintf("%s:%d", s.config.Host, s.config.Port)
-		if s.config.Proto == TCPTLSProto {
-			// TODO: verify connection with given trust certifications
-			nopTLSConfig := &tls.Config{InsecureSkipVerify: true}
-			s.sysl, err = syslog.DialWithTLSConfig("tcp+tls", raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag, nopTLSConfig)
-		} else {
-			s.sysl, err = syslog.Dial(s.config.Proto.String(), raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag)
+	s.initProtos()
+	if val, ok := s.exportProtoCache[s.config.Export.String()]; ok {
+		funct := val.(func() ExportProtocol)
+		s.exportProto = funct()
+		err = s.exportProto.Init(conf)
+		if err != nil {
+			return err
 		}
-		if err == nil {
-			s.sysl.SetFormatter(syslog.RFC5424Formatter)
-			if s.config.LogSource != sfgo.Zeros.String {
-				s.sysl.SetHostname(s.config.LogSource)
-			}
-		}
+	} else {
+		return errors.New("Unable to find export protocol: " + s.config.Export.String())
 	}
+	s.exporter = NewJSONExporter(s.exportProto, s.config)
+
 	return err
 }
 
@@ -101,44 +110,22 @@ func (s *Exporter) Process(ch interface{}, wg *sync.WaitGroup) {
 		s.recs = append(s.recs, fc)
 		if s.counter > s.config.EventBuffer {
 			s.process()
-			s.recs = make([]*engine.Record, 0)
+			s.recs = s.recs[:0] // make([]*engine.Record, 0)
 			s.counter = 0
 		}
 	}
 }
 
 func (s *Exporter) process() {
-	s.export(s.createEvents())
-}
-
-func (s *Exporter) createEvents() []Event {
 	if s.config.ExpType == AlertType {
-		return CreateOffenses(s.recs, s.config)
-	}
-	return CreateTelemetryRecords(s.recs, s.config)
-}
-
-func (s *Exporter) export(events []Event) {
-	if s.config.Format == JSONFormat {
-		s.exportAsJSON(events)
-	}
-}
-
-func (s *Exporter) exportAsJSON(events []Event) {
-	for _, e := range events {
-		if s.config.Export == StdOutExport {
-			fmt.Println(e.ToJSONStr())
-		} else if s.config.Export == SyslogExport {
-			s.sysl.Alert(e.ToJSONStr())
-		} else if s.config.Export == FileExport {
-			f, err := os.OpenFile(s.config.Path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-			if err != nil {
-				logger.Error.Println("Can't open trace file:\n", err)
-			}
-			defer f.Close()
-			if _, err := f.WriteString(e.ToJSONStr() + "\n"); err != nil {
-				logger.Error.Println("Can't write to trace file:\n", err)
-			}
+		err := s.exporter.ExportOffenses(s.recs)
+		if err != nil {
+			logger.Error.Println("Error exporting events: " + err.Error())
+		}
+	} else {
+		err := s.exporter.ExportTelemetryRecords(s.recs)
+		if err != nil {
+			logger.Error.Println("Error exporting events: " + err.Error())
 		}
 	}
 }
@@ -149,6 +136,7 @@ func (s *Exporter) SetOutChan(ch interface{}) {}
 // Cleanup tears down plugin resources.
 func (s *Exporter) Cleanup() {
 	logger.Trace.Println("Exiting ", pluginName)
+	s.exportProto.Cleanup()
 }
 
 // This function is not run when module is used as a plugin.

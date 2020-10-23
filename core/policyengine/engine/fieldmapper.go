@@ -20,6 +20,7 @@
 package engine
 
 import (
+	"bytes"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -34,6 +35,43 @@ import (
 // FieldMap is a functional type denoting a SysFlow attribute mapper.
 type FieldMap func(r *Record) interface{}
 
+// integer representation of a mapping type.
+type MappingType uint8
+
+const (
+	MapIntVal      MappingType = 0
+	MapStrVal      MappingType = 1
+	MapBoolVal     MappingType = 2
+	MapArrayStr    MappingType = 3
+	MapArrayInt    MappingType = 4
+	MapSpecialInt  MappingType = 5
+	MapSpecialStr  MappingType = 6
+	MapSpecialBool MappingType = 7
+)
+
+type SectionType uint8
+
+const (
+	SectNone  SectionType = 0
+	SectProc  SectionType = 1
+	SectPProc SectionType = 2
+	SectFile  SectionType = 3
+	SectNet   SectionType = 4
+	SectFlow  SectionType = 5
+	SectCont  SectionType = 6
+	SectNode  SectionType = 7
+)
+
+// FieldEntry is an object that stores metadata for each field in the exported map.
+type FieldEntry struct {
+	Map     FieldMap
+	Id      sfgo.Attribute
+	Type    MappingType
+	Source  sfgo.Source
+	Section SectionType
+	AuxAttr RecAttribute
+}
+
 // IntFieldMap is a functional type denoting a numerical attribute mapper.
 type IntFieldMap func(r *Record) int64
 
@@ -42,13 +80,13 @@ type StrFieldMap func(r *Record) string
 
 // FieldMapper is an adapter for SysFlow attribute mappers.
 type FieldMapper struct {
-	Mappers map[string]FieldMap
+	Mappers map[string]*FieldEntry
 }
 
 // Map retrieves a field map based on a SysFlow attribute.
 func (m FieldMapper) Map(attr string) FieldMap {
 	if mapper, ok := m.Mappers[attr]; ok {
-		return mapper
+		return mapper.Map
 	}
 	return func(r *Record) interface{} { return attr }
 }
@@ -79,6 +117,27 @@ func (m FieldMapper) MapStr(attr string) StrFieldMap {
 	}
 }
 
+// MapStr retrieves a string field map based on a SysFlow attribute.
+func (m FieldMapper) MapBuffer(attr string, buf *bytes.Buffer) StrFieldMap {
+	return func(r *Record) string {
+		if v, ok := m.Map(attr)(r).(string); ok {
+			l := len(v)
+			if l > 0 && (v[0] == '"' || v[0] == '\'') {
+				buf.WriteString(v)
+			} else {
+				buf.WriteByte('"')
+				buf.WriteString(v)
+				buf.WriteByte('"')
+			}
+		} else if v, ok := m.Map(attr)(r).(int64); ok {
+			buf.WriteString(strconv.FormatInt(v, 10))
+		} else if v, ok := m.Map(attr)(r).(bool); ok {
+			buf.WriteString(strconv.FormatBool(v))
+		}
+		return sfgo.Zeros.String
+	}
+}
+
 // Fields defines a sorted array of all exported field mapper keys.
 var Fields = getFields()
 
@@ -103,7 +162,37 @@ func getFields() []string {
 	return keys
 }
 
-func getMappers() map[string]FieldMap {
+type FieldValue struct {
+	FieldName  string
+	FieldSects []string
+	Entry      *FieldEntry
+}
+
+var FieldValues = getFieldsAndValues()
+
+// getFields returns a sorted array of all exported field mapper keys.
+func getFieldsAndValues() []*FieldValue {
+	mappers := getExportedMappers()
+	fields := make([]*FieldValue, 0, len(mappers))
+	for k, v := range mappers {
+		field := &FieldValue{FieldName: k,
+			FieldSects: strings.Split(k, "."),
+			Entry:      v}
+
+		fields = append(fields, field)
+	}
+	sort.SliceStable(fields, func(i int, j int) bool {
+		ki := len(fields[i].FieldSects)
+		kj := len(fields[j].FieldSects)
+		if ki == kj {
+			return strings.Compare(fields[i].FieldName, fields[j].FieldName) < 0
+		}
+		return ki < kj
+	})
+	return fields
+}
+
+func getMappers() map[string]*FieldEntry {
 	mappers := getExportedMappers()
 	for k, v := range getNonExportedMappers() {
 		if _, ok := mappers[k]; !ok {
@@ -116,213 +205,214 @@ func getMappers() map[string]FieldMap {
 }
 
 // getExportedMappers defines all mappers for exported attributes.
-func getExportedMappers() map[string]FieldMap {
-	return map[string]FieldMap{
+func getExportedMappers() map[string]*FieldEntry {
+	return map[string]*FieldEntry{
 		// SysFlow
-		SF_TYPE:                  mapRecType(sfgo.SYSFLOW_SRC),
-		SF_OPFLAGS:               mapOpFlags(sfgo.SYSFLOW_SRC),
-		SF_RET:                   mapRet(sfgo.SYSFLOW_SRC),
-		SF_TS:                    mapInt(sfgo.SYSFLOW_SRC, sfgo.TS_INT),
-		SF_ENDTS:                 mapEndTs(sfgo.SYSFLOW_SRC),
-		SF_PROC_OID:              mapOID(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT, sfgo.PROC_OID_CREATETS_INT),
-		SF_PROC_PID:              mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
-		SF_PROC_NAME:             mapName(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR),
-		SF_PROC_EXE:              mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR),
-		SF_PROC_ARGS:             mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXEARGS_STR),
-		SF_PROC_UID:              mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT),
-		SF_PROC_USER:             mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_USERNAME_STR),
-		SF_PROC_TID:              mapInt(sfgo.SYSFLOW_SRC, sfgo.TID_INT),
-		SF_PROC_GID:              mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_GID_INT),
-		SF_PROC_GROUP:            mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_GROUPNAME_STR),
-		SF_PROC_CREATETS:         mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_CREATETS_INT),
-		SF_PROC_TTY:              mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_TTY_INT),
-		SF_PROC_ENTRY:            mapEntry(sfgo.SYSFLOW_SRC, sfgo.PROC_ENTRY_INT),
-		SF_PROC_CMDLINE:          mapJoin(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR, sfgo.PROC_EXEARGS_STR),
-		SF_PROC_ANAME:            mapCachedValue(sfgo.SYSFLOW_SRC, ProcAName),
-		SF_PROC_AEXE:             mapCachedValue(sfgo.SYSFLOW_SRC, ProcAExe),
-		SF_PROC_ACMDLINE:         mapCachedValue(sfgo.SYSFLOW_SRC, ProcACmdLine),
-		SF_PROC_APID:             mapCachedValue(sfgo.SYSFLOW_SRC, ProcAPID),
-		SF_PPROC_OID:             mapOID(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT, sfgo.PROC_POID_CREATETS_INT),
-		SF_PPROC_PID:             mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT),
-		SF_PPROC_NAME:            mapCachedValue(sfgo.SYSFLOW_SRC, PProcName),
-		SF_PPROC_EXE:             mapCachedValue(sfgo.SYSFLOW_SRC, PProcExe),
-		SF_PPROC_ARGS:            mapCachedValue(sfgo.SYSFLOW_SRC, PProcArgs),
-		SF_PPROC_UID:             mapCachedValue(sfgo.SYSFLOW_SRC, PProcUID),
-		SF_PPROC_USER:            mapCachedValue(sfgo.SYSFLOW_SRC, PProcUser),
-		SF_PPROC_GID:             mapCachedValue(sfgo.SYSFLOW_SRC, PProcGID),
-		SF_PPROC_GROUP:           mapCachedValue(sfgo.SYSFLOW_SRC, PProcGroup),
-		SF_PPROC_CREATETS:        mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_CREATETS_INT),
-		SF_PPROC_TTY:             mapCachedValue(sfgo.SYSFLOW_SRC, PProcTTY),
-		SF_PPROC_ENTRY:           mapCachedValue(sfgo.SYSFLOW_SRC, PProcEntry),
-		SF_PPROC_CMDLINE:         mapCachedValue(sfgo.SYSFLOW_SRC, PProcCmdLine),
-		SF_FILE_NAME:             mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		SF_FILE_PATH:             mapStr(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		SF_FILE_CANONICALPATH:    mapLinkPath(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		SF_FILE_OID:              mapOID(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		SF_FILE_DIRECTORY:        mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		SF_FILE_NEWNAME:          mapName(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
-		SF_FILE_NEWPATH:          mapStr(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
-		SF_FILE_NEWCANONICALPATH: mapLinkPath(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
-		SF_FILE_NEWOID:           mapOID(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
-		SF_FILE_NEWDIRECTORY:     mapDir(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
-		SF_FILE_TYPE:             mapFileType(sfgo.SYSFLOW_SRC, sfgo.FILE_RESTYPE_INT),
-		SF_FILE_IS_OPEN_WRITE:    mapIsOpenWrite(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
-		SF_FILE_IS_OPEN_READ:     mapIsOpenRead(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
-		SF_FILE_FD:               mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_FD_INT),
-		SF_FILE_OPENFLAGS:        mapOpenFlags(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
-		SF_NET_PROTO:             mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		SF_NET_PROTONAME:         mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		SF_NET_SPORT:             mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT),
-		SF_NET_DPORT:             mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DPORT_INT),
-		SF_NET_PORT:              mapPort(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT, sfgo.FL_NETW_DPORT_INT),
-		SF_NET_SIP:               mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT),
-		SF_NET_DIP:               mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DIP_INT),
-		SF_NET_IP:                mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT, sfgo.FL_NETW_DIP_INT),
-		SF_FLOW_RBYTES:           mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMRRECVBYTES_INT, sfgo.FL_NETW_NUMRRECVBYTES_INT),
-		SF_FLOW_ROPS:             mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMRRECVOPS_INT, sfgo.FL_NETW_NUMRRECVOPS_INT),
-		SF_FLOW_WBYTES:           mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMWSENDBYTES_INT, sfgo.FL_NETW_NUMWSENDBYTES_INT),
-		SF_FLOW_WOPS:             mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMWSENDOPS_INT, sfgo.FL_NETW_NUMWSENDOPS_INT),
-		SF_CONTAINER_ID:          mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_ID_STR),
-		SF_CONTAINER_NAME:        mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_NAME_STR),
-		SF_CONTAINER_IMAGEID:     mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGEID_STR),
-		SF_CONTAINER_IMAGE:       mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGE_STR),
-		SF_CONTAINER_TYPE:        mapContType(sfgo.SYSFLOW_SRC, sfgo.CONT_TYPE_INT),
-		SF_CONTAINER_PRIVILEGED:  mapInt(sfgo.SYSFLOW_SRC, sfgo.CONT_PRIVILEGED_INT),
-		SF_NODE_ID:               mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_EXPORTER_STR),
-		SF_NODE_IP:               mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_IP_STR),
-		SF_SCHEMA_VERSION:        mapInt(sfgo.SYSFLOW_SRC, sfgo.SFHE_VERSION_INT),
+		SF_TYPE:                  &FieldEntry{Map: mapRecType(sfgo.SYSFLOW_SRC), Id: sfgo.SF_REC_TYPE, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC},
+		SF_OPFLAGS:               &FieldEntry{Map: mapOpFlags(sfgo.SYSFLOW_SRC), Id: sfgo.EV_PROC_OPFLAGS_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC},
+		SF_RET:                   &FieldEntry{Map: mapRet(sfgo.SYSFLOW_SRC), Id: sfgo.SF_REC_TYPE, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC},
+		SF_TS:                    &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.TS_INT), Id: sfgo.TS_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC},
+		SF_ENDTS:                 &FieldEntry{Map: mapEndTs(sfgo.SYSFLOW_SRC), Id: sfgo.FL_FILE_ENDTS_INT, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC},
+		SF_PROC_OID:              &FieldEntry{Map: mapOID(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT, sfgo.PROC_OID_CREATETS_INT), Id: sfgo.PROC_OID_HPID_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_PID:              &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT), Id: sfgo.PROC_OID_HPID_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_NAME:             &FieldEntry{Map: mapName(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR), Id: sfgo.PROC_EXE_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_EXE:              &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR), Id: sfgo.PROC_EXE_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_ARGS:             &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXEARGS_STR), Id: sfgo.PROC_EXEARGS_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_UID:              &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT), Id: sfgo.PROC_UID_INT, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_USER:             &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_USERNAME_STR), Id: sfgo.PROC_USERNAME_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_TID:              &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.TID_INT), Id: sfgo.TID_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_GID:              &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_GID_INT), Id: sfgo.PROC_GID_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_GROUP:            &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_GROUPNAME_STR), Id: sfgo.PROC_GROUPNAME_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_CREATETS:         &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_CREATETS_INT), Id: sfgo.PROC_OID_CREATETS_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_TTY:              &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_TTY_INT), Id: sfgo.PROC_TTY_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_ENTRY:            &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_ENTRY_INT), Id: sfgo.PROC_ENTRY_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_CMDLINE:          &FieldEntry{Map: mapJoin(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR, sfgo.PROC_EXEARGS_STR), Id: sfgo.PROC_EXE_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
+		SF_PROC_ANAME:            &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, ProcAName), Id: 1000, Type: MapArrayStr, Source: sfgo.SYSFLOW_SRC, Section: SectProc, AuxAttr: ProcAName},
+		SF_PROC_AEXE:             &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, ProcAExe), Id: 1000, Type: MapArrayStr, Source: sfgo.SYSFLOW_SRC, Section: SectProc, AuxAttr: ProcAExe},
+		SF_PROC_ACMDLINE:         &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, ProcACmdLine), Id: 1000, Type: MapArrayStr, Source: sfgo.SYSFLOW_SRC, Section: SectProc, AuxAttr: ProcACmdLine},
+		SF_PROC_APID:             &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, ProcAPID), Id: 1000, Type: MapArrayInt, Source: sfgo.SYSFLOW_SRC, Section: SectProc, AuxAttr: ProcAPID},
+		SF_PPROC_OID:             &FieldEntry{Map: mapOID(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT, sfgo.PROC_POID_CREATETS_INT), Id: sfgo.PROC_POID_HPID_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectPProc},
+		SF_PPROC_PID:             &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT), Id: sfgo.PROC_POID_HPID_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectPProc},
+		SF_PPROC_NAME:            &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcName), Id: 2000, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcName},
+		SF_PPROC_EXE:             &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcExe), Id: 2000, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcExe},
+		SF_PPROC_ARGS:            &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcArgs), Id: 2000, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcArgs},
+		SF_PPROC_UID:             &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcUID), Id: 2000, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcUID},
+		SF_PPROC_USER:            &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcUser), Id: 2000, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcUser},
+		SF_PPROC_GID:             &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcGID), Id: 2000, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcGID},
+		SF_PPROC_GROUP:           &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcGroup), Id: 2000, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcGroup},
+		SF_PPROC_CREATETS:        &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_CREATETS_INT), Id: sfgo.PROC_POID_CREATETS_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectPProc},
+		SF_PPROC_TTY:             &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcTTY), Id: 2000, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcTTY},
+		SF_PPROC_ENTRY:           &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcEntry), Id: 2000, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcEntry},
+		SF_PPROC_CMDLINE:         &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcCmdLine), Id: 2000, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcCmdLine},
+		SF_FILE_NAME:             &FieldEntry{Map: mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR), Id: sfgo.FILE_PATH_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_PATH:             &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR), Id: sfgo.FILE_PATH_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_CANONICALPATH:    &FieldEntry{Map: mapLinkPath(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR), Id: sfgo.FILE_PATH_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_OID:              &FieldEntry{Map: mapOID(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR), Id: sfgo.FILE_PATH_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_DIRECTORY:        &FieldEntry{Map: mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR), Id: sfgo.FILE_PATH_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_NEWNAME:          &FieldEntry{Map: mapName(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR), Id: sfgo.SEC_FILE_PATH_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_NEWPATH:          &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR), Id: sfgo.SEC_FILE_PATH_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_NEWCANONICALPATH: &FieldEntry{Map: mapLinkPath(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR), Id: sfgo.SEC_FILE_PATH_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_NEWOID:           &FieldEntry{Map: mapOID(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR), Id: sfgo.SEC_FILE_PATH_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_NEWDIRECTORY:     &FieldEntry{Map: mapDir(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR), Id: sfgo.SEC_FILE_PATH_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_TYPE:             &FieldEntry{Map: mapFileType(sfgo.SYSFLOW_SRC, sfgo.FILE_RESTYPE_INT), Id: sfgo.FILE_RESTYPE_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_IS_OPEN_WRITE:    &FieldEntry{Map: mapIsOpenWrite(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT), Id: sfgo.FL_FILE_OPENFLAGS_INT, Type: MapSpecialBool, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_IS_OPEN_READ:     &FieldEntry{Map: mapIsOpenRead(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT), Id: sfgo.FL_FILE_OPENFLAGS_INT, Type: MapSpecialBool, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_FD:               &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_FD_INT), Id: sfgo.FL_FILE_FD_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_OPENFLAGS:        &FieldEntry{Map: mapOpenFlags(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT), Id: sfgo.FL_FILE_OPENFLAGS_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_NET_PROTO:             &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT), Id: sfgo.FL_NETW_PROTO_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
+		SF_NET_PROTONAME:         &FieldEntry{Map: mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT), Id: sfgo.FL_NETW_PROTO_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
+		SF_NET_SPORT:             &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT), Id: sfgo.FL_NETW_SPORT_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
+		SF_NET_DPORT:             &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DPORT_INT), Id: sfgo.FL_NETW_DPORT_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
+		SF_NET_PORT:              &FieldEntry{Map: mapPort(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT, sfgo.FL_NETW_DPORT_INT), Id: sfgo.FL_NETW_SPORT_INT, Type: MapArrayStr, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
+		SF_NET_SIP:               &FieldEntry{Map: mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT), Id: sfgo.FL_NETW_SIP_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
+		SF_NET_DIP:               &FieldEntry{Map: mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DIP_INT), Id: sfgo.FL_NETW_DIP_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
+		SF_NET_IP:                &FieldEntry{Map: mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT, sfgo.FL_NETW_DIP_INT), Id: sfgo.FL_NETW_SIP_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
+		SF_FLOW_RBYTES:           &FieldEntry{Map: mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMRRECVBYTES_INT, sfgo.FL_NETW_NUMRRECVBYTES_INT), Id: sfgo.FL_FILE_NUMRRECVBYTES_INT, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectFlow},
+		SF_FLOW_ROPS:             &FieldEntry{Map: mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMRRECVOPS_INT, sfgo.FL_NETW_NUMRRECVOPS_INT), Id: sfgo.FL_FILE_NUMRRECVOPS_INT, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectFlow},
+		SF_FLOW_WBYTES:           &FieldEntry{Map: mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMWSENDBYTES_INT, sfgo.FL_NETW_NUMWSENDBYTES_INT), Id: sfgo.FL_FILE_NUMWSENDBYTES_INT, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectFlow},
+		SF_FLOW_WOPS:             &FieldEntry{Map: mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMWSENDOPS_INT, sfgo.FL_NETW_NUMWSENDOPS_INT), Id: sfgo.FL_FILE_NUMWSENDOPS_INT, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectFlow},
+		SF_CONTAINER_ID:          &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_ID_STR), Id: sfgo.CONT_ID_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
+		SF_CONTAINER_NAME:        &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_NAME_STR), Id: sfgo.CONT_NAME_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
+		SF_CONTAINER_IMAGEID:     &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGEID_STR), Id: sfgo.CONT_IMAGEID_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
+		SF_CONTAINER_IMAGE:       &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGE_STR), Id: sfgo.CONT_IMAGE_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
+		SF_CONTAINER_TYPE:        &FieldEntry{Map: mapContType(sfgo.SYSFLOW_SRC, sfgo.CONT_TYPE_INT), Id: sfgo.CONT_TYPE_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
+		SF_CONTAINER_PRIVILEGED:  &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.CONT_PRIVILEGED_INT), Id: sfgo.CONT_PRIVILEGED_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
+		SF_NODE_ID:               &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_EXPORTER_STR), Id: sfgo.SFHE_EXPORTER_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectNode},
+		SF_NODE_IP:               &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_IP_STR), Id: sfgo.SFHE_IP_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectNode},
+		SF_SCHEMA_VERSION:        &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.SFHE_VERSION_INT), Id: sfgo.SFHE_VERSION_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectNode},
 
-		//Ext processes
-		EXT_PROC_GUID_STR:                mapStr(sfgo.PROCESS_SRC, sfgo.PROC_GUID_STR),
-		EXT_PROC_IMAGE_STR:               mapStr(sfgo.PROCESS_SRC, sfgo.PROC_IMAGE_STR),
-		EXT_PROC_CURR_DIRECTORY_STR:      mapDir(sfgo.PROCESS_SRC, sfgo.PROC_CURR_DIRECTORY_STR),
-		EXT_PROC_LOGON_GUID_STR:          mapStr(sfgo.PROCESS_SRC, sfgo.PROC_LOGON_GUID_STR),
-		EXT_PROC_LOGON_ID_STR:            mapStr(sfgo.PROCESS_SRC, sfgo.PROC_LOGON_ID_STR),
-		EXT_PROC_TERMINAL_SESSION_ID_STR: mapStr(sfgo.PROCESS_SRC, sfgo.PROC_TERMINAL_SESSION_ID_STR),
-		EXT_PROC_INTEGRITY_LEVEL_STR:     mapStr(sfgo.PROCESS_SRC, sfgo.PROC_INTEGRITY_LEVEL_STR),
-		EXT_PROC_SIGNATURE_STR:           mapStr(sfgo.PROCESS_SRC, sfgo.PROC_SIGNATURE_STR),
-		EXT_PROC_SIGNATURE_STATUS_STR:    mapStr(sfgo.PROCESS_SRC, sfgo.PROC_SIGNATURE_STATUS_STR),
-		EXT_PROC_SHA1_HASH_STR:           mapStr(sfgo.PROCESS_SRC, sfgo.PROC_SHA1_HASH_STR),
-		EXT_PROC_MD5_HASH_STR:            mapStr(sfgo.PROCESS_SRC, sfgo.PROC_MD5_HASH_STR),
-		EXT_PROC_SHA256_HASH_STR:         mapStr(sfgo.PROCESS_SRC, sfgo.PROC_SHA256_HASH_STR),
-		EXT_PROC_IMP_HASH_STR:            mapStr(sfgo.PROCESS_SRC, sfgo.PROC_IMP_HASH_STR),
-		EXT_PROC_SIGNED_INT:              mapInt(sfgo.PROCESS_SRC, sfgo.PROC_SIGNED_INT),
+		/*		//Ext processes
+				EXT_PROC_GUID_STR:                mapStr(sfgo.PROCESS_SRC, sfgo.PROC_GUID_STR),
+				EXT_PROC_IMAGE_STR:               mapStr(sfgo.PROCESS_SRC, sfgo.PROC_IMAGE_STR),
+				EXT_PROC_CURR_DIRECTORY_STR:      mapDir(sfgo.PROCESS_SRC, sfgo.PROC_CURR_DIRECTORY_STR),
+				EXT_PROC_LOGON_GUID_STR:          mapStr(sfgo.PROCESS_SRC, sfgo.PROC_LOGON_GUID_STR),
+				EXT_PROC_LOGON_ID_STR:            mapStr(sfgo.PROCESS_SRC, sfgo.PROC_LOGON_ID_STR),
+				EXT_PROC_TERMINAL_SESSION_ID_STR: mapStr(sfgo.PROCESS_SRC, sfgo.PROC_TERMINAL_SESSION_ID_STR),
+				EXT_PROC_INTEGRITY_LEVEL_STR:     mapStr(sfgo.PROCESS_SRC, sfgo.PROC_INTEGRITY_LEVEL_STR),
+				EXT_PROC_SIGNATURE_STR:           mapStr(sfgo.PROCESS_SRC, sfgo.PROC_SIGNATURE_STR),
+				EXT_PROC_SIGNATURE_STATUS_STR:    mapStr(sfgo.PROCESS_SRC, sfgo.PROC_SIGNATURE_STATUS_STR),
+				EXT_PROC_SHA1_HASH_STR:           mapStr(sfgo.PROCESS_SRC, sfgo.PROC_SHA1_HASH_STR),
+				EXT_PROC_MD5_HASH_STR:            mapStr(sfgo.PROCESS_SRC, sfgo.PROC_MD5_HASH_STR),
+				EXT_PROC_SHA256_HASH_STR:         mapStr(sfgo.PROCESS_SRC, sfgo.PROC_SHA256_HASH_STR),
+				EXT_PROC_IMP_HASH_STR:            mapStr(sfgo.PROCESS_SRC, sfgo.PROC_IMP_HASH_STR),
+				EXT_PROC_SIGNED_INT:              mapInt(sfgo.PROCESS_SRC, sfgo.PROC_SIGNED_INT),
 
-		//Ext files
-		EXT_FILE_SIGNATURE_STR:        mapStr(sfgo.FILE_SRC, sfgo.FILE_SIGNATURE_STR),
-		EXT_FILE_SIGNATURE_STATUS_STR: mapStr(sfgo.FILE_SRC, sfgo.FILE_SIGNATURE_STATUS_STR),
-		EXT_FILE_SHA1_HASH_STR:        mapStr(sfgo.FILE_SRC, sfgo.FILE_SHA1_HASH_STR),
-		EXT_FILE_MD5_HASH_STR:         mapStr(sfgo.FILE_SRC, sfgo.FILE_MD5_HASH_STR),
-		EXT_FILE_SHA256_HASH_STR:      mapStr(sfgo.FILE_SRC, sfgo.FILE_SHA256_HASH_STR),
-		EXT_FILE_IMP_HASH_STR:         mapStr(sfgo.FILE_SRC, sfgo.FILE_IMP_HASH_STR),
-		EXT_FILE_SIGNED_INT:           mapInt(sfgo.FILE_SRC, sfgo.FILE_SIGNED_INT),
+				//Ext files
+				EXT_FILE_SIGNATURE_STR:        mapStr(sfgo.FILE_SRC, sfgo.FILE_SIGNATURE_STR),
+				EXT_FILE_SIGNATURE_STATUS_STR: mapStr(sfgo.FILE_SRC, sfgo.FILE_SIGNATURE_STATUS_STR),
+				EXT_FILE_SHA1_HASH_STR:        mapStr(sfgo.FILE_SRC, sfgo.FILE_SHA1_HASH_STR),
+				EXT_FILE_MD5_HASH_STR:         mapStr(sfgo.FILE_SRC, sfgo.FILE_MD5_HASH_STR),
+				EXT_FILE_SHA256_HASH_STR:      mapStr(sfgo.FILE_SRC, sfgo.FILE_SHA256_HASH_STR),
+				EXT_FILE_IMP_HASH_STR:         mapStr(sfgo.FILE_SRC, sfgo.FILE_IMP_HASH_STR),
+				EXT_FILE_SIGNED_INT:           mapInt(sfgo.FILE_SRC, sfgo.FILE_SIGNED_INT),
 
-		//Ext network
-		EXT_NET_SOURCE_HOST_NAME_STR: mapStr(sfgo.NETWORK_SRC, sfgo.NET_SOURCE_HOST_NAME_STR),
-		EXT_NET_SOURCE_PORT_NAME_STR: mapStr(sfgo.NETWORK_SRC, sfgo.NET_SOURCE_PORT_NAME_STR),
-		EXT_NET_DEST_HOST_NAME_STR:   mapStr(sfgo.NETWORK_SRC, sfgo.NET_DEST_HOST_NAME_STR),
-		EXT_NET_DEST_PORT_NAME_STR:   mapStr(sfgo.NETWORK_SRC, sfgo.NET_DEST_PORT_NAME_STR),
+				//Ext network
+				EXT_NET_SOURCE_HOST_NAME_STR: mapStr(sfgo.NETWORK_SRC, sfgo.NET_SOURCE_HOST_NAME_STR),
+				EXT_NET_SOURCE_PORT_NAME_STR: mapStr(sfgo.NETWORK_SRC, sfgo.NET_SOURCE_PORT_NAME_STR),
+				EXT_NET_DEST_HOST_NAME_STR:   mapStr(sfgo.NETWORK_SRC, sfgo.NET_DEST_HOST_NAME_STR),
+				EXT_NET_DEST_PORT_NAME_STR:   mapStr(sfgo.NETWORK_SRC, sfgo.NET_DEST_PORT_NAME_STR),
 
-		//Ext target proc
-		EXT_TARG_PROC_OID_CREATETS_INT:       mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_OID_CREATETS_INT),
-		EXT_TARG_PROC_OID_HPID_INT:           mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_OID_HPID_INT),
-		EXT_TARG_PROC_TS_INT:                 mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_TS_INT),
-		EXT_TARG_PROC_POID_CREATETS_INT:      mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_POID_CREATETS_INT),
-		EXT_TARG_PROC_POID_HPID_INT:          mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_POID_HPID_INT),
-		EXT_TARG_PROC_EXE_STR:                mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_EXE_STR),
-		EXT_TARG_PROC_EXEARGS_STR:            mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_EXEARGS_STR),
-		EXT_TARG_PROC_UID_INT:                mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_UID_INT),
-		EXT_TARG_PROC_GID_INT:                mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_GID_INT),
-		EXT_TARG_PROC_USERNAME_STR:           mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_USERNAME_STR),
-		EXT_TARG_PROC_GROUPNAME_STR:          mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_GROUPNAME_STR),
-		EXT_TARG_PROC_TTY_INT:                mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_TTY_INT),
-		EXT_TARG_PROC_CONTAINERID_STRING_STR: mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_CONTAINERID_STRING_STR),
-		EXT_TARG_PROC_ENTRY_INT:              mapEntry(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_ENTRY_INT),
+				//Ext target proc
+				EXT_TARG_PROC_OID_CREATETS_INT:       mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_OID_CREATETS_INT),
+				EXT_TARG_PROC_OID_HPID_INT:           mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_OID_HPID_INT),
+				EXT_TARG_PROC_TS_INT:                 mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_TS_INT),
+				EXT_TARG_PROC_POID_CREATETS_INT:      mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_POID_CREATETS_INT),
+				EXT_TARG_PROC_POID_HPID_INT:          mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_POID_HPID_INT),
+				EXT_TARG_PROC_EXE_STR:                mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_EXE_STR),
+				EXT_TARG_PROC_EXEARGS_STR:            mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_EXEARGS_STR),
+				EXT_TARG_PROC_UID_INT:                mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_UID_INT),
+				EXT_TARG_PROC_GID_INT:                mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_GID_INT),
+				EXT_TARG_PROC_USERNAME_STR:           mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_USERNAME_STR),
+				EXT_TARG_PROC_GROUPNAME_STR:          mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_GROUPNAME_STR),
+				EXT_TARG_PROC_TTY_INT:                mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_TTY_INT),
+				EXT_TARG_PROC_CONTAINERID_STRING_STR: mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_CONTAINERID_STRING_STR),
+				EXT_TARG_PROC_ENTRY_INT:              mapEntry(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_ENTRY_INT),
 
-		EXT_TARG_PROC_GUID_STR:                mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_GUID_STR),
-		EXT_TARG_PROC_IMAGE_STR:               mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_IMAGE_STR),
-		EXT_TARG_PROC_CURR_DIRECTORY_STR:      mapDir(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_CURR_DIRECTORY_STR),
-		EXT_TARG_PROC_LOGON_GUID_STR:          mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_LOGON_GUID_STR),
-		EXT_TARG_PROC_LOGON_ID_STR:            mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_LOGON_ID_STR),
-		EXT_TARG_PROC_TERMINAL_SESSION_ID_STR: mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_TERMINAL_SESSION_ID_STR),
-		EXT_TARG_PROC_INTEGRITY_LEVEL_STR:     mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_INTEGRITY_LEVEL_STR),
-		EXT_TARG_PROC_SIGNATURE_STR:           mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SIGNATURE_STR),
-		EXT_TARG_PROC_SIGNATURE_STATUS_STR:    mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SIGNATURE_STATUS_STR),
-		EXT_TARG_PROC_SHA1_HASH_STR:           mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SHA1_HASH_STR),
-		EXT_TARG_PROC_MD5_HASH_STR:            mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_MD5_HASH_STR),
-		EXT_TARG_PROC_SHA256_HASH_STR:         mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SHA256_HASH_STR),
-		EXT_TARG_PROC_IMP_HASH_STR:            mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_IMP_HASH_STR),
-		EXT_TARG_PROC_SIGNED_INT:              mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SIGNED_INT),
-		EXT_TARG_PROC_START_ADDR_STR:          mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_START_ADDR_STR),
-		EXT_TARG_PROC_START_MODULE_STR:        mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_START_MODULE_STR),
-		EXT_TARG_PROC_START_FUNCTION_STR:      mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_START_FUNCTION_STR),
-		EXT_TARG_PROC_GRANT_ACCESS_STR:        mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_GRANT_ACCESS_STR),
-		EXT_TARG_PROC_CALL_TRACE_STR:          mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_CALL_TRACE_STR),
-		EXT_TARG_PROC_ACCESS_TYPE_STR:         mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_ACCESS_TYPE_STR),
-		EXT_TARG_PROC_NEW_THREAD_ID_INT:       mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_NEW_THREAD_ID_INT),
+				EXT_TARG_PROC_GUID_STR:                mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_GUID_STR),
+				EXT_TARG_PROC_IMAGE_STR:               mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_IMAGE_STR),
+				EXT_TARG_PROC_CURR_DIRECTORY_STR:      mapDir(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_CURR_DIRECTORY_STR),
+				EXT_TARG_PROC_LOGON_GUID_STR:          mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_LOGON_GUID_STR),
+				EXT_TARG_PROC_LOGON_ID_STR:            mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_LOGON_ID_STR),
+				EXT_TARG_PROC_TERMINAL_SESSION_ID_STR: mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_TERMINAL_SESSION_ID_STR),
+				EXT_TARG_PROC_INTEGRITY_LEVEL_STR:     mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_INTEGRITY_LEVEL_STR),
+				EXT_TARG_PROC_SIGNATURE_STR:           mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SIGNATURE_STR),
+				EXT_TARG_PROC_SIGNATURE_STATUS_STR:    mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SIGNATURE_STATUS_STR),
+				EXT_TARG_PROC_SHA1_HASH_STR:           mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SHA1_HASH_STR),
+				EXT_TARG_PROC_MD5_HASH_STR:            mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_MD5_HASH_STR),
+				EXT_TARG_PROC_SHA256_HASH_STR:         mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SHA256_HASH_STR),
+				EXT_TARG_PROC_IMP_HASH_STR:            mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_IMP_HASH_STR),
+				EXT_TARG_PROC_SIGNED_INT:              mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_SIGNED_INT),
+				EXT_TARG_PROC_START_ADDR_STR:          mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_START_ADDR_STR),
+				EXT_TARG_PROC_START_MODULE_STR:        mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_START_MODULE_STR),
+				EXT_TARG_PROC_START_FUNCTION_STR:      mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_START_FUNCTION_STR),
+				EXT_TARG_PROC_GRANT_ACCESS_STR:        mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_GRANT_ACCESS_STR),
+				EXT_TARG_PROC_CALL_TRACE_STR:          mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_CALL_TRACE_STR),
+				EXT_TARG_PROC_ACCESS_TYPE_STR:         mapStr(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_ACCESS_TYPE_STR),
+				EXT_TARG_PROC_NEW_THREAD_ID_INT:       mapInt(sfgo.TARG_PROC_SRC, sfgo.EVT_TARG_PROC_NEW_THREAD_ID_INT),
+		*/
 	}
 }
 
 // getNonExportedMappers defines all mappers for non-exported (query-only) attributes.
-func getNonExportedMappers() map[string]FieldMap {
-	return map[string]FieldMap{
+func getNonExportedMappers() map[string]*FieldEntry {
+	return map[string]*FieldEntry{
 		// Falco
-		FALCO_EVT_TYPE:          mapOpFlags(sfgo.SYSFLOW_SRC),
-		FALCO_EVT_RAW_RES:       mapRecType(sfgo.SYSFLOW_SRC),
-		FALCO_EVT_RAW_TIME:      mapInt(sfgo.SYSFLOW_SRC, sfgo.TS_INT),
-		FALCO_EVT_DIR:           mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
-		FALCO_EVT_IS_OPEN_READ:  mapIsOpenRead(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
-		FALCO_EVT_IS_OPEN_WRITE: mapIsOpenWrite(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
-		FALCO_EVT_UID:           mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT),
-		FALCO_FD_TYPECHAR:       mapFileType(sfgo.SYSFLOW_SRC, sfgo.FILE_RESTYPE_INT),
-		FALCO_FD_DIRECTORY:      mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
-		FALCO_FD_NAME:           mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
-		FALCO_FD_FILENAME:       mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
-		FALCO_FD_PROTO:          mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		FALCO_FD_LPROTO:         mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		FALCO_FD_L4PROTO:        mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		FALCO_FD_RPROTO:         mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		FALCO_FD_SPROTO:         mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		FALCO_FD_CPROTO:         mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		FALCO_FD_SPORT:          mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT),
-		FALCO_FD_DPORT:          mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DPORT_INT),
-		FALCO_FD_SIP:            mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT),
-		FALCO_FD_DIP:            mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DIP_INT),
-		FALCO_FD_IP:             mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT, sfgo.FL_NETW_DIP_INT),
-		FALCO_FD_PORT:           mapPort(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT, sfgo.FL_NETW_DPORT_INT),
-		FALCO_FD_NUM:            mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_FD_INT),
-		FALCO_USER_NAME:         mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_USERNAME_STR),
-		FALCO_PROC_PID:          mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
-		FALCO_PROC_TID:          mapInt(sfgo.SYSFLOW_SRC, sfgo.TID_INT),
-		FALCO_PROC_GID:          mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_GID_INT),
-		FALCO_PROC_UID:          mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT),
-		FALCO_PROC_GROUP:        mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_GROUPNAME_STR),
-		FALCO_PROC_TTY:          mapCachedValue(sfgo.SYSFLOW_SRC, PProcTTY),
-		FALCO_PROC_USER:         mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_USERNAME_STR),
-		FALCO_PROC_EXE:          mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR),
-		FALCO_PROC_NAME:         mapName(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR),
-		FALCO_PROC_ARGS:         mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXEARGS_STR),
-		FALCO_PROC_CREATE_TIME:  mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_CREATETS_INT),
-		FALCO_PROC_CMDLINE:      mapJoin(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR, sfgo.PROC_EXEARGS_STR),
-		FALCO_PROC_ANAME:        mapCachedValue(sfgo.SYSFLOW_SRC, ProcAName),
-		FALCO_PROC_APID:         mapCachedValue(sfgo.SYSFLOW_SRC, ProcAPID),
-		FALCO_PROC_PPID:         mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT),
-		FALCO_PROC_PGID:         mapCachedValue(sfgo.SYSFLOW_SRC, PProcGID),
-		FALCO_PROC_PUID:         mapCachedValue(sfgo.SYSFLOW_SRC, PProcUID),
-		FALCO_PROC_PGROUP:       mapCachedValue(sfgo.SYSFLOW_SRC, PProcGroup),
-		FALCO_PROC_PTTY:         mapCachedValue(sfgo.SYSFLOW_SRC, PProcTTY),
-		FALCO_PROC_PUSER:        mapCachedValue(sfgo.SYSFLOW_SRC, PProcUser),
-		FALCO_PROC_PEXE:         mapCachedValue(sfgo.SYSFLOW_SRC, PProcExe),
-		FALCO_PROC_PARGS:        mapCachedValue(sfgo.SYSFLOW_SRC, PProcArgs),
-		FALCO_PROC_PCREATE_TIME: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_CREATETS_INT),
-		FALCO_PROC_PNAME:        mapCachedValue(sfgo.SYSFLOW_SRC, PProcName),
-		FALCO_PROC_PCMDLINE:     mapCachedValue(sfgo.SYSFLOW_SRC, PProcCmdLine),
-		FALCO_CONT_ID:           mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_ID_STR),
-		FALCO_CONT_IMAGE_ID:     mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGEID_STR),
-		FALCO_CONT_IMAGE:        mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGE_STR),
-		FALCO_CONT_NAME:         mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_NAME_STR),
-		FALCO_CONT_TYPE:         mapContType(sfgo.SYSFLOW_SRC, sfgo.CONT_TYPE_INT),
-		FALCO_CONT_PRIVILEGED:   mapInt(sfgo.SYSFLOW_SRC, sfgo.CONT_PRIVILEGED_INT),
+		FALCO_EVT_TYPE:          &FieldEntry{Map: mapOpFlags(sfgo.SYSFLOW_SRC)},
+		FALCO_EVT_RAW_RES:       &FieldEntry{Map: mapRecType(sfgo.SYSFLOW_SRC)},
+		FALCO_EVT_RAW_TIME:      &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.TS_INT)},
+		FALCO_EVT_DIR:           &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT)},
+		FALCO_EVT_IS_OPEN_READ:  &FieldEntry{Map: mapIsOpenRead(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT)},
+		FALCO_EVT_IS_OPEN_WRITE: &FieldEntry{Map: mapIsOpenWrite(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT)},
+		FALCO_EVT_UID:           &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT)},
+		FALCO_FD_TYPECHAR:       &FieldEntry{Map: mapFileType(sfgo.SYSFLOW_SRC, sfgo.FILE_RESTYPE_INT)},
+		FALCO_FD_DIRECTORY:      &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT)},
+		FALCO_FD_NAME:           &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT)},
+		FALCO_FD_FILENAME:       &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT)},
+		FALCO_FD_PROTO:          &FieldEntry{Map: mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR)},
+		FALCO_FD_LPROTO:         &FieldEntry{Map: mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR)},
+		FALCO_FD_L4PROTO:        &FieldEntry{Map: mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR)},
+		FALCO_FD_RPROTO:         &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT)},
+		FALCO_FD_SPROTO:         &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT)},
+		FALCO_FD_CPROTO:         &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT)},
+		FALCO_FD_SPORT:          &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT)},
+		FALCO_FD_DPORT:          &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DPORT_INT)},
+		FALCO_FD_SIP:            &FieldEntry{Map: mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT)},
+		FALCO_FD_DIP:            &FieldEntry{Map: mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DIP_INT)},
+		FALCO_FD_IP:             &FieldEntry{Map: mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT, sfgo.FL_NETW_DIP_INT)},
+		FALCO_FD_PORT:           &FieldEntry{Map: mapPort(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT, sfgo.FL_NETW_DPORT_INT)},
+		FALCO_FD_NUM:            &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_FD_INT)},
+		FALCO_USER_NAME:         &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_USERNAME_STR)},
+		FALCO_PROC_PID:          &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT)},
+		FALCO_PROC_TID:          &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.TID_INT)},
+		FALCO_PROC_GID:          &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_GID_INT)},
+		FALCO_PROC_UID:          &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT)},
+		FALCO_PROC_GROUP:        &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_GROUPNAME_STR)},
+		FALCO_PROC_TTY:          &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcTTY)},
+		FALCO_PROC_USER:         &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_USERNAME_STR)},
+		FALCO_PROC_EXE:          &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR)},
+		FALCO_PROC_NAME:         &FieldEntry{Map: mapName(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR)},
+		FALCO_PROC_ARGS:         &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXEARGS_STR)},
+		FALCO_PROC_CREATE_TIME:  &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_CREATETS_INT)},
+		FALCO_PROC_CMDLINE:      &FieldEntry{Map: mapJoin(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR, sfgo.PROC_EXEARGS_STR)},
+		FALCO_PROC_ANAME:        &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, ProcAName)},
+		FALCO_PROC_APID:         &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, ProcAPID)},
+		FALCO_PROC_PPID:         &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT)},
+		FALCO_PROC_PGID:         &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcGID)},
+		FALCO_PROC_PUID:         &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcUID)},
+		FALCO_PROC_PGROUP:       &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcGroup)},
+		FALCO_PROC_PTTY:         &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcTTY)},
+		FALCO_PROC_PUSER:        &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcUser)},
+		FALCO_PROC_PEXE:         &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcExe)},
+		FALCO_PROC_PARGS:        &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcArgs)},
+		FALCO_PROC_PCREATE_TIME: &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_CREATETS_INT)},
+		FALCO_PROC_PNAME:        &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcName)},
+		FALCO_PROC_PCMDLINE:     &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcCmdLine)},
+		FALCO_CONT_ID:           &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_ID_STR)},
+		FALCO_CONT_IMAGE_ID:     &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGEID_STR)},
+		FALCO_CONT_IMAGE:        &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGE_STR)},
+		FALCO_CONT_NAME:         &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_NAME_STR)},
+		FALCO_CONT_TYPE:         &FieldEntry{Map: mapContType(sfgo.SYSFLOW_SRC, sfgo.CONT_TYPE_INT)},
+		FALCO_CONT_PRIVILEGED:   &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.CONT_PRIVILEGED_INT)},
 	}
 }
 

@@ -115,10 +115,11 @@ const (
 	StdOutExport Export = iota
 	FileExport
 	SyslogExport
+	NullExport
 )
 
 func (s Export) String() string {
-	return [...]string{"terminal", "file", "syslog"}[s]
+	return [...]string{"terminal", "file", "syslog", "null"}[s]
 }
 
 func parseExportConfig(s string) Export {
@@ -130,6 +131,9 @@ func parseExportConfig(s string) Export {
 	}
 	if SyslogExport.String() == s {
 		return SyslogExport
+	}
+	if NullExport.String() == s {
+		return NullExport
 	}
 	return StdOutExport
 }
