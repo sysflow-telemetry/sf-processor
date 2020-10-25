@@ -20,6 +20,7 @@
 package engine
 
 import (
+	"bytes"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -176,6 +177,124 @@ func (r Record) memoizePtree(ID sfgo.OID) []*sfgo.Process {
 	}
 	r.Ptree[ID] = r.getProcProv(ID)
 	return r.Ptree[ID]
+}
+
+// GetCachedValue returns the value of attr from cache for process ID.
+func (r Record) SetCachedValueBuffer(ID sfgo.OID, attr RecAttribute, buf *bytes.Buffer) {
+	if ptree := r.memoizePtree(ID); ptree != nil {
+		switch attr {
+		case PProcName:
+			if len(ptree) > 1 {
+				TryAddQuotes(filepath.Base(ptree[1].Exe), buf)
+			}
+			break
+		case PProcExe:
+			if len(ptree) > 1 {
+				TryAddQuotes(ptree[1].Exe, buf)
+			}
+			break
+		case PProcArgs:
+			if len(ptree) > 1 {
+				TryAddQuotes(ptree[1].ExeArgs, buf)
+			}
+			break
+		case PProcUID:
+			if len(ptree) > 1 {
+				buf.WriteString(strconv.FormatInt(int64(ptree[1].Uid), 10))
+			}
+			break
+		case PProcUser:
+			if len(ptree) > 1 {
+				TryAddQuotes(ptree[1].UserName, buf)
+			}
+			break
+		case PProcGID:
+			if len(ptree) > 1 {
+				buf.WriteString(strconv.FormatInt(int64(ptree[1].Gid), 10))
+			}
+			break
+		case PProcGroup:
+			if len(ptree) > 1 {
+				TryAddQuotes(ptree[1].GroupName, buf)
+			}
+			break
+		case PProcTTY:
+			if len(ptree) > 1 {
+				if ptree[1].Tty {
+					buf.WriteByte('1')
+				} else {
+					buf.WriteByte('0')
+				}
+			}
+			break
+		case PProcEntry:
+			if len(ptree) > 1 {
+				if ptree[1].Entry {
+					buf.WriteByte('1')
+				} else {
+					buf.WriteByte('0')
+				}
+			}
+			break
+		case PProcCmdLine:
+			if len(ptree) > 1 {
+				exe := trimBoundingQuotes(ptree[1].Exe)
+				exeArgs := trimBoundingQuotes(ptree[1].ExeArgs)
+				buf.WriteByte('"')
+				buf.WriteString(exe)
+				buf.WriteByte(' ')
+				buf.WriteString(exeArgs)
+			}
+			break
+		case ProcAName:
+			//var s []string
+			l := len(ptree)
+			buf.WriteByte('[')
+			for i, p := range ptree {
+				TryAddQuotes(filepath.Base(p.Exe), buf)
+				if i < (l - 1) {
+					buf.WriteByte(',')
+				}
+			}
+			buf.WriteByte(']')
+		case ProcAExe:
+			l := len(ptree)
+			buf.WriteByte('[')
+			for i, p := range ptree {
+				TryAddQuotes(p.Exe, buf)
+				if i < (l - 1) {
+					buf.WriteByte(',')
+				}
+			}
+			buf.WriteByte(']')
+		case ProcACmdLine:
+			l := len(ptree)
+			buf.WriteByte('[')
+			for i, p := range ptree {
+				exe := trimBoundingQuotes(p.Exe)
+				exeArgs := trimBoundingQuotes(p.ExeArgs)
+				buf.WriteByte('"')
+				buf.WriteString(exe)
+				buf.WriteByte(' ')
+				buf.WriteString(exeArgs)
+				buf.WriteByte('"')
+				if i < (l - 1) {
+					buf.WriteByte(',')
+				}
+			}
+			buf.WriteByte(']')
+		case ProcAPID:
+			l := len(ptree)
+			buf.WriteByte('[')
+			for i, p := range ptree {
+				buf.WriteString(strconv.FormatInt(p.Oid.Hpid, 10))
+				if i < (l - 1) {
+					buf.WriteByte(',')
+				}
+			}
+			buf.WriteByte(']')
+		}
+	}
 }
 
 // GetCachedValue returns the value of attr from cache for process ID.

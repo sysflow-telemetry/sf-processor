@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
@@ -52,7 +51,7 @@ const (
 )
 
 type JSONExporter struct {
-	fieldCache [][]string
+	fieldCache []*engine.FieldValue
 	proto      ExportProtocol
 	config     Config
 	buf        *bytes.Buffer
@@ -60,10 +59,10 @@ type JSONExporter struct {
 
 func NewJSONExporter(p ExportProtocol, config Config) *JSONExporter {
 	t := &JSONExporter{}
-	t.fieldCache = make([][]string, len(engine.Fields))
-	for ind, k := range engine.Fields {
+	t.fieldCache = engine.FieldValues
+	/*	for ind, k := range engine.Fields {
 		t.fieldCache[ind] = strings.Split(k, ".")
-	}
+	}*/
 	t.proto = p
 	t.config = config
 	buffer := make([]byte, 0, 2048)
@@ -137,11 +136,11 @@ func (t *JSONExporter) ExportTelemetryRecords(recs []*engine.Record) error {
 
 }
 
-func (t *JSONExporter) writeAttribute(k string, fieldIdx int, fieldId int, rec *engine.Record) {
+func (t *JSONExporter) writeAttribute(fv *engine.FieldValue, fieldId int, rec *engine.Record) {
 	t.buf.WriteByte('"')
-	t.buf.WriteString(t.fieldCache[fieldIdx][fieldId])
+	t.buf.WriteString(fv.FieldSects[fieldId])
 	t.buf.WriteString("\":")
-	t.buf.WriteString(engine.Mapper.MapBuffer(k, t.buf)(rec))
+	engine.Mapper.MapBuffer(fv, t.buf)(rec)
 }
 
 func (t *JSONExporter) writeSectionBegin(section string) {
@@ -169,27 +168,27 @@ func (t *JSONExporter) encodeTelemetry(rec *engine.Record) {
 	                        r.Data[k] = engine.Mapper.Mappers[k](rec)
 	                }*/
 
-	for ind, k := range engine.Fields {
-		numFields := len(t.fieldCache[ind])
+	for _, fv := range t.fieldCache {
+		numFields := len(fv.FieldSects)
 		if numFields == 2 {
-			t.writeAttribute(k, ind, 1, rec)
+			t.writeAttribute(fv, 1, rec)
 			t.buf.WriteByte(',')
 		} else if numFields == 3 {
-			switch t.fieldCache[ind][1] {
-			case PROC:
+			switch fv.Entry.Section {
+			case engine.SectProc:
 				if state != PROC_STATE {
 					if state != BEGIN_STATE && existed {
 						t.buf.WriteString("},")
 					}
 					existed = true
 					t.writeSectionBegin(PROC)
-					t.writeAttribute(k, ind, 2, rec)
+					t.writeAttribute(fv, 2, rec)
 					state = PROC_STATE
 				} else {
 					t.buf.WriteByte(',')
-					t.writeAttribute(k, ind, 2, rec)
+					t.writeAttribute(fv, 2, rec)
 				}
-			case PPROC:
+			case engine.SectPProc:
 				if state != PPROC_STATE {
 					if state != BEGIN_STATE && existed {
 						t.buf.WriteString("},")
@@ -197,23 +196,23 @@ func (t *JSONExporter) encodeTelemetry(rec *engine.Record) {
 					if pprocExists {
 						existed = true
 						t.writeSectionBegin(PPROC)
-						t.writeAttribute(k, ind, 2, rec)
+						t.writeAttribute(fv, 2, rec)
 					} else {
 						existed = false
 					}
 					state = PPROC_STATE
 				} else if pprocExists {
 					t.buf.WriteByte(',')
-					t.writeAttribute(k, ind, 2, rec)
+					t.writeAttribute(fv, 2, rec)
 				}
-			case NET:
+			case engine.SectNet:
 				if state != NET_STATE {
 					if state != BEGIN_STATE && existed {
 						t.buf.WriteString("},")
 					}
 					if sftype == engine.TyNF {
 						t.writeSectionBegin(NET)
-						t.writeAttribute(k, ind, 2, rec)
+						t.writeAttribute(fv, 2, rec)
 						existed = true
 					} else {
 						existed = false
@@ -221,16 +220,16 @@ func (t *JSONExporter) encodeTelemetry(rec *engine.Record) {
 					state = NET_STATE
 				} else if sftype == engine.TyNF {
 					t.buf.WriteByte(',')
-					t.writeAttribute(k, ind, 2, rec)
+					t.writeAttribute(fv, 2, rec)
 				}
-			case FILEF:
+			case engine.SectFile:
 				if state != FILE_STATE {
 					if state != BEGIN_STATE && existed {
 						t.buf.WriteString("},")
 					}
 					if sftype == engine.TyFF || sftype == engine.TyFE {
 						t.writeSectionBegin(FILEF)
-						t.writeAttribute(k, ind, 2, rec)
+						t.writeAttribute(fv, 2, rec)
 						existed = true
 					} else {
 						existed = false
@@ -238,16 +237,16 @@ func (t *JSONExporter) encodeTelemetry(rec *engine.Record) {
 					state = FILE_STATE
 				} else if sftype == engine.TyFF || sftype == engine.TyFE {
 					t.buf.WriteByte(',')
-					t.writeAttribute(k, ind, 2, rec)
+					t.writeAttribute(fv, 2, rec)
 				}
-			case FLOW:
+			case engine.SectFlow:
 				if state != FLOW_STATE {
 					if state != BEGIN_STATE && existed {
 						t.buf.WriteString("},")
 					}
 					if sftype == engine.TyFF || sftype == engine.TyNF {
 						t.writeSectionBegin(FLOW)
-						t.writeAttribute(k, ind, 2, rec)
+						t.writeAttribute(fv, 2, rec)
 						existed = true
 					} else {
 						existed = false
@@ -255,16 +254,16 @@ func (t *JSONExporter) encodeTelemetry(rec *engine.Record) {
 					state = FLOW_STATE
 				} else if sftype == engine.TyFF || sftype == engine.TyNF {
 					t.buf.WriteByte(',')
-					t.writeAttribute(k, ind, 2, rec)
+					t.writeAttribute(fv, 2, rec)
 				}
-			case CONTAINER:
+			case engine.SectCont:
 				if state != CONT_STATE {
 					if state != BEGIN_STATE && existed {
 						t.buf.WriteString("},")
 					}
 					if ctExists {
 						t.writeSectionBegin(CONTAINER)
-						t.writeAttribute(k, ind, 2, rec)
+						t.writeAttribute(fv, 2, rec)
 						existed = true
 					} else {
 						existed = false
@@ -273,43 +272,46 @@ func (t *JSONExporter) encodeTelemetry(rec *engine.Record) {
 				}
 				if ctExists {
 					t.buf.WriteByte(',')
-					t.writeAttribute(k, ind, 2, rec)
+					t.writeAttribute(fv, 2, rec)
 				}
-			case NODE:
+			case engine.SectNode:
 				if state != NODE_STATE {
 					if state != BEGIN_STATE && existed {
 						t.buf.WriteString("},")
 					}
 					existed = true
 					t.writeSectionBegin(NODE)
-					t.writeAttribute(k, ind, 2, rec)
+					t.writeAttribute(fv, 2, rec)
 					state = NODE_STATE
 				}
 				t.buf.WriteByte(',')
-				t.writeAttribute(k, ind, 2, rec)
+				t.writeAttribute(fv, 2, rec)
 			}
 		}
 
 	}
-	t.buf.WriteString("},")
+	t.buf.WriteByte('}')
 	/* // Need to add hash support
 	hashset := rec.Ctx.GetHashes()
 	if !reflect.ValueOf(hashset.MD5).IsZero() {
 		r.Hashes = &hashset
 	} */
 	rules := rec.Ctx.GetRules()
-	if len(rules) > 0 {
-		t.buf.WriteString("\"policies\":[")
-		for _, r := range rules {
+	numRules := len(rules)
+	if numRules > 0 {
+		t.buf.WriteString("\",policies\":[")
+
+		for id, r := range rules {
 			t.buf.WriteString("{\"id\":\"")
 			t.buf.WriteString(r.Name)
 			t.buf.WriteString("\",\"desc\":\"")
 			t.buf.WriteString(r.Desc)
 			t.buf.WriteString("\",\"priority\":")
 			t.buf.WriteString(strconv.Itoa(int(r.Priority)))
-			if len(r.Tags) > 0 {
+			numTags := len(r.Tags)
+			if numTags > 0 {
 				t.buf.WriteString(",\"tags\":[")
-				for _, tag := range r.Tags {
+				for ind, tag := range r.Tags {
 					switch tag.(type) {
 					case []string:
 						tags := tag.([]string)
@@ -317,18 +319,25 @@ func (t *JSONExporter) encodeTelemetry(rec *engine.Record) {
 							t.buf.WriteByte('"')
 							t.buf.WriteString(s)
 							t.buf.WriteByte('"')
-							t.buf.WriteByte(',')
+							if ind < (numTags - 1) {
+								t.buf.WriteByte(',')
+							}
 						}
 					default:
 						t.buf.WriteByte('"')
 						t.buf.WriteString(fmt.Sprintf("%v", tag))
 						t.buf.WriteByte('"')
-						t.buf.WriteByte(',')
+						if ind < (numTags - 1) {
+							t.buf.WriteByte(',')
+						}
 					}
 				}
 				t.buf.WriteByte(']')
 			}
-			t.buf.WriteString("},")
+			t.buf.WriteByte('}')
+			if id < (numRules - 1) {
+				t.buf.WriteByte(',')
+			}
 
 		}
 		t.buf.WriteByte(']')

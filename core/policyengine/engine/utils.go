@@ -19,6 +19,8 @@
 //
 package engine
 
+import "bytes"
+
 func trimBoundingQuotes(s string) string {
 	if len(s) > 0 && (s[0] == '"' || s[0] == '\'') {
 		s = s[1:]
@@ -27,4 +29,16 @@ func trimBoundingQuotes(s string) string {
 		s = s[:len(s)-1]
 	}
 	return s
+}
+
+//  Adds quotes to a string if necessary
+func TryAddQuotes(v string, buf *bytes.Buffer) {
+	l := len(v)
+	if l > 0 && (v[0] == '"' || v[0] == '\'') {
+		buf.WriteString(v)
+	} else {
+		buf.WriteByte('"')
+		buf.WriteString(v)
+		buf.WriteByte('"')
+	}
 }
