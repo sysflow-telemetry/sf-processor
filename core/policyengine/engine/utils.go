@@ -19,6 +19,12 @@
 //
 package engine
 
+import (
+	"fmt"
+
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
+)
+
 func trimBoundingQuotes(s string) string {
 	if len(s) > 0 && (s[0] == '"' || s[0] == '\'') {
 		s = s[1:]
@@ -27,4 +33,19 @@ func trimBoundingQuotes(s string) string {
 		s = s[:len(s)-1]
 	}
 	return s
+}
+
+func parseSymPath(idx sfgo.Source, attr sfgo.Attribute, r *Record) (string, string) {
+	orig := r.GetStr(attr, idx)
+	var src, dst uint64
+	var targetPath string
+	// Possible format: aabbccddeeff0011->aabbccddeeff0011 /path/to/target.file
+	if _, err := fmt.Sscanf(orig, "%x->%x %s", &src, &dst, &targetPath); nil == err {
+		return targetPath, fmt.Sprintf("%x->%x", src, dst)
+	}
+	// Possible format: ffff9ce02054c800-\u003effff9ce02054c000 /sock/sysflow.sock
+	if _, err := fmt.Sscanf(orig, "%x-\\u%x %s", &src, &dst, &targetPath); nil == err {
+		return targetPath, fmt.Sprintf("%x-\\u%x", src, dst)
+	}
+	return orig, ""
 }

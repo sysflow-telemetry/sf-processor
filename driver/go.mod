@@ -43,7 +43,7 @@ require (
 
 replace (
 	github.ibm.com/sysflow/sf-processor/core => ../core
-	github.com/sysflow-telemetry/sf-apis/go => ../modules/sf-apis/go
+	github.com/sysflow-telemetry/sf-apis/go => ../modules/sf-apis/go	
 )
 
 replace (

@@ -162,3 +162,6 @@
   action: [alert]
   priority: low
   prefilter: [NF]
+
+- filter: files
+  condition: sf.type != FF or not sf.file.path contains /dev/log
