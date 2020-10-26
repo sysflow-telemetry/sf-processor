@@ -106,7 +106,6 @@ const (
 	SF_FILE_FD               string = "sf.file.fd"
 	SF_FILE_OPENFLAGS        string = "sf.file.openflags"
 	SF_NET_PROTO             string = "sf.net.proto"
-	SF_NET_PROTONAME         string = "sf.net.protoname"
 	SF_NET_SPORT             string = "sf.net.sport"
 	SF_NET_DPORT             string = "sf.net.dport"
 	SF_NET_PORT              string = "sf.net.port"

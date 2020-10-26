@@ -22,6 +22,7 @@ package exporter
 import (
 	"errors"
 	"sync"
+	"time"
 
 	syslog "github.com/RackSec/srslog"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
@@ -98,20 +99,39 @@ func (s *Exporter) Process(ch interface{}, wg *sync.WaitGroup) {
 	cha := ch.(*engine.RecordChannel)
 	record := cha.In
 	defer wg.Done()
+
+	maxIdle := 1 * time.Second
+	ticker := time.NewTicker(maxIdle)
+	defer ticker.Stop()
+	lastFlush := time.Now()
+
 	logger.Trace.Printf("Starting Exporter in mode %s with channel capacity %d", s.config.Export.String(), cap(record))
+RecLoop:
 	for {
-		fc, ok := <-record
-		if !ok {
-			s.process()
-			logger.Trace.Println("Channel closed. Shutting down.")
-			break
-		}
-		s.counter++
-		s.recs = append(s.recs, fc)
-		if s.counter > s.config.EventBuffer {
-			s.process()
-			s.recs = s.recs[:0] // make([]*engine.Record, 0)
-			s.counter = 0
+		select {
+		case fc, ok := <-record:
+			if ok {
+				s.counter++
+				s.recs = append(s.recs, fc)
+				if s.counter > s.config.EventBuffer {
+					s.process()
+					s.recs = s.recs[:0]
+					s.counter = 0
+					lastFlush = time.Now()
+				}
+			} else {
+				s.process()
+				logger.Trace.Println("Channel closed. Shutting down.")
+				break RecLoop
+			}
+		case <-ticker.C:
+			// force flush records after 1sec idle
+			if time.Now().Sub(lastFlush) > maxIdle && s.counter > 0 {
+				s.process()
+				s.recs = s.recs[:0]
+				s.counter = 0
+				lastFlush = time.Now()
+			}
 		}
 	}
 }

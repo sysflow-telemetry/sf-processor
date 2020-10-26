@@ -64,7 +64,7 @@ const (
 
 const (
 	A_IDS      sfgo.Attribute = (2 << 30) - 1
-	PARENT_IDS                = (2 << 30) - 2
+	PARENT_IDS sfgo.Attribute = (2 << 30) - 2
 )
 
 // FieldEntry is an object that stores metadata for each field in the exported map.
@@ -602,7 +602,7 @@ func mapOpenFlags(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 
 func mapProto(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		return r.GetInt(attr, src)
+		return sfgo.GetProto(r.GetInt(attr, src))
 	}
 }
 
