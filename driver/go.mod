@@ -34,14 +34,14 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.3
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201026195524-bd9cb63ccc96
-	github.ibm.com/sysflow/sf-processor/core v0.0.0-20201027001714-430f6924aeb8
+	github.ibm.com/sysflow/sf-processor/core v0.0.0-20201027025951-2690acc0c563
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
 	gopkg.in/linkedin/goavro.v1 v1.0.5 // indirect
 )
 
-replace github.ibm.com/sysflow/sf-processor/core => ../core
+// replace github.ibm.com/sysflow/sf-processor/core => ../core
 
 replace (
 	github.com/Shopify/sarama => github.com/elastic/sarama v1.19.1-0.20200629123429-0e7b69039eec
