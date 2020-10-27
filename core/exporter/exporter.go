@@ -106,7 +106,7 @@ RecLoop:
 				s.recs = append(s.recs, fc)
 				if s.counter > s.config.EventBuffer {
 					s.process()
-					s.recs = make([]*engine.Record, 0)
+					s.recs = s.recs[:0]
 					s.counter = 0
 					lastFlush = time.Now()
 				}
@@ -119,7 +119,7 @@ RecLoop:
 			// force flush records after 1sec idle
 			if time.Now().Sub(lastFlush) > maxIdle && s.counter > 0 {
 				s.process()
-				s.recs = make([]*engine.Record, 0)
+				s.recs = s.recs[:0]
 				s.counter = 0
 				lastFlush = time.Now()
 			}
