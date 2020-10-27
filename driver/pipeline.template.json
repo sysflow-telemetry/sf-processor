@@ -18,7 +18,7 @@
       "processor": "exporter",
       "in": "evt eventchan",
       "export": "terminal|file|syslog (default: terminal)",
-      "type": "alert|telemetry (default: alert)",
+      "type": "telemetry|offense (default: telemetry)",
       "format": "json",
       "flat": "false|true (default: false)",
       "path": "output file path (default: ./export.out)",

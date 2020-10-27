@@ -10,7 +10,7 @@
      "processor": "policyengine",
      "in": "flat flattenerchan",
      "out": "evt eventchan",
-     "policies": "../resources/policies/runtimeintegrity"     
+     "policies": "../resources/policies/distribution"     
     },
     {
      "processor": "exporter",

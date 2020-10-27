@@ -132,7 +132,7 @@ func (s *Exporter) process() {
 }
 
 func (s *Exporter) createEvents() []Event {
-	if s.config.ExpType == AlertType {
+	if s.config.ExpType == OffenseType {
 		return CreateOffenses(s.recs, s.config)
 	}
 	return CreateTelemetryRecords(s.recs, s.config)

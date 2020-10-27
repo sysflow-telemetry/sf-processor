@@ -30,7 +30,6 @@ RUN wget https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz && \
 
 # Copy sources
 COPY core ${SRC_ROOT}core
-COPY modules ${SRC_ROOT}/modules
 COPY driver ${SRC_ROOT}driver
 COPY plugins ${SRC_ROOT}plugins
 COPY resources ${SRC_ROOT}resources
