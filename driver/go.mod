@@ -41,7 +41,7 @@ require (
 	gopkg.in/linkedin/goavro.v1 v1.0.5 // indirect
 )
 
-// replace github.ibm.com/sysflow/sf-processor/core => ../core
+replace github.ibm.com/sysflow/sf-processor/core => ../core
 
 replace (
 	github.com/Shopify/sarama => github.com/elastic/sarama v1.19.1-0.20200629123429-0e7b69039eec
