@@ -32,10 +32,8 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.ibm.com/sysflow/sf-processor/core/exporter"
-	"github.ibm.com/sysflow/sf-processor/core/ground"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine"
 	"github.ibm.com/sysflow/sf-processor/core/processor"
-	"github.ibm.com/sysflow/sf-processor/core/statistic"
 	"github.ibm.com/sysflow/sf-processor/driver/sysflow"
 )
 
@@ -70,8 +68,6 @@ func (p *PluginCache) init() {
 	(&exporter.Exporter{}).Register(p)
 	(&sysflow.FileDriver{}).Register(p)
 	(&sysflow.StreamingDriver{}).Register(p)
-	(*statistic.StatisticExporter)(nil).Register(p)
-	(*ground.Grounder)(nil).Register(p)
 }
 
 // LoadPlugins loads dynamic plugins to plugin cache from dir path.
