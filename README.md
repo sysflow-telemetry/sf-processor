@@ -26,112 +26,35 @@
 
 The SysFlow Telemetry Pipeline is a framework for monitoring cloud workloads and for creating performance and security analytics. The goal of this project is to build all the plumbing required for system telemetry so that users can focus on writing and sharing analytics on a scalable, common open-source platform. The backbone of the telemetry pipeline is a new data format called SysFlow, which lifts raw system event information into an abstraction that describes process behaviors, and their relationships with containers, files, and network. This object-relational format is highly compact, yet it provides broad visibility into container clouds. We have also built several APIs that allow users to process SysFlow with their favorite toolkits. Learn more about SysFlow in the [SysFlow specification document](https://sysflow.readthedocs.io/en/latest/spec.html).
 
-# About this repository
+# About this image
 
-This repository packages two images:
+The SysFlow processor is a lighweight edge analytics pipeline that can process and enrich SysFlow data. The processor is written in golang, and allows users to build and configure various pipelines using a set of built-in and custom plugins and drivers. Pipeline plugins are producer-consumer objects that follow an interface and pass data to one another through pre-defined channels in a multi-threaded environment. By contrast, a driver represents a data source, which pushes data to the plugins. The processor currently supports two builtin drivers, including one that reads sysflow from a file, and another that reads streaming sysflow over a domain socket. Plugins and drivers are configured using a JSON file.  
 
-- **sysprint**, which reads, prints, and converts SysFlow traces to human-readale outputs, including console, JSON, and CSV formats. It supports reading traces from local disk and from S3-compliant object stores. Please check [Sysflow APIs](https://sysflow.readthedocs.io/en/latest/api-utils.html) for programmatic APIs and more information about sysprint.
+Please check [Sysflow Processor](https://sysflow.readthedocs.io/en/latest/processor.html) for documentation on deployment and configuration options.
 
-- **sfnb**, a Jupyter Notebook for performing data exploration and analytics with SysFlow. It includes data manipulation using Pandas dataframes  and a native query language (`sfql`) with macro support. 
+# How to use this image
 
-Please check [Sysflow APIs](https://sysflow.readthedocs.io/en/latest/api-utils.html) for programmatic APIs and more information about sysprint.
-
-# How to use sysprint
-
-The easiest way to run sysprint is from a Docker container, with host mount for the directories from where to read trace files. The following command shows how to run sysprint with trace files located in `/mnt/data` on the host.
+### Starting the processor
+The easiest way to run the SysFlow processor is from a Docker container, with volume mounts for processor configuration. The following command shows how to run sf-processor with processor events exported to rsyslog.
 
 ```
-docker run --rm -v /mnt/data:/mnt/data sysflowtelemetry/sysprint /mnt/data/<trace>
+docker run -d --privileged --name sf-collector \
+	     -v /var/run/docker.sock:/host/var/run/docker.sock \
+	     -v /dev:/host/dev -v /proc:/host/proc:ro \
+	     -v /boot:/host/boot:ro -v /lib/modules:/host/lib/modules:ro \
+             -v /usr:/host/usr:ro -v /mnt/data:/mnt/data \
+             -e INTERVAL=60 \
+             -e EXPORTER_ID=${HOSTNAME} \
+             -e OUTPUT=/mnt/data/    \
+             -e FILTER="container.name!=sf-collector and container.name!=sf-exporter" \
+             --rm sysflowtelemetry/sf-collector
 ```
-For help, run:
-```
-docker run --rm -v /mnt/data:/mnt/data sysflowtelemetry/sysprint -h
-```
+where INTERVAL denotes the time in seconds before a new trace file is generated, EXPORTER\_ID sets the exporter name, OUTPUT is the directory in which trace files are written, and FILTER is the filter expression used to filter collected events. Note: append `container.type!=host` to FILTER expression to filter host events. 
 
-# How to use sfnb
-
-The following command shows how to run sfnb.
-
-```
-docker run --rm -d --name sfnb -p 8888:8888 sysflowtelemetry/sfnb
-```
-
-To mount example notebooks and data files into Jupyter's `work` directory, git clone this repository locally, cd into it, and run:
-
-```
-docker run --rm -d --name sfnb --user $(id -u):$(id -g) --group-add users -v $(pwd)/pynb:/home/jovyan/work -p 8888:8888 sysflowtelemetry/sfnb
-```
-
-Then, open a web browser and point it to `http://localhost:8888` (alternatively, the remote server name or IP where the notebook is hosted). To obtain the notebook authentication token, run `docker logs sfnb`.
-
-# License
-
-View [license information](https://github.com/sysflow-telemetry/sf-exporter/blob/master/LICENSE.md) for the software contained in this image.
-
-As with all Docker images, these likely also contain other software which may be under other licenses (such as Bash, etc from the base distribution, along with any direct or indirect dependencies of the primary software being contained).
-
-As for any pre-built image usage, it is the image user's responsibility to ensure that any use of this image complies with any relevant licenses for all software contained within.
-
----------------------
+Instructions for `docker compose` and `helm` deployments are available in [here](https://sysflow.readthedocs.io/en/latest/deploy.html).
 
 
-# SysFlow Processor
-
-The SysFlow Processor implements a pluggable stream-processing pipeline and contains a built-in policy engine that evaluates rules on the ingested SysFlow stream.
-
-## Build
-
-To build the processor locally:
-
-```
-make build
-```
-
-To build the processor container:
-
-```
-make docker-build
-```
-
-## Dynamic plugins
-To build the example dynamic plugin:
-
-```
-cd plugins/example && make
-```
-
-This will install the example plugin under `resources/plugins`. To test it, use the example pipeline configuration `pipeline.example.json`.
-
-## Usage
-
-For usage, after build, run:
-
-```
-./sfprocessor -h
-Usage: sfprocessor [[-version]|[-input <value>] [-log <value>] [-plugdir <value>] path]
-
-Positional arguments:
-  path string
-        Input path
-
-Arguments:
-  -config string
-        Path to pipeline configuration file (default "pipeline.json")
-  -cpuprofile file
-        Write cpu profile to file
-  -input string
-        Input type {file|socket} (default "file")
-  -log string
-        Log level {trace|info|warn|error} (default "info")
-  -memprofile file
-        Write memory profile to file
-  -plugdir string
-        Dynamic plugins directory (default "../resources/plugins")
-  -version
-        Outputs version information
-```
-
-## Configuration
+### Configuration
 
 Create a JSON file specifying the edge processing pipeline plugins and configuration settings.
 See template below for options; driver/pipeline.json contains default values.
@@ -176,3 +99,12 @@ $ export EXPORTER_TYPE=file
    ]
 }
 ```
+
+
+# License
+
+View [license information](https://github.com/sysflow-telemetry/sf-exporter/blob/master/LICENSE.md) for the software contained in this image.
+
+As with all Docker images, these likely also contain other software which may be under other licenses (such as Bash, etc from the base distribution, along with any direct or indirect dependencies of the primary software being contained).
+
+As for any pre-built image usage, it is the image user's responsibility to ensure that any use of this image complies with any relevant licenses for all software contained within.

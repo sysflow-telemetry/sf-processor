@@ -52,8 +52,8 @@ ARG VERSION=dev
 
 ARG RELEASE=dev
 
-ARG filePath=/sock/sysflow.sock
-ENV FILE_PATH=$filepath
+ARG inputpath=/sock/sysflow.sock
+ENV INPUT_PATH=$inputpath
 
 ARG driver=socket
 ENV DRIVER=$driver
@@ -93,4 +93,4 @@ CMD /usr/local/sysflow/bin/sfprocessor \
                             ${DRIVER_DIR:+-driverdir} ${DRIVER_DIR} \
                             ${PLUGIN_DIR:+-plugdir} ${PLUGIN_DIR} \
                             ${CONFIG_PATH:+-config} ${CONFIG_PATH} \
-                            ${FILE_PATH}
+                            ${INPUT_PATH}
