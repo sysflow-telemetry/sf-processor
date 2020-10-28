@@ -19,7 +19,10 @@
 //
 package engine
 
-import "bytes"
+import (
+	"bytes"
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
+)
 
 func trimBoundingQuotes(s string) string {
 	if len(s) > 0 && (s[0] == '"' || s[0] == '\'') {
@@ -41,4 +44,29 @@ func TryAddQuotes(v string, buf *bytes.Buffer) {
 		buf.WriteString(v)
 		buf.WriteByte('"')
 	}
+}
+
+// GetRecType returns the record type of the record
+func GetRecType(r *Record, src sfgo.Source) string {
+	switch r.GetInt(sfgo.SF_REC_TYPE, src) {
+	case sfgo.PROC:
+		return TyP
+	case sfgo.FILE:
+		return TyF
+	case sfgo.CONT:
+		return TyC
+	case sfgo.PROC_EVT:
+		return TyPE
+	case sfgo.FILE_EVT:
+		return TyFE
+	case sfgo.FILE_FLOW:
+		return TyFF
+	case sfgo.NET_FLOW:
+		return TyNF
+	case sfgo.HEADER:
+		return TyH
+	default:
+		return TyUnknow
+	}
+
 }

@@ -1,7 +1,6 @@
 package exporter
 
 import (
-	"bytes"
 	"crypto/tls"
 	"fmt"
 	syslog "github.com/RackSec/srslog"
@@ -19,7 +18,7 @@ const (
 // ExportProtocol is an interface to support a transport protocol
 type ExportProtocol interface {
 	Init(conf map[string]string) error
-	Export(buf *bytes.Buffer) error
+	Export(buf []byte) error
 	Register(e *Exporter)
 	Cleanup()
 }
@@ -40,7 +39,7 @@ func (s *NullProto) Init(conf map[string]string) error {
 }
 
 // Export does nothing
-func (s *NullProto) Export(buf *bytes.Buffer) error {
+func (s *NullProto) Export(buf []byte) error {
 	return nil
 }
 
@@ -86,8 +85,8 @@ func (s *SyslogProto) Init(conf map[string]string) error {
 }
 
 // Export sends buffer to syslog daemon as an alert.
-func (s *SyslogProto) Export(buf *bytes.Buffer) error {
-	err := s.sysl.Alert(buf.String())
+func (s *SyslogProto) Export(buf []byte) error {
+	err := s.sysl.Alert(string(buf))
 	return err
 }
 
@@ -124,8 +123,8 @@ func (s *TextFileProto) Init(conf map[string]string) error {
 }
 
 // Export writes the buffer to the open file.
-func (s *TextFileProto) Export(buf *bytes.Buffer) error {
-	_, err := s.fhandle.Write(buf.Bytes())
+func (s *TextFileProto) Export(buf []byte) error {
+	_, err := s.fhandle.Write(buf)
 	s.fhandle.WriteString("\n")
 	return err
 }
@@ -157,8 +156,8 @@ func (s *TerminalProto) Init(conf map[string]string) error {
 }
 
 // Export exports the contets of buffer for the terminal.
-func (s *TerminalProto) Export(buf *bytes.Buffer) error {
-	fmt.Println(buf.String())
+func (s *TerminalProto) Export(buf []byte) error {
+	fmt.Println(string(buf))
 	return nil
 }
 

@@ -171,7 +171,8 @@ func (r Record) getProcProv(ID sfgo.OID) []*sfgo.Process {
 	return ptree
 }
 
-func (r Record) memoizePtree(ID sfgo.OID) []*sfgo.Process {
+// MemoizePtree caches the processes hierachy given the ID.
+func (r Record) MemoizePtree(ID sfgo.OID) []*sfgo.Process {
 	if ptree, ok := r.Ptree[ID]; ok {
 		return ptree
 	}
@@ -181,7 +182,7 @@ func (r Record) memoizePtree(ID sfgo.OID) []*sfgo.Process {
 
 // GetCachedValue returns the value of attr from cache for process ID.
 func (r Record) SetCachedValueBuffer(ID sfgo.OID, attr RecAttribute, buf *bytes.Buffer) {
-	if ptree := r.memoizePtree(ID); ptree != nil {
+	if ptree := r.MemoizePtree(ID); ptree != nil {
 		switch attr {
 		case PProcName:
 			if len(ptree) > 1 {
@@ -299,7 +300,7 @@ func (r Record) SetCachedValueBuffer(ID sfgo.OID, attr RecAttribute, buf *bytes.
 
 // GetCachedValue returns the value of attr from cache for process ID.
 func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
-	if ptree := r.memoizePtree(ID); ptree != nil {
+	if ptree := r.MemoizePtree(ID); ptree != nil {
 		switch attr {
 		case PProcName:
 			if len(ptree) > 1 {

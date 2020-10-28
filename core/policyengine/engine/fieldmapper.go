@@ -242,7 +242,7 @@ func getExportedMappers() map[string]*FieldEntry {
 	return map[string]*FieldEntry{
 		// SysFlow
 		SF_TYPE:                  &FieldEntry{Map: mapRecType(sfgo.SYSFLOW_SRC), Id: sfgo.SF_REC_TYPE, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC},
-		SF_OPFLAGS:               &FieldEntry{Map: mapOpFlags(sfgo.SYSFLOW_SRC), Id: sfgo.EV_PROC_OPFLAGS_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC},
+		SF_OPFLAGS:               &FieldEntry{Map: mapOpFlags(sfgo.SYSFLOW_SRC), Id: sfgo.EV_PROC_OPFLAGS_INT, Type: MapArrayStr, Source: sfgo.SYSFLOW_SRC},
 		SF_RET:                   &FieldEntry{Map: mapRet(sfgo.SYSFLOW_SRC), Id: sfgo.SF_REC_TYPE, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC},
 		SF_TS:                    &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.TS_INT), Id: sfgo.TS_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC},
 		SF_ENDTS:                 &FieldEntry{Map: mapEndTs(sfgo.SYSFLOW_SRC), Id: sfgo.FL_FILE_ENDTS_INT, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC},
@@ -291,7 +291,7 @@ func getExportedMappers() map[string]*FieldEntry {
 		SF_FILE_IS_OPEN_WRITE:    &FieldEntry{Map: mapIsOpenWrite(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT), Id: sfgo.FL_FILE_OPENFLAGS_INT, Type: MapSpecialBool, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
 		SF_FILE_IS_OPEN_READ:     &FieldEntry{Map: mapIsOpenRead(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT), Id: sfgo.FL_FILE_OPENFLAGS_INT, Type: MapSpecialBool, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
 		SF_FILE_FD:               &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_FD_INT), Id: sfgo.FL_FILE_FD_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
-		SF_FILE_OPENFLAGS:        &FieldEntry{Map: mapOpenFlags(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT), Id: sfgo.FL_FILE_OPENFLAGS_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+		SF_FILE_OPENFLAGS:        &FieldEntry{Map: mapOpenFlags(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT), Id: sfgo.FL_FILE_OPENFLAGS_INT, Type: MapArrayStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
 		SF_NET_PROTO:             &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT), Id: sfgo.FL_NETW_PROTO_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
 		//SF_NET_PROTONAME:         &FieldEntry{Map: mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT), Id: sfgo.FL_NETW_PROTO_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
 		SF_NET_SPORT:            &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT), Id: sfgo.FL_NETW_SPORT_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
@@ -479,26 +479,7 @@ func mapJoin(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 
 func mapRecType(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
-		switch r.GetInt(sfgo.SF_REC_TYPE, src) {
-		case sfgo.PROC:
-			return TyP
-		case sfgo.FILE:
-			return TyF
-		case sfgo.CONT:
-			return TyC
-		case sfgo.PROC_EVT:
-			return TyPE
-		case sfgo.FILE_EVT:
-			return TyFE
-		case sfgo.FILE_FLOW:
-			return TyFF
-		case sfgo.NET_FLOW:
-			return TyNF
-		case sfgo.HEADER:
-			return TyH
-		default:
-			return TyUnknow
-		}
+		return GetRecType(r, src)
 	}
 }
 
