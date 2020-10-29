@@ -5,14 +5,26 @@
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
 //
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package processor
 
 import (
 	"sync"
 
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/cache"
 	"github.ibm.com/sysflow/sf-processor/core/flattener"
 )
@@ -63,11 +75,6 @@ func (s *SysFlowProcessor) Init(conf map[string]string) error {
 // SetOutChan sets the output channel of the plugin.
 func (s *SysFlowProcessor) SetOutChan(ch interface{}) {
 	s.hdl.SetOutChan(ch)
-}
-
-// Cleanup tears down the plugin resources.
-func (s *SysFlowProcessor) Cleanup() {
-	s.hdl.Cleanup()
 }
 
 // Process implements the main processor method of the plugin.
@@ -133,10 +140,14 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 		case sfgo.SF_NET_EVT:
 		default:
 			logger.Warn.Println("Error unsupported SysFlow Type: ", sf.Rec.UnionType)
-
 		}
 	}
-	s.Cleanup()
+}
+
+// Cleanup tears down the plugin resources.
+func (s *SysFlowProcessor) Cleanup() {
+	logger.Trace.Println("Exiting ", pluginName)
+	s.hdl.Cleanup()
 }
 
 func (s *SysFlowProcessor) getContFromProc(proc *sfgo.Process) *sfgo.Container {

@@ -5,6 +5,18 @@
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
 //
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package pipeline
 
 import (
@@ -16,18 +28,19 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
+	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
-	"github.ibm.com/sysflow/goutils/ioutils"
-	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/exporter"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine"
 	"github.ibm.com/sysflow/sf-processor/core/processor"
+	"github.ibm.com/sysflow/sf-processor/driver/sysflow"
 )
 
 // PluginCache defines a data strucure for managing plugins.
 type PluginCache struct {
 	chanMap     map[string]interface{}
-	pluginMap   map[string]*plugin.Plugin
+	driverMap   map[string]interface{}
 	procFuncMap map[string]interface{}
 	hdlFuncMap  map[string]interface{}
 	chanFuncMap map[string]interface{}
@@ -39,7 +52,7 @@ type PluginCache struct {
 func NewPluginCache(conf string) *PluginCache {
 	plug := &PluginCache{config: viper.New(),
 		chanMap:     make(map[string]interface{}),
-		pluginMap:   make(map[string]*plugin.Plugin),
+		driverMap:   make(map[string]interface{}),
 		procFuncMap: make(map[string]interface{}),
 		hdlFuncMap:  make(map[string]interface{}),
 		chanFuncMap: make(map[string]interface{}),
@@ -53,6 +66,8 @@ func (p *PluginCache) init() {
 	(&processor.SysFlowProcessor{}).Register(p)
 	(&policyengine.PolicyEngine{}).Register(p)
 	(&exporter.Exporter{}).Register(p)
+	(&sysflow.FileDriver{}).Register(p)
+	(&sysflow.StreamingDriver{}).Register(p)
 }
 
 // LoadPlugins loads dynamic plugins to plugin cache from dir path.
@@ -68,12 +83,37 @@ func (p *PluginCache) LoadPlugins(dir string) error {
 				return err
 			}
 			if proc, ok := sym.(plugins.SFProcessor); ok {
-				p.pluginMap[proc.GetName()] = plug
+				// p.pluginMap[proc.GetName()] = plug
 				proc.Register(p)
 			}
 		}
 	}
 	return nil
+}
+
+// LoadDrivers dynamic drivers to plugin cache from dir path.
+func (p *PluginCache) LoadDrivers(dir string) error {
+	var plug *plugin.Plugin
+	if paths, err := ioutils.ListFilePaths(dir, ".so"); err == nil {
+		for _, path := range paths {
+			if plug, err = plugin.Open(path); err != nil {
+				return err
+			}
+			sym, err := plug.Lookup(plugins.DriverSym)
+			if err != nil {
+				return err
+			}
+			if driver, ok := sym.(plugins.SFDriver); ok {
+				driver.Register(p)
+			}
+		}
+	}
+	return nil
+}
+
+// AddDriver adds a driver factory method to the plugin cache.
+func (p *PluginCache) AddDriver(name string, factory interface{}) {
+	p.driverMap[name] = factory
 }
 
 // AddProcessor adds a processor factory method to the plugin cache.
@@ -98,7 +138,7 @@ func (p *PluginCache) GetConfig() (*Config, error) {
 		return nil, err
 	}
 	if s.IsDir() {
-		return nil, errors.New("pipeline config file is not a file")
+		return nil, errors.New("Pipeline config file is not a file")
 	}
 	dir := filepath.Dir(p.configFile)
 	p.config.SetConfigName(strings.TrimSuffix(filepath.Base(p.configFile), filepath.Ext(p.configFile)))
@@ -191,4 +231,15 @@ func (p *PluginCache) GetProcessor(name string, hdl plugins.SFHandler, hdlr bool
 		return prc, nil
 	}
 	return nil, fmt.Errorf("Plugin '%s' not found in plugin cache", name)
+}
+
+// GetDriver retrieves a cached plugin driver by name.
+func (p *PluginCache) GetDriver(name string) (plugins.SFDriver, error) {
+	if val, ok := p.driverMap[name]; ok {
+		logger.Trace.Println("Found driver in function map: ", name)
+		funct := val.(func() plugins.SFDriver)
+		drv := funct()
+		return drv, nil
+	}
+	return nil, fmt.Errorf("Driver '%s' not found in plugin cache", name)
 }

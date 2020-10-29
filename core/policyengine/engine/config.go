@@ -5,6 +5,18 @@
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
 //
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package engine
 
 import "errors"
@@ -57,10 +69,11 @@ type Mode int
 const (
 	AlertMode Mode = iota
 	FilterMode
+	BypassMode
 )
 
 func (s Mode) String() string {
-	return [...]string{"alert", "filter"}[s]
+	return [...]string{"alert", "filter", "bypass"}[s]
 }
 
 func parseModeConfig(s string) Mode {
@@ -69,6 +82,9 @@ func parseModeConfig(s string) Mode {
 	}
 	if FilterMode.String() == s {
 		return FilterMode
+	}
+	if BypassMode.String() == s {
+		return BypassMode
 	}
 	return AlertMode
 }

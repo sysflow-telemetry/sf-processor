@@ -5,6 +5,18 @@
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
 //
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package exporter
 
 import (
@@ -110,9 +122,6 @@ func (s Export) String() string {
 }
 
 func parseExportConfig(s string) Export {
-	if StdOutExport.String() == s {
-		return StdOutExport
-	}
 	if FileExport.String() == s {
 		return FileExport
 	}
@@ -127,20 +136,17 @@ type ExportType int
 
 // ExportType config options.
 const (
-	AlertType ExportType = iota
-	TelemetryType
+	TelemetryType ExportType = iota
+	BatchType
 )
 
 func (s ExportType) String() string {
-	return [...]string{"alert", "telemetry"}[s]
+	return [...]string{"telemetry", "batch"}[s]
 }
 
 func parseExportTypeConfig(s string) ExportType {
-	if AlertType.String() == s {
-		return AlertType
-	}
-	if TelemetryType.String() == s {
-		return TelemetryType
+	if BatchType.String() == s {
+		return BatchType
 	}
 	return TelemetryType
 }

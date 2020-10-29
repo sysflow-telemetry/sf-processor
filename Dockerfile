@@ -30,7 +30,6 @@ RUN wget https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz && \
 
 # Copy sources
 COPY core ${SRC_ROOT}core
-COPY modules ${SRC_ROOT}/modules
 COPY driver ${SRC_ROOT}driver
 COPY plugins ${SRC_ROOT}plugins
 COPY resources ${SRC_ROOT}resources
@@ -53,11 +52,17 @@ ARG VERSION=dev
 
 ARG RELEASE=dev
 
-ARG filePath=/sock/sysflow.sock
-ENV FILE_PATH=$filepath
+ARG inputpath=/sock/sysflow.sock
+ENV FILE_PATH=$inputpath
 
-ARG inputtype=socket
-ENV INPUT_TYPE=$inputtype
+ARG driver=socket
+ENV DRIVER=$driver
+
+ARG driver_dir=/usr/local/sysflow/resources/drivers
+ENV DRIVER_DIR=$driver_dir
+
+ARG plugin_dir=/usr/local/sysflow/resources/plugins
+ENV PLUGIN_DIR=$plugin_dir
 
 ARG loglevel=info
 ENV LOG_LEVEL=$loglevel
@@ -84,6 +89,8 @@ COPY --from=base /usr/local/sysflow/ /usr/local/sysflow/
 # Entrypoint
 CMD /usr/local/sysflow/bin/sfprocessor \
                             ${LOG_LEVEL:+-log} ${LOG_LEVEL} \
-                            ${INPUT_TYPE:+-input} ${INPUT_TYPE} \
+                            ${DRIVER:+-driver} ${DRIVER} \
+                            ${DRIVER_DIR:+-driverdir} ${DRIVER_DIR} \
+                            ${PLUGIN_DIR:+-plugdir} ${PLUGIN_DIR} \
                             ${CONFIG_PATH:+-config} ${CONFIG_PATH} \
                             ${FILE_PATH}

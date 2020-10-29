@@ -1,11 +1,4 @@
-//
-// Copyright (C) 2020 IBM Corporation.
-//
-// Authors:
-// Frederico Araujo <frederico.araujo@ibm.com>
-// Teryl Taylor <terylt@ibm.com>
-//
-// Code generated from Sfpl.g4 by ANTLR 4.7.2. DO NOT EDIT.
+// Code generated from Sfpl.g4 by ANTLR 4.8. DO NOT EDIT.
 
 package parser // Sfpl
 import "github.com/antlr/antlr4/runtime/Go/antlr"
@@ -43,6 +36,24 @@ type SfplVisitor interface {
 
 	// Visit a parse tree produced by SfplParser#items.
 	VisitItems(ctx *ItemsContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#tags.
+	VisitTags(ctx *TagsContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#prefilter.
+	VisitPrefilter(ctx *PrefilterContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#severity.
+	VisitSeverity(ctx *SeverityContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#enabled.
+	VisitEnabled(ctx *EnabledContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#warnevttype.
+	VisitWarnevttype(ctx *WarnevttypeContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#skipunknown.
+	VisitSkipunknown(ctx *SkipunknownContext) interface{}
 
 	// Visit a parse tree produced by SfplParser#variable.
 	VisitVariable(ctx *VariableContext) interface{}

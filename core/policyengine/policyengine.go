@@ -5,16 +5,29 @@
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
 //
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package policyengine
 
 import (
 	"errors"
 	"sync"
 
+	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
-	"github.ibm.com/sysflow/goutils/ioutils"
-	"github.ibm.com/sysflow/goutils/logger"
 	"github.ibm.com/sysflow/sf-processor/core/cache"
+	"github.ibm.com/sysflow/sf-processor/core/flattener"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
@@ -29,6 +42,7 @@ type PolicyEngine struct {
 	tables     *cache.SFTables
 	outCh      chan *engine.Record
 	filterOnly bool
+	bypass     bool
 	config     engine.Config
 }
 
@@ -65,6 +79,10 @@ func (s *PolicyEngine) Init(conf map[string]string) error {
 	if s.config.Mode == engine.FilterMode {
 		logger.Trace.Println("Setting policy engine in filter mode")
 		s.filterOnly = true
+	} else if s.config.Mode == engine.BypassMode {
+		logger.Trace.Println("Setting policy engine in bypass mode")
+		s.bypass = true
+		return nil
 	}
 	logger.Trace.Println("Loading policies from: ", config.PoliciesPath)
 	paths, err := ioutils.ListFilePaths(config.PoliciesPath, ".yaml")
@@ -79,20 +97,22 @@ func (s *PolicyEngine) Init(conf map[string]string) error {
 
 // Process implements the main loop of the plugin.
 func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
-	in := ch.(*plugins.FlatChannel).In
+	in := ch.(*flattener.FlatChannel).In
 	defer wg.Done()
 	logger.Trace.Println("Starting policy engine with capacity: ", cap(in))
 	out := func(r *engine.Record) { s.outCh <- r }
 	for {
 		if fc, ok := <-in; ok {
-			s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc, s.tables), out)
+			if s.bypass {
+				out(engine.NewRecord(*fc, s.tables))
+			} else {
+				s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc, s.tables), out)
+			}
 		} else {
 			logger.Trace.Println("Input channel closed. Shutting down.")
 			break
 		}
 	}
-	logger.Trace.Println("Exiting policy engine")
-	s.Cleanup()
 }
 
 // SetOutChan sets the output channel of the plugin.
@@ -102,5 +122,8 @@ func (s *PolicyEngine) SetOutChan(ch interface{}) {
 
 // Cleanup clean up the plugin resources.
 func (s *PolicyEngine) Cleanup() {
-	close(s.outCh)
+	logger.Trace.Println("Exiting ", pluginName)
+	if s.outCh != nil {
+		close(s.outCh)
+	}
 }

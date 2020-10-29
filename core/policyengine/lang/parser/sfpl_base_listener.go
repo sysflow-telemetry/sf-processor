@@ -1,11 +1,4 @@
-//
-// Copyright (C) 2020 IBM Corporation.
-//
-// Authors:
-// Frederico Araujo <frederico.araujo@ibm.com>
-// Teryl Taylor <terylt@ibm.com>
-//
-// Code generated from Sfpl.g4 by ANTLR 4.7.2. DO NOT EDIT.
+// Code generated from Sfpl.g4 by ANTLR 4.8. DO NOT EDIT.
 
 package parser // Sfpl
 import "github.com/antlr/antlr4/runtime/Go/antlr"
@@ -86,6 +79,42 @@ func (s *BaseSfplListener) EnterItems(ctx *ItemsContext) {}
 
 // ExitItems is called when production items is exited.
 func (s *BaseSfplListener) ExitItems(ctx *ItemsContext) {}
+
+// EnterTags is called when production tags is entered.
+func (s *BaseSfplListener) EnterTags(ctx *TagsContext) {}
+
+// ExitTags is called when production tags is exited.
+func (s *BaseSfplListener) ExitTags(ctx *TagsContext) {}
+
+// EnterPrefilter is called when production prefilter is entered.
+func (s *BaseSfplListener) EnterPrefilter(ctx *PrefilterContext) {}
+
+// ExitPrefilter is called when production prefilter is exited.
+func (s *BaseSfplListener) ExitPrefilter(ctx *PrefilterContext) {}
+
+// EnterSeverity is called when production severity is entered.
+func (s *BaseSfplListener) EnterSeverity(ctx *SeverityContext) {}
+
+// ExitSeverity is called when production severity is exited.
+func (s *BaseSfplListener) ExitSeverity(ctx *SeverityContext) {}
+
+// EnterEnabled is called when production enabled is entered.
+func (s *BaseSfplListener) EnterEnabled(ctx *EnabledContext) {}
+
+// ExitEnabled is called when production enabled is exited.
+func (s *BaseSfplListener) ExitEnabled(ctx *EnabledContext) {}
+
+// EnterWarnevttype is called when production warnevttype is entered.
+func (s *BaseSfplListener) EnterWarnevttype(ctx *WarnevttypeContext) {}
+
+// ExitWarnevttype is called when production warnevttype is exited.
+func (s *BaseSfplListener) ExitWarnevttype(ctx *WarnevttypeContext) {}
+
+// EnterSkipunknown is called when production skipunknown is entered.
+func (s *BaseSfplListener) EnterSkipunknown(ctx *SkipunknownContext) {}
+
+// ExitSkipunknown is called when production skipunknown is exited.
+func (s *BaseSfplListener) ExitSkipunknown(ctx *SkipunknownContext) {}
 
 // EnterVariable is called when production variable is entered.
 func (s *BaseSfplListener) EnterVariable(ctx *VariableContext) {}

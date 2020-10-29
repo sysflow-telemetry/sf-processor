@@ -5,6 +5,18 @@
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
 //
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package engine
 
 import (
@@ -57,12 +69,28 @@ type Rule struct {
 	Actions   []Action
 	Tags      []EnrichmentTag
 	Priority  Priority
+	Prefilter []string
+	Enabled   bool
+}
+
+func (s Rule) isApplicable(r *Record) bool {
+	if len(s.Prefilter) == 0 {
+		return true
+	}
+	rtype := Mapper.MapStr(SF_TYPE)(r)
+	for _, pf := range s.Prefilter {
+		if rtype == pf {
+			return true
+		}
+	}
+	return false
 }
 
 // Filter type
 type Filter struct {
-	name      string
+	Name      string
 	condition Criterion
+	Enabled   bool
 }
 
 // Record type
@@ -110,13 +138,23 @@ const (
 )
 
 // GetInt returns an integer value from internal flat record.
-func (r Record) GetInt(attr sfgo.Attribute) int64 {
-	return r.Fr.Ints[attr]
+func (r Record) GetInt(attr sfgo.Attribute, src sfgo.Source) int64 {
+	for idx, s := range r.Fr.Sources {
+		if s == src {
+			return r.Fr.Ints[idx][attr]
+		}
+	}
+	return sfgo.Zeros.Int64
 }
 
 // GetStr returns a string value from internal flat record.
-func (r Record) GetStr(attr sfgo.Attribute) string {
-	return strings.TrimSpace(r.Fr.Strs[attr])
+func (r Record) GetStr(attr sfgo.Attribute, src sfgo.Source) string {
+	for idx, s := range r.Fr.Sources {
+		if s == src {
+			return strings.TrimSpace(r.Fr.Strs[idx][attr])
+		}
+	}
+	return sfgo.Zeros.String
 }
 
 // GetProc returns a process object by ID.

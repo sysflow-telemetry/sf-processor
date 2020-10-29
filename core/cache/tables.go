@@ -5,17 +5,29 @@
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
 //
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package cache
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"sync"
 
+	"github.com/cespare/xxhash"
 	cqueue "github.com/enriquebris/goconcurrentqueue"
 	cmap "github.com/orcaman/concurrent-map"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/goutils/logger"
 )
 
 const (
@@ -145,7 +157,7 @@ func (t *SFTables) SetFile(ID sfgo.FOID, o *sfgo.File) {
 }
 
 func (t *SFTables) getHash(o interface{}) string {
-	h := sha256.New()
+	h := xxhash.New()
 	h.Write([]byte(fmt.Sprintf("%v", o)))
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
