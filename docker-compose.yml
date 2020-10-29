@@ -14,7 +14,8 @@ services:
     volumes:
       - socket-vol:/sock/
     environment:
-      FILE_PATH: /sock/sysflow.sock
+      DRIVER: socket
+      INPUT_PATH: /sock/sysflow.sock
       POLICYENGINE_MODE: alert
       EXPORTER_TYPE: telemetry
       EXPORTER_SOURCE: ${HOSTNAME}
