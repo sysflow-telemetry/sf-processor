@@ -33,7 +33,11 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.3
+<<<<<<< HEAD
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201029180928-6bf8a30bd4ee
+=======
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201029230226-b00c1f55c6b0
+>>>>>>> dev
 	github.ibm.com/sysflow/sf-processor/core v0.0.0-20201027025951-2690acc0c563
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
