@@ -17,9 +17,7 @@
      {
       "processor": "exporter",
       "in": "evt eventchan",
-      "export": "terminal|file|syslog (default: terminal)",
-      "type": "telemetry|offense (default: telemetry)",
-      "format": "json",
+      "export": "terminal|file|syslog (default: terminal)",            
       "flat": "false|true (default: false)",
       "path": "output file path (default: ./export.out)",
       "proto": "rsyslog protocol tcp|udp|tcp+tls (default: tcp)",
@@ -27,7 +25,9 @@
       "source": "rsyslog source hostname (default: hostname)",
       "host": "rsyslog host (default: localhost)",
       "port": "ryslog port (default: 514)",
-      "buffer": "event aggregation buffer (default: 0)"
+      "format": "json",
+      "type": "telemetry|batch (default: telemetry)",
+      "buffer": "event batching aggregation buffer (default: 0)"
      }
    ]
 }

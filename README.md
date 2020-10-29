@@ -35,71 +35,57 @@ Please check [Sysflow Processor](https://sysflow.readthedocs.io/en/latest/proces
 # How to use this image
 
 ### Starting the processor
-The easiest way to run the SysFlow processor is from a Docker container, with volume mounts for processor configuration. The following command shows how to run sf-processor with processor events exported to rsyslog.
+The easiest way to run the SysFlow Processor is using [docker-compose](https://github.com/sysflow-telemetry/sf-processor/edit/master/docker-compose.yml). The following compose file shows how to run sf-processor with processor events exported to rsyslog.
 
+````yaml
+version: "3.5"
+services:
+  sf-processor:
+    container_name: sf-processor
+    image: sysflowtelemetry/sf-processor:latest
+    privileged: true
+    volumes:
+      - socket-vol:/sock/
+    environment:
+      FILE_PATH: /sock/sysflow.sock
+      POLICYENGINE_MODE: alert
+      EXPORTER_TYPE: telemetry
+      EXPORTER_SOURCE: ${HOSTNAME}
+      EXPORTER_EXPORT: terminal
+      EXPORTER_HOST: localhost
+      EXPORTER_PORT: 514
+  sf-collector:
+    container_name: sf-collector
+    image: sysflowtelemetry/sf-collector:latest
+    depends_on:
+      - "sf-processor"
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock 
+      - /dev:/host/dev 
+      - /proc:/host/proc:ro 
+      - /boot:/host/boot:ro 
+      - /lib/modules:/host/lib/modules:ro 
+      - /usr:/host/usr:ro
+      - /mnt/data:/mnt/data
+      - socket-vol:/sock/
+      - ./resources/traces:/tests/traces
+    environment:
+      EXPORTER_ID: local
+      NODE_IP: "127.0.0.1"
+      FILTER: "container.name!=sf-collector and container.name!=sf-processor" 
+      INTERVAL: 300 
+      SOCK_FILE: /sock/sysflow.sock
+volumes:
+  socket-vol:
 ```
-docker run -d --privileged --name sf-collector \
-	     -v /var/run/docker.sock:/host/var/run/docker.sock \
-	     -v /dev:/host/dev -v /proc:/host/proc:ro \
-	     -v /boot:/host/boot:ro -v /lib/modules:/host/lib/modules:ro \
-             -v /usr:/host/usr:ro -v /mnt/data:/mnt/data \
-             -e INTERVAL=60 \
-             -e EXPORTER_ID=${HOSTNAME} \
-             -e OUTPUT=/mnt/data/    \
-             -e FILTER="container.name!=sf-collector and container.name!=sf-exporter" \
-             --rm sysflowtelemetry/sf-collector
-```
-where INTERVAL denotes the time in seconds before a new trace file is generated, EXPORTER\_ID sets the exporter name, OUTPUT is the directory in which trace files are written, and FILTER is the filter expression used to filter collected events. Note: append `container.type!=host` to FILTER expression to filter host events. 
 
 Instructions for `docker compose` and `helm` deployments are available in [here](https://sysflow.readthedocs.io/en/latest/deploy.html).
-
 
 ### Configuration
 
 Create a JSON file specifying the edge processing pipeline plugins and configuration settings.
-See template below for options; driver/pipeline.json contains default values.
-
-pipeline.json config settings can be overridden by environment variables from Dockerfile.
-The convension is \<PLUGINNAME\>\_\<CONFIGKEY\>.
-For example, you can override export type in the exporter plugin by doing:
-$ export EXPORTER_TYPE=file
-
-```json
-{
-   "_comment": "DO NOT EDIT THIS TEMPLATE (remove this attribute when copying)",
-   "pipeline":[
-     {
-      "processor": "sysflowreader",
-      "handler": "flattener",
-      "in": "sysflow sysflowchan",
-      "out": "flat flattenerchan"
-     },
-     {
-      "processor": "policyengine",
-      "in": "flat flattenerchan",
-      "out": "evt eventchan",
-      "policies": "file|dir path (default: /usr/local/sf-processor/conf/)",
-      "mode": "alert|filter (default: alert)"
-     },
-     {
-      "processor": "exporter",
-      "in": "evt eventchan",
-      "export": "terminal|file|syslog (default: terminal)",
-      "type": "alert|telemetry (default: alert)",
-      "format": "json",
-      "flat": "false|true (default: false)",
-      "path": "output file path (default: ./export.out)",
-      "proto": "rsyslog protocol tcp|udp|tcp+tls (default: tcp)",
-      "tag": "rsyslog tag (default: sysflow)",
-      "source": "rsyslog source hostname (default: hostname)",
-      "host": "rsyslog host (default: localhost)",
-      "port": "ryslog port (default: 514)",
-      "buffer": "event aggregation buffer (default: 0)"
-     }
-   ]
-}
-```
-
+See [template](https://github.com/sysflow-telemetry/sf-processor/blob/master/driver/pipeline.template.json) for available options. The config settings can also be overridden by setting environment variables following the convension \<PLUGINNAME\>\_\<CONFIGKEY\>. For example, you can override _export_ in the exporter plugin by specifying ```-E EXPORTER_TYPE=file``` when running the container.
 
 # License
 

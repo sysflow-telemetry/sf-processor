@@ -40,7 +40,7 @@ services:
     environment:
       EXPORTER_ID: local
       NODE_IP: "127.0.0.1"
-      FILTER: "container.type!=host and container.name!=sf-collector and container.name!=sf-processor" 
+      FILTER: "container.name!=sf-collector and container.name!=sf-processor" 
       INTERVAL: 300 
       SOCK_FILE: /sock/sysflow.sock
 volumes:

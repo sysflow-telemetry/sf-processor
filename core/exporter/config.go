@@ -137,16 +137,16 @@ type ExportType int
 // ExportType config options.
 const (
 	TelemetryType ExportType = iota
-	OffenseType
+	BatchType
 )
 
 func (s ExportType) String() string {
-	return [...]string{"telemetry", "offense"}[s]
+	return [...]string{"telemetry", "batch"}[s]
 }
 
 func parseExportTypeConfig(s string) ExportType {
-	if OffenseType.String() == s {
-		return OffenseType
+	if BatchType.String() == s {
+		return BatchType
 	}
 	return TelemetryType
 }
