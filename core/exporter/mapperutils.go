@@ -5,6 +5,8 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 	"path/filepath"
+	"reflect"
+	"unsafe"
 )
 
 // MapBuffer retrieves a field map based on a SysFlow attribute storing it in a bytes buffer.
@@ -190,12 +192,11 @@ func CheckForQuotes(v string, writer *jwriter.Writer) {
 	}
 }
 
-/*
 func UnsafeBytesToString(b []byte) string {
 	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
 	sh := reflect.StringHeader{bh.Data, bh.Len}
 	return *(*string)(unsafe.Pointer(&sh))
-}*/
+}
 
 // SetCachedValueJSON sets the value of attr from cache for process ID to a JSON writer.
 func SetCachedValueJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribute, writer *jwriter.Writer) {
@@ -260,8 +261,10 @@ func SetCachedValueJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribute,
 				exeArgs := trimBoundingQuotes(ptree[1].ExeArgs)
 				writer.RawByte('"')
 				StringNoQuotes(exe, writer)
-				writer.RawByte(' ')
-				StringNoQuotes(exeArgs, writer)
+				if len(exeArgs) > 0 {
+					writer.RawByte(' ')
+					StringNoQuotes(exeArgs, writer)
+				}
 				writer.RawByte('"')
 			}
 			break
@@ -294,8 +297,10 @@ func SetCachedValueJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribute,
 				exeArgs := trimBoundingQuotes(p.ExeArgs)
 				writer.RawByte('"')
 				StringNoQuotes(exe, writer)
-				writer.RawByte(' ')
-				StringNoQuotes(exeArgs, writer)
+				if len(exeArgs) > 0 {
+					writer.RawByte(' ')
+					StringNoQuotes(exeArgs, writer)
+				}
 				writer.RawByte('"')
 				if i < (l - 1) {
 					writer.RawByte(',')
