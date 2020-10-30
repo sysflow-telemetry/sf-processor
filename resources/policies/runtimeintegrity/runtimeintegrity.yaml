@@ -491,75 +491,88 @@
 
 - macro: parent_sudo
   condition: sf.pproc.exe = /usr/bin/sudo
+
   ###### Rules ####################
  
 - rule: Suspicious process spawned
   desc: Suspicious behavior observed in application spawning another process
-  condition: sf.type = PE and sf.opflags = EXEC and 
-             sf.proc.exe != sf.pproc.exe and 
-             not sf.pproc.exe = /usr/local/sbin/runc and
-             sf.proc.name pmatch (shell_binaries, compilers, pkg_mgmt_binaries, shell_interpreters, coreutils_mod_binaries)
+  condition: sf.opflags = EXEC
+             and sf.proc.exe != sf.pproc.exe
+             and not sf.pproc.exe = /usr/local/sbin/runc
+             and sf.proc.name pmatch (shell_binaries, compilers, pkg_mgmt_binaries, shell_interpreters, coreutils_mod_binaries)
   action: [alert]
   priority: low
   tags: [notification, suspicious-process]
+  prefilter: [PE]
 
 - rule: Webserver writing file
   desc: Webserver is writing a file other than a log file
-  condition: sf.type = FF and sf.file.type = f and 
-             open_write and 
-             possibly_webserver and not sf.file.path pmatch (log_paths)
+  condition: sf.file.type = f
+             and open_write
+             and possibly_webserver 
+             and not sf.file.path pmatch (log_paths)
   action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
+  prefilter: [FF]
 
 - rule: Unauthorized installer detected
   desc: Use of package installer detected in container
-  condition: sf.type = PE and sf.opflags = EXEC and              
-             (sf.proc.name pmatch (package_mgmt_binaries) or java_package_installer) and container          
+  condition: sf.opflags = EXEC 
+             and (sf.proc.name pmatch (package_mgmt_binaries) or java_package_installer) 
+             and container          
   action: [alert]
   priority: medium
   tags: [actionable-offense, suspicious-process]
+  prefilter: [PE]
  
 - rule: Downloader detected
   desc: Downloader is being run inside the container. Could be downloading something malicious
-  condition: sf.type = PE and sf.opflags = EXEC and 
-             sf.proc.name pmatch (downloader_binaries)
+  condition: sf.opflags = EXEC 
+             and sf.proc.name pmatch (downloader_binaries)
   action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
+  prefilter: [PE]
 
 - rule: Remote copy program detected
   desc: Remote copy is occurring inside the container. Could be data exfiltration
-  condition: sf.type = PE and sf.opflags = EXEC and 
-             sf.proc.name in (remote_copy_binaries) and 
-             container  
+  condition: sf.opflags = EXEC
+             and sf.proc.name in (remote_copy_binaries) 
+             and container  
   action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
+  prefilter: [PE]
 
 - rule: User/group modified, added or deleted
   desc: User/Group was modified, added or deleted
-  condition: sf.type = PE and sf.opflags = EXEC and 
-             sf.proc.name in (modify_passwd_binaries, create_user_binaries, delete_user_binaries, modify_user_binaries, create_grp_binaries, delete_group_binaries, modify_grp_binaries)
+  condition: sf.opflags = EXEC 
+             and sf.proc.name in (modify_passwd_binaries, create_user_binaries, delete_user_binaries, modify_user_binaries, create_grp_binaries, delete_group_binaries, modify_grp_binaries)
   action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
+  prefilter: [PE]
 
 - rule: Password utilities execution in container
   desc: Password utilities were run in container
-  condition: sf.type = PE and sf.opflags = EXEC and container and 
-             sf.proc.name pmatch (modify_passwd_binaries, verify_passwd_binaries, user_util_binaries)
+  condition: sf.opflags = EXEC               
+             and sf.proc.name pmatch (modify_passwd_binaries, verify_passwd_binaries, user_util_binaries)
+             and container
   action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
+  prefilter: [PE]
   
  - rule: Password utilities execution in system
   desc: Password utilities were run in the host system
-  condition: sf.type = PE and sf.opflags = EXEC and not container and 
-             sf.proc.name pmatch (modify_passwd_binaries, verify_passwd_binaries, user_util_binaries)
+  condition: sf.opflags = EXEC              
+             and sf.proc.name pmatch (modify_passwd_binaries, verify_passwd_binaries, user_util_binaries)
+             and not container
   action: [alert]
   priority: high
   tags: [notification, suspicious-process]
+  prefilter: [PE]
  
 - rule: Interactive login detected
   desc: Interactive login to container detected
@@ -567,6 +580,7 @@
   action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
+  prefilter: [PE]
   
 - rule: Interactive login to host system detected
   desc: Interactive login to host detected
@@ -574,6 +588,7 @@
   action: [alert]
   priority: high
   tags: [notification, suspicious-process]
+  prefilter: [PE]
 
 - rule: Password file modified
   desc: Password file was modified
@@ -581,6 +596,7 @@
   action: [alert]
   priority: high
   tags: [actionable-offense, filesystem-tampering]
+  prefilter: [FF,FE]
 
 - rule: History file modified
   desc: History file modified indicating interactive session
@@ -588,6 +604,7 @@
   action: [alert]
   priority: high
   tags: [notification, filesystem-tampering]
+  prefilter: [FF,FE]
 
 - rule: Profile file modified
   desc: Profile file modified indicating interactive session
@@ -595,6 +612,7 @@
   action: [alert]
   priority: high
   tags: [notification, filesystem-tampering]
+  prefilter: [FF,FE]
 
 - rule: Library preload file modified
   desc: Library preload file modified could indicate a library injection attack
@@ -602,6 +620,7 @@
   action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
+  prefilter: [FF,FE]
 
 - rule: Crontab file written
   desc: Crontab file edited
@@ -610,6 +629,7 @@
   action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
+  prefilter: [FF]
 
 - rule: Write below binary dir
   desc: an attempt to write to any file below a set of binary directories
@@ -617,6 +637,7 @@
   action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
+  prefilter: [FF,FE]
 
 - rule: Write below system dirs
   desc: an attempt to write to any file below a set of system directories
@@ -624,6 +645,7 @@
   action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
+  prefilter: [FF,FE]
 
 - rule: Write to init directories 
   desc: an attempt to write to an init directory could indicate a persisted piece of malware
@@ -631,6 +653,7 @@
   action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
+  prefilter: [FF,FE]
 
 - rule: Write to scheduler directories 
   desc: an attempt to write to a scheduler directory could indicate a persisted piece of malware
@@ -638,6 +661,7 @@
   action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
+  prefilter: [FF,FE]
 
 - rule: Write below root
   desc: an attempt to write to any file directly below / or /root
@@ -649,6 +673,7 @@
   action: [alert]
   priority: high
   tags: [actionable-offense, filesystem-tampering]
+  prefilter: [FF,FE]
 
 - rule: Untrusted read sensitive file 
   desc: an attempt to read any sensitive file (e.g. files containing user/password/authentication
@@ -657,6 +682,7 @@ information).
   action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
+  prefilter: [FF]
 
 - rule: Write Below RPM/DPKG Database
   desc: an attempt to write to the rpm/dpkg database
@@ -666,6 +692,7 @@ information).
   action: [alert]
   priority: medium
   tags: [unauthorized-package-install, notification]
+  prefilter: [FF,FE]
 
 - rule: Change thread namespace
   desc: >
@@ -679,6 +706,7 @@ information).
   action: [alert]
   priority: medium
   tags: [notification, suspicious-process]
+  prefilter: [FF]
 
 - rule: Non sudo setuid
   desc: >
@@ -693,6 +721,7 @@ information).
   action: [alert]
   priority: medium
   tags: [notification, suspicious-process]
+  prefilter: [FF]
 
 - rule: Create files below dev
   desc: creating any files below /dev other than known programs that manage devices. Some rootkits hide files in /dev.
@@ -705,6 +734,7 @@ information).
   action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
+  prefilter: [FF,FE]
 
 - rule: System procs network activity
   desc: any network activity performed by system binaries that are not expected to send or receive any network traffic
@@ -716,3 +746,4 @@ information).
   action: [alert]
   priority: medium
   tags: [notification, suspicious-process]
+  prefilter: [NF]

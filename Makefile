@@ -46,12 +46,12 @@ clean:
 install: build
 	mkdir -p /usr/local/sysflow/bin /usr/local/sysflow/conf /usr/local/sysflow/resources/policies
 	cp ./driver/sfprocessor /usr/local/sysflow/bin/sfprocessor
-	cp ./driver/pipeline.json /usr/local/sysflow/conf/pipeline.json
+	cp ./resources/pipelines/pipeline.distribution.json /usr/local/sysflow/conf/pipeline.json
 	cp ./resources/policies/distribution/* /usr/local/sysflow/resources/policies/
 
 .PHONY: docker-build
 docker-build: build
-	sudo docker build -t sf-processor --target=runtime -f Dockerfile .
+	docker build -t sf-processor --target=runtime -f Dockerfile .
 
 .PHONY: pull
 pull:

@@ -20,7 +20,7 @@
 package engine
 
 import (
-	"bytes"
+	"fmt"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
 
@@ -32,18 +32,6 @@ func trimBoundingQuotes(s string) string {
 		s = s[:len(s)-1]
 	}
 	return s
-}
-
-//  Adds quotes to a string if necessary
-func TryAddQuotes(v string, buf *bytes.Buffer) {
-	l := len(v)
-	if l > 0 && (v[0] == '"' || v[0] == '\'') {
-		buf.WriteString(v)
-	} else {
-		buf.WriteByte('"')
-		buf.WriteString(v)
-		buf.WriteByte('"')
-	}
 }
 
 // GetRecType returns the record type of the record
@@ -68,5 +56,19 @@ func GetRecType(r *Record, src sfgo.Source) string {
 	default:
 		return TyUnknow
 	}
+}
 
+func parseSymPath(idx sfgo.Source, attr sfgo.Attribute, r *Record) (string, string) {
+	orig := r.GetStr(attr, idx)
+	var src, dst uint64
+	var targetPath string
+	// Possible format: aabbccddeeff0011->aabbccddeeff0011 /path/to/target.file
+	if _, err := fmt.Sscanf(orig, "%x->%x %s", &src, &dst, &targetPath); nil == err {
+		return targetPath, fmt.Sprintf("%x->%x", src, dst)
+	}
+	// Possible format: ffff9ce02054c800-\u003effff9ce02054c000 /sock/sysflow.sock
+	if _, err := fmt.Sscanf(orig, "%x-\\u%x %s", &src, &dst, &targetPath); nil == err {
+		return targetPath, fmt.Sprintf("%x-\\u%x", src, dst)
+	}
+	return orig, ""
 }

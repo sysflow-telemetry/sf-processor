@@ -137,7 +137,7 @@ RecLoop:
 }
 
 func (s *Exporter) process() {
-	if s.config.ExpType == AlertType {
+	if s.config.ExpType == BatchType {
 		err := s.exporter.ExportOffenses(s.recs)
 		if err != nil {
 			logger.Error.Println("Error exporting events: " + err.Error())

@@ -123,9 +123,6 @@ func (s Export) String() string {
 }
 
 func parseExportConfig(s string) Export {
-	if StdOutExport.String() == s {
-		return StdOutExport
-	}
 	if FileExport.String() == s {
 		return FileExport
 	}
@@ -143,20 +140,17 @@ type ExportType int
 
 // ExportType config options.
 const (
-	AlertType ExportType = iota
-	TelemetryType
+	TelemetryType ExportType = iota
+	BatchType
 )
 
 func (s ExportType) String() string {
-	return [...]string{"alert", "telemetry"}[s]
+	return [...]string{"telemetry", "batch"}[s]
 }
 
 func parseExportTypeConfig(s string) ExportType {
-	if AlertType.String() == s {
-		return AlertType
-	}
-	if TelemetryType.String() == s {
-		return TelemetryType
+	if BatchType.String() == s {
+		return BatchType
 	}
 	return TelemetryType
 }

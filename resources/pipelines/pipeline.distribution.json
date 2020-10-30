@@ -10,16 +10,16 @@
      "processor": "policyengine",
      "in": "flat flattenerchan",
      "out": "evt eventchan",
-     "policies": "../resources/policies/runtimeintegrity"     
+     "policies": "/usr/local/sysflow/resources/policies/"
     },
     {
      "processor": "exporter",
      "in": "evt eventchan",
-     "export": "syslog",     
+     "export": "syslog",
      "proto": "tcp",
      "tag": "sysflow",
      "host": "localhost",
-     "port": "514"    
+     "port": "514"
     }
   ]
 }

@@ -1,5 +1,0 @@
-- macro: client
-  condition: sf.proc.name = client
-
-  #- filter: filter-mode-tests
-  #condition: client 

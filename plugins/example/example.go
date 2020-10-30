@@ -22,8 +22,9 @@ package main
 import (
 	"sync"
 
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
-	"github.ibm.com/sysflow/goutils/logger"
+	"github.ibm.com/sysflow/sf-processor/core/flattener"
 )
 
 const (
@@ -58,7 +59,7 @@ func (s *Example) Register(pc plugins.SFPluginCache) {
 
 // Process implements the main interface of the plugin.
 func (s *Example) Process(ch interface{}, wg *sync.WaitGroup) {
-	cha := ch.(*plugins.FlatChannel)
+	cha := ch.(*flattener.FlatChannel)
 	record := cha.In
 	logger.Trace.Println("Example channel capacity:", cap(record))
 	defer wg.Done()
