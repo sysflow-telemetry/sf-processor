@@ -20,6 +20,8 @@
 package flattener
 
 import (
+	"strings"
+
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
@@ -148,7 +150,7 @@ func (s *Flattener) HandleFileEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_STATE_INT] = int64(file2.State)
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_TS_INT] = file2.Ts
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_RESTYPE_INT] = int64(file2.Restype)
-		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_PATH_STR] = file2.Path
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_PATH_STR] = strings.TrimSpace(file2.Path)
 		if file2.ContainerId != nil && file2.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_CONTAINERID_STRING_STR] = file2.ContainerId.String
 		} else {
@@ -191,8 +193,8 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 	}
 	if cont != nil {
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.CONT_ID_STR] = cont.Id
-		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.CONT_NAME_STR] = cont.Name
-		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.CONT_IMAGE_STR] = cont.Image
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.CONT_NAME_STR] = strings.TrimSpace(cont.Name)
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.CONT_IMAGE_STR] = strings.TrimSpace(cont.Image)
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.CONT_IMAGEID_STR] = cont.Imageid
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.CONT_TYPE_INT] = int64(cont.Type)
 		if cont.Privileged {
@@ -221,8 +223,8 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 			fr.Ints[sfgo.SYSFLOW_IDX][sfgo.PROC_POID_HPID_INT] = sfgo.Zeros.Int64
 		}
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.PROC_TS_INT] = proc.Ts
-		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.PROC_EXE_STR] = proc.Exe
-		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.PROC_EXEARGS_STR] = proc.ExeArgs
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.PROC_EXE_STR] = strings.TrimSpace(proc.Exe)
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.PROC_EXEARGS_STR] = strings.TrimSpace(proc.ExeArgs)
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.PROC_UID_INT] = int64(proc.Uid)
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.PROC_USERNAME_STR] = proc.UserName
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.PROC_GID_INT] = int64(proc.Gid)
@@ -264,7 +266,7 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FILE_STATE_INT] = int64(file.State)
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FILE_TS_INT] = file.Ts
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FILE_RESTYPE_INT] = int64(file.Restype)
-		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_PATH_STR] = file.Path
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_PATH_STR] = strings.TrimSpace(file.Path)
 		if file.ContainerId != nil && file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_CONTAINERID_STRING_STR] = file.ContainerId.String
 		} else {

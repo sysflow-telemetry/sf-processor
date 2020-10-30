@@ -88,7 +88,7 @@ const (
 	END_SQUIGGLE       = '}'
 	END_SQUARE         = ']'
 	BEGIN_SQUARE       = '['
-	POLICIES           = "\",policies\":["
+	POLICIES           = ",\"policies\":["
 	ID_TAG             = "{\"id\":"
 	DESC               = ",\"desc\":"
 	PRIORITY           = ",\"priority\":"
@@ -105,9 +105,12 @@ func (t *JSONExporter) exportOffense(recs []*engine.Record, groupID string, cont
 	}
 	t.writer.RawString(QUOTE_COMMA)
 	t.writer.RawString(OBSERVATIONS)
-	for _, rec := range recs {
+	numRecs := len(recs)
+	for idx, rec := range recs {
 		t.encodeTelemetry(rec)
-		t.writer.RawByte(COMMA)
+		if idx < (numRecs - 1) {
+			t.writer.RawByte(COMMA)
+		}
 	}
 	t.writer.RawString(END_SQ_SQUIGGLE)
 	if t.writer.Size() <= BUFFER_SIZE {
@@ -317,8 +320,7 @@ func (t *JSONExporter) encodeTelemetry(rec *engine.Record) {
 						existed = false
 					}
 					state = CONT_STATE
-				}
-				if ctExists {
+				} else if ctExists {
 					t.writer.RawByte(COMMA)
 					t.writeAttribute(fv, 2, rec)
 				}
@@ -331,9 +333,10 @@ func (t *JSONExporter) encodeTelemetry(rec *engine.Record) {
 					t.writeSectionBegin(NODE)
 					t.writeAttribute(fv, 2, rec)
 					state = NODE_STATE
+				} else {
+					t.writer.RawByte(COMMA)
+					t.writeAttribute(fv, 2, rec)
 				}
-				t.writer.RawByte(COMMA)
-				t.writeAttribute(fv, 2, rec)
 			}
 		}
 
@@ -357,25 +360,29 @@ func (t *JSONExporter) encodeTelemetry(rec *engine.Record) {
 			t.writer.RawString(PRIORITY)
 			t.writer.Int64(int64(r.Priority))
 			numTags := len(r.Tags)
+			currentTag := 0
 			if numTags > 0 {
 				t.writer.RawString(TAGS)
-				for ind, tag := range r.Tags {
+				for _, tag := range r.Tags {
 					switch tag.(type) {
 					case []string:
 						tags := tag.([]string)
+						numTags := numTags + len(tags) - 1
 						for _, s := range tags {
 							t.writer.String(s)
-							if ind < (numTags - 1) {
+							if currentTag < (numTags - 1) {
 								t.writer.RawByte(COMMA)
 							}
+							currentTag += 1
 						}
 					default:
 						//t.writer.RawByte(DOUBLE_QUOTE)
 						t.writer.String(tag.(string)) //fmt.Sprintf("%v", tag))
 						//t.writer.RawByte(DOUBLE_QUOTE)
-						if ind < (numTags - 1) {
+						if currentTag < (numTags - 1) {
 							t.writer.RawByte(COMMA)
 						}
+						currentTag += 1
 					}
 				}
 				t.writer.RawByte(END_SQUARE)

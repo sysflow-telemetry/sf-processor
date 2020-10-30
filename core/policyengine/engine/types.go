@@ -20,7 +20,6 @@
 package engine
 
 import (
-	"bytes"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -152,7 +151,7 @@ func (r Record) GetInt(attr sfgo.Attribute, src sfgo.Source) int64 {
 func (r Record) GetStr(attr sfgo.Attribute, src sfgo.Source) string {
 	for idx, s := range r.Fr.Sources {
 		if s == src {
-			return strings.TrimSpace(r.Fr.Strs[idx][attr])
+			return r.Fr.Strs[idx][attr]
 		}
 	}
 	return sfgo.Zeros.String
@@ -178,124 +177,6 @@ func (r Record) MemoizePtree(ID sfgo.OID) []*sfgo.Process {
 	}
 	r.Ptree[ID] = r.getProcProv(ID)
 	return r.Ptree[ID]
-}
-
-// GetCachedValue returns the value of attr from cache for process ID.
-func (r Record) SetCachedValueBuffer(ID sfgo.OID, attr RecAttribute, buf *bytes.Buffer) {
-	if ptree := r.MemoizePtree(ID); ptree != nil {
-		switch attr {
-		case PProcName:
-			if len(ptree) > 1 {
-				TryAddQuotes(filepath.Base(ptree[1].Exe), buf)
-			}
-			break
-		case PProcExe:
-			if len(ptree) > 1 {
-				TryAddQuotes(ptree[1].Exe, buf)
-			}
-			break
-		case PProcArgs:
-			if len(ptree) > 1 {
-				TryAddQuotes(ptree[1].ExeArgs, buf)
-			}
-			break
-		case PProcUID:
-			if len(ptree) > 1 {
-				buf.WriteString(strconv.FormatInt(int64(ptree[1].Uid), 10))
-			}
-			break
-		case PProcUser:
-			if len(ptree) > 1 {
-				TryAddQuotes(ptree[1].UserName, buf)
-			}
-			break
-		case PProcGID:
-			if len(ptree) > 1 {
-				buf.WriteString(strconv.FormatInt(int64(ptree[1].Gid), 10))
-			}
-			break
-		case PProcGroup:
-			if len(ptree) > 1 {
-				TryAddQuotes(ptree[1].GroupName, buf)
-			}
-			break
-		case PProcTTY:
-			if len(ptree) > 1 {
-				if ptree[1].Tty {
-					buf.WriteByte('1')
-				} else {
-					buf.WriteByte('0')
-				}
-			}
-			break
-		case PProcEntry:
-			if len(ptree) > 1 {
-				if ptree[1].Entry {
-					buf.WriteByte('1')
-				} else {
-					buf.WriteByte('0')
-				}
-			}
-			break
-		case PProcCmdLine:
-			if len(ptree) > 1 {
-				exe := trimBoundingQuotes(ptree[1].Exe)
-				exeArgs := trimBoundingQuotes(ptree[1].ExeArgs)
-				buf.WriteByte('"')
-				buf.WriteString(exe)
-				buf.WriteByte(' ')
-				buf.WriteString(exeArgs)
-			}
-			break
-		case ProcAName:
-			//var s []string
-			l := len(ptree)
-			buf.WriteByte('[')
-			for i, p := range ptree {
-				TryAddQuotes(filepath.Base(p.Exe), buf)
-				if i < (l - 1) {
-					buf.WriteByte(',')
-				}
-			}
-			buf.WriteByte(']')
-		case ProcAExe:
-			l := len(ptree)
-			buf.WriteByte('[')
-			for i, p := range ptree {
-				TryAddQuotes(p.Exe, buf)
-				if i < (l - 1) {
-					buf.WriteByte(',')
-				}
-			}
-			buf.WriteByte(']')
-		case ProcACmdLine:
-			l := len(ptree)
-			buf.WriteByte('[')
-			for i, p := range ptree {
-				exe := trimBoundingQuotes(p.Exe)
-				exeArgs := trimBoundingQuotes(p.ExeArgs)
-				buf.WriteByte('"')
-				buf.WriteString(exe)
-				buf.WriteByte(' ')
-				buf.WriteString(exeArgs)
-				buf.WriteByte('"')
-				if i < (l - 1) {
-					buf.WriteByte(',')
-				}
-			}
-			buf.WriteByte(']')
-		case ProcAPID:
-			l := len(ptree)
-			buf.WriteByte('[')
-			for i, p := range ptree {
-				buf.WriteString(strconv.FormatInt(p.Oid.Hpid, 10))
-				if i < (l - 1) {
-					buf.WriteByte(',')
-				}
-			}
-			buf.WriteByte(']')
-		}
-	}
 }
 
 // GetCachedValue returns the value of attr from cache for process ID.
@@ -349,7 +230,10 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 			break
 		case PProcCmdLine:
 			if len(ptree) > 1 {
-				return ptree[1].Exe + SPACE + ptree[1].ExeArgs
+				if len(ptree[1].ExeArgs) > 0 {
+					return ptree[1].Exe + SPACE + ptree[1].ExeArgs
+				}
+				return ptree[1].Exe
 			}
 			break
 		case ProcAName:
@@ -367,7 +251,11 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 		case ProcACmdLine:
 			var s []string
 			for _, p := range ptree {
-				s = append(s, p.Exe+SPACE+p.ExeArgs)
+				if len(p.ExeArgs) > 0 {
+					s = append(s, p.Exe+SPACE+p.ExeArgs)
+				} else {
+					s = append(s, p.Exe)
+				}
 			}
 			return strings.Join(s, LISTSEP)
 		case ProcAPID:

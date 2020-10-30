@@ -86,7 +86,7 @@ func (s *SyslogProto) Init(conf map[string]string) error {
 
 // Export sends buffer to syslog daemon as an alert.
 func (s *SyslogProto) Export(buf []byte) error {
-	err := s.sysl.Alert(string(buf))
+	err := s.sysl.Alert(UnsafeBytesToString(buf))
 	return err
 }
 
@@ -157,7 +157,7 @@ func (s *TerminalProto) Init(conf map[string]string) error {
 
 // Export exports the contets of buffer for the terminal.
 func (s *TerminalProto) Export(buf []byte) error {
-	fmt.Println(string(buf))
+	fmt.Println(UnsafeBytesToString(buf))
 	return nil
 }
 

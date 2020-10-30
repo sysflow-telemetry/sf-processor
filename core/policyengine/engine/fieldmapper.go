@@ -20,7 +20,6 @@
 package engine
 
 import (
-	"bytes"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -122,52 +121,6 @@ func (m FieldMapper) MapStr(attr string) StrFieldMap {
 			return strconv.FormatBool(v)
 		}
 		return sfgo.Zeros.String
-	}
-}
-
-// MapStr retrieves a string field map based on a SysFlow attribute.
-func (m FieldMapper) MapBuffer(fv *FieldValue, buf *bytes.Buffer) VoidFieldMap {
-	return func(r *Record) {
-		switch fv.Entry.Id {
-		case A_IDS, PARENT_IDS:
-			oid := sfgo.OID{CreateTS: r.GetInt(sfgo.PROC_OID_CREATETS_INT, fv.Entry.Source), Hpid: r.GetInt(sfgo.PROC_OID_HPID_INT, fv.Entry.Source)}
-			r.SetCachedValueBuffer(oid, fv.Entry.AuxAttr, buf)
-			return
-		}
-
-		switch fv.Entry.Type {
-		case MapStrVal:
-			v := r.GetStr(fv.Entry.Id, fv.Entry.Source)
-			l := len(v)
-			if l > 0 && (v[0] == '"' || v[0] == '\'') {
-				buf.WriteString(v)
-			} else {
-				buf.WriteByte('"')
-				buf.WriteString(v)
-				buf.WriteByte('"')
-			}
-		case MapIntVal:
-			buf.WriteString(strconv.FormatInt(r.GetInt(fv.Entry.Id, fv.Entry.Source), 10))
-		case MapSpecialStr:
-			v := fv.Entry.Map(r).(string)
-			l := len(v)
-			if l > 0 && (v[0] == '"' || v[0] == '\'') {
-				buf.WriteString(v)
-			} else {
-				buf.WriteByte('"')
-				buf.WriteString(v)
-				buf.WriteByte('"')
-			}
-		case MapSpecialInt:
-			buf.WriteString(strconv.FormatInt(fv.Entry.Map(r).(int64), 10))
-		case MapSpecialBool:
-			buf.WriteString(strconv.FormatBool(fv.Entry.Map(r).(bool)))
-		case MapArrayStr, MapArrayInt:
-			v := fv.Entry.Map(r).(string)
-			buf.WriteString("[")
-			buf.WriteString(v)
-			buf.WriteString("]")
-		}
 	}
 }
 
