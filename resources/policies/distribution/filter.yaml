@@ -1,5 +1,10 @@
+##### Macros 
+
 - macro: FileFlow
   condition: sf.type=FF
+
+- macro: FileEvent
+  condition: sf.type=FE
 
 - macro: ProcessEvent
   condition: sf.type=PE
@@ -7,158 +12,318 @@
 - macro: NetworkFlow
   condition: sf.type=NF
 
-- macro: splunk_processes
-  condition: sf.proc.exe in (/opt/splunk/bin/splunkd, /opt/splunk/bin/mongod, /opt/splunk/bin/splunk-optimize, /opt/splunk/bin/python2.7)
+- macro: setns_syscall
+  condition: FileFlow and sf.opflags in (SETNS)
+
+- macro: exit_syscall
+  condition: ProcessEvent and sf.opflags = EXIT
+  
+- macro: exec_syscall
+  condition: ProcessEvent and sf.opflags = EXEC
+  
+- macro: clone_syscall
+  condition: ProcessEvent and sf.opflags = CLONE
+
+- macro: FileOpen
+  condition: FileFlow and sf.opflags in (OPEN)
 
 - macro: file_open_write
-  condition: sf.file.openflags in (WRONLY, RDWR, CREAT, APPEND)
+  condition: FileOpen and sf.file.is_open_write = true
 
 - macro: file_open_read
-  condition: sf.file.openflags in (RDONLY, RDWR)
-
-- macro: file_open
-  condition: sf.opflags in (OPEN)
+  condition: FileOpen and sf.file.is_open_read = true
 
 - macro: file_write
-  condition: sf.opflags in (WRITE)
+  condition: FileFlow and sf.opflags in (WRITE)
 
 - macro: file_read
-  condition: sf.opflags in (READ) and not file_write
+  condition: FileFlow and sf.opflags in (READ)
 
-- macro: excluded_file_read_flows
-  condition: (file_read or file_open_read) and sf.proc.exe in (/usr/sbin/sshd, /lib/systemd/systemd-journald, /usr/sbin/irqbalance, /lib/systemd/systemd, /usr/bin/dbus-daemon, /usr/bin/updatedb.mlocate, /lib/systemd/systemd-udevd, /usr/bin/apt-config, /lib/systemd/system-generators/systemd-sysv-generator, /usr/sbin/cron, /usr/bin/dpkg, /usr/bin/mandb, /bin/systemctl, /usr/bin/apt-get, /usr/bin/lsb_release, /usr/bin/dockerd, /bin/networkctl, /sbin/ldconfig.real, /lib/systemd/systemd-sysctl, /lib/systemd/systemd-networkd, /usr/local/sf-processor/bin/sfprocessor, /usr/bin/docker, /usr/bin/containerd-shim, /usr/bin/runc, /usr/sbin/syslog-ng, /lib/systemd/systemd-resolved)
+- list: _infrastructure_containers
+  items: [ocp, ceph, csi-provisioner]
 
-- macro: excluded_file_write_flows
-  condition: (file_write or file_open_write) and sf.proc.exe in (/usr/sbin/sshd, /usr/bin/dbus-daemon, /usr/sbin/syslog-ng, /usr/local/sf-processor/bin/sfprocessor, /usr/bin/dockerd, /lib/systemd/systemd-journald, /lib/systemd/systemd, /lib/systemd/systemd-udevd, /lib/systemd/systemd-logind, /lib/systemd/systemd-timesyncd, /lib/systemd/systemd-resolved, /lib/systemd/systemd-networkd)
+- macro: infrastructure_containers
+  condition: sf.container.image pmatch (_infrastructure_containers)
 
-- macro: network_flows_from_log_forwarder_utilities
-  condition: sf.proc.exe in (/usr/local/sf-processor/bin/sfprocessor, /usr/sbin/syslog-ng) and sf.net.dport = 514
+#### Process Clone tuning
 
-- macro: network_flow_ingress_engress
-  condition: sf.opflags in (SEND, RECV) and not network_flows_from_log_forwarder_utilities
+- list: _os_level_noisy_process_clone_by_process
+  items: [/usr/bin/runc, /usr/libexec/crio/conmon, /proc/self/exe, /usr/bin/crio, /usr/lib/systemd/systemd, /usr/bin/hyperkube, /usr/lib/systemd/systemd-journald, /usr/bin/dpkg-deb, /usr/bin/dpkg, /usr/bin/apt-get, /usr/lib/systemd/systemd-udevd, /usr/bin/apt-config, /var/lib/dpkg/info/vim-runtime.postinst, /usr/bin/docker, /usr/share/debconf/frontend, /usr/lib/apt/apt.systemd.daily, /usr/lib/apt/methods/gpgv, /usr/sbin/sshd, /usr/sbin/syslog-ng, /lib/systemd/systemd-journald, /lib/systemd/systemd-udevd, /usr/bin/apt-key]
+
+- list: _os_level_noisy_process_clone_by_parent_process
+  items: [/usr/bin/runc, /usr/bin/hyperkube, /usr/bin/dpkg, /usr/bin/apt-get, /usr/bin/apt-key]
+
+- list: _openshift_infrastructure_container_noisy_process_clone_by_process
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/runc, grpc_health_probe, /prometheus/sh, /usr/bin/dig, /usr/libexec/crio/conmon, /usr/bin/crio, /usr/local/bin/rook]
+
+- list: _openshift_infrastructure_container_noisy_process_clone_by_parent_process
+  items: [/usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/crio, /bin/bash, /usr/bin/sh, /usr/bin/bash, /usr/share/openvswitch/scripts/ovs-ctl, /proc/self/exe, /usr/bin/ceph]
+
+- macro: _drop_out_noisy_process_clone_events
+  condition: clone_syscall 
+             and ((sf.proc.exe in (_os_level_noisy_process_clone_by_process) or sf.pproc.exe in (_os_level_noisy_process_clone_by_parent_process)) 
+                  or (infrastructure_containers and (sf.proc.exe in (_openshift_infrastructure_container_noisy_process_clone_by_process) or sf.pproc.exe in (_openshift_infrastructure_container_noisy_process_clone_by_parent_process))))
+
+#### File Read tuning
+
+- list: _os_level_noisy_file_read_by_process
+  items: [/usr/bin/hyperkube, /usr/lib/systemd/systemd, /usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/crio, /usr/lib/systemd/systemd-journald, /usr/sbin/sshd, /lib/systemd/systemd-journald, /usr/sbin/irqbalance, /lib/systemd/systemd, /usr/bin/dbus-daemon, /usr/bin/updatedb.mlocate, /lib/systemd/systemd-udevd, /usr/bin/apt-config, /lib/systemd/system-generators/systemd-sysv-generator, /usr/sbin/cron, /usr/bin/dpkg, /usr/bin/mandb, /bin/systemctl, /usr/bin/apt-get, /usr/bin/lsb_release, /usr/bin/dockerd, /bin/networkctl, /sbin/ldconfig.real, /lib/systemd/systemd-sysctl, /lib/systemd/systemd-networkd, /usr/bin/docker, /usr/bin/containerd-shim, /usr/sbin/syslog-ng, /lib/systemd/systemd-resolved, /usr/bin/kubelet, /usr/bin/mongod, /usr/bin/mongo, /usr/bin/prometheus, /usr/lib/accountsservice/accounts-daemon, /usr/lib/systemd/systemd-logind]
+
+- list: _os_level_noisy_file_read_by_parent_process
+  items: [/usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/hyperkube, /usr/bin/crio, /usr/lib/systemd/systemd, /usr/bin/apt-get, /usr/bin/dpkg-deb, /usr/sbin/sshd, /usr/bin/run-parts, /bin/run-parts, /usr/bin/apt-key, /usr/lib/ubuntu-release-upgrader/release-upgrade-motd, /usr/bin/dpkg, /usr/share/debconf/frontend, /usr/bin/dockerd, /var/lib/dpkg/info/vim.postinst, /usr/sbin/add-shell, /usr/local/bin/docker-compose, /var/lib/dpkg/info/mime-support.postinst]
+
+- list: _openshift_infrastructure_container_noisy_file_read_by_process
+  items: [/usr/bin/node_exporter, /usr/bin/curl, /usr/bin/ovs-vsctl, /usr/bin/ovs-appctl, /usr/bin/prometheus, /usr/bin/ceph, /usr/bin/ceph-mds, /usr/bin/ceph-mgr, /usr/bin/ceph-osd, /usr/local/bin/rook, /usr/bin/ceph-mon, /sbin/ldconfig, /usr/sbin/ldconfig, /usr/bin/ovs-ofctl, /usr/share/openvswitch/scripts/ovs-ctl, /usr/share/grafana/bin/grafana-server, /bin/bash, /rootfs/usr/bin/journalctl, /usr/bin/cat, /usr/bin/sed, /usr/bin/sleep, /usr/bin/thanos, /usr/bin/bash, /usr/bin/openshift-router, /usr/bin/alertmanager, /usr/bin/dockerregistry, /usr/bin/dig, /usr/bin/tail, /usr/bin/ls, /usr/bin/kube-rbac-proxy, /usr/bin/cp, /usr/bin/coredns, /usr/bin/machine-config-daemon, /usr/bin/oauth-proxy, /usr/bin/telemeter-client, /usr/bin/kube-state-metrics, /usr/bin/grep, /usr/bin/openshift-state-metrics, /usr/bin/prometheus-config-reloader, /usr/bin/cmp, /usr/bin/openshift-tuned, /usr/local/bin/helm-operator, /nginx-ingress-controller, /manager]
+
+- list: _openshift_infrastructure_container_noisy_file_read_by_parent_process
+  items: [/usr/libexec/crio/conmon, /usr/bin/runc, /usr/bin/machine-config-daemon, /usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/openshift-tuned, /usr/bin/crio, /usr/local/bin/rook, /usr/local/bin/rook, /rook/rook, /usr/bin/ceph, /usr/bin/dumb-init, /usr/bin/openshift-sdn-node]
+
+- macro: _drop_out_noisy_file_read_events
+  condition: (file_open_read or file_read) and not (file_write or file_open_write or setns_syscall) 
+              and ((sf.proc.exe in (_os_level_noisy_file_read_by_process) or sf.pproc.exe in (_os_level_noisy_file_read_by_parent_process)) 
+                    or (infrastructure_containers and (sf.proc.exe in (_openshift_infrastructure_container_noisy_file_read_by_process) or sf.pproc.exe in (_openshift_infrastructure_container_noisy_file_read_by_parent_process))))
+
+#### File Modify tuning
+
+- list: _os_level_noisy_file_modify_by_process
+  items: [/usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/crio, /usr/bin/hyperkube, /usr/lib/systemd/systemd-logind, /usr/lib/systemd/systemd-journald, /usr/lib/systemd/systemd-udevd, /usr/sbin/NetworkManager]
+
+- list: _os_level_noisy_file_modify_by_parent_process
+  items: [/usr/libexec/crio/conmon, /usr/bin/runc, /usr/bin/hyperkube, /usr/bin/crio, /usr/lib/systemd/systemd, /usr/sbin/sshd, /usr/bin/dbus-daemon, /usr/bin/dockerd, /lib/systemd/systemd-journald, /lib/systemd/systemd, /lib/systemd/systemd-udevd, /lib/systemd/systemd-logind, /lib/systemd/systemd-timesyncd, /lib/systemd/systemd-resolved, /lib/systemd/systemd-networkd, /usr/bin/dpkg, /usr/lib/systemd/systemd, /usr/bin/update-mime-database, /usr/lib/systemd/systemd-journald, /usr/lib/systemd/systemd-networkd, /usr/lib/systemd/systemd-udevd, /usr/lib/systemd/systemd-resolved, /usr/lib/systemd/systemd-timesyncd, /usr/lib/systemd/systemd-logind, /usr/bin/dpkg-deb, /usr/bin/apt-get, /usr/local/bin/docker-compose, /usr/bin/apt-key, /usr/bin/update-alternatives, /usr/bin/containerd]
+
+- list: _openshift_infrastructure_container_noisy_file_modify_by_process
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/sbin/ovs-vswitchd, /usr/bin/curl, /usr/bin/cat, /usr/bin/sh, /usr/bin/oauth-proxy, /usr/bin/ovs-vsctl, /usr/bin/ovs-appctl, /usr/bin/sed]
+
+- list: _openshift_infrastructure_container_noisy_file_modify_by_parent_process
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/sbin/ovs-vswitchd, /usr/bin/dumb-init, /usr/local/bin/rook, /usr/bin/openshift-sdn-node]
+
+- macro: _drop_out_noisy_file_modify_events
+  condition: (file_write or file_open_write) and not setns_syscall
+              and ((sf.proc.exe in (_os_level_noisy_file_modify_by_process) or sf.pproc.exe in (_os_level_noisy_file_modify_by_parent_process)) 
+                    or (infrastructure_containers and (sf.proc.exe in (_openshift_infrastructure_container_noisy_file_modify_by_process) or sf.pproc.exe in (_openshift_infrastructure_container_noisy_file_modify_by_parent_process))))
+
+- macro: drop_file_write_list_of_file_paths
+  condition: (file_write or file_open_write) 
+              and sf.file.path in (/run/systemd/userdb/io.systemd.DynamicUser, /run/systemd/notify, /dev/pts/1, /dev/null, /proc/self/attr/keycreate)
+
+- macro: drop_file_write_from_rsyslogd
+  condition: (file_write or file_open_write) 
+              and sf.proc.exe = /usr/sbin/rsyslogd 
+              and sf.file.directory = /var/log
+
+- macro: drop_file_write_from_tar
+  condition: (file_write or file_open_write) 
+              and sf.proc.exe = /usr/bin/tar 
+              and sf.file.directory = /var/lib/dpkg/tmp.ci
+
+#### Process exit tuning
+
+- macro: _drop_thread_exit_events
+  condition: exit_syscall and sf.proc.pid != sf.proc.tid
+
+- list: _os_level_noisy_process_exit_by_process
+  items: [/usr/bin/runc, /usr/libexec/crio/conmon, /proc/self/exe, /usr/bin/crio, /usr/lib/systemd/systemd]
+
+- list: _os_level_noisy_process_exit_by_parent_process
+  items: [/usr/bin/runc, /usr/bin/hyperkube]
+
+- list: _openshift_infrastructure_container_noisy_process_exit_by_process
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/sleep, /usr/bin/cat, /usr/bin/curl, /usr/bin/bash, /usr/bin/ovs-vsctl, /usr/bin/sh, /bin/bash, /usr/bin/ovs-appctl, /usr/bin/sed, /usr/bin/ovs-ofctl, /sbin/ldconfig, /proc/self/exe, /prometheus/sh, /usr/bin/runc, /usr/bin/sed, /usr/bin/cp, /usr/bin/ls, /usr/bin/ceph, /usr/sbin/ldconfig, /usr/bin/grep, /usr/bin/cmp, /usr/bin/dig, /usr/libexec/crio/conmon]
+
+- list: _openshift_infrastructure_container_noisy_process_exit_by_parent_process
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/runc, /usr/bin/ceph, /usr/local/bin/rook, /usr/libexec/crio/conmon]
+
+- macro: _drop_out_noisy_process_exit_events
+  condition: exit_syscall 
+             and ((sf.proc.exe in (_os_level_noisy_process_exit_by_process) or sf.pproc.exe in (_os_level_noisy_process_exit_by_parent_process)) 
+                   or (infrastructure_containers and (sf.proc.exe in (_openshift_infrastructure_container_noisy_process_exit_by_process) or sf.pproc.exe in (_openshift_infrastructure_container_noisy_process_exit_by_parent_process))))
+
+#### setns tuning
+### need to limit it based on specific process tree
+
+- macro: _drop_noisy_setns_events
+  condition: setns_syscall and sf.proc.exe = /proc/self/exe
+
+#### Process execution tuning
+
+- list: _os_level_noisy_process_execution_by_process
+  items: [/usr/bin/runc, /usr/libexec/crio/conmon, /usr/sbin/sshd, /usr/bin/dpkg, /usr/bin/dpkg-deb, /usr/bin/dpkg-split]
+
+- list: _os_level_noisy_process_execution_by_parent_process
+  items: [/usr/bin/hyperkube, /usr/bin/runc, /usr/bin/crio, /usr/libexec/crio/conmon, /usr/bin/dpkg, /usr/bin/dpkg-deb, /usr/bin/apt-key, /usr/bin/apt-get, /usr/bin/apt-config, /usr/share/debconf/frontend, /var/lib/dpkg/info/vim-runtime.postinst, /usr/lib/apt/apt.systemd.daily, /usr/bin/run-parts]
+
+- list: _openshift_infrastructure_container_noisy_process_execution_by_process
+  items: [/usr/sbin/iptables, /usr/sbin/chroot, /usr/bin/sleep, /usr/bin/cat, /usr/bin/curl, /usr/bin/ovs-vsctl, /usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/sed, /usr/bin/ovs-appctl, /usr/bin/ovs-ofctl, /usr/sbin/iptables-save, /usr/bin/openshift-sdn-node, /sbin/ldconfig, /usr/bin/ceph, /usr/bin/ls, /usr/bin/cp, /usr/sbin/ldconfig, /usr/bin/cmp, /usr/bin/dig, /usr/bin/grep, /proc/self/exe, /usr/bin/lsblk]
+
+- list: _openshift_infrastructure_container_noisy_process_execution_by_parent_process
+  items: [/usr/bin/openshift-sdn-node, /usr/share/openvswitch/scripts/ovs-ctl, /usr/local/bin/rook, /usr/bin/ceph, /usr/bin/ceph-mgr, /var/lib/haproxy/reload-haproxy, /usr/bin/openshift-router, /usr/bin/openshift-tuned]
+
+- macro: _drop_out_noisy_process_execution_events
+  condition: exec_syscall 
+             and ((sf.proc.exe in (_os_level_noisy_process_execution_by_process) or sf.pproc.exe in (_os_level_noisy_process_execution_by_parent_process)) 
+                   or (infrastructure_containers and (sf.proc.exe in (_openshift_infrastructure_container_noisy_process_execution_by_process) or sf.pproc.exe in (_openshift_infrastructure_container_noisy_process_execution_by_parent_process))))
+
+##### Global filter
+
+- filter: __global__
+  condition: _drop_out_noisy_process_clone_events 
+             or _drop_out_noisy_file_read_events 
+             or _drop_out_noisy_file_modify_events 
+             or drop_file_write_list_of_file_paths 
+             or drop_file_write_from_rsyslogd 
+             or drop_file_write_from_tar 
+             or _drop_thread_exit_events 
+             or _drop_out_noisy_process_exit_events 
+             or _drop_noisy_setns_events 
+             or _drop_out_noisy_process_execution_events
+
+##### Rules
+
+- rule: File Opened with Read Permissions
+  desc: File Opened with Read Permissions
+  condition: file_open_read and not (file_open_write or file_write or file_read or setns_syscall)
+  action: [alert]
+  priority: low  
+  prefilter: [FF]
+
+- rule: File Read
+  desc: File Read 
+  condition: file_read and not file_write
+  action: [alert]
+  priority: low
+  prefilter: [FF]
+
+- rule: File Modified
+  desc: File Modified
+  condition: file_write
+  action: [alert]
+  priority: low  
+  prefilter: [FF]
+
+- rule: File Opened with Write Permissions
+  desc: File Opened with Write Permissions
+  condition: file_open_write and not (file_write or setns_syscall)
+  action: [alert]
+  priority: low  
+  prefilter: [FF]
 
 - rule: Directory created
   desc: when a directory will be created
   condition: sf.opflags = MKDIR
   action: [alert]
-  priority: low
-  prefilter: [FE]  
+  priority: low  
+  prefilter: [FE]
   
 - rule: Directory removed
   desc: when a directory will be removed
   condition: sf.opflags = RMDIR
   action: [alert]
-  priority: low
-  prefilter: [FE]  
+  priority: low  
+  prefilter: [FE]
   
 - rule: Hard link created
   desc: when process creates hard link to an existing file
-  condition: sf.opflags = LINK and not splunk_processes
+  condition: sf.opflags = LINK
   action: [alert]
-  priority: low
+  priority: low  
   prefilter: [FE]
-    
+  
 - rule: Soft link created
   desc: when process creates soft link to an existing file
   condition: sf.opflags = SYMLINK
   action: [alert]
-  priority: low
+  priority: low  
   prefilter: [FE]
-    
+
 - rule: File deleted
   desc: when a file will be deleted
-  condition: sf.opflags = UNLINK and not sf.proc.exe in (/lib/systemd/systemd-udevd, /usr/bin/apt-get) and not splunk_processes
+  condition: sf.opflags = UNLINK
   action: [alert]
-  priority: low
+  priority: low  
   prefilter: [FE]
-    
+
 - rule: File renamed
   desc: when a file will be renamed
-  condition: sf.opflags = RENAME and not sf.proc.exe in (/usr/bin/dpkg, /lib/systemd/systemd-udevd, /usr/sbin/logrotate, /usr/bin/dockerd) and not (splunk_processes)
+  condition: sf.opflags = RENAME
   action: [alert]
-  priority: low
+  priority: low  
   prefilter: [FE]
-  
+
 - rule: UID of process was changed
   desc: UID of process was changed
-  condition: sf.opflags = SETUID and not sf.proc.exe in (/usr/sbin/sshd)
+  condition: sf.opflags = SETUID
   action: [alert]
-  priority: low
+  priority: low  
   prefilter: [PE]
-  
+
 - rule: Process cloned
   desc: Process cloned
-  condition: sf.opflags = CLONE and not sf.proc.exe in (/usr/sbin/sshd, /usr/sbin/syslog-ng, /lib/systemd/systemd-journald, /lib/systemd/systemd-udevd, /usr/bin/apt-key, /opt/splunk/bin/splunkd)
+  condition: clone_syscall
   action: [alert]
-  priority: low
+  priority: low  
   prefilter: [PE]
-    
+
 - rule: Execution of a file
   desc: Execution of a file
-  condition: sf.opflags = EXEC and not sf.proc.exe in (/usr/sbin/sshd, /opt/splunk/bin/splunk-optimize)
+  condition: exit_syscall
   action: [alert]
   priority: low
+  tags: [test]
   prefilter: [PE]
-  
+
 - rule: Process or thread exit
   desc: Process or thread exit
-  condition: sf.opflags = EXIT and not sf.proc.exe in (/usr/sbin/sshd, /usr/sbin/syslog-ng, /lib/systemd/systemd-journald, /lib/systemd/systemd-udevd) and not splunk_processes
+  condition: exit_syscall
   action: [alert]
-  priority: low
+  priority: low  
   prefilter: [PE]
-  
-- rule: File Modified
-  desc: File Modified
-  condition: file_write and not (excluded_file_write_flows or splunk_processes)
+
+
+- rule: Process entered namespace
+  desc: Process entered namespace
+  condition: setns_syscall
   action: [alert]
-  priority: low
+  priority: low  
   prefilter: [FF]
-  
-- rule: File Opened with Write Permissions
-  desc: File Opened with Write Permissions
-  condition: file_open and file_open_write and not (file_write or excluded_file_write_flows or splunk_processes)
+
+- rule: Process Created a Network Connection
+  desc: Process Created a Network Connection
+  condition: sf.opflags in (CONNECT)
   action: [alert]
-  priority: low
-  prefilter: [FF]
-  
-- rule: File Opened with Read Permissions
-  desc: File Opened with Read Permissions
-  condition: file_open and file_open_read and not (file_write or file_read or excluded_file_read_flows or splunk_processes)
-  action: [alert]
-  priority: low
-  prefilter: [FF]
-  
-- rule: File Read
-  desc: File Read 
-  condition: file_read and not (excluded_file_read_flows or splunk_processes)
-  action: [alert]
-  priority: low
-  prefilter: [FF]
-  
-- rule: File Closed
-  desc: File Closed
-  condition: FileFlow and sf.opflags = CLOSE
-  action: [alert]
-  priority: low
-  prefilter: [FF]
-  
-- rule: Process Sending or Receiving Network Data
-  desc: Network Flow ingress or engress
-  condition: network_flow_ingress_engress
-  action: [alert]
-  priority: low
+  priority: low  
   prefilter: [NF]
-   
-- rule: Network Connection Created
-  desc: Network Connection Created
-  condition: NetworkFlow and sf.opflags in (CONNECT, ACCEPT) and not network_flow_ingress_engress
+
+- rule: Process Accepted a Network Connection
+  desc: Network Flow ingress
+  condition: sf.opflags in (ACCEPT)
   action: [alert]
-  priority: low
+  priority: low  
   prefilter: [NF]
-  
+
+- rule: Process Sending and Receiving Network Data
+  desc: Network Flow ingress and engress
+  condition: sf.opflags in (SEND) and sf.opflags in (RECV)
+  action: [alert]
+  priority: low  
+  prefilter: [NF]
+
+- rule: Process Sending Network Data
+  desc: Network Flow engress
+  condition: sf.opflags in (SEND) and not sf.opflags in (RECV)
+  action: [alert]
+  priority: low  
+  prefilter: [NF]
+
+- rule: Process Receiving Network Data
+  desc: Network Flow ingress
+  condition: sf.opflags in (RECV) and not sf.opflags in (SEND)
+  action: [alert]
+  priority: low  
+  prefilter: [NF]
+
 - rule: Network Connection Closed
   desc: Network Connection Closed
-  condition: NetworkFlow and sf.opflags = CLOSE
+  condition: sf.opflags in (CLOSE) and not sf.opflags in (SEND,RECV,ACCEPT,CONNECT)
   action: [alert]
-  priority: low
+  priority: low  
   prefilter: [NF]
