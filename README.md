@@ -37,7 +37,7 @@ Please check [Sysflow Processor](https://sysflow.readthedocs.io/en/latest/proces
 ### Starting the processor
 The easiest way to run the SysFlow Processor is using [docker-compose](https://github.com/sysflow-telemetry/sf-processor/edit/master/docker-compose.yml). The following compose file shows how to run sf-processor with processor events exported to rsyslog.
 
-````yaml
+```yaml
 version: "3.5"
 services:
   sf-processor:
@@ -81,7 +81,7 @@ volumes:
   socket-vol:
 ```
 
-Instructions for `docker compose` and `helm` deployments are available in [here](https://sysflow.readthedocs.io/en/latest/deploy.html).
+Instructions for `docker-compose` and `helm` deployments are available in [here](https://sysflow.readthedocs.io/en/latest/deploy.html).
 
 ### Configuration
 
