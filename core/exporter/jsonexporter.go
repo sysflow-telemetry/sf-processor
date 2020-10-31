@@ -50,6 +50,7 @@ const (
 	BUFFER_SIZE = 10240
 )
 
+// JSONExporter  implements a JSON serializer and exporter
 type JSONExporter struct {
 	fieldCache []*engine.FieldValue
 	proto      ExportProtocol
@@ -58,18 +59,15 @@ type JSONExporter struct {
 	writer     *jwriter.Writer
 }
 
+// NewJSONExporter instantiates a JSON exporter
 func NewJSONExporter(p ExportProtocol, config Config) *JSONExporter {
 	t := &JSONExporter{}
 	t.fieldCache = engine.FieldValues
-	/*	for ind, k := range engine.Fields {
-		t.fieldCache[ind] = strings.Split(k, ".")
-	}*/
 	t.proto = p
 	t.config = config
 	t.writer = &jwriter.Writer{}
 	t.buf = make([]byte, 0, BUFFER_SIZE)
 	t.writer.Buffer.Buf = t.buf
-	//t.buf = bytes.NewBuffer(buffer)
 	return t
 }
 
@@ -125,6 +123,7 @@ func (t *JSONExporter) exportOffense(recs []*engine.Record, groupID string, cont
 
 }
 
+// ExportOffenses exports a set of  offesnes as JSON objects
 func (t *JSONExporter) ExportOffenses(recs []*engine.Record) error {
 	if len(recs) == 1 {
 		groupID := engine.Mapper.MapStr(engine.SF_NODE_ID)(recs[0])
@@ -162,6 +161,7 @@ func (t *JSONExporter) ExportOffenses(recs []*engine.Record) error {
 
 }
 
+// ExportTelemetryRecords exports a set of telemetry records as JSON objects.
 func (t *JSONExporter) ExportTelemetryRecords(recs []*engine.Record) error {
 	var b []byte
 	var err error

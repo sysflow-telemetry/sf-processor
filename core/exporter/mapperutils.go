@@ -1,3 +1,22 @@
+//
+// Copyright (C) 2020 IBM Corporation.
+//
+// Authors:
+// Frederico Araujo <frederico.araujo@ibm.com>
+// Teryl Taylor <terylt@ibm.com>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package exporter
 
 import (
@@ -8,52 +27,6 @@ import (
 	"reflect"
 	"unsafe"
 )
-
-// MapBuffer retrieves a field map based on a SysFlow attribute storing it in a bytes buffer.
-/*func MapBuffer(fv *FieldValue, buf *bytes.Buffer) engine.VoidFieldMap {
-	return func(r *engine.Record) {
-		switch fv.Entry.Id {
-		case A_IDS, PARENT_IDS:
-			oid := sfgo.OID{CreateTS: r.GetInt(sfgo.PROC_OID_CREATETS_INT, fv.Entry.Source), Hpid: r.GetInt(sfgo.PROC_OID_HPID_INT, fv.Entry.Source)}
-			r.SetCachedValueBuffer(oid, fv.Entry.AuxAttr, buf)
-			return
-		}
-
-		switch fv.Entry.Type {
-		case engine.MapStrVal:
-			v := r.GetStr(fv.Entry.Id, fv.Entry.Source)
-			l := len(v)
-			if l > 0 && (v[0] == '"' || v[0] == '\'') {
-				buf.WriteString(v)
-			} else {
-				buf.WriteByte('"')
-				buf.WriteString(v)
-				buf.WriteByte('"')
-			}
-		case engine.MapIntVal:
-			buf.WriteString(strconv.FormatInt(r.GetInt(fv.Entry.Id, fv.Entry.Source), 10))
-		case engine.MapSpecialStr:
-			v := fv.Entry.Map(r).(string)
-			l := len(v)
-			if l > 0 && (v[0] == '"' || v[0] == '\'') {
-				buf.WriteString(v)
-			} else {
-				buf.WriteByte('"')
-				buf.WriteString(v)
-				buf.WriteByte('"')
-			}
-		case engine.MapSpecialInt:
-			buf.WriteString(strconv.FormatInt(fv.Entry.Map(r).(int64), 10))
-		case engine.MapSpecialBool:
-			buf.WriteString(strconv.FormatBool(fv.Entry.Map(r).(bool)))
-		case engine.MapArrayStr, MapArrayInt:
-			v := fv.Entry.Map(r).(string)
-			buf.WriteString("[")
-			buf.WriteString(v)
-			buf.WriteString("]")
-		}
-	}
-}*/
 
 func mapOpFlags(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 	opflags := r.GetInt(fv.Entry.Id, fv.Entry.Source)
@@ -111,7 +84,7 @@ func mapPorts(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 	writer.RawByte(END_SQUARE)
 }
 
-// MapStr retrieves a string field map based on a SysFlow attribute.
+// MapJSON writes a SysFlow attribute to a JSON stream.
 func MapJSON(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 	switch fv.Entry.Id {
 	case engine.A_IDS, engine.PARENT_IDS:
@@ -182,6 +155,7 @@ func trimBoundingQuotes(s string) string {
 	return s
 }
 
+// ChecksForQuotes removes unnecessary quotes from a string.
 func CheckForQuotes(v string, writer *jwriter.Writer) {
 	l := len(v)
 	if l > 0 && (v[0] == '"' || v[0] == '\'') {
@@ -192,6 +166,7 @@ func CheckForQuotes(v string, writer *jwriter.Writer) {
 	}
 }
 
+// UnsafeBytesToString creates a string based on a by array without copying.
 func UnsafeBytesToString(b []byte) string {
 	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
 	sh := reflect.StringHeader{bh.Data, bh.Len}
