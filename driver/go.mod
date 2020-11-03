@@ -17,7 +17,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-module github.ibm.com/sysflow/sf-processor/driver
+module github.com/sysflow-telemetry/sf-processor/driver
 
 go 1.14
 
@@ -34,14 +34,14 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.3
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201029230226-b00c1f55c6b0
-	github.ibm.com/sysflow/sf-processor/core v0.0.0-20201027025951-2690acc0c563
+	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201103193450-8a8ff771f88f
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
 	gopkg.in/linkedin/goavro.v1 v1.0.5 // indirect
 )
 
-replace github.ibm.com/sysflow/sf-processor/core => ../core
+replace github.com/sysflow-telemetry/sf-processor/core => ../core
 
 replace (
 	github.com/Shopify/sarama => github.com/elastic/sarama v1.19.1-0.20200629123429-0e7b69039eec

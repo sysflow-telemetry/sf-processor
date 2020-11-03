@@ -17,11 +17,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-module github.ibm.com/sysflow/sf-processor/plugins/example
+module github.com/sysflow-telemetry/sf-processor/plugins/example
 
 go 1.14
 
 require (
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201026195524-bd9cb63ccc96
-	github.ibm.com/sysflow/sf-processor/core v0.0.0-20201027030609-879f8d66a4f0
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201029230226-b00c1f55c6b0
+	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201103193450-8a8ff771f88f
 )

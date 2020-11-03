@@ -32,8 +32,8 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/sf-processor/driver/manifest"
-	"github.ibm.com/sysflow/sf-processor/driver/pipeline"
+	"github.com/sysflow-telemetry/sf-processor/driver/manifest"
+	"github.com/sysflow-telemetry/sf-processor/driver/pipeline"
 )
 
 var pl plugins.SFPipeline

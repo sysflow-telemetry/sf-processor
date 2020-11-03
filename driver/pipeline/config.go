@@ -22,7 +22,7 @@ package pipeline
 import (
 	"strconv"
 
-	"github.ibm.com/sysflow/sf-processor/driver/manifest"
+	"github.com/sysflow-telemetry/sf-processor/driver/manifest"
 )
 
 // Config attributes

@@ -26,7 +26,7 @@ import (
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
-	"github.ibm.com/sysflow/sf-processor/core/policyengine/lang/parser"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/lang/parser"
 )
 
 // Parsed rule and filter object maps.
