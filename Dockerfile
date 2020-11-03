@@ -19,7 +19,7 @@ ENV PATH=$PATH:/usr/local/go/bin/
 
 ENV GOPATH=/go/
 
-ENV SRC_ROOT=/go/src/github.ibm.com/sysflow/sf-processor/
+ENV SRC_ROOT=/go/src/github.com/sysflow-telemetry/sf-processor/
 
 # Install dependencies
 RUN dnf update -y --disableplugin=subscription-manager && \

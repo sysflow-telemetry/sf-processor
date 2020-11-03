@@ -34,7 +34,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.3
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201029230226-b00c1f55c6b0
-	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201027025951-2690acc0c563
+	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201103193450-8a8ff771f88f
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
