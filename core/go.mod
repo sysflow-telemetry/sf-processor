@@ -17,7 +17,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-module github.ibm.com/sysflow/sf-processor/core
+module github.com/sysflow-telemetry/sf-processor/core
 
 go 1.14
 
