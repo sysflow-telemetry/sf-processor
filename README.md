@@ -43,7 +43,7 @@ services:
   sf-processor:
     container_name: sf-processor
     image: sysflowtelemetry/sf-processor:latest
-    privileged: false
+    privileged: true
     volumes:
       - socket-vol:/sock/
     environment:
@@ -51,9 +51,9 @@ services:
       INPUT_PATH: /sock/sysflow.sock
       POLICYENGINE_MODE: alert
       EXPORTER_TYPE: telemetry
-      EXPORTER_SOURCE: sysflow
-      EXPORTER_EXPORT: syslog
-      EXPORTER_HOST: <IP address of the syslog server>
+      EXPORTER_SOURCE: ${HOSTNAME}
+      EXPORTER_EXPORT: terminal
+      EXPORTER_HOST: localhost
       EXPORTER_PORT: 514
   sf-collector:
     container_name: sf-collector
@@ -72,7 +72,7 @@ services:
       - socket-vol:/sock/
       - ./resources/traces:/tests/traces
     environment:
-      EXPORTER_ID: ${HOSTNAME}
+      EXPORTER_ID: local
       NODE_IP: "127.0.0.1"
       FILTER: "container.name!=sf-collector and container.name!=sf-processor" 
       INTERVAL: 300 
