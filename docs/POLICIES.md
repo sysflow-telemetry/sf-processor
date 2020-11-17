@@ -121,7 +121,7 @@ type, and comparative Falco attribute name. Our policy engine supports both SysF
 | sf.net.ip         | Src or dst IP (qo) | int | fd.ip |
 | sf.res            | File or network resource | string | fd.name |
 | sf.flow.rbytes    | Flow bytes read/received | int64 |  evt.res |
-| sf.flow.rops      | Flow operations read/received int64 | N/A |
+| sf.flow.rops      | Flow operations read/received | int64 | N/A |
 | sf.flow.wbytes    | Flow bytes written/sent | int64 | evt.res |
 | sf.flow.wops      | Flow bytes written/sent | int64 | N/A |
 | sf.container.id   | Container ID | string | container.id |
