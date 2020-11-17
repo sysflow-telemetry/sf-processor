@@ -2,7 +2,7 @@
 
 In addition to its core plugins, the processor also supports custom plugins that can be dynamically loaded into the processor via a compiled golang shared library using the [golang plugin package](https://golang.org/pkg/plugin/). Custom plugins enables easy extension of the processor and the creation of custome pipelines tailored to specific use cases.
 
-A dynamic plugin example is provided in [github](https://github.ibm.com/sysflow/sf-processor/tree/master/plugins/example). The core of the plugin is building an object that implements an [SFProcessor interface](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/processor.go). Such an implementation looks as follows:
+A dynamic plugin example is provided in [github](https://github.com/sysflow-telemetry/sf-processor/tree/master/plugins/example). The core of the plugin is building an object that implements an [SFProcessor interface](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/processor.go). Such an implementation looks as follows:
 
 ```golang
 package main
@@ -82,9 +82,9 @@ The object must implement the following interface:
     * `pc.AddChannel(channelName, <output channel constructor function>)` (optional)  - if your plugin is using a custom output channel of objects (i.e., the channel used to pass output objects from this plugin to the next in the pipeline), it should be included in this plugin.  
          * The `channelName` should be a lowercase unique label defining the channel type.  
          * The constructor function should return a golang `interface{}` representing an object that as an `In` attribute of type `chan <ObjectToBePassed>`.  We will call this object, a wrapped channel object going forward.  For example, the channel object that passes sysflow objects is called SFChannel, and is defined [here](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/processor.go)
-         * For a complete example of defining an output channel, see `NewFlattenerChan` in the [flattener](https://github.ibm.com/sysflow/sf-processor/blob/master/core/flattener/flattener.go) as well as the `Register` function.  The `FlatChannel` is defined [here](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/handler.go)
+         * For a complete example of defining an output channel, see `NewFlattenerChan` in the [flattener](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/flattener/flattener.go) as well as the `Register` function.  The `FlatChannel` is defined [here](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/handler.go)
 * `Process(ch interface{}, wg *sync.WaitGroup)`  - this function is launched by the processor as a go thread and is where the main plugin processing occurs.  It takes a wrapped channel object, which acts as the input data source to the plugin (i.e., this is the channel that is configured as the input channel to the plugin in the pipeline.json).  It also takes a sync.WaitGroup object, which is used to signal to the processor when the plugin has completed running (see `defer wg.Done()` in code).  The processor must loop on the input channel, and do its analysis on each input record.  In this case, the example plugin is reading flat records and printing them to the screen. 
-* `SetOutChan(ch interface{})` - sets the wrapped channel that will serve as the output channel for the plugin.  The output channel is instantiated by the processor, which is also in charge of stitching the plugins together.  If the plugin is the last one in the chain, then this function can be left empty. See the `SetOutputChan` function in the [flattener](https://github.ibm.com/sysflow/sf-processor/blob/master/core/flattener/flattener.go) to see how an output channel is implemented.
+* `SetOutChan(ch interface{})` - sets the wrapped channel that will serve as the output channel for the plugin.  The output channel is instantiated by the processor, which is also in charge of stitching the plugins together.  If the plugin is the last one in the chain, then this function can be left empty. See the `SetOutputChan` function in the [flattener](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/flattener/flattener.go) to see how an output channel is implemented.
 * `Cleanup()` - Used to cleanup any resources.  This function is called by the processor after the plugin `Process` function exits.  One of the key items to close in the `Cleanup` function is the output channel using the golang `close()` [function](https://gobyexample.com/closing-channels).  Closing the output channel enables the pipeline to be torn down gracefully and in sequence.         
 * `main(){}` - this main method is not used by the plugin or processor.  It's required by golang in order to be able to compile as a shared object.
 
@@ -97,7 +97,7 @@ make
 
 This will build the plugin and copy it into `resources/plugins/`.
 
-To use the new plugin, the use the configuration provided in [github](https://github.ibm.com/sysflow/sf-processor/tree/master/plugins/example), which defines the following pipeline:
+To use the new plugin, the use the configuration provided in [github](https://github.com/sysflow-telemetry/sf-processor/tree/master/plugins/example), which defines the following pipeline:
 
 ```bash
 {
