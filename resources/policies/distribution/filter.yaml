@@ -13,7 +13,7 @@
   condition: sf.type=NF
 
 - macro: setns_syscall
-  condition: FileFlow and sf.opflags in (SETNS)
+  condition: FileFlow and sf.opflags = SETNS
 
 - macro: exit_syscall
   condition: ProcessEvent and sf.opflags = EXIT
@@ -46,7 +46,7 @@
   condition: FileEvent and sf.opflags = SYMLINK
 
 - macro: FileOpen
-  condition: FileFlow and sf.opflags in (OPEN)
+  condition: FileFlow and sf.opflags = OPEN
 
 - macro: file_open_write
   condition: FileOpen and sf.file.is_open_write = true
@@ -55,10 +55,10 @@
   condition: FileOpen and sf.file.is_open_read = true
 
 - macro: file_write
-  condition: FileFlow and sf.opflags in (WRITE)
+  condition: FileFlow and sf.opflags = WRITE
 
 - macro: file_read
-  condition: FileFlow and sf.opflags in (READ)
+  condition: FileFlow and sf.opflags = READ
 
 - macro: file_read_or_file_opened_for_read
   condition: file_read or file_open_read
@@ -92,6 +92,10 @@
 - list: _openshift_infrastructure_container_noisy_process_clone_by_parent_process
   items: [/usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/crio, /bin/bash, /usr/bin/sh, /usr/bin/bash, /usr/share/openvswitch/scripts/ovs-ctl, /proc/self/exe, /usr/bin/ceph, /usr/bin/openshift-tuned, /usr/sbin/tuned-adm]
   
+- macro: bash_and_parent_process_proc_self_exe_with_cri_grandparents
+  condition: sf.proc.exe = /bin/bash and sf.pproc.exe = /proc/self/exe
+             and (sf.proc.aexe in (/usr/bin/runc) and sf.proc.aexe in (/usr/libexec/crio/conmon) and sf.proc.aexe in (/usr/bin/crio))  
+
 - macro: _drop_out_noisy_process_clone_events_from_bash_proc_self_exe
   condition: clone_syscall and bash_and_parent_process_proc_self_exe_with_cri_grandparents
   
@@ -138,10 +142,6 @@
   
 - macro: proc_self_exe_running_in_host_with_cri_grandparents
   condition: sf.proc.exe = /proc/self/exe
-             and (sf.proc.aexe in (/usr/bin/runc) and sf.proc.aexe in (/usr/libexec/crio/conmon) and sf.proc.aexe in (/usr/bin/crio))
-  
-- macro: bash_and_parent_process_proc_self_exe_with_cri_grandparents
-  condition: sf.proc.exe = /bin/bash and sf.pproc.exe = /proc/self/exe
              and (sf.proc.aexe in (/usr/bin/runc) and sf.proc.aexe in (/usr/libexec/crio/conmon) and sf.proc.aexe in (/usr/bin/crio))
   
 - macro: _drop_out_noisy_file_read_events_from_proc_self_exe
@@ -359,7 +359,7 @@
   
 - macro: _drop_out_noisy_file_rename_events
   condition: rename_syscall 
-             and ( (sf.proc.exe in (_os_level_noisy_file_rename_events_by_process))
+             and ((sf.proc.exe in (_os_level_noisy_file_rename_events_by_process))
                    or (infrastructure_containers and sf.proc.exe in (_openshift_infrastructure_container_noisy_file_rename_events_by_process)))
 
 ### Directory Creation tuning
