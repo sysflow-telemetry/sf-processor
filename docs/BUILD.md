@@ -6,18 +6,6 @@ A core built-in plugin is a policy engine that can apply logical rules to filter
 
 Custom plugins and drivers can be implemented as dynamic libraries to tailor analytics to specific user requirements.
 
-- [Clone and build](#clone-and-build)
-- [The command line](#the-command-line)
-- [Configuring a pipeline](#configuring-a-pipeline)
-- [Writing a simple policy](#writing-a-simple-policy)
-- [Load a SysFlow file and analyze with the policy engine](#load-a-sysflow-file-and-analyze-with-policy-engine)
-- [Exporting alerts to syslog](#exporting-alerts-to-syslog)
-- [Override plugin configuration attributes with environment variables](#override-plugin-configuration-attributes-with-environment-variables)
-- [Write a simple processing plugin](#write-a-simple-processing-plugin)
-- [Flattened SysFlow](#flattened-sysflow)
-- [Deploy collector and processor using docker compose](#deploy-collector-and-processor-using-docker-compose)  
-- [Deploy the collector and processor on kubernetes](#deploy-the-collector-and-processor-on-kubernetes)
-
 ## Prerequisites
 
 The processor has been tested on Ubuntu/RHEL distributions, but should work on any Linux system.
