@@ -72,7 +72,7 @@ type, and comparative Falco attribute name. Our policy engine supports both SysF
 | Attributes     | Description       | Values | Falco Attribute |
 |:----------------|:-----------------|:------|----------|
 | sf.type           | Record type       | PE,PF,NF,FF,FE | N/A |
-| sf.opflags        | Operation flags   | [Operation Flags List](https://sysflow.readthedocs.io/en/latest/spec.html#operation-flags) - remove `OP_` prefix | evt.type |
+| sf.opflags        | Operation flags   | [Operation Flags List](https://sysflow.readthedocs.io/en/latest/spec.html#operation-flags): remove `OP_` prefix | evt.type |
 | sf.ret            | Return code       | int   |  evt.res |
 | sf.ts             | start timestamp(ns)| int64 | evt.time |
 | sf.endts          | end timestamp(ns) | int64  |  N/A |
@@ -108,7 +108,7 @@ type, and comparative Falco attribute name. Our policy engine supports both SysF
 | sf.file.newpath   | New file path (used in some FileEvents) | string | evt.args |
 | sf.file.name      | File name (qo) | string | fd.filename |
 | sf.file.directory | File directory (qo) | string | fd.directory |
-| sf.file.type      | File type | char -  'f': file, 4: IPv4, 6: IPv6,'u': unix socket, 'p': pipe, 'e': eventfd, 's': signalfd, 'l': eventpoll, 'i': inotify, 'o': unknown. | fd.typechar |  
+| sf.file.type      | File type | char 'f': file, 4: IPv4, 6: IPv6, 'u': unix socket, 'p': pipe, 'e': eventfd, 's': signalfd, 'l': eventpoll, 'i': inotify, 'o': unknown. | fd.typechar |  
 | sf.file.is_open_write | File open with write flag (qo) | bool | evt.is_open_write |
 | sf.file.is_open_read | File open with read flag (qo) | bool | evt.is_open_read |
 | sf.file.openflags | File open flags | int | evt.args |
