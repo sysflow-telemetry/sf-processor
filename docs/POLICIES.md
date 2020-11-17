@@ -155,4 +155,4 @@ The policy language supports the following operations:
 | A pmatch B |  Returns true if string A partial matches one of the elements in B. Note: B must be a list.  Note: () can be used on B to merge multiple list objects into one list. |  sf.proc.name pmatch (modify_passwd_binaries, verify_passwd_binaries, user_util_binaries) |
 | exists A | Checks if A is not a zero value (i.e. 0 for int, "" for string)|  exists sf.file.path |
 
-See the resources policies directory in [github](https://github.ibm.com/sysflow/sf-processor/tree/master/resources/policies) for examples. Feel free to contribute new and interesting rules through a github pull request.
+See the resources policies directory in [github](https://github.com/sysflow-telemetry/sf-processor/tree/master/resources/policies) for examples. Feel free to contribute new and interesting rules through a github pull request.
