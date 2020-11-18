@@ -20,12 +20,13 @@
 package exporter
 
 import (
-	"github.com/mailru/easyjson/jwriter"
-	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 	"path/filepath"
 	"reflect"
 	"unsafe"
+
+	"github.com/mailru/easyjson/jwriter"
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
+	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
 )
 
 func mapOpFlags(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
@@ -63,9 +64,13 @@ func mapIPs(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 	srcIP := r.GetInt(sfgo.FL_NETW_SIP_INT, fv.Entry.Source)
 	dstIP := r.GetInt(sfgo.FL_NETW_DIP_INT, fv.Entry.Source)
 	writer.RawByte(BEGIN_SQUARE)
+	writer.RawByte(DOUBLE_QUOTE)
 	mapIPStr(srcIP, writer)
+	writer.RawByte(DOUBLE_QUOTE)
 	writer.RawByte(COMMA)
+	writer.RawByte(DOUBLE_QUOTE)
 	mapIPStr(dstIP, writer)
+	writer.RawByte(DOUBLE_QUOTE)
 	writer.RawByte(END_SQUARE)
 }
 
@@ -122,14 +127,14 @@ func MapJSON(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 		if fv.Entry.Source == sfgo.SYSFLOW_SRC {
 			switch fv.Entry.Id {
 			case sfgo.EV_PROC_OPFLAGS_INT:
+				mapOpFlags(fv, writer, r)
+				return
+			case sfgo.FL_FILE_OPENFLAGS_INT:
 				recType := r.GetInt(sfgo.SF_REC_TYPE, fv.Entry.Source)
 				if recType == sfgo.NET_FLOW {
 					mapIPs(fv, writer, r)
 					return
 				}
-				mapOpFlags(fv, writer, r)
-				return
-			case sfgo.FL_FILE_OPENFLAGS_INT:
 				mapOpenFlags(fv, writer, r)
 				return
 			case sfgo.FL_NETW_SPORT_INT:
