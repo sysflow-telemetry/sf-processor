@@ -30,7 +30,7 @@ import (
 )
 
 func mapOpFlags(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
-	opflags := r.GetInt(fv.Entry.Id, fv.Entry.Source)
+	opflags := r.GetInt(fv.Entry.ID, fv.Entry.Source)
 	rtype := engine.GetRecType(r, fv.Entry.Source)
 	flags := sfgo.GetOpFlags(int32(opflags), rtype)
 	mapStrArray(writer, flags)
@@ -75,7 +75,7 @@ func mapIPs(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 }
 
 func mapOpenFlags(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
-	flags := sfgo.GetOpenFlags(r.GetInt(fv.Entry.Id, fv.Entry.Source))
+	flags := sfgo.GetOpenFlags(r.GetInt(fv.Entry.ID, fv.Entry.Source))
 	mapStrArray(writer, flags)
 }
 
@@ -91,7 +91,7 @@ func mapPorts(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 
 // MapJSON writes a SysFlow attribute to a JSON stream.
 func MapJSON(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
-	switch fv.Entry.Id {
+	switch fv.Entry.ID {
 	case engine.A_IDS, engine.PARENT_IDS:
 		oid := sfgo.OID{CreateTS: r.GetInt(sfgo.PROC_OID_CREATETS_INT, fv.Entry.Source), Hpid: r.GetInt(sfgo.PROC_OID_HPID_INT, fv.Entry.Source)}
 		SetCachedValueJSON(r, oid, fv.Entry.AuxAttr, writer)
@@ -100,7 +100,7 @@ func MapJSON(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 
 	switch fv.Entry.Type {
 	case engine.MapStrVal:
-		v := r.GetStr(fv.Entry.Id, fv.Entry.Source)
+		v := r.GetStr(fv.Entry.ID, fv.Entry.Source)
 		l := len(v)
 		if l > 0 && (v[0] == '"' || v[0] == '\'') {
 			boundingQuotes := trimBoundingQuotes(v)
@@ -109,7 +109,9 @@ func MapJSON(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 			writer.String(v)
 		}
 	case engine.MapIntVal:
-		writer.Int64(r.GetInt(fv.Entry.Id, fv.Entry.Source))
+		writer.Int64(r.GetInt(fv.Entry.ID, fv.Entry.Source))
+	case engine.MapBoolVal:
+		writer.Bool(r.GetInt(fv.Entry.ID, fv.Entry.Source) == 1)
 	case engine.MapSpecialStr:
 		v := fv.Entry.Map(r).(string)
 		l := len(v)
@@ -125,7 +127,7 @@ func MapJSON(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 		writer.Bool(fv.Entry.Map(r).(bool))
 	case engine.MapArrayStr, engine.MapArrayInt:
 		if fv.Entry.Source == sfgo.SYSFLOW_SRC {
-			switch fv.Entry.Id {
+			switch fv.Entry.ID {
 			case sfgo.EV_PROC_OPFLAGS_INT:
 				mapOpFlags(fv, writer, r)
 				return
@@ -160,7 +162,7 @@ func trimBoundingQuotes(s string) string {
 	return s
 }
 
-// ChecksForQuotes removes unnecessary quotes from a string.
+// CheckForQuotes removes unnecessary quotes from a string.
 func CheckForQuotes(v string, writer *jwriter.Writer) {
 	l := len(v)
 	if l > 0 && (v[0] == '"' || v[0] == '\'') {
@@ -219,20 +221,12 @@ func SetCachedValueJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribute,
 			break
 		case engine.PProcTTY:
 			if len(ptree) > 1 {
-				if ptree[1].Tty {
-					writer.RawByte('1')
-				} else {
-					writer.RawByte('0')
-				}
+				writer.Bool(ptree[1].Tty)
 			}
 			break
 		case engine.PProcEntry:
 			if len(ptree) > 1 {
-				if ptree[1].Entry {
-					writer.RawByte('1')
-				} else {
-					writer.RawByte('0')
-				}
+				writer.Bool(ptree[1].Entry)
 			}
 			break
 		case engine.PProcCmdLine:
