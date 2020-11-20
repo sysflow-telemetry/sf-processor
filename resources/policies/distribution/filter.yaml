@@ -87,10 +87,10 @@
   items: [/usr/bin/runc, /usr/bin/hyperkube, /usr/bin/dpkg, /usr/bin/apt-get, /usr/bin/apt-key, /usr/bin/appstreamcli, /usr/bin/containerd, /var/lib/dpkg/info/vim.postinst, /usr/libexec/nm-dispatcher]
 
 - list: _openshift_infrastructure_container_noisy_process_clone_by_process
-  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/runc, grpc_health_probe, /prometheus/sh, /usr/bin/dig, /usr/libexec/crio/conmon, /usr/bin/crio, /usr/local/bin/rook, /usr/bin/appregistry-server, /usr/sbin/haproxy, /usr/sbin/tuned-adm, /usr/bin/bash, "\u003cNA\u003e", /usr/bin/nmstatectl, /usr/bin/diskmaker, /usr/local/bin/kubernetes-nmstate, /opt/ibm/java/jre/bin/java, /usr/bin/node, /usr/bin/ansible-runner, /usr/libexec/qemu-kvm, /usr/local/bin/cephcsi, /usr/bin/machine-config-daemon, /bin/sh, /usr/bin/ansible-playbook, /usr/bin/python2, /usr/bin/python2.7, /usr/bin/ansible-runner]
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/runc, grpc_health_probe, /prometheus/sh, /usr/bin/dig, /usr/libexec/crio/conmon, /usr/bin/crio, /usr/local/bin/rook, /usr/bin/appregistry-server, /usr/sbin/haproxy, /usr/sbin/tuned-adm, /usr/bin/bash, "\u003cNA\u003e", /usr/bin/nmstatectl, /usr/bin/diskmaker, /usr/local/bin/kubernetes-nmstate, /opt/ibm/java/jre/bin/java, /usr/bin/node, /usr/bin/ansible-runner, /usr/libexec/qemu-kvm, /usr/local/bin/cephcsi, /usr/bin/machine-config-daemon, /bin/sh, /usr/bin/ansible-playbook, /usr/bin/python2, /usr/bin/python2.7, /usr/bin/ansible-runner, /usr/local/bin/ansible-operator, /usr/bin/uname]
 
 - list: _openshift_infrastructure_container_noisy_process_clone_by_parent_process
-  items: [/usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/crio, /bin/bash, /usr/bin/sh, /usr/bin/bash, /usr/share/openvswitch/scripts/ovs-ctl, /proc/self/exe, /usr/bin/ceph, /usr/bin/openshift-tuned, /usr/sbin/tuned-adm]
+  items: [/usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/crio, /bin/bash, /usr/bin/sh, /usr/bin/bash, /usr/share/openvswitch/scripts/ovs-ctl, /proc/self/exe, /usr/bin/ceph, /usr/bin/openshift-tuned, /usr/sbin/tuned-adm, /usr/bin/python2, /usr/bin/ansible-runner, /usr/bin/ansible-playbook]
   
 - macro: bash_and_parent_process_proc_self_exe_with_cri_grandparents
   condition: sf.proc.exe = /bin/bash and sf.pproc.exe = /proc/self/exe
@@ -127,7 +127,8 @@
               or sf.file.directory startswith /proc
               or sf.file.directory startswith /sys
               or sf.file.directory startswith /lib64
-              or sf.file.directory startswith /dev)
+              or sf.file.directory startswith /dev
+              or sf.file.directory startswith /tmp)
   
 - macro: _drop_out_noisy_file_read_events_from_pipes_and_sockets
   condition: file_read_or_file_opened_for_read and sf.file.type in (u, p)
@@ -135,6 +136,10 @@
 - macro: _drop_file_read_list_of_file_paths
   condition: file_read_or_file_opened_for_read
               and sf.file.path in (/etc/ld.so.cache)
+
+- macro: _drop_file_read_in_infrastructure_containers_list_of_file_paths
+  condition: file_read_or_file_opened_for_read
+              and sf.file.path in (/opt/ansible, /etc/python, /etc/localtime, /etc/resolv.conf, /etc/hosts, /etc/nsswitch.conf, /etc/host.conf, /etc/passwd)
 
 ## macro to define /proc/self/exe running in a host, its grandparents includes /usr/bin/runc, /usr/libexec/crio/conmon and /usr/bin/crio
 ## and not exists sf.container.type -> or another way to limit it to the host
@@ -196,10 +201,14 @@
              and sf.proc.exe = 	/usr/sbin/auditd
              and sf.file.directory = /var/log/audit/
 
+- macro: ansible_in_infrastructure_containers
+  condition: infrastructure_containers
+             and (sf.proc.exe in (/usr/bin/ansible-playbook, /usr/bin/ansible-runner, /usr/local/bin/ansible-operator) or sf.proc.aexe in (/usr/bin/ansible-playbook))
+
 - macro: _drop_noisy_file_write_from_ansible_in_infrastructure_containers
-  condition: file_write_or_file_opened_for_write and infrastructure_containers
-             and (sf.proc.exe in (/usr/bin/ansible-playbook, /usr/bin/ansible-runner) or sf.proc.aexe in (/usr/bin/ansible-playbook))
-             and (sf.file.directory startswith /tmp/
+  condition: file_write_or_file_opened_for_write
+             and ansible_in_infrastructure_containers
+             and (sf.file.directory startswith /tmp
                   or sf.file.directory startswith /tmp/ansible-operator/
                   or sf.file.directory startswith /opt/ansible/
                   or sf.file.directory startswith /dev/pts)
@@ -251,10 +260,10 @@
   items: [/usr/bin/runc, /usr/bin/hyperkube, /usr/bin/apt-key, /usr/bin/dpkg-deb, /usr/bin/dpkg, /usr/bin/apt-config, /usr/bin/apt-get, /usr/lib/update-notifier/update-motd-fsck-at-reboot, /var/lib/dpkg/info/vim-runtime.postinst, /usr/lib/systemd/systemd-udevd, /usr/bin/appstreamcli, /usr/lib/update-notifier/apt-check, /usr/lib/apt/methods/gpgv, /usr/bin/run-parts, /usr/lib/update-notifier/update-motd-updates-available, /usr/lib/ubuntu-release-upgrader/release-upgrade-motd, /var/lib/dpkg/info/vim.postinst, /usr/bin/dpkg-maintscript-helper, /usr/sbin/cron, /usr/bin/ldd, /usr/bin/kubelet, /usr/libexec/nm-dispatcher, /usr/bin/ldd]
 
 - list: _openshift_infrastructure_container_noisy_process_exit_by_process
-  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/sleep, /usr/bin/cat, /usr/bin/curl, /usr/bin/bash, /usr/bin/ovs-vsctl, /usr/bin/sh, /bin/bash, /usr/bin/ovs-appctl, /usr/bin/sed, /usr/bin/ovs-ofctl, /proc/self/exe, /prometheus/sh, /usr/bin/runc, /usr/bin/sed, /usr/bin/cp, /usr/bin/ls, /usr/bin/ceph, /usr/sbin/ldconfig, /usr/bin/grep, /usr/bin/cmp, /usr/bin/dig, /usr/libexec/crio/conmon, /usr/bin/lsblk, /sbin/ldconfig, /usr/bin/uname, /usr/bin/nmstatectl, /usr/bin/grep, /usr/bin/sleep, /usr/bin/stat, /usr/bin/realpath, /usr/bin/mkdir, /usr/bin/date, /usr/bin/ansible-runner, /usr/bin/logger, /usr/sbin/logrotate, /usr/bin/find, /bin/sh, /usr/bin/ansible-playbook, /usr/bin/python2, /usr/bin/python2.7]
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/sleep, /usr/bin/cat, /usr/bin/curl, /usr/bin/bash, /usr/bin/ovs-vsctl, /usr/bin/sh, /bin/bash, /usr/bin/ovs-appctl, /usr/bin/sed, /usr/bin/ovs-ofctl, /proc/self/exe, /prometheus/sh, /usr/bin/runc, /usr/bin/sed, /usr/bin/cp, /usr/bin/ls, /usr/bin/ceph, /usr/sbin/ldconfig, /usr/bin/grep, /usr/bin/cmp, /usr/bin/dig, /usr/libexec/crio/conmon, /usr/bin/lsblk, /sbin/ldconfig, /usr/bin/uname, /usr/bin/nmstatectl, /usr/bin/grep, /usr/bin/sleep, /usr/bin/stat, /usr/bin/realpath, /usr/bin/mkdir, /usr/bin/date, /usr/bin/ansible-runner, /usr/bin/logger, /usr/sbin/logrotate, /usr/bin/find, /bin/sh, /usr/bin/ansible-playbook, /usr/bin/python2, /usr/bin/python2.7, /usr/bin/chmod, /usr/bin/coreutils]
 
 - list: _openshift_infrastructure_container_noisy_process_exit_by_parent_process
-  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/runc, /usr/bin/ceph, /usr/local/bin/rook, /usr/libexec/crio/conmon, /usr/bin/openshift-sdn-node, /usr/bin/nmstatectl, /usr/bin/ansible-runner, /usr/bin/node, /usr/local/bin/cephcsi]
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/runc, /usr/bin/ceph, /usr/local/bin/rook, /usr/libexec/crio/conmon, /usr/bin/openshift-sdn-node, /usr/bin/nmstatectl, /usr/bin/ansible-runner, /usr/bin/node, /usr/local/bin/cephcsi, /usr/bin/python2, /usr/bin/ansible-playbook]
   
 - macro: _drop_out_noisy_process_exit_events_from_bash_proc_self_exe
   condition: exit_syscall and bash_and_parent_process_proc_self_exe_with_cri_grandparents
@@ -290,7 +299,7 @@
   items: [/usr/sbin/iptables, /usr/sbin/chroot, /usr/bin/curl, /usr/bin/ovs-vsctl, /usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/sed, /usr/bin/ovs-appctl, /usr/bin/ovs-ofctl, /usr/sbin/iptables-save, /usr/bin/openshift-sdn-node, /sbin/ldconfig, /usr/bin/ceph, /usr/bin/ls, /usr/bin/cp, /usr/sbin/ldconfig, /usr/bin/cmp, /usr/bin/dig, /usr/bin/grep, /proc/self/exe, /usr/bin/lsblk, /sbin/ldconfig, /usr/bin/uname, /usr/bin/nmstatectl, /usr/bin/grep, /usr/bin/sleep, /usr/bin/stat, /usr/bin/realpath, /usr/bin/cat, /usr/bin/df, /usr/bin/mkdir, /usr/bin/systemd-run, /usr/local/bin/kubectl, /usr/bin/ansible-runner, /usr/bin/find, /usr/bin/jq]
 
 - list: _openshift_infrastructure_container_noisy_process_execution_by_parent_process
-  items: [/usr/bin/openshift-sdn-node, /usr/share/openvswitch/scripts/ovs-ctl, /usr/local/bin/rook, /usr/bin/ceph, /usr/bin/ceph-mgr, /var/lib/haproxy/reload-haproxy, /usr/bin/openshift-router, /usr/bin/openshift-tuned, /usr/bin/nmstatectl, /usr/bin/node, /usr/bin/ansible-runner]
+  items: [/usr/bin/openshift-sdn-node, /usr/share/openvswitch/scripts/ovs-ctl, /usr/local/bin/rook, /usr/bin/ceph, /usr/bin/ceph-mgr, /var/lib/haproxy/reload-haproxy, /usr/bin/openshift-router, /usr/bin/openshift-tuned, /usr/bin/nmstatectl, /usr/bin/node, /usr/bin/ansible-runner, /usr/bin/ansible-playbook]
 
 - macro: _drop_out_noisy_process_execution_events_from_bash_proc_self_exe
   condition: exec_syscall and bash_and_parent_process_proc_self_exe_with_cri_grandparents
@@ -311,6 +320,9 @@
 - list: _openshift_infrastructure_container_noisy_file_delete_by_process
   items: [/usr/bin/appregistry-server, /usr/local/bin/rook, /usr/bin/prometheus, /usr/bin/ceph-mon, /usr/share/grafana/bin/grafana-server, /usr/bin/openshift-tuned, /usr/sbin/tuned-adm, /usr/bin/prometheus-config-reloader, /usr/bin/ansible-runner, /usr/bin/prometheus-config-reloader, /usr/local/bin/galley, /usr/bin/ansible-runner, /usr/bin/ansible-playbook, /usr/bin/prometheus, /usr/local/bin/ansible-operator]
 
+- macro: _drop_out_noisy_file_deletion_events_from_ansible
+  condition: unlink_syscall and ansible_in_infrastructure_containers
+  
 - macro: _drop_out_noisy_file_delete_events
   condition: unlink_syscall
              and ((sf.proc.exe in (_os_level_noisy_file_delete_by_process) or sf.pproc.exe in (_os_level_noisy_file_delete_by_parent_process))
@@ -339,6 +351,9 @@
 - macro: _drop_out_network_flows_from_log_forwarder_utilities
   condition: NetworkFlow and sf.proc.exe in (/usr/sbin/syslog-ng) and sf.net.dport = 514
 
+- macro: _drop_out_connection_create_from_kubelet
+  condition: NetworkFlow and sf.proc.exe = /usr/bin/kubelet and sf.opflags = CONNECT
+  
 - macro: _drop_out_noisy_network_flows
   condition: NetworkFlow 
              and ( (sf.proc.exe in (_os_level_noisy_network_flows_by_process) or sf.pproc.exe in (_os_level_noisy_network_flows_by_parent_process))
@@ -379,6 +394,11 @@
 
 - list: _openshift_infrastructure_container_noisy_directory_creation_by_process
   items: [/usr/bin/oc, /usr/bin/python2, /usr/bin/ansible-runner]
+
+- macro: _drop_out_noisy_directory_creation_in_infrastructure_containers_list_of_file_paths
+  condition: mkdir_syscall 
+             and ( sf.file.path in (/opt/ansible/.ansible, /opt/ansible, /opt)
+                   or (sf.file.path startswith /opt/ansible/.ansible or sf.file.path startswith /tmp/ansible-operator))
   
 - macro: _drop_out_noisy_directory_creation_events
   condition: mkdir_syscall 
@@ -392,6 +412,9 @@
   
 - list: _os_level_noisy_directory_removal_by_parent_process
   items: [/usr/bin/dpkg, /usr/lib/systemd/systemd, /usr/bin/apt-get]
+
+- macro: _drop_out_noisy_directory_removal_from_ansible
+  condition: rmdir_syscall and ansible_in_infrastructure_containers
 
 - macro: _drop_out_noisy_directory_removal_events
   condition: rmdir_syscall 
@@ -432,6 +455,7 @@
              or _drop_out_noisy_file_read_events_from_proc_self_exe
              or _drop_out_noisy_file_read_events_from_specific_high_level_dirs
              or _drop_out_noisy_file_read_events_from_pipes_and_sockets
+             or _drop_file_read_in_infrastructure_containers_list_of_file_paths
              or _drop_out_noisy_file_modify_events
              or _drop_file_write_list_of_file_paths 
              or _drop_file_write_from_rsyslogd 
@@ -454,14 +478,18 @@
              or _drop_out_noisy_process_execution_events
              or _drop_out_noisy_process_execution_events_from_bash_proc_self_exe
              or _drop_out_noisy_file_delete_events
+             or _drop_out_noisy_file_deletion_events_from_ansible
              or _drop_out_noisy_network_flows_from_runc_parent_process
              or _drop_out_network_flows_from_log_forwarder_utilities
              or _drop_out_noisy_network_flows_from_curl
+             or _drop_out_connection_create_from_kubelet
              or _drop_out_noisy_network_flows
              or _drop_out_noisy_setuid_events
              or _drop_noisy_setuid_events_from_proc_self_exe
              or _drop_out_noisy_file_rename_events
              or _drop_out_noisy_directory_creation_events
+             or _drop_out_noisy_directory_removal_from_ansible
+             or _drop_out_noisy_directory_creation_in_infrastructure_containers_list_of_file_paths
              or _drop_out_noisy_directory_removal_events
              or _drop_out_noisy_soft_link_creation_events
              or _drop_out_noisy_hard_link_creation_events
