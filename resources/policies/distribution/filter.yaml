@@ -351,6 +351,9 @@
 - macro: _drop_out_network_flows_from_log_forwarder_utilities
   condition: NetworkFlow and sf.proc.exe in (/usr/sbin/syslog-ng) and sf.net.dport = 514
 
+- macro: _drop_out_connection_create_from_kubelet
+  condition: NetworkFlow and sf.proc.exe = /usr/bin/kubelet and sf.opflags = CONNECT
+  
 - macro: _drop_out_noisy_network_flows
   condition: NetworkFlow 
              and ( (sf.proc.exe in (_os_level_noisy_network_flows_by_process) or sf.pproc.exe in (_os_level_noisy_network_flows_by_parent_process))
@@ -479,6 +482,7 @@
              or _drop_out_noisy_network_flows_from_runc_parent_process
              or _drop_out_network_flows_from_log_forwarder_utilities
              or _drop_out_noisy_network_flows_from_curl
+             or _drop_out_connection_create_from_kubelet
              or _drop_out_noisy_network_flows
              or _drop_out_noisy_setuid_events
              or _drop_noisy_setuid_events_from_proc_self_exe
