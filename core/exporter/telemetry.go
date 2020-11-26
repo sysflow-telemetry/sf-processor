@@ -25,7 +25,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
 // SysFlow record components

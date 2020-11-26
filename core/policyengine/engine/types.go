@@ -25,7 +25,7 @@ import (
 	"strings"
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/sf-processor/core/cache"
+	"github.com/sysflow-telemetry/sf-processor/core/cache"
 )
 
 // Action type for enumeration.
