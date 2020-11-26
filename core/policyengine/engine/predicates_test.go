@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	. "github.ibm.com/sysflow/sf-processor/core/policyengine/engine"
+	. "github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
 func TestNot(t *testing.T) {

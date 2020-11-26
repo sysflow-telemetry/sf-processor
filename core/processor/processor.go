@@ -25,8 +25,8 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.ibm.com/sysflow/sf-processor/core/cache"
-	"github.ibm.com/sysflow/sf-processor/core/flattener"
+	"github.com/sysflow-telemetry/sf-processor/core/cache"
+	"github.com/sysflow-telemetry/sf-processor/core/flattener"
 )
 
 const (

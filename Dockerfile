@@ -19,7 +19,7 @@ ENV PATH=$PATH:/usr/local/go/bin/
 
 ENV GOPATH=/go/
 
-ENV SRC_ROOT=/go/src/github.ibm.com/sysflow/sf-processor/
+ENV SRC_ROOT=/go/src/github.com/sysflow-telemetry/sf-processor/
 
 # Install dependencies
 RUN dnf update -y --disableplugin=subscription-manager && \
@@ -84,7 +84,10 @@ LABEL "io.k8s.description"="SysFlow Processor implements a pluggable stream-proc
 COPY ./LICENSE.md /licenses/
 
 # Copy files from previous stage
-COPY --from=base /usr/local/sysflow/ /usr/local/sysflow/
+COPY --from=base --chown=1001:1001 /usr/local/sysflow/ /usr/local/sysflow/
+RUN mkdir -p /sock && chown -R 1001:1001 /sock
+VOLUME /sock
+USER 1001
 
 # Entrypoint
 CMD /usr/local/sysflow/bin/sfprocessor \
