@@ -67,7 +67,7 @@
   condition: file_write or file_open_write
   
 - list: _infrastructure_containers
-  items: [ocp, ceph, csi-provisioner, csi-attacher, csi-snapshotter, container-native-virtualization, ose-local-storage-diskmaker, mcg-core-rhel, rook-ceph-rhel, openshift4, cephcsi-rhel, openshift-service-mesh]
+  items: [ocp, ceph, csi-provisioner, csi-attacher, csi-snapshotter, container-native-virtualization, ose-local-storage-diskmaker, mcg-core-rhel, rook-ceph-rhel, openshift4, cephcsi-rhel, openshift-service-mesh, distributed-tracing]
 
 - macro: infrastructure_containers
   condition: sf.container.image pmatch (_infrastructure_containers)
@@ -87,10 +87,10 @@
   items: [/usr/bin/runc, /usr/bin/hyperkube, /usr/bin/dpkg, /usr/bin/apt-get, /usr/bin/apt-key, /usr/bin/appstreamcli, /usr/bin/containerd, /var/lib/dpkg/info/vim.postinst, /usr/libexec/nm-dispatcher]
 
 - list: _openshift_infrastructure_container_noisy_process_clone_by_process
-  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/runc, grpc_health_probe, /prometheus/sh, /usr/bin/dig, /usr/libexec/crio/conmon, /usr/bin/crio, /usr/local/bin/rook, /usr/bin/appregistry-server, /usr/sbin/haproxy, /usr/sbin/tuned-adm, /usr/bin/bash, "\u003cNA\u003e", /usr/bin/nmstatectl, /usr/bin/diskmaker, /usr/local/bin/kubernetes-nmstate, /opt/ibm/java/jre/bin/java, /usr/bin/node, /usr/bin/ansible-runner, /usr/libexec/qemu-kvm, /usr/local/bin/cephcsi, /usr/bin/machine-config-daemon, /bin/sh, /usr/bin/ansible-playbook, /usr/bin/python2, /usr/bin/python2.7, /usr/bin/ansible-runner]
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/runc, grpc_health_probe, /prometheus/sh, /usr/bin/dig, /usr/libexec/crio/conmon, /usr/bin/crio, /usr/local/bin/rook, /usr/bin/appregistry-server, /usr/sbin/haproxy, /usr/sbin/tuned-adm, /usr/bin/bash, "\u003cNA\u003e", /usr/bin/nmstatectl, /usr/bin/diskmaker, /usr/local/bin/kubernetes-nmstate, /opt/ibm/java/jre/bin/java, /usr/bin/node, /usr/bin/ansible-runner, /usr/libexec/qemu-kvm, /usr/local/bin/cephcsi, /usr/bin/machine-config-daemon, /bin/sh, /usr/bin/ansible-playbook, /usr/bin/python2, /usr/bin/python2.7, /usr/bin/ansible-runner, /usr/local/bin/ansible-operator, /usr/bin/uname, /var/lib/haproxy/reload-haproxy, /usr/bin/openshift-router, /usr/bin/curl, /usr/local/bin/sidecar-injector, /usr/local/bin/galley]
 
 - list: _openshift_infrastructure_container_noisy_process_clone_by_parent_process
-  items: [/usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/crio, /bin/bash, /usr/bin/sh, /usr/bin/bash, /usr/share/openvswitch/scripts/ovs-ctl, /proc/self/exe, /usr/bin/ceph, /usr/bin/openshift-tuned, /usr/sbin/tuned-adm]
+  items: [/usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/crio, /bin/bash, /usr/bin/sh, /usr/bin/bash, /usr/share/openvswitch/scripts/ovs-ctl, /proc/self/exe, /usr/bin/ceph, /usr/bin/openshift-tuned, /usr/sbin/tuned-adm, /usr/bin/python2, /usr/bin/ansible-runner, /usr/bin/ansible-playbook]
   
 - macro: bash_and_parent_process_proc_self_exe_with_cri_grandparents
   condition: sf.proc.exe = /bin/bash and sf.pproc.exe = /proc/self/exe
@@ -107,13 +107,13 @@
 #### File Read tuning
 
 - list: _os_level_noisy_file_read_by_process
-  items: [/usr/bin/hyperkube, /usr/lib/systemd/systemd, /usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/crio, /usr/lib/systemd/systemd-journald, /usr/sbin/sshd, /lib/systemd/systemd-journald, /usr/sbin/irqbalance, /lib/systemd/systemd, /usr/bin/dbus-daemon, /usr/bin/updatedb.mlocate, /lib/systemd/systemd-udevd, /usr/bin/apt-config, /lib/systemd/system-generators/systemd-sysv-generator, /usr/sbin/cron, /usr/bin/dpkg, /usr/bin/mandb, /bin/systemctl, /usr/bin/apt-get, /usr/bin/lsb_release, /usr/bin/dockerd, /bin/networkctl, /sbin/ldconfig.real, /lib/systemd/systemd-sysctl, /lib/systemd/systemd-networkd, /usr/bin/docker, /usr/bin/containerd-shim, /usr/sbin/syslog-ng, /lib/systemd/systemd-resolved, /usr/bin/kubelet, /usr/bin/mongod, /usr/bin/mongo, /usr/bin/prometheus, /usr/lib/accountsservice/accounts-daemon, /usr/lib/systemd/systemd-logind, /usr/lib/systemd/systemd-cgroups-agent, /usr/lib/policykit-1/polkitd, /usr/bin/dpkg-divert, /usr/lib/update-notifier/apt-check, /usr/lib/systemd/systemd-resolved, /usr/bin/apt-key, /usr/bin/hwe-support-status, /usr/sbin/dpkg-preconfigure, /usr/lib/cnf-update-db, /usr/bin/appstreamcli, /usr/bin/gpg-connect-agent, /usr/lib/packagekit/packagekitd, /usr/libexec/gsd-housekeeping, /usr/bin/systemd-detect-virt, /usr/bin/networkctl, /usr/lib/systemd/systemd-networkd, /usr/sbin/rsyslogd, /usr/sbin/NetworkManager, /usr/bin/id, /usr/bin/containerd, /usr/bin/update-alternatives, /usr/bin/gdbus, /usr/bin/dpkg-maintscript-helper, /usr/bin/find, /usr/lib/systemd/systemd-udevd, /usr/bin/test, /usr/libexec/nm-dispatcher, /usr/bin/logger, /usr/libexec/chrony-helper, /usr/sbin/agetty, /usr/bin/basename, /usr/sbin/sssd, /usr/bin/ceph, /usr/lib/polkit-1/polkitd, /usr/sbin/lsof, /usr/bin/date]
+  items: [/usr/bin/hyperkube, /usr/lib/systemd/systemd, /usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/crio, /usr/lib/systemd/systemd-journald, /usr/sbin/sshd, /lib/systemd/systemd-journald, /usr/sbin/irqbalance, /lib/systemd/systemd, /usr/bin/dbus-daemon, /usr/bin/updatedb.mlocate, /lib/systemd/systemd-udevd, /usr/bin/apt-config, /lib/systemd/system-generators/systemd-sysv-generator, /usr/sbin/cron, /usr/bin/dpkg, /usr/bin/mandb, /bin/systemctl, /usr/bin/apt-get, /usr/bin/lsb_release, /usr/bin/dockerd, /bin/networkctl, /sbin/ldconfig.real, /lib/systemd/systemd-sysctl, /lib/systemd/systemd-networkd, /usr/bin/docker, /usr/bin/containerd-shim, /usr/sbin/syslog-ng, /lib/systemd/systemd-resolved, /usr/bin/kubelet, /usr/bin/mongod, /usr/bin/mongo, /usr/bin/prometheus, /usr/lib/accountsservice/accounts-daemon, /usr/lib/systemd/systemd-logind, /usr/lib/systemd/systemd-cgroups-agent, /usr/lib/policykit-1/polkitd, /usr/bin/dpkg-divert, /usr/lib/update-notifier/apt-check, /usr/lib/systemd/systemd-resolved, /usr/bin/apt-key, /usr/bin/hwe-support-status, /usr/sbin/dpkg-preconfigure, /usr/lib/cnf-update-db, /usr/bin/appstreamcli, /usr/bin/gpg-connect-agent, /usr/lib/packagekit/packagekitd, /usr/libexec/gsd-housekeeping, /usr/bin/systemd-detect-virt, /usr/bin/networkctl, /usr/lib/systemd/systemd-networkd, /usr/sbin/rsyslogd, /usr/sbin/NetworkManager, /usr/bin/id, /usr/bin/containerd, /usr/bin/update-alternatives, /usr/bin/gdbus, /usr/bin/dpkg-maintscript-helper, /usr/bin/find, /usr/lib/systemd/systemd-udevd, /usr/bin/test, /usr/libexec/nm-dispatcher, /usr/bin/logger, /usr/libexec/chrony-helper, /usr/sbin/agetty, /usr/bin/basename, /usr/sbin/sssd, /usr/bin/ceph, /usr/lib/polkit-1/polkitd, /usr/sbin/lsof, /usr/bin/date, /usr/bin/systemd-tmpfiles]
 
 - list: _os_level_noisy_file_read_by_parent_process
   items: [/usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/hyperkube, /usr/bin/crio, /usr/lib/systemd/systemd, /usr/bin/apt-get, /usr/bin/dpkg-deb, /usr/sbin/sshd, /usr/bin/run-parts, /bin/run-parts, /usr/bin/apt-key, /usr/lib/ubuntu-release-upgrader/release-upgrade-motd, /usr/bin/dpkg, /usr/share/debconf/frontend, /usr/bin/dockerd, /var/lib/dpkg/info/vim.postinst, /usr/sbin/add-shell, /usr/local/bin/docker-compose, /var/lib/dpkg/info/mime-support.postinst, /usr/lib/systemd/systemd-udevd, /var/lib/cni/bin/openshift-sdn, /var/lib/dpkg/info/vim-runtime.postinst, /usr/lib/update-notifier/update-motd-updates-available, /usr/lib/update-notifier/update-motd-hwe-eol, /usr/lib/apt/methods/gpgv, /usr/bin/appstreamcli, /usr/libexec/gnome-session-binary, /usr/lib/update-notifier/update-motd-fsck-at-reboot, /usr/bin/gpgconf, /usr/bin/ldd, /usr/bin/kubelet, /usr/sbin/sssd, /usr/libexec/nm-dispatcher]
 
 - list: _openshift_infrastructure_container_noisy_file_read_by_process
-  items: [/usr/bin/node_exporter, /usr/bin/curl, /usr/bin/ovs-vsctl, /usr/bin/ovs-appctl, /usr/bin/prometheus, /usr/bin/ceph, /usr/bin/ceph-mds, /usr/bin/ceph-mgr, /usr/bin/ceph-osd, /usr/local/bin/rook, /usr/bin/ceph-mon, /sbin/ldconfig, /usr/sbin/ldconfig, /usr/bin/ovs-ofctl, /usr/share/openvswitch/scripts/ovs-ctl, /usr/share/grafana/bin/grafana-server, /bin/bash, /rootfs/usr/bin/journalctl, /usr/bin/cat, /usr/bin/sed, /usr/bin/sleep, /usr/bin/thanos, /usr/bin/bash, /usr/bin/openshift-router, /usr/bin/alertmanager, /usr/bin/dockerregistry, /usr/bin/dig, /usr/bin/tail, /usr/bin/ls, /usr/bin/kube-rbac-proxy, /usr/bin/cp, /usr/bin/coredns, /usr/bin/machine-config-daemon, /usr/bin/oauth-proxy, /usr/bin/telemeter-client, /usr/bin/kube-state-metrics, /usr/bin/grep, /usr/bin/openshift-state-metrics, /usr/bin/prometheus-config-reloader, /usr/bin/cmp, /usr/bin/openshift-tuned, /usr/local/bin/helm-operator, /manager, /usr/sbin/ovs-vswitchd, /usr/bin/appregistry-server, /usr/share/grafana/bin/grafana-server, /usr/bin/uname, /usr/sbin/ovsdb-server, /usr/sbin/haproxy, /usr/bin/nmstatectl, /usr/bin/lsblk, /usr/bin/uname, /bin/lsblk, /bin/lsblk, /usr/bin/stat, /usr/bin/realpath, /usr/bin/systemd-run, /usr/local/bin/kubectl, /usr/sbin/libvirtd, /usr/src/ovs-cni/bin/ovs-marker, /usr/bin/virt-handler, /usr/bin/machine-config-controller, /usr/bin/cm-adapter, /usr/bin/ingress-operator, /usr/bin/openshift-controller-manager, /usr/bin/openshift-sdn-controller, /usr/bin/cluster-node-tuning-operator, /usr/bin/dns-operator, /machine-api-operator, /usr/bin/cluster-autoscaler-operator, /usr/bin/snapshot-controller, /usr/bin/ansible-playbook, /usr/bin/ansible-runner, /usr/local/bin/envoy, /usr/sbin/grafana-server, /usr/local/bin/ansible-operator]
+  items: [/usr/bin/node_exporter, /usr/bin/curl, /usr/bin/ovs-vsctl, /usr/bin/ovs-appctl, /usr/bin/prometheus, /usr/bin/ceph, /usr/bin/ceph-mds, /usr/bin/ceph-mgr, /usr/bin/ceph-osd, /usr/local/bin/rook, /usr/bin/ceph-mon, /sbin/ldconfig, /usr/sbin/ldconfig, /usr/bin/ovs-ofctl, /usr/share/openvswitch/scripts/ovs-ctl, /usr/share/grafana/bin/grafana-server, /bin/bash, /rootfs/usr/bin/journalctl, /usr/bin/cat, /usr/bin/sed, /usr/bin/sleep, /usr/bin/thanos, /usr/bin/bash, /usr/bin/openshift-router, /usr/bin/alertmanager, /usr/bin/dockerregistry, /usr/bin/dig, /usr/bin/tail, /usr/bin/ls, /usr/bin/kube-rbac-proxy, /usr/bin/cp, /usr/bin/coredns, /usr/bin/machine-config-daemon, /usr/bin/oauth-proxy, /usr/bin/telemeter-client, /usr/bin/kube-state-metrics, /usr/bin/grep, /usr/bin/openshift-state-metrics, /usr/bin/prometheus-config-reloader, /usr/bin/cmp, /usr/bin/openshift-tuned, /usr/local/bin/helm-operator, /manager, /usr/sbin/ovs-vswitchd, /usr/bin/appregistry-server, /usr/share/grafana/bin/grafana-server, /usr/bin/uname, /usr/sbin/ovsdb-server, /usr/sbin/haproxy, /usr/bin/nmstatectl, /usr/bin/lsblk, /usr/bin/uname, /bin/lsblk, /bin/lsblk, /usr/bin/stat, /usr/bin/realpath, /usr/bin/systemd-run, /usr/local/bin/kubectl, /usr/sbin/libvirtd, /usr/src/ovs-cni/bin/ovs-marker, /usr/bin/virt-handler, /usr/bin/machine-config-controller, /usr/bin/cm-adapter, /usr/bin/ingress-operator, /usr/bin/openshift-controller-manager, /usr/bin/openshift-sdn-controller, /usr/bin/cluster-node-tuning-operator, /usr/bin/dns-operator, /machine-api-operator, /usr/bin/cluster-autoscaler-operator, /usr/bin/snapshot-controller, /usr/bin/ansible-playbook, /usr/bin/ansible-runner, /usr/local/bin/envoy, /usr/sbin/grafana-server, /usr/local/bin/ansible-operator, /bridge-marker, /usr/bin/diskmaker, /usr/bin/jaeger-operator, /usr/local/bin/sidecar-injector, /usr/bin/csi-resizer, /usr/bin/csi-provisioner, /usr/local/bin/mixs, /usr/bin/hostpath-provisioner-operator, /var/lib/haproxy/reload-haproxy, /manager, /usr/sbin/logrotate]
 
 - list: _openshift_infrastructure_container_noisy_file_read_by_parent_process
   items: [/usr/libexec/crio/conmon, /usr/bin/runc, /usr/bin/machine-config-daemon, /usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/openshift-tuned, /usr/bin/crio, /usr/local/bin/rook, /usr/local/bin/rook, /rook/rook, /usr/bin/ceph, /usr/bin/dumb-init, /usr/bin/openshift-sdn-node, /usr/sbin/ovsdb-server, /usr/sbin/tuned-adm, /usr/bin/nmstatectl, /usr/bin/node, /usr/bin/ansible-runner, /usr/bin/ansible-playbook]
@@ -127,14 +127,23 @@
               or sf.file.directory startswith /proc
               or sf.file.directory startswith /sys
               or sf.file.directory startswith /lib64
-              or sf.file.directory startswith /dev)
+              or sf.file.directory startswith /dev
+              or sf.file.directory startswith /tmp)
   
 - macro: _drop_out_noisy_file_read_events_from_pipes_and_sockets
   condition: file_read_or_file_opened_for_read and sf.file.type in (u, p)
-    
+
+- macro: _drop_noisy_file_read_from_ansible_in_infrastructure_containers
+  condition: file_read_or_file_opened_for_read and ansible_in_infrastructure_containers
+
 - macro: _drop_file_read_list_of_file_paths
   condition: file_read_or_file_opened_for_read
               and sf.file.path in (/etc/ld.so.cache)
+
+- macro: _drop_file_read_in_infrastructure_containers_list_of_file_paths
+  condition: file_read_or_file_opened_for_read
+              and (sf.file.path in (/etc/python, /etc/localtime, /etc/resolv.conf, /etc/hosts, /etc/nsswitch.conf, /etc/host.conf, /etc/passwd)
+                   or (sf.file.directory startswith /opt/ansible))
 
 ## macro to define /proc/self/exe running in a host, its grandparents includes /usr/bin/runc, /usr/libexec/crio/conmon and /usr/bin/crio
 ## and not exists sf.container.type -> or another way to limit it to the host
@@ -162,10 +171,10 @@
   items: [/usr/libexec/crio/conmon, /usr/bin/runc, /usr/bin/hyperkube, /usr/bin/crio, /usr/lib/systemd/systemd, /usr/sbin/sshd, /usr/bin/dbus-daemon, /usr/bin/dockerd, /lib/systemd/systemd-journald, /lib/systemd/systemd, /lib/systemd/systemd-udevd, /lib/systemd/systemd-logind, /lib/systemd/systemd-timesyncd, /lib/systemd/systemd-resolved, /lib/systemd/systemd-networkd, /usr/bin/dpkg, /usr/lib/systemd/systemd, /usr/bin/update-mime-database, /usr/lib/systemd/systemd-journald, /usr/lib/systemd/systemd-networkd, /usr/lib/systemd/systemd-udevd, /usr/lib/systemd/systemd-resolved, /usr/lib/systemd/systemd-timesyncd, /usr/lib/systemd/systemd-logind, /usr/bin/dpkg-deb, /usr/bin/apt-get, /usr/local/bin/docker-compose, /usr/bin/apt-key, /usr/bin/update-alternatives, /usr/bin/containerd, /usr/bin/appstreamcli, /usr/lib/update-notifier/update-motd-updates-available, /usr/bin/apt-config, /usr/lib/apt/methods/gpgv, /usr/lib/update-notifier/update-motd-fsck-at-reboot, /usr/lib/update-notifier/apt-check, /var/lib/dpkg/info/vim.postinst, /usr/bin/kubelet]
 
 - list: _openshift_infrastructure_container_noisy_file_modify_by_process
-  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/sbin/ovs-vswitchd, /usr/bin/curl, /usr/bin/cat, /usr/bin/sh, /usr/bin/oauth-proxy, /usr/bin/ovs-vsctl, /usr/bin/ovs-appctl, /usr/bin/sed, /usr/sbin/ovsdb-server, /usr/bin/appregistry-server, /usr/sbin/haproxy, /usr/bin/dig, /sbin/ldconfig, /usr/bin/ceph-osd, /usr/local/bin/rook, /usr/bin/ovs-ofctl, /usr/bin/ls, /usr/bin/grep, /usr/bin/prometheus-config-reloader, /usr/bin/ceph-mds, /usr/bin/openshift-tuned, /usr/bin/openshift-state-metrics, /usr/bin/openshift-router, /usr/sbin/tuned-adm, /usr/sbin/chronyd, /usr/bin/alertmanager, /usr/sbin/tuned-adm, /usr/bin/nmstatectl, /usr/bin/lsblk, /usr/bin/virt-launcher, /usr/src/ovs-cni/bin/ovs-marker, /usr/sbin/libvirtd]
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/sbin/ovs-vswitchd, /usr/bin/curl, /usr/bin/cat, /usr/bin/sh, /usr/bin/oauth-proxy, /usr/bin/ovs-vsctl, /usr/bin/ovs-appctl, /usr/bin/sed, /usr/sbin/ovsdb-server, /usr/bin/appregistry-server, /usr/sbin/haproxy, /usr/bin/dig, /sbin/ldconfig, /usr/bin/ceph-osd, /usr/local/bin/rook, /usr/bin/ovs-ofctl, /usr/bin/ls, /usr/bin/grep, /usr/bin/prometheus-config-reloader, /usr/bin/ceph-mds, /usr/bin/openshift-tuned, /usr/bin/openshift-state-metrics, /usr/bin/openshift-router, /usr/sbin/tuned-adm, /usr/sbin/chronyd, /usr/bin/alertmanager, /usr/sbin/tuned-adm, /usr/bin/nmstatectl, /usr/bin/lsblk, /usr/bin/virt-launcher, /usr/src/ovs-cni/bin/ovs-marker, /usr/sbin/libvirtd, /usr/local/bin/sidecar-injector, /usr/sbin/rsyslogd, /usr/sbin/grafana-server, /usr/sbin/logrotate]
 
 - list: _openshift_infrastructure_container_noisy_file_modify_by_parent_process
-  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/sbin/ovs-vswitchd, /usr/bin/dumb-init, /usr/local/bin/rook, /usr/bin/openshift-sdn-node]
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/sbin/ovs-vswitchd, /usr/bin/dumb-init, /usr/local/bin/rook, /usr/bin/openshift-sdn-node, /usr/bin/virt-launcher]
 
 - macro: _drop_out_noisy_file_modify_events
   condition: file_write_or_file_opened_for_write and not setns_syscall
@@ -176,15 +185,24 @@
   condition: file_write_or_file_opened_for_write
              and sf.file.path in (/run/systemd/userdb/io.systemd.DynamicUser, /run/systemd/notify, /dev/pts/1, /dev/null, /proc/self/attr/keycreate, /var/lib/grafana/grafana.db-journal)
 
-- macro: _drop_file_write_from_rsyslogd
+- macro: _drop_file_write_in_infrastructure_containers_list_of_file_paths
+  condition: file_write_or_file_opened_for_write and infrastructure_containers
+             and sf.file.path in (/tmp/health)
+
+- macro: _drop_file_write_from_rsyslogd_and_auditd
   condition: file_write_or_file_opened_for_write
-             and sf.proc.exe = /usr/sbin/rsyslogd
+             and sf.proc.exe in (/usr/sbin/rsyslogd, /usr/sbin/auditd)
              and sf.file.directory = /var/log
 
 - macro: _drop_file_write_from_sshd_to_unix_domain
   condition: file_write_or_file_opened_for_write
              and sf.proc.exe = /usr/sbin/sshd
              and sf.file.type = u
+
+- macro: _drop_file_write_from_os_processes_to_pipes
+  condition: file_write_or_file_opened_for_write
+             and sf.pproc.exe = /usr/bin/ldd
+             and sf.file.type = p
 
 - macro: _drop_file_write_from_tar
   condition: file_write_or_file_opened_for_write
@@ -196,17 +214,21 @@
              and sf.proc.exe = 	/usr/sbin/auditd
              and sf.file.directory = /var/log/audit/
 
+- macro: ansible_in_infrastructure_containers
+  condition: infrastructure_containers
+             and (sf.proc.exe in (/usr/bin/ansible-playbook, /usr/bin/ansible-runner, /usr/local/bin/ansible-operator) or sf.proc.aexe in (/usr/bin/ansible-playbook, /usr/local/bin/ansible-operator))
+
 - macro: _drop_noisy_file_write_from_ansible_in_infrastructure_containers
-  condition: file_write_or_file_opened_for_write and infrastructure_containers
-             and (sf.proc.exe in (/usr/bin/ansible-playbook, /usr/bin/ansible-runner) or sf.proc.aexe in (/usr/bin/ansible-playbook))
-             and (sf.file.directory startswith /tmp/
+  condition: file_write_or_file_opened_for_write
+             and ansible_in_infrastructure_containers
+             and (sf.file.directory startswith /tmp
                   or sf.file.directory startswith /tmp/ansible-operator/
                   or sf.file.directory startswith /opt/ansible/
                   or sf.file.directory startswith /dev/pts)
 
-- macro: _drop_file_write_from_infrastructure_containers_to_pipe
+- macro: _drop_write_from_infrastructure_containers_to_pipe_or_unix_domain_socket
   condition: file_write_or_file_opened_for_write and infrastructure_containers
-             and sf.file.type = p
+             and sf.file.type in (p, u)
 
 - macro: _drop_file_write_from_infrastructure_containers_to_unix_socket
   condition: file_write_or_file_opened_for_write and infrastructure_containers
@@ -251,10 +273,10 @@
   items: [/usr/bin/runc, /usr/bin/hyperkube, /usr/bin/apt-key, /usr/bin/dpkg-deb, /usr/bin/dpkg, /usr/bin/apt-config, /usr/bin/apt-get, /usr/lib/update-notifier/update-motd-fsck-at-reboot, /var/lib/dpkg/info/vim-runtime.postinst, /usr/lib/systemd/systemd-udevd, /usr/bin/appstreamcli, /usr/lib/update-notifier/apt-check, /usr/lib/apt/methods/gpgv, /usr/bin/run-parts, /usr/lib/update-notifier/update-motd-updates-available, /usr/lib/ubuntu-release-upgrader/release-upgrade-motd, /var/lib/dpkg/info/vim.postinst, /usr/bin/dpkg-maintscript-helper, /usr/sbin/cron, /usr/bin/ldd, /usr/bin/kubelet, /usr/libexec/nm-dispatcher, /usr/bin/ldd]
 
 - list: _openshift_infrastructure_container_noisy_process_exit_by_process
-  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/sleep, /usr/bin/cat, /usr/bin/curl, /usr/bin/bash, /usr/bin/ovs-vsctl, /usr/bin/sh, /bin/bash, /usr/bin/ovs-appctl, /usr/bin/sed, /usr/bin/ovs-ofctl, /proc/self/exe, /prometheus/sh, /usr/bin/runc, /usr/bin/sed, /usr/bin/cp, /usr/bin/ls, /usr/bin/ceph, /usr/sbin/ldconfig, /usr/bin/grep, /usr/bin/cmp, /usr/bin/dig, /usr/libexec/crio/conmon, /usr/bin/lsblk, /sbin/ldconfig, /usr/bin/uname, /usr/bin/nmstatectl, /usr/bin/grep, /usr/bin/sleep, /usr/bin/stat, /usr/bin/realpath, /usr/bin/mkdir, /usr/bin/date, /usr/bin/ansible-runner, /usr/bin/logger, /usr/sbin/logrotate, /usr/bin/find, /bin/sh, /usr/bin/ansible-playbook, /usr/bin/python2, /usr/bin/python2.7]
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/sleep, /usr/bin/cat, /usr/bin/curl, /usr/bin/bash, /usr/bin/ovs-vsctl, /usr/bin/sh, /bin/bash, /usr/bin/ovs-appctl, /usr/bin/sed, /usr/bin/ovs-ofctl, /proc/self/exe, /prometheus/sh, /usr/bin/runc, /usr/bin/sed, /usr/bin/cp, /usr/bin/ls, /usr/bin/ceph, /usr/sbin/ldconfig, /usr/bin/grep, /usr/bin/cmp, /usr/bin/dig, /usr/libexec/crio/conmon, /usr/bin/lsblk, /sbin/ldconfig, /usr/bin/uname, /usr/bin/nmstatectl, /usr/bin/grep, /usr/bin/sleep, /usr/bin/stat, /usr/bin/realpath, /usr/bin/mkdir, /usr/bin/date, /usr/bin/ansible-runner, /usr/bin/logger, /usr/sbin/logrotate, /usr/bin/find, /bin/sh, /usr/bin/ansible-playbook, /usr/bin/python2, /usr/bin/python2.7, /usr/bin/chmod, /usr/bin/coreutils]
 
 - list: _openshift_infrastructure_container_noisy_process_exit_by_parent_process
-  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/runc, /usr/bin/ceph, /usr/local/bin/rook, /usr/libexec/crio/conmon, /usr/bin/openshift-sdn-node, /usr/bin/nmstatectl, /usr/bin/ansible-runner, /usr/bin/node, /usr/local/bin/cephcsi]
+  items: [/usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/runc, /usr/bin/ceph, /usr/local/bin/rook, /usr/libexec/crio/conmon, /usr/bin/openshift-sdn-node, /usr/bin/nmstatectl, /usr/bin/ansible-runner, /usr/bin/node, /usr/local/bin/cephcsi, /usr/bin/python2, /usr/bin/ansible-playbook]
   
 - macro: _drop_out_noisy_process_exit_events_from_bash_proc_self_exe
   condition: exit_syscall and bash_and_parent_process_proc_self_exe_with_cri_grandparents
@@ -290,7 +312,10 @@
   items: [/usr/sbin/iptables, /usr/sbin/chroot, /usr/bin/curl, /usr/bin/ovs-vsctl, /usr/share/openvswitch/scripts/ovs-ctl, /usr/bin/sed, /usr/bin/ovs-appctl, /usr/bin/ovs-ofctl, /usr/sbin/iptables-save, /usr/bin/openshift-sdn-node, /sbin/ldconfig, /usr/bin/ceph, /usr/bin/ls, /usr/bin/cp, /usr/sbin/ldconfig, /usr/bin/cmp, /usr/bin/dig, /usr/bin/grep, /proc/self/exe, /usr/bin/lsblk, /sbin/ldconfig, /usr/bin/uname, /usr/bin/nmstatectl, /usr/bin/grep, /usr/bin/sleep, /usr/bin/stat, /usr/bin/realpath, /usr/bin/cat, /usr/bin/df, /usr/bin/mkdir, /usr/bin/systemd-run, /usr/local/bin/kubectl, /usr/bin/ansible-runner, /usr/bin/find, /usr/bin/jq]
 
 - list: _openshift_infrastructure_container_noisy_process_execution_by_parent_process
-  items: [/usr/bin/openshift-sdn-node, /usr/share/openvswitch/scripts/ovs-ctl, /usr/local/bin/rook, /usr/bin/ceph, /usr/bin/ceph-mgr, /var/lib/haproxy/reload-haproxy, /usr/bin/openshift-router, /usr/bin/openshift-tuned, /usr/bin/nmstatectl, /usr/bin/node, /usr/bin/ansible-runner]
+  items: [/usr/bin/openshift-sdn-node, /usr/share/openvswitch/scripts/ovs-ctl, /usr/local/bin/rook, /usr/bin/ceph, /usr/bin/ceph-mgr, /var/lib/haproxy/reload-haproxy, /usr/bin/openshift-router, /usr/bin/openshift-tuned, /usr/bin/nmstatectl, /usr/bin/node, /usr/bin/ansible-runner, /usr/bin/ansible-playbook]
+
+- macro: _drop_out_noisy_process_execution_events_from_ansible
+  condition: exec_syscall and ansible_in_infrastructure_containers
 
 - macro: _drop_out_noisy_process_execution_events_from_bash_proc_self_exe
   condition: exec_syscall and bash_and_parent_process_proc_self_exe_with_cri_grandparents
@@ -311,6 +336,9 @@
 - list: _openshift_infrastructure_container_noisy_file_delete_by_process
   items: [/usr/bin/appregistry-server, /usr/local/bin/rook, /usr/bin/prometheus, /usr/bin/ceph-mon, /usr/share/grafana/bin/grafana-server, /usr/bin/openshift-tuned, /usr/sbin/tuned-adm, /usr/bin/prometheus-config-reloader, /usr/bin/ansible-runner, /usr/bin/prometheus-config-reloader, /usr/local/bin/galley, /usr/bin/ansible-runner, /usr/bin/ansible-playbook, /usr/bin/prometheus, /usr/local/bin/ansible-operator]
 
+- macro: _drop_out_noisy_file_deletion_events_from_ansible
+  condition: unlink_syscall and ansible_in_infrastructure_containers
+  
 - macro: _drop_out_noisy_file_delete_events
   condition: unlink_syscall
              and ((sf.proc.exe in (_os_level_noisy_file_delete_by_process) or sf.pproc.exe in (_os_level_noisy_file_delete_by_parent_process))
@@ -325,7 +353,7 @@
   items: [/usr/bin/runc, /usr/bin/apt-get]
 
 - list: _openshift_infrastructure_container_noisy_network_flows_by_process
-  items: [/usr/bin/ceph, /usr/bin/oauth-proxy, /usr/bin/thanos, /usr/bin/kube-rbac-proxy, /usr/bin/ceph-osd, /usr/bin/prom-kube-proxy, /usr/bin/alertmanager, /usr/local/bin/rook, /usr/bin/ceph-mds, /usr/bin/cm-adapter, /usr/bin/telemeter-client, /usr/share/grafana/bin/grafana-server, /usr/bin/machine-config-daemon, /usr/bin/node_exporter, /usr/bin/openshift-tuned, /usr/bin/kube-state-metrics, /usr/bin/openshift-state-metrics, /usr/bin/openshift-router, /usr/bin/dig, /usr/bin/node, /usr/bin/nmstatectl]
+  items: [/usr/bin/ceph, /usr/bin/oauth-proxy, /usr/bin/thanos, /usr/bin/kube-rbac-proxy, /usr/bin/ceph-osd, /usr/bin/prom-kube-proxy, /usr/bin/alertmanager, /usr/local/bin/rook, /usr/bin/ceph-mds, /usr/bin/cm-adapter, /usr/bin/telemeter-client, /usr/share/grafana/bin/grafana-server, /usr/bin/machine-config-daemon, /usr/bin/node_exporter, /usr/bin/openshift-tuned, /usr/bin/kube-state-metrics, /usr/bin/openshift-state-metrics, /usr/bin/openshift-router, /usr/bin/dig, /usr/bin/node, /usr/bin/nmstatectl, /usr/local/bin/mixs, /usr/sbin/grafana-server, /go/bin/collector-linux, /go/bin/query-linux, /go/bin/all-in-one-linux, /opt/kiali/kiali, /usr/bin/ansible-playbook, /usr/local/bin/ansible-operator, /usr/local/bin/envoy, /usr/src/ovs-cni/bin/ovs-marker, /bridge-marker, /opt/kiali/kiali, /usr/bin/virt-handler]
 
 - list: _openshift_infrastructure_container_noisy_network_flows_by_parent_process
   items: [/usr/libexec/crio/conmon]
@@ -339,6 +367,9 @@
 - macro: _drop_out_network_flows_from_log_forwarder_utilities
   condition: NetworkFlow and sf.proc.exe in (/usr/sbin/syslog-ng) and sf.net.dport = 514
 
+- macro: _drop_out_connection_create_from_kubelet
+  condition: NetworkFlow and sf.proc.exe = /usr/bin/kubelet and sf.opflags = CONNECT
+  
 - macro: _drop_out_noisy_network_flows
   condition: NetworkFlow 
              and ( (sf.proc.exe in (_os_level_noisy_network_flows_by_process) or sf.pproc.exe in (_os_level_noisy_network_flows_by_parent_process))
@@ -363,7 +394,13 @@
   
 - list: _openshift_infrastructure_container_noisy_file_rename_events_by_process
   items: [/usr/bin/alertmanager, /usr/bin/prometheus, /usr/bin/prometheus-config-reloader, /usr/bin/ansible-runner, /usr/bin/ansible-playbook]
-  
+
+- macro: _drop_out_noisy_file_rename_events_from_ansible
+  condition: rename_syscall and ansible_in_infrastructure_containers
+
+- macro: _drop_out_noisy_file_rename_events_from_mongodb
+  condition: rename_syscall and sf.container.image pmatch (mongodb) and sf.file.path in (/data/mongo/cluster/shard1/diagnostic.data/metrics.interim.temp, /data/mongo/cluster/shard1/WiredTiger.turtle.set)
+
 - macro: _drop_out_noisy_file_rename_events
   condition: rename_syscall 
              and ((sf.proc.exe in (_os_level_noisy_file_rename_events_by_process))
@@ -379,6 +416,11 @@
 
 - list: _openshift_infrastructure_container_noisy_directory_creation_by_process
   items: [/usr/bin/oc, /usr/bin/python2, /usr/bin/ansible-runner]
+
+- macro: _drop_out_noisy_directory_creation_in_infrastructure_containers_list_of_file_paths
+  condition: mkdir_syscall 
+             and ( sf.file.path in (/opt/ansible/.ansible, /opt/ansible, /opt)
+                   or (sf.file.path startswith /opt/ansible/.ansible or sf.file.path startswith /tmp/ansible-operator))
   
 - macro: _drop_out_noisy_directory_creation_events
   condition: mkdir_syscall 
@@ -392,6 +434,9 @@
   
 - list: _os_level_noisy_directory_removal_by_parent_process
   items: [/usr/bin/dpkg, /usr/lib/systemd/systemd, /usr/bin/apt-get]
+
+- macro: _drop_out_noisy_directory_removal_from_ansible
+  condition: rmdir_syscall and ansible_in_infrastructure_containers
 
 - macro: _drop_out_noisy_directory_removal_events
   condition: rmdir_syscall 
@@ -432,18 +477,22 @@
              or _drop_out_noisy_file_read_events_from_proc_self_exe
              or _drop_out_noisy_file_read_events_from_specific_high_level_dirs
              or _drop_out_noisy_file_read_events_from_pipes_and_sockets
+             or _drop_noisy_file_read_from_ansible_in_infrastructure_containers
+             or _drop_file_read_in_infrastructure_containers_list_of_file_paths
              or _drop_out_noisy_file_modify_events
-             or _drop_file_write_list_of_file_paths 
-             or _drop_file_write_from_rsyslogd 
+             or _drop_file_write_list_of_file_paths
+             or _drop_file_write_in_infrastructure_containers_list_of_file_paths
+             or _drop_file_write_from_rsyslogd_and_auditd
              or _drop_file_write_from_tar 
              or _drop_file_write_from_auditd
+             or _drop_file_write_from_os_processes_to_pipes
              or _drop_file_write_from_kubelet_specific_file_paths
              or _drop_file_write_from_infrastructure_containers_to_unix_socket
              or _drop_file_write_from_some_processes_to_unix_socket
              or _drop_file_write_from_sshd_to_unix_domain
              or _drop_file_write_from_nginx_ingress_controller
              or _drop_noisy_file_write_from_ansible_in_infrastructure_containers
-             or _drop_file_write_from_infrastructure_containers_to_pipe
+             or _drop_write_from_infrastructure_containers_to_pipe_or_unix_domain_socket
              or _drop_file_write_from_proc_self_exe_part_1
              or _drop_file_write_from_proc_self_exe_part_2
              or _drop_thread_exit_events 
@@ -452,16 +501,23 @@
              or _drop_out_noisy_setns_events_events
              or _drop_noisy_setns_events_from_proc_self_exe 
              or _drop_out_noisy_process_execution_events
+             or _drop_out_noisy_process_execution_events_from_ansible
              or _drop_out_noisy_process_execution_events_from_bash_proc_self_exe
              or _drop_out_noisy_file_delete_events
+             or _drop_out_noisy_file_deletion_events_from_ansible
              or _drop_out_noisy_network_flows_from_runc_parent_process
              or _drop_out_network_flows_from_log_forwarder_utilities
              or _drop_out_noisy_network_flows_from_curl
+             or _drop_out_connection_create_from_kubelet
              or _drop_out_noisy_network_flows
              or _drop_out_noisy_setuid_events
              or _drop_noisy_setuid_events_from_proc_self_exe
              or _drop_out_noisy_file_rename_events
+             or _drop_out_noisy_file_rename_events_from_ansible
+             or _drop_out_noisy_file_rename_events_from_mongodb
              or _drop_out_noisy_directory_creation_events
+             or _drop_out_noisy_directory_removal_from_ansible
+             or _drop_out_noisy_directory_creation_in_infrastructure_containers_list_of_file_paths
              or _drop_out_noisy_directory_removal_events
              or _drop_out_noisy_soft_link_creation_events
              or _drop_out_noisy_hard_link_creation_events
@@ -535,21 +591,21 @@
   desc: when a file will be renamed
   condition: sf.opflags = RENAME
   action: [alert]
-  priority: low  
+  priority: low
   prefilter: [FE]
 
 - rule: UID of process was changed
   desc: UID of process was changed
   condition: sf.opflags = SETUID
   action: [alert]
-  priority: low  
+  priority: low
   prefilter: [PE]
 
 - rule: Process cloned
   desc: Process cloned
   condition: clone_syscall
   action: [alert]
-  priority: low  
+  priority: low
   prefilter: [PE]
 
 - rule: Execution of a file
@@ -564,7 +620,7 @@
   desc: Process or thread exit
   condition: exit_syscall
   action: [alert]
-  priority: low  
+  priority: low
   prefilter: [PE]
 
 
@@ -572,48 +628,48 @@
   desc: Process entered namespace
   condition: setns_syscall
   action: [alert]
-  priority: low  
+  priority: low
   prefilter: [FF]
 
 - rule: Process Created a Network Connection
   desc: Process Created a Network Connection
   condition: sf.opflags = CONNECT
   action: [alert]
-  priority: low  
+  priority: medium
   prefilter: [NF]
 
 - rule: Process Accepted a Network Connection
   desc: Network Flow ingress
   condition: sf.opflags = ACCEPT
   action: [alert]
-  priority: low  
+  priority: medium
   prefilter: [NF]
 
 - rule: Process Sending and Receiving Network Data
   desc: Network Flow ingress and engress
-  condition: sf.opflags = SEND and sf.opflags = RECV
+  condition: sf.opflags in (SEND, WRITE) and sf.opflags in (RECV, READ)
   action: [alert]
-  priority: low  
+  priority: medium
   prefilter: [NF]
 
 - rule: Process Sending Network Data
   desc: Network Flow engress
-  condition: sf.opflags = SEND and not sf.opflags = RECV
+  condition: sf.opflags in (SEND, WRITE) and not sf.opflags in (RECV, READ)
   action: [alert]
-  priority: low  
+  priority: medium
   prefilter: [NF]
 
 - rule: Process Receiving Network Data
   desc: Network Flow ingress
-  condition: sf.opflags = RECV and not sf.opflags = SEND
+  condition: sf.opflags in (RECV, READ) and not sf.opflags in (SEND, WRITE)
   action: [alert]
-  priority: low  
+  priority: medium
   prefilter: [NF]
 
 - rule: Network Connection Closed
   desc: Network Connection Closed
   condition: sf.opflags = CLOSE
   action: [alert]
-  priority: low  
+  priority: low
   prefilter: [NF]
 
