@@ -271,62 +271,67 @@ func getExtendedMappers() map[string]FieldMap {
 func getNonExportedMappers() map[string]FieldMap {
 	return map[string]FieldMap{
 		// Falco
-		FALCO_EVT_TYPE:          mapOpFlags(sfgo.SYSFLOW_SRC),
-		FALCO_EVT_RAW_RES:       mapRecType(sfgo.SYSFLOW_SRC),
-		FALCO_EVT_RAW_TIME:      mapInt(sfgo.SYSFLOW_SRC, sfgo.TS_INT),
-		FALCO_EVT_DIR:           mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
-		FALCO_EVT_IS_OPEN_READ:  mapIsOpenRead(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
-		FALCO_EVT_IS_OPEN_WRITE: mapIsOpenWrite(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
-		FALCO_EVT_UID:           mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT),
-		FALCO_FD_TYPECHAR:       mapFileType(sfgo.SYSFLOW_SRC, sfgo.FILE_RESTYPE_INT),
-		FALCO_FD_DIRECTORY:      mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		FALCO_FD_NAME:           mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		FALCO_FD_FILENAME:       mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		FALCO_FD_PROTO:          mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		FALCO_FD_LPROTO:         mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		FALCO_FD_L4PROTO:        mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		FALCO_FD_RPROTO:         mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		FALCO_FD_SPROTO:         mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		FALCO_FD_CPROTO:         mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
-		FALCO_FD_SPORT:          mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT),
-		FALCO_FD_DPORT:          mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DPORT_INT),
-		FALCO_FD_SIP:            mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT),
-		FALCO_FD_DIP:            mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DIP_INT),
-		FALCO_FD_IP:             mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT, sfgo.FL_NETW_DIP_INT),
-		FALCO_FD_PORT:           mapPort(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT, sfgo.FL_NETW_DPORT_INT),
-		FALCO_FD_NUM:            mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_FD_INT),
-		FALCO_USER_NAME:         mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_USERNAME_STR),
-		FALCO_PROC_PID:          mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
-		FALCO_PROC_TID:          mapInt(sfgo.SYSFLOW_SRC, sfgo.TID_INT),
-		FALCO_PROC_GID:          mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_GID_INT),
-		FALCO_PROC_UID:          mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT),
-		FALCO_PROC_GROUP:        mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_GROUPNAME_STR),
-		FALCO_PROC_TTY:          mapCachedValue(sfgo.SYSFLOW_SRC, PProcTTY),
-		FALCO_PROC_USER:         mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_USERNAME_STR),
-		FALCO_PROC_EXE:          mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR),
-		FALCO_PROC_NAME:         mapName(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR),
-		FALCO_PROC_ARGS:         mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXEARGS_STR),
-		FALCO_PROC_CREATE_TIME:  mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_CREATETS_INT),
-		FALCO_PROC_CMDLINE:      mapJoin(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR, sfgo.PROC_EXEARGS_STR),
-		FALCO_PROC_ANAME:        mapCachedValue(sfgo.SYSFLOW_SRC, ProcAName),
-		FALCO_PROC_APID:         mapCachedValue(sfgo.SYSFLOW_SRC, ProcAPID),
-		FALCO_PROC_PPID:         mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT),
-		FALCO_PROC_PGID:         mapCachedValue(sfgo.SYSFLOW_SRC, PProcGID),
-		FALCO_PROC_PUID:         mapCachedValue(sfgo.SYSFLOW_SRC, PProcUID),
-		FALCO_PROC_PGROUP:       mapCachedValue(sfgo.SYSFLOW_SRC, PProcGroup),
-		FALCO_PROC_PTTY:         mapCachedValue(sfgo.SYSFLOW_SRC, PProcTTY),
-		FALCO_PROC_PUSER:        mapCachedValue(sfgo.SYSFLOW_SRC, PProcUser),
-		FALCO_PROC_PEXE:         mapCachedValue(sfgo.SYSFLOW_SRC, PProcExe),
-		FALCO_PROC_PARGS:        mapCachedValue(sfgo.SYSFLOW_SRC, PProcArgs),
-		FALCO_PROC_PCREATE_TIME: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_CREATETS_INT),
-		FALCO_PROC_PNAME:        mapCachedValue(sfgo.SYSFLOW_SRC, PProcName),
-		FALCO_PROC_PCMDLINE:     mapCachedValue(sfgo.SYSFLOW_SRC, PProcCmdLine),
-		FALCO_CONT_ID:           mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_ID_STR),
-		FALCO_CONT_IMAGE_ID:     mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGEID_STR),
-		FALCO_CONT_IMAGE:        mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGE_STR),
-		FALCO_CONT_NAME:         mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_NAME_STR),
-		FALCO_CONT_TYPE:         mapContType(sfgo.SYSFLOW_SRC, sfgo.CONT_TYPE_INT),
-		FALCO_CONT_PRIVILEGED:   mapInt(sfgo.SYSFLOW_SRC, sfgo.CONT_PRIVILEGED_INT),
+		FALCO_EVT_TYPE:              mapEvtType(sfgo.SYSFLOW_SRC),
+		FALCO_EVT_RAW_RES:           mapRecType(sfgo.SYSFLOW_SRC),
+		FALCO_EVT_RAW_TIME:          mapInt(sfgo.SYSFLOW_SRC, sfgo.TS_INT),
+		FALCO_EVT_DIR:               mapConsts(FALCO_ENTER_EVENT, FALCO_EXIT_EVENT),
+		FALCO_EVT_IS_OPEN_READ:      mapIsOpenRead(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
+		FALCO_EVT_IS_OPEN_WRITE:     mapIsOpenWrite(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
+		FALCO_EVT_UID:               mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT),
+		FALCO_EVT_NAME:              mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		FALCO_EVT_PATH:              mapPath(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		FALCO_EVT_NEWPATH:           mapPath(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
+		FALCO_EVT_OLDPATH:           mapPath(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		FALCO_FD_TYPECHAR:           mapFileType(sfgo.SYSFLOW_SRC, sfgo.FILE_RESTYPE_INT),
+		FALCO_FD_DIRECTORY:          mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		FALCO_FD_NAME:               mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		FALCO_FD_FILENAME:           mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		FALCO_FD_PROTO:              mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		FALCO_FD_LPROTO:             mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		FALCO_FD_L4PROTO:            mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		FALCO_FD_RPROTO:             mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		FALCO_FD_SPROTO:             mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		FALCO_FD_CPROTO:             mapProto(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT),
+		FALCO_FD_SPORT:              mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT),
+		FALCO_FD_DPORT:              mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DPORT_INT),
+		FALCO_FD_SIP:                mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT),
+		FALCO_FD_DIP:                mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DIP_INT),
+		FALCO_FD_IP:                 mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT, sfgo.FL_NETW_DIP_INT),
+		FALCO_FD_PORT:               mapPort(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT, sfgo.FL_NETW_DPORT_INT),
+		FALCO_FD_NUM:                mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_FD_INT),
+		FALCO_USER_NAME:             mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_USERNAME_STR),
+		FALCO_PROC_PID:              mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT),
+		FALCO_PROC_TID:              mapInt(sfgo.SYSFLOW_SRC, sfgo.TID_INT),
+		FALCO_PROC_GID:              mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_GID_INT),
+		FALCO_PROC_UID:              mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT),
+		FALCO_PROC_GROUP:            mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_GROUPNAME_STR),
+		FALCO_PROC_TTY:              mapCachedValue(sfgo.SYSFLOW_SRC, PProcTTY),
+		FALCO_PROC_USER:             mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_USERNAME_STR),
+		FALCO_PROC_EXE:              mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR),
+		FALCO_PROC_NAME:             mapName(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR),
+		FALCO_PROC_ARGS:             mapStr(sfgo.SYSFLOW_SRC, sfgo.PROC_EXEARGS_STR),
+		FALCO_PROC_CREATE_TIME:      mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_CREATETS_INT),
+		FALCO_PROC_CMDLINE:          mapJoin(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR, sfgo.PROC_EXEARGS_STR),
+		FALCO_PROC_ANAME:            mapCachedValue(sfgo.SYSFLOW_SRC, ProcAName),
+		FALCO_PROC_APID:             mapCachedValue(sfgo.SYSFLOW_SRC, ProcAPID),
+		FALCO_PROC_PPID:             mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT),
+		FALCO_PROC_PGID:             mapCachedValue(sfgo.SYSFLOW_SRC, PProcGID),
+		FALCO_PROC_PUID:             mapCachedValue(sfgo.SYSFLOW_SRC, PProcUID),
+		FALCO_PROC_PGROUP:           mapCachedValue(sfgo.SYSFLOW_SRC, PProcGroup),
+		FALCO_PROC_PTTY:             mapCachedValue(sfgo.SYSFLOW_SRC, PProcTTY),
+		FALCO_PROC_PUSER:            mapCachedValue(sfgo.SYSFLOW_SRC, PProcUser),
+		FALCO_PROC_PEXE:             mapCachedValue(sfgo.SYSFLOW_SRC, PProcExe),
+		FALCO_PROC_PARGS:            mapCachedValue(sfgo.SYSFLOW_SRC, PProcArgs),
+		FALCO_PROC_PCREATE_TIME:     mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_CREATETS_INT),
+		FALCO_PROC_PNAME:            mapCachedValue(sfgo.SYSFLOW_SRC, PProcName),
+		FALCO_PROC_PCMDLINE:         mapCachedValue(sfgo.SYSFLOW_SRC, PProcCmdLine),
+		FALCO_CONT_ID:               mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_ID_STR),
+		FALCO_CONT_IMAGE_ID:         mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGEID_STR),
+		FALCO_CONT_IMAGE_REPOSITORY: mapRepo(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGE_STR),
+		FALCO_CONT_IMAGE:            mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGE_STR),
+		FALCO_CONT_NAME:             mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_NAME_STR),
+		FALCO_CONT_TYPE:             mapContType(sfgo.SYSFLOW_SRC, sfgo.CONT_TYPE_INT),
+		FALCO_CONT_PRIVILEGED:       mapInt(sfgo.SYSFLOW_SRC, sfgo.CONT_PRIVILEGED_INT),
 	}
 }
 
@@ -391,6 +396,14 @@ func mapOpFlags(src sfgo.Source) FieldMap {
 	}
 }
 
+func mapEvtType(src sfgo.Source) FieldMap {
+	return func(r *Record) interface{} {
+		opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT, src)
+		rtype := mapRecType(src)(r).(string)
+		return strings.Join(sfgo.GetEvtTypes(int32(opflags), rtype), LISTSEP)
+	}
+}
+
 func mapRet(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
 		switch r.GetInt(sfgo.SF_REC_TYPE, src) {
@@ -435,6 +448,12 @@ func mapName(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 func mapDir(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		return filepath.Dir(mapPath(src, attr)(r).(string))
+	}
+}
+
+func mapRepo(src sfgo.Source, attr sfgo.Attribute) FieldMap {
+	return func(r *Record) interface{} {
+		return strings.Split(r.GetStr(attr, src), ":")[0]
 	}
 }
 
@@ -530,6 +549,12 @@ func mapOID(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 			h.Write([]byte(fmt.Sprintf("%v", r.GetInt(attr, src))))
 		}
 		return fmt.Sprintf("%x", h.Sum(nil))
+	}
+}
+
+func mapConsts(consts ...string) FieldMap {
+	return func(r *Record) interface{} {
+		return strings.Join(consts, LISTSEP)
 	}
 }
 

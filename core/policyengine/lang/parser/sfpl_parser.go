@@ -15,100 +15,141 @@ var _ = reflect.Copy
 var _ = strconv.Itoa
 
 var parserATN = []uint16{
-	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 52, 222,
+	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 55, 310,
 	4, 2, 9, 2, 4, 3, 9, 3, 4, 4, 9, 4, 4, 5, 9, 5, 4, 6, 9, 6, 4, 7, 9, 7,
 	4, 8, 9, 8, 4, 9, 9, 9, 4, 10, 9, 10, 4, 11, 9, 11, 4, 12, 9, 12, 4, 13,
 	9, 13, 4, 14, 9, 14, 4, 15, 9, 15, 4, 16, 9, 16, 4, 17, 9, 17, 4, 18, 9,
-	18, 4, 19, 9, 19, 4, 20, 9, 20, 4, 21, 9, 21, 4, 22, 9, 22, 3, 2, 3, 2,
-	3, 2, 3, 2, 6, 2, 49, 10, 2, 13, 2, 14, 2, 50, 3, 2, 3, 2, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 7, 3, 86, 10, 3, 12, 3, 14, 3, 89, 11, 3,
-	3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 5, 4, 101,
-	10, 4, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 6, 3, 6, 3, 6,
-	3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 7, 3, 7, 3, 8, 3, 8, 3, 8, 7, 8, 124,
-	10, 8, 12, 8, 14, 8, 127, 11, 8, 3, 9, 3, 9, 3, 9, 7, 9, 132, 10, 9, 12,
-	9, 14, 9, 135, 11, 9, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10,
-	3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 5, 10, 152, 10,
-	10, 3, 10, 3, 10, 3, 10, 5, 10, 157, 10, 10, 7, 10, 159, 10, 10, 12, 10,
-	14, 10, 162, 11, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 5, 10, 170,
-	10, 10, 3, 11, 3, 11, 3, 11, 3, 11, 7, 11, 176, 10, 11, 12, 11, 14, 11,
-	179, 11, 11, 5, 11, 181, 10, 11, 3, 11, 3, 11, 3, 12, 3, 12, 3, 12, 3,
-	12, 7, 12, 189, 10, 12, 12, 12, 14, 12, 192, 11, 12, 5, 12, 194, 10, 12,
-	3, 12, 3, 12, 3, 13, 3, 13, 3, 14, 3, 14, 3, 15, 3, 15, 3, 16, 3, 16, 3,
-	17, 3, 17, 3, 18, 3, 18, 3, 19, 3, 19, 3, 20, 3, 20, 6, 20, 214, 10, 20,
-	13, 20, 14, 20, 215, 3, 21, 3, 21, 3, 22, 3, 22, 3, 22, 2, 2, 23, 2, 4,
-	6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42,
-	2, 6, 3, 2, 11, 12, 4, 2, 28, 28, 32, 32, 5, 2, 22, 22, 24, 24, 44, 48,
-	4, 2, 22, 27, 29, 31, 2, 225, 2, 48, 3, 2, 2, 2, 4, 54, 3, 2, 2, 2, 6,
-	90, 3, 2, 2, 2, 8, 102, 3, 2, 2, 2, 10, 110, 3, 2, 2, 2, 12, 118, 3, 2,
-	2, 2, 14, 120, 3, 2, 2, 2, 16, 128, 3, 2, 2, 2, 18, 169, 3, 2, 2, 2, 20,
-	171, 3, 2, 2, 2, 22, 184, 3, 2, 2, 2, 24, 197, 3, 2, 2, 2, 26, 199, 3,
-	2, 2, 2, 28, 201, 3, 2, 2, 2, 30, 203, 3, 2, 2, 2, 32, 205, 3, 2, 2, 2,
-	34, 207, 3, 2, 2, 2, 36, 209, 3, 2, 2, 2, 38, 213, 3, 2, 2, 2, 40, 217,
-	3, 2, 2, 2, 42, 219, 3, 2, 2, 2, 44, 49, 5, 4, 3, 2, 45, 49, 5, 6, 4, 2,
-	46, 49, 5, 8, 5, 2, 47, 49, 5, 10, 6, 2, 48, 44, 3, 2, 2, 2, 48, 45, 3,
-	2, 2, 2, 48, 46, 3, 2, 2, 2, 48, 47, 3, 2, 2, 2, 49, 50, 3, 2, 2, 2, 50,
-	48, 3, 2, 2, 2, 50, 51, 3, 2, 2, 2, 51, 52, 3, 2, 2, 2, 52, 53, 7, 2, 2,
-	3, 53, 3, 3, 2, 2, 2, 54, 55, 7, 39, 2, 2, 55, 56, 7, 3, 2, 2, 56, 57,
-	7, 40, 2, 2, 57, 58, 5, 38, 20, 2, 58, 59, 7, 10, 2, 2, 59, 60, 7, 40,
-	2, 2, 60, 61, 5, 38, 20, 2, 61, 62, 7, 9, 2, 2, 62, 63, 7, 40, 2, 2, 63,
-	64, 5, 12, 7, 2, 64, 65, 9, 2, 2, 2, 65, 66, 7, 40, 2, 2, 66, 67, 5, 38,
-	20, 2, 67, 68, 7, 13, 2, 2, 68, 69, 7, 40, 2, 2, 69, 87, 5, 26, 14, 2,
-	70, 71, 7, 14, 2, 2, 71, 72, 7, 40, 2, 2, 72, 86, 5, 22, 12, 2, 73, 74,
-	7, 15, 2, 2, 74, 75, 7, 40, 2, 2, 75, 86, 5, 24, 13, 2, 76, 77, 7, 16,
-	2, 2, 77, 78, 7, 40, 2, 2, 78, 86, 5, 28, 15, 2, 79, 80, 7, 17, 2, 2, 80,
-	81, 7, 40, 2, 2, 81, 86, 5, 30, 16, 2, 82, 83, 7, 18, 2, 2, 83, 84, 7,
-	40, 2, 2, 84, 86, 5, 32, 17, 2, 85, 70, 3, 2, 2, 2, 85, 73, 3, 2, 2, 2,
-	85, 76, 3, 2, 2, 2, 85, 79, 3, 2, 2, 2, 85, 82, 3, 2, 2, 2, 86, 89, 3,
-	2, 2, 2, 87, 85, 3, 2, 2, 2, 87, 88, 3, 2, 2, 2, 88, 5, 3, 2, 2, 2, 89,
-	87, 3, 2, 2, 2, 90, 91, 7, 39, 2, 2, 91, 92, 7, 4, 2, 2, 92, 93, 7, 40,
-	2, 2, 93, 94, 7, 44, 2, 2, 94, 95, 7, 9, 2, 2, 95, 96, 7, 40, 2, 2, 96,
-	100, 5, 12, 7, 2, 97, 98, 7, 16, 2, 2, 98, 99, 7, 40, 2, 2, 99, 101, 5,
-	28, 15, 2, 100, 97, 3, 2, 2, 2, 100, 101, 3, 2, 2, 2, 101, 7, 3, 2, 2,
-	2, 102, 103, 7, 39, 2, 2, 103, 104, 7, 5, 2, 2, 104, 105, 7, 40, 2, 2,
-	105, 106, 7, 44, 2, 2, 106, 107, 7, 9, 2, 2, 107, 108, 7, 40, 2, 2, 108,
-	109, 5, 12, 7, 2, 109, 9, 3, 2, 2, 2, 110, 111, 7, 39, 2, 2, 111, 112,
-	7, 6, 2, 2, 112, 113, 7, 40, 2, 2, 113, 114, 7, 44, 2, 2, 114, 115, 7,
-	8, 2, 2, 115, 116, 7, 40, 2, 2, 116, 117, 5, 20, 11, 2, 117, 11, 3, 2,
-	2, 2, 118, 119, 5, 14, 8, 2, 119, 13, 3, 2, 2, 2, 120, 125, 5, 16, 9, 2,
-	121, 122, 7, 20, 2, 2, 122, 124, 5, 16, 9, 2, 123, 121, 3, 2, 2, 2, 124,
-	127, 3, 2, 2, 2, 125, 123, 3, 2, 2, 2, 125, 126, 3, 2, 2, 2, 126, 15, 3,
-	2, 2, 2, 127, 125, 3, 2, 2, 2, 128, 133, 5, 18, 10, 2, 129, 130, 7, 19,
-	2, 2, 130, 132, 5, 18, 10, 2, 131, 129, 3, 2, 2, 2, 132, 135, 3, 2, 2,
-	2, 133, 131, 3, 2, 2, 2, 133, 134, 3, 2, 2, 2, 134, 17, 3, 2, 2, 2, 135,
-	133, 3, 2, 2, 2, 136, 170, 5, 34, 18, 2, 137, 138, 7, 21, 2, 2, 138, 170,
-	5, 18, 10, 2, 139, 140, 5, 36, 19, 2, 140, 141, 5, 42, 22, 2, 141, 170,
-	3, 2, 2, 2, 142, 143, 5, 36, 19, 2, 143, 144, 5, 40, 21, 2, 144, 145, 5,
-	36, 19, 2, 145, 170, 3, 2, 2, 2, 146, 147, 5, 36, 19, 2, 147, 148, 9, 3,
-	2, 2, 148, 151, 7, 36, 2, 2, 149, 152, 5, 36, 19, 2, 150, 152, 5, 20, 11,
-	2, 151, 149, 3, 2, 2, 2, 151, 150, 3, 2, 2, 2, 152, 160, 3, 2, 2, 2, 153,
-	156, 7, 38, 2, 2, 154, 157, 5, 36, 19, 2, 155, 157, 5, 20, 11, 2, 156,
-	154, 3, 2, 2, 2, 156, 155, 3, 2, 2, 2, 157, 159, 3, 2, 2, 2, 158, 153,
-	3, 2, 2, 2, 159, 162, 3, 2, 2, 2, 160, 158, 3, 2, 2, 2, 160, 161, 3, 2,
-	2, 2, 161, 163, 3, 2, 2, 2, 162, 160, 3, 2, 2, 2, 163, 164, 7, 37, 2, 2,
-	164, 170, 3, 2, 2, 2, 165, 166, 7, 36, 2, 2, 166, 167, 5, 12, 7, 2, 167,
-	168, 7, 37, 2, 2, 168, 170, 3, 2, 2, 2, 169, 136, 3, 2, 2, 2, 169, 137,
-	3, 2, 2, 2, 169, 139, 3, 2, 2, 2, 169, 142, 3, 2, 2, 2, 169, 146, 3, 2,
-	2, 2, 169, 165, 3, 2, 2, 2, 170, 19, 3, 2, 2, 2, 171, 180, 7, 34, 2, 2,
-	172, 177, 5, 36, 19, 2, 173, 174, 7, 38, 2, 2, 174, 176, 5, 36, 19, 2,
-	175, 173, 3, 2, 2, 2, 176, 179, 3, 2, 2, 2, 177, 175, 3, 2, 2, 2, 177,
-	178, 3, 2, 2, 2, 178, 181, 3, 2, 2, 2, 179, 177, 3, 2, 2, 2, 180, 172,
-	3, 2, 2, 2, 180, 181, 3, 2, 2, 2, 181, 182, 3, 2, 2, 2, 182, 183, 7, 35,
-	2, 2, 183, 21, 3, 2, 2, 2, 184, 193, 7, 34, 2, 2, 185, 190, 5, 36, 19,
-	2, 186, 187, 7, 38, 2, 2, 187, 189, 5, 36, 19, 2, 188, 186, 3, 2, 2, 2,
-	189, 192, 3, 2, 2, 2, 190, 188, 3, 2, 2, 2, 190, 191, 3, 2, 2, 2, 191,
-	194, 3, 2, 2, 2, 192, 190, 3, 2, 2, 2, 193, 185, 3, 2, 2, 2, 193, 194,
-	3, 2, 2, 2, 194, 195, 3, 2, 2, 2, 195, 196, 7, 35, 2, 2, 196, 23, 3, 2,
-	2, 2, 197, 198, 5, 20, 11, 2, 198, 25, 3, 2, 2, 2, 199, 200, 7, 41, 2,
-	2, 200, 27, 3, 2, 2, 2, 201, 202, 5, 36, 19, 2, 202, 29, 3, 2, 2, 2, 203,
-	204, 5, 36, 19, 2, 204, 31, 3, 2, 2, 2, 205, 206, 5, 36, 19, 2, 206, 33,
-	3, 2, 2, 2, 207, 208, 7, 44, 2, 2, 208, 35, 3, 2, 2, 2, 209, 210, 9, 4,
-	2, 2, 210, 37, 3, 2, 2, 2, 211, 212, 6, 20, 2, 2, 212, 214, 11, 2, 2, 2,
-	213, 211, 3, 2, 2, 2, 214, 215, 3, 2, 2, 2, 215, 213, 3, 2, 2, 2, 215,
-	216, 3, 2, 2, 2, 216, 39, 3, 2, 2, 2, 217, 218, 9, 5, 2, 2, 218, 41, 3,
-	2, 2, 2, 219, 220, 7, 33, 2, 2, 220, 43, 3, 2, 2, 2, 18, 48, 50, 85, 87,
-	100, 125, 133, 151, 156, 160, 169, 177, 180, 190, 193, 215,
+	18, 4, 19, 9, 19, 4, 20, 9, 20, 4, 21, 9, 21, 4, 22, 9, 22, 4, 23, 9, 23,
+	4, 24, 9, 24, 4, 25, 9, 25, 4, 26, 9, 26, 4, 27, 9, 27, 3, 2, 3, 2, 3,
+	2, 3, 2, 3, 2, 6, 2, 60, 10, 2, 13, 2, 14, 2, 61, 3, 2, 3, 2, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 7, 3, 71, 10, 3, 12, 3, 14, 3, 74, 11, 3, 3, 3, 3,
+	3, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3,
+	4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3,
+	4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 7, 4, 109, 10, 4, 12, 4, 14,
+	4, 112, 11, 4, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3,
+	5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3,
+	5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 7, 5, 145, 10,
+	5, 12, 5, 14, 5, 148, 11, 5, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6,
+	3, 6, 3, 6, 3, 6, 5, 6, 160, 10, 6, 3, 7, 3, 7, 3, 7, 3, 7, 3, 7, 3, 7,
+	3, 7, 3, 7, 3, 7, 3, 7, 5, 7, 172, 10, 7, 3, 8, 3, 8, 3, 8, 3, 8, 3, 8,
+	3, 8, 3, 8, 3, 8, 3, 8, 3, 8, 5, 8, 184, 10, 8, 3, 9, 3, 9, 3, 9, 3, 9,
+	3, 9, 3, 9, 3, 9, 3, 9, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 11, 3, 11,
+	3, 12, 3, 12, 3, 12, 7, 12, 204, 10, 12, 12, 12, 14, 12, 207, 11, 12, 3,
+	13, 3, 13, 3, 13, 7, 13, 212, 10, 13, 12, 13, 14, 13, 215, 11, 13, 3, 14,
+	3, 14, 3, 14, 3, 14, 3, 14, 3, 14, 3, 14, 3, 14, 3, 14, 3, 14, 3, 14, 3,
+	14, 3, 14, 3, 14, 3, 14, 5, 14, 232, 10, 14, 3, 14, 3, 14, 3, 14, 5, 14,
+	237, 10, 14, 7, 14, 239, 10, 14, 12, 14, 14, 14, 242, 11, 14, 3, 14, 3,
+	14, 3, 14, 3, 14, 3, 14, 3, 14, 5, 14, 250, 10, 14, 3, 15, 3, 15, 3, 15,
+	3, 15, 7, 15, 256, 10, 15, 12, 15, 14, 15, 259, 11, 15, 5, 15, 261, 10,
+	15, 3, 15, 5, 15, 264, 10, 15, 3, 15, 3, 15, 3, 16, 3, 16, 3, 16, 3, 16,
+	7, 16, 272, 10, 16, 12, 16, 14, 16, 275, 11, 16, 5, 16, 277, 10, 16, 3,
+	16, 5, 16, 280, 10, 16, 3, 16, 3, 16, 3, 17, 3, 17, 3, 18, 3, 18, 3, 19,
+	3, 19, 3, 20, 3, 20, 3, 21, 3, 21, 3, 22, 3, 22, 3, 23, 3, 23, 3, 24, 3,
+	24, 3, 25, 3, 25, 6, 25, 302, 10, 25, 13, 25, 14, 25, 303, 3, 26, 3, 26,
+	3, 27, 3, 27, 3, 27, 2, 2, 28, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22,
+	24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 2, 6, 3, 2,
+	11, 12, 4, 2, 30, 30, 35, 35, 5, 2, 24, 24, 26, 26, 47, 51, 4, 2, 24, 29,
+	31, 34, 2, 327, 2, 59, 3, 2, 2, 2, 4, 72, 3, 2, 2, 2, 6, 77, 3, 2, 2, 2,
+	8, 113, 3, 2, 2, 2, 10, 149, 3, 2, 2, 2, 12, 161, 3, 2, 2, 2, 14, 173,
+	3, 2, 2, 2, 16, 185, 3, 2, 2, 2, 18, 193, 3, 2, 2, 2, 20, 198, 3, 2, 2,
+	2, 22, 200, 3, 2, 2, 2, 24, 208, 3, 2, 2, 2, 26, 249, 3, 2, 2, 2, 28, 251,
+	3, 2, 2, 2, 30, 267, 3, 2, 2, 2, 32, 283, 3, 2, 2, 2, 34, 285, 3, 2, 2,
+	2, 36, 287, 3, 2, 2, 2, 38, 289, 3, 2, 2, 2, 40, 291, 3, 2, 2, 2, 42, 293,
+	3, 2, 2, 2, 44, 295, 3, 2, 2, 2, 46, 297, 3, 2, 2, 2, 48, 301, 3, 2, 2,
+	2, 50, 305, 3, 2, 2, 2, 52, 307, 3, 2, 2, 2, 54, 60, 5, 6, 4, 2, 55, 60,
+	5, 10, 6, 2, 56, 60, 5, 14, 8, 2, 57, 60, 5, 16, 9, 2, 58, 60, 5, 18, 10,
+	2, 59, 54, 3, 2, 2, 2, 59, 55, 3, 2, 2, 2, 59, 56, 3, 2, 2, 2, 59, 57,
+	3, 2, 2, 2, 59, 58, 3, 2, 2, 2, 60, 61, 3, 2, 2, 2, 61, 59, 3, 2, 2, 2,
+	61, 62, 3, 2, 2, 2, 62, 63, 3, 2, 2, 2, 63, 64, 7, 2, 2, 3, 64, 3, 3, 2,
+	2, 2, 65, 71, 5, 8, 5, 2, 66, 71, 5, 12, 7, 2, 67, 71, 5, 14, 8, 2, 68,
+	71, 5, 16, 9, 2, 69, 71, 5, 18, 10, 2, 70, 65, 3, 2, 2, 2, 70, 66, 3, 2,
+	2, 2, 70, 67, 3, 2, 2, 2, 70, 68, 3, 2, 2, 2, 70, 69, 3, 2, 2, 2, 71, 74,
+	3, 2, 2, 2, 72, 70, 3, 2, 2, 2, 72, 73, 3, 2, 2, 2, 73, 75, 3, 2, 2, 2,
+	74, 72, 3, 2, 2, 2, 75, 76, 7, 2, 2, 3, 76, 5, 3, 2, 2, 2, 77, 78, 7, 42,
+	2, 2, 78, 79, 7, 3, 2, 2, 79, 80, 7, 43, 2, 2, 80, 81, 5, 48, 25, 2, 81,
+	82, 7, 10, 2, 2, 82, 83, 7, 43, 2, 2, 83, 84, 5, 48, 25, 2, 84, 85, 7,
+	9, 2, 2, 85, 86, 7, 43, 2, 2, 86, 110, 5, 20, 11, 2, 87, 88, 9, 2, 2, 2,
+	88, 89, 7, 43, 2, 2, 89, 109, 5, 48, 25, 2, 90, 91, 7, 13, 2, 2, 91, 92,
+	7, 43, 2, 2, 92, 109, 5, 34, 18, 2, 93, 94, 7, 14, 2, 2, 94, 95, 7, 43,
+	2, 2, 95, 109, 5, 30, 16, 2, 96, 97, 7, 15, 2, 2, 97, 98, 7, 43, 2, 2,
+	98, 109, 5, 32, 17, 2, 99, 100, 7, 16, 2, 2, 100, 101, 7, 43, 2, 2, 101,
+	109, 5, 36, 19, 2, 102, 103, 7, 17, 2, 2, 103, 104, 7, 43, 2, 2, 104, 109,
+	5, 38, 20, 2, 105, 106, 7, 18, 2, 2, 106, 107, 7, 43, 2, 2, 107, 109, 5,
+	40, 21, 2, 108, 87, 3, 2, 2, 2, 108, 90, 3, 2, 2, 2, 108, 93, 3, 2, 2,
+	2, 108, 96, 3, 2, 2, 2, 108, 99, 3, 2, 2, 2, 108, 102, 3, 2, 2, 2, 108,
+	105, 3, 2, 2, 2, 109, 112, 3, 2, 2, 2, 110, 108, 3, 2, 2, 2, 110, 111,
+	3, 2, 2, 2, 111, 7, 3, 2, 2, 2, 112, 110, 3, 2, 2, 2, 113, 114, 7, 42,
+	2, 2, 114, 115, 7, 3, 2, 2, 115, 116, 7, 43, 2, 2, 116, 117, 5, 48, 25,
+	2, 117, 118, 7, 10, 2, 2, 118, 119, 7, 43, 2, 2, 119, 120, 5, 48, 25, 2,
+	120, 121, 7, 9, 2, 2, 121, 122, 7, 43, 2, 2, 122, 146, 5, 20, 11, 2, 123,
+	124, 9, 2, 2, 2, 124, 125, 7, 43, 2, 2, 125, 145, 5, 48, 25, 2, 126, 127,
+	7, 13, 2, 2, 127, 128, 7, 43, 2, 2, 128, 145, 5, 34, 18, 2, 129, 130, 7,
+	14, 2, 2, 130, 131, 7, 43, 2, 2, 131, 145, 5, 30, 16, 2, 132, 133, 7, 15,
+	2, 2, 133, 134, 7, 43, 2, 2, 134, 145, 5, 32, 17, 2, 135, 136, 7, 16, 2,
+	2, 136, 137, 7, 43, 2, 2, 137, 145, 5, 36, 19, 2, 138, 139, 7, 17, 2, 2,
+	139, 140, 7, 43, 2, 2, 140, 145, 5, 38, 20, 2, 141, 142, 7, 18, 2, 2, 142,
+	143, 7, 43, 2, 2, 143, 145, 5, 40, 21, 2, 144, 123, 3, 2, 2, 2, 144, 126,
+	3, 2, 2, 2, 144, 129, 3, 2, 2, 2, 144, 132, 3, 2, 2, 2, 144, 135, 3, 2,
+	2, 2, 144, 138, 3, 2, 2, 2, 144, 141, 3, 2, 2, 2, 145, 148, 3, 2, 2, 2,
+	146, 144, 3, 2, 2, 2, 146, 147, 3, 2, 2, 2, 147, 9, 3, 2, 2, 2, 148, 146,
+	3, 2, 2, 2, 149, 150, 7, 42, 2, 2, 150, 151, 7, 4, 2, 2, 151, 152, 7, 43,
+	2, 2, 152, 153, 7, 47, 2, 2, 153, 154, 7, 9, 2, 2, 154, 155, 7, 43, 2,
+	2, 155, 159, 5, 20, 11, 2, 156, 157, 7, 16, 2, 2, 157, 158, 7, 43, 2, 2,
+	158, 160, 5, 36, 19, 2, 159, 156, 3, 2, 2, 2, 159, 160, 3, 2, 2, 2, 160,
+	11, 3, 2, 2, 2, 161, 162, 7, 42, 2, 2, 162, 163, 7, 4, 2, 2, 163, 164,
+	7, 43, 2, 2, 164, 165, 7, 47, 2, 2, 165, 166, 7, 9, 2, 2, 166, 167, 7,
+	43, 2, 2, 167, 171, 5, 20, 11, 2, 168, 169, 7, 16, 2, 2, 169, 170, 7, 43,
+	2, 2, 170, 172, 5, 36, 19, 2, 171, 168, 3, 2, 2, 2, 171, 172, 3, 2, 2,
+	2, 172, 13, 3, 2, 2, 2, 173, 174, 7, 42, 2, 2, 174, 175, 7, 5, 2, 2, 175,
+	176, 7, 43, 2, 2, 176, 177, 7, 47, 2, 2, 177, 178, 7, 9, 2, 2, 178, 179,
+	7, 43, 2, 2, 179, 183, 5, 20, 11, 2, 180, 181, 7, 19, 2, 2, 181, 182, 7,
+	43, 2, 2, 182, 184, 5, 42, 22, 2, 183, 180, 3, 2, 2, 2, 183, 184, 3, 2,
+	2, 2, 184, 15, 3, 2, 2, 2, 185, 186, 7, 42, 2, 2, 186, 187, 7, 6, 2, 2,
+	187, 188, 7, 43, 2, 2, 188, 189, 7, 47, 2, 2, 189, 190, 7, 8, 2, 2, 190,
+	191, 7, 43, 2, 2, 191, 192, 5, 28, 15, 2, 192, 17, 3, 2, 2, 2, 193, 194,
+	7, 42, 2, 2, 194, 195, 7, 20, 2, 2, 195, 196, 7, 43, 2, 2, 196, 197, 5,
+	46, 24, 2, 197, 19, 3, 2, 2, 2, 198, 199, 5, 22, 12, 2, 199, 21, 3, 2,
+	2, 2, 200, 205, 5, 24, 13, 2, 201, 202, 7, 22, 2, 2, 202, 204, 5, 24, 13,
+	2, 203, 201, 3, 2, 2, 2, 204, 207, 3, 2, 2, 2, 205, 203, 3, 2, 2, 2, 205,
+	206, 3, 2, 2, 2, 206, 23, 3, 2, 2, 2, 207, 205, 3, 2, 2, 2, 208, 213, 5,
+	26, 14, 2, 209, 210, 7, 21, 2, 2, 210, 212, 5, 26, 14, 2, 211, 209, 3,
+	2, 2, 2, 212, 215, 3, 2, 2, 2, 213, 211, 3, 2, 2, 2, 213, 214, 3, 2, 2,
+	2, 214, 25, 3, 2, 2, 2, 215, 213, 3, 2, 2, 2, 216, 250, 5, 44, 23, 2, 217,
+	218, 7, 23, 2, 2, 218, 250, 5, 26, 14, 2, 219, 220, 5, 46, 24, 2, 220,
+	221, 5, 52, 27, 2, 221, 250, 3, 2, 2, 2, 222, 223, 5, 46, 24, 2, 223, 224,
+	5, 50, 26, 2, 224, 225, 5, 46, 24, 2, 225, 250, 3, 2, 2, 2, 226, 227, 5,
+	46, 24, 2, 227, 228, 9, 3, 2, 2, 228, 231, 7, 39, 2, 2, 229, 232, 5, 46,
+	24, 2, 230, 232, 5, 28, 15, 2, 231, 229, 3, 2, 2, 2, 231, 230, 3, 2, 2,
+	2, 232, 240, 3, 2, 2, 2, 233, 236, 7, 41, 2, 2, 234, 237, 5, 46, 24, 2,
+	235, 237, 5, 28, 15, 2, 236, 234, 3, 2, 2, 2, 236, 235, 3, 2, 2, 2, 237,
+	239, 3, 2, 2, 2, 238, 233, 3, 2, 2, 2, 239, 242, 3, 2, 2, 2, 240, 238,
+	3, 2, 2, 2, 240, 241, 3, 2, 2, 2, 241, 243, 3, 2, 2, 2, 242, 240, 3, 2,
+	2, 2, 243, 244, 7, 40, 2, 2, 244, 250, 3, 2, 2, 2, 245, 246, 7, 39, 2,
+	2, 246, 247, 5, 20, 11, 2, 247, 248, 7, 40, 2, 2, 248, 250, 3, 2, 2, 2,
+	249, 216, 3, 2, 2, 2, 249, 217, 3, 2, 2, 2, 249, 219, 3, 2, 2, 2, 249,
+	222, 3, 2, 2, 2, 249, 226, 3, 2, 2, 2, 249, 245, 3, 2, 2, 2, 250, 27, 3,
+	2, 2, 2, 251, 260, 7, 37, 2, 2, 252, 257, 5, 46, 24, 2, 253, 254, 7, 41,
+	2, 2, 254, 256, 5, 46, 24, 2, 255, 253, 3, 2, 2, 2, 256, 259, 3, 2, 2,
+	2, 257, 255, 3, 2, 2, 2, 257, 258, 3, 2, 2, 2, 258, 261, 3, 2, 2, 2, 259,
+	257, 3, 2, 2, 2, 260, 252, 3, 2, 2, 2, 260, 261, 3, 2, 2, 2, 261, 263,
+	3, 2, 2, 2, 262, 264, 7, 41, 2, 2, 263, 262, 3, 2, 2, 2, 263, 264, 3, 2,
+	2, 2, 264, 265, 3, 2, 2, 2, 265, 266, 7, 38, 2, 2, 266, 29, 3, 2, 2, 2,
+	267, 276, 7, 37, 2, 2, 268, 273, 5, 46, 24, 2, 269, 270, 7, 41, 2, 2, 270,
+	272, 5, 46, 24, 2, 271, 269, 3, 2, 2, 2, 272, 275, 3, 2, 2, 2, 273, 271,
+	3, 2, 2, 2, 273, 274, 3, 2, 2, 2, 274, 277, 3, 2, 2, 2, 275, 273, 3, 2,
+	2, 2, 276, 268, 3, 2, 2, 2, 276, 277, 3, 2, 2, 2, 277, 279, 3, 2, 2, 2,
+	278, 280, 7, 41, 2, 2, 279, 278, 3, 2, 2, 2, 279, 280, 3, 2, 2, 2, 280,
+	281, 3, 2, 2, 2, 281, 282, 7, 38, 2, 2, 282, 31, 3, 2, 2, 2, 283, 284,
+	5, 28, 15, 2, 284, 33, 3, 2, 2, 2, 285, 286, 7, 44, 2, 2, 286, 35, 3, 2,
+	2, 2, 287, 288, 5, 46, 24, 2, 288, 37, 3, 2, 2, 2, 289, 290, 5, 46, 24,
+	2, 290, 39, 3, 2, 2, 2, 291, 292, 5, 46, 24, 2, 292, 41, 3, 2, 2, 2, 293,
+	294, 5, 46, 24, 2, 294, 43, 3, 2, 2, 2, 295, 296, 7, 47, 2, 2, 296, 45,
+	3, 2, 2, 2, 297, 298, 9, 4, 2, 2, 298, 47, 3, 2, 2, 2, 299, 300, 6, 25,
+	2, 2, 300, 302, 11, 2, 2, 2, 301, 299, 3, 2, 2, 2, 302, 303, 3, 2, 2, 2,
+	303, 301, 3, 2, 2, 2, 303, 304, 3, 2, 2, 2, 304, 49, 3, 2, 2, 2, 305, 306,
+	9, 5, 2, 2, 306, 51, 3, 2, 2, 2, 307, 308, 7, 36, 2, 2, 308, 53, 3, 2,
+	2, 2, 26, 59, 61, 70, 72, 108, 110, 144, 146, 159, 171, 183, 205, 213,
+	231, 236, 240, 249, 257, 260, 263, 273, 276, 279, 303,
 }
 var deserializer = antlr.NewATNDeserializer(nil)
 var deserializedATN = deserializer.DeserializeFromUInt16(parserATN)
@@ -116,26 +157,27 @@ var deserializedATN = deserializer.DeserializeFromUInt16(parserATN)
 var literalNames = []string{
 	"", "'rule'", "'filter'", "'macro'", "'list'", "'name'", "'items'", "'condition'",
 	"'desc'", "'action'", "'output'", "'priority'", "'tags'", "'prefilter'",
-	"'enabled'", "'warn_evttypes'", "'skip-if-unknown-filter'", "'and'", "'or'",
-	"'not'", "'<'", "'<='", "'>'", "'>='", "'='", "'!='", "'in'", "'contains'",
-	"'icontains'", "'startswith'", "'pmatch'", "'exists'", "'['", "']'", "'('",
-	"')'", "','", "'-'",
+	"'enabled'", "'warn_evttypes'", "'skip-if-unknown-filter'", "'append'",
+	"'required_engine_version'", "'and'", "'or'", "'not'", "'<'", "'<='", "'>'",
+	"'>='", "'='", "'!='", "'in'", "'contains'", "'icontains'", "'startswith'",
+	"'endswith'", "'pmatch'", "'exists'", "'['", "']'", "'('", "')'", "','",
+	"'-'",
 }
 var symbolicNames = []string{
 	"", "RULE", "FILTER", "MACRO", "LIST", "NAME", "ITEMS", "COND", "DESC",
 	"ACTION", "OUTPUT", "PRIORITY", "TAGS", "PREFILTER", "ENABLED", "WARNEVTTYPE",
-	"SKIPUNKNOWN", "AND", "OR", "NOT", "LT", "LE", "GT", "GE", "EQ", "NEQ",
-	"IN", "CONTAINS", "ICONTAINS", "STARTSWITH", "PMATCH", "EXISTS", "LBRACK",
-	"RBRACK", "LPAREN", "RPAREN", "LISTSEP", "DECL", "DEF", "SEVERITY", "SFSEVERITY",
-	"FSEVERITY", "ID", "NUMBER", "PATH", "STRING", "TAG", "WS", "NL", "COMMENT",
-	"ANY",
+	"SKIPUNKNOWN", "FAPPEND", "REQ", "AND", "OR", "NOT", "LT", "LE", "GT",
+	"GE", "EQ", "NEQ", "IN", "CONTAINS", "ICONTAINS", "STARTSWITH", "ENDSWITH",
+	"PMATCH", "EXISTS", "LBRACK", "RBRACK", "LPAREN", "RPAREN", "LISTSEP",
+	"DECL", "DEF", "SEVERITY", "SFSEVERITY", "FSEVERITY", "ID", "NUMBER", "PATH",
+	"STRING", "TAG", "WS", "NL", "COMMENT", "ANY",
 }
 
 var ruleNames = []string{
-	"policy", "prule", "pfilter", "pmacro", "plist", "expression", "or_expression",
-	"and_expression", "term", "items", "tags", "prefilter", "severity", "enabled",
-	"warnevttype", "skipunknown", "variable", "atom", "text", "binary_operator",
-	"unary_operator",
+	"policy", "defs", "prule", "srule", "pfilter", "sfilter", "pmacro", "plist",
+	"preq", "expression", "or_expression", "and_expression", "term", "items",
+	"tags", "prefilter", "severity", "enabled", "warnevttype", "skipunknown",
+	"fappend", "variable", "atom", "text", "binary_operator", "unary_operator",
 }
 var decisionToDFA = make([]*antlr.DFA, len(deserializedATN.DecisionToState))
 
@@ -182,65 +224,73 @@ const (
 	SfplParserENABLED     = 14
 	SfplParserWARNEVTTYPE = 15
 	SfplParserSKIPUNKNOWN = 16
-	SfplParserAND         = 17
-	SfplParserOR          = 18
-	SfplParserNOT         = 19
-	SfplParserLT          = 20
-	SfplParserLE          = 21
-	SfplParserGT          = 22
-	SfplParserGE          = 23
-	SfplParserEQ          = 24
-	SfplParserNEQ         = 25
-	SfplParserIN          = 26
-	SfplParserCONTAINS    = 27
-	SfplParserICONTAINS   = 28
-	SfplParserSTARTSWITH  = 29
-	SfplParserPMATCH      = 30
-	SfplParserEXISTS      = 31
-	SfplParserLBRACK      = 32
-	SfplParserRBRACK      = 33
-	SfplParserLPAREN      = 34
-	SfplParserRPAREN      = 35
-	SfplParserLISTSEP     = 36
-	SfplParserDECL        = 37
-	SfplParserDEF         = 38
-	SfplParserSEVERITY    = 39
-	SfplParserSFSEVERITY  = 40
-	SfplParserFSEVERITY   = 41
-	SfplParserID          = 42
-	SfplParserNUMBER      = 43
-	SfplParserPATH        = 44
-	SfplParserSTRING      = 45
-	SfplParserTAG         = 46
-	SfplParserWS          = 47
-	SfplParserNL          = 48
-	SfplParserCOMMENT     = 49
-	SfplParserANY         = 50
+	SfplParserFAPPEND     = 17
+	SfplParserREQ         = 18
+	SfplParserAND         = 19
+	SfplParserOR          = 20
+	SfplParserNOT         = 21
+	SfplParserLT          = 22
+	SfplParserLE          = 23
+	SfplParserGT          = 24
+	SfplParserGE          = 25
+	SfplParserEQ          = 26
+	SfplParserNEQ         = 27
+	SfplParserIN          = 28
+	SfplParserCONTAINS    = 29
+	SfplParserICONTAINS   = 30
+	SfplParserSTARTSWITH  = 31
+	SfplParserENDSWITH    = 32
+	SfplParserPMATCH      = 33
+	SfplParserEXISTS      = 34
+	SfplParserLBRACK      = 35
+	SfplParserRBRACK      = 36
+	SfplParserLPAREN      = 37
+	SfplParserRPAREN      = 38
+	SfplParserLISTSEP     = 39
+	SfplParserDECL        = 40
+	SfplParserDEF         = 41
+	SfplParserSEVERITY    = 42
+	SfplParserSFSEVERITY  = 43
+	SfplParserFSEVERITY   = 44
+	SfplParserID          = 45
+	SfplParserNUMBER      = 46
+	SfplParserPATH        = 47
+	SfplParserSTRING      = 48
+	SfplParserTAG         = 49
+	SfplParserWS          = 50
+	SfplParserNL          = 51
+	SfplParserCOMMENT     = 52
+	SfplParserANY         = 53
 )
 
 // SfplParser rules.
 const (
 	SfplParserRULE_policy          = 0
-	SfplParserRULE_prule           = 1
-	SfplParserRULE_pfilter         = 2
-	SfplParserRULE_pmacro          = 3
-	SfplParserRULE_plist           = 4
-	SfplParserRULE_expression      = 5
-	SfplParserRULE_or_expression   = 6
-	SfplParserRULE_and_expression  = 7
-	SfplParserRULE_term            = 8
-	SfplParserRULE_items           = 9
-	SfplParserRULE_tags            = 10
-	SfplParserRULE_prefilter       = 11
-	SfplParserRULE_severity        = 12
-	SfplParserRULE_enabled         = 13
-	SfplParserRULE_warnevttype     = 14
-	SfplParserRULE_skipunknown     = 15
-	SfplParserRULE_variable        = 16
-	SfplParserRULE_atom            = 17
-	SfplParserRULE_text            = 18
-	SfplParserRULE_binary_operator = 19
-	SfplParserRULE_unary_operator  = 20
+	SfplParserRULE_defs            = 1
+	SfplParserRULE_prule           = 2
+	SfplParserRULE_srule           = 3
+	SfplParserRULE_pfilter         = 4
+	SfplParserRULE_sfilter         = 5
+	SfplParserRULE_pmacro          = 6
+	SfplParserRULE_plist           = 7
+	SfplParserRULE_preq            = 8
+	SfplParserRULE_expression      = 9
+	SfplParserRULE_or_expression   = 10
+	SfplParserRULE_and_expression  = 11
+	SfplParserRULE_term            = 12
+	SfplParserRULE_items           = 13
+	SfplParserRULE_tags            = 14
+	SfplParserRULE_prefilter       = 15
+	SfplParserRULE_severity        = 16
+	SfplParserRULE_enabled         = 17
+	SfplParserRULE_warnevttype     = 18
+	SfplParserRULE_skipunknown     = 19
+	SfplParserRULE_fappend         = 20
+	SfplParserRULE_variable        = 21
+	SfplParserRULE_atom            = 22
+	SfplParserRULE_text            = 23
+	SfplParserRULE_binary_operator = 24
+	SfplParserRULE_unary_operator  = 25
 )
 
 // IPolicyContext is an interface to support dynamic dispatch.
@@ -377,6 +427,29 @@ func (s *PolicyContext) Plist(i int) IPlistContext {
 	return t.(IPlistContext)
 }
 
+func (s *PolicyContext) AllPreq() []IPreqContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IPreqContext)(nil)).Elem())
+	var tst = make([]IPreqContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IPreqContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *PolicyContext) Preq(i int) IPreqContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IPreqContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IPreqContext)
+}
+
 func (s *PolicyContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -429,46 +502,313 @@ func (p *SfplParser) Policy() (localctx IPolicyContext) {
 	}()
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(46)
+	p.SetState(57)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	for ok := true; ok; ok = _la == SfplParserDECL {
-		p.SetState(46)
+		p.SetState(57)
 		p.GetErrorHandler().Sync(p)
 		switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 0, p.GetParserRuleContext()) {
 		case 1:
 			{
-				p.SetState(42)
+				p.SetState(52)
 				p.Prule()
 			}
 
 		case 2:
 			{
-				p.SetState(43)
+				p.SetState(53)
 				p.Pfilter()
 			}
 
 		case 3:
 			{
-				p.SetState(44)
+				p.SetState(54)
 				p.Pmacro()
 			}
 
 		case 4:
 			{
-				p.SetState(45)
+				p.SetState(55)
 				p.Plist()
+			}
+
+		case 5:
+			{
+				p.SetState(56)
+				p.Preq()
 			}
 
 		}
 
-		p.SetState(48)
+		p.SetState(59)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(50)
+		p.SetState(61)
+		p.Match(SfplParserEOF)
+	}
+
+	return localctx
+}
+
+// IDefsContext is an interface to support dynamic dispatch.
+type IDefsContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// IsDefsContext differentiates from other interfaces.
+	IsDefsContext()
+}
+
+type DefsContext struct {
+	*antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptyDefsContext() *DefsContext {
+	var p = new(DefsContext)
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.RuleIndex = SfplParserRULE_defs
+	return p
+}
+
+func (*DefsContext) IsDefsContext() {}
+
+func NewDefsContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *DefsContext {
+	var p = new(DefsContext)
+
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = SfplParserRULE_defs
+
+	return p
+}
+
+func (s *DefsContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *DefsContext) EOF() antlr.TerminalNode {
+	return s.GetToken(SfplParserEOF, 0)
+}
+
+func (s *DefsContext) AllSrule() []ISruleContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*ISruleContext)(nil)).Elem())
+	var tst = make([]ISruleContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(ISruleContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *DefsContext) Srule(i int) ISruleContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISruleContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ISruleContext)
+}
+
+func (s *DefsContext) AllSfilter() []ISfilterContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*ISfilterContext)(nil)).Elem())
+	var tst = make([]ISfilterContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(ISfilterContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *DefsContext) Sfilter(i int) ISfilterContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISfilterContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ISfilterContext)
+}
+
+func (s *DefsContext) AllPmacro() []IPmacroContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IPmacroContext)(nil)).Elem())
+	var tst = make([]IPmacroContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IPmacroContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *DefsContext) Pmacro(i int) IPmacroContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IPmacroContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IPmacroContext)
+}
+
+func (s *DefsContext) AllPlist() []IPlistContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IPlistContext)(nil)).Elem())
+	var tst = make([]IPlistContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IPlistContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *DefsContext) Plist(i int) IPlistContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IPlistContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IPlistContext)
+}
+
+func (s *DefsContext) AllPreq() []IPreqContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IPreqContext)(nil)).Elem())
+	var tst = make([]IPreqContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IPreqContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *DefsContext) Preq(i int) IPreqContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IPreqContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IPreqContext)
+}
+
+func (s *DefsContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *DefsContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *DefsContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SfplListener); ok {
+		listenerT.EnterDefs(s)
+	}
+}
+
+func (s *DefsContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SfplListener); ok {
+		listenerT.ExitDefs(s)
+	}
+}
+
+func (s *DefsContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case SfplVisitor:
+		return t.VisitDefs(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
+func (p *SfplParser) Defs() (localctx IDefsContext) {
+	localctx = NewDefsContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 2, SfplParserRULE_defs)
+	var _la int
+
+	defer func() {
+		p.ExitRule()
+	}()
+
+	defer func() {
+		if err := recover(); err != nil {
+			if v, ok := err.(antlr.RecognitionException); ok {
+				localctx.SetException(v)
+				p.GetErrorHandler().ReportError(p, v)
+				p.GetErrorHandler().Recover(p, v)
+			} else {
+				panic(err)
+			}
+		}
+	}()
+
+	p.EnterOuterAlt(localctx, 1)
+	p.SetState(70)
+	p.GetErrorHandler().Sync(p)
+	_la = p.GetTokenStream().LA(1)
+
+	for _la == SfplParserDECL {
+		p.SetState(68)
+		p.GetErrorHandler().Sync(p)
+		switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 2, p.GetParserRuleContext()) {
+		case 1:
+			{
+				p.SetState(63)
+				p.Srule()
+			}
+
+		case 2:
+			{
+				p.SetState(64)
+				p.Sfilter()
+			}
+
+		case 3:
+			{
+				p.SetState(65)
+				p.Pmacro()
+			}
+
+		case 4:
+			{
+				p.SetState(66)
+				p.Plist()
+			}
+
+		case 5:
+			{
+				p.SetState(67)
+				p.Preq()
+			}
+
+		}
+
+		p.SetState(72)
+		p.GetErrorHandler().Sync(p)
+		_la = p.GetTokenStream().LA(1)
+	}
+	{
+		p.SetState(73)
 		p.Match(SfplParserEOF)
 	}
 
@@ -570,26 +910,35 @@ func (s *PruleContext) Expression() IExpressionContext {
 	return t.(IExpressionContext)
 }
 
-func (s *PruleContext) PRIORITY() antlr.TerminalNode {
-	return s.GetToken(SfplParserPRIORITY, 0)
+func (s *PruleContext) AllPRIORITY() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserPRIORITY)
 }
 
-func (s *PruleContext) Severity() ISeverityContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISeverityContext)(nil)).Elem(), 0)
+func (s *PruleContext) PRIORITY(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserPRIORITY, i)
+}
+
+func (s *PruleContext) AllSeverity() []ISeverityContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*ISeverityContext)(nil)).Elem())
+	var tst = make([]ISeverityContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(ISeverityContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *PruleContext) Severity(i int) ISeverityContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISeverityContext)(nil)).Elem(), i)
 
 	if t == nil {
 		return nil
 	}
 
 	return t.(ISeverityContext)
-}
-
-func (s *PruleContext) ACTION() antlr.TerminalNode {
-	return s.GetToken(SfplParserACTION, 0)
-}
-
-func (s *PruleContext) OUTPUT() antlr.TerminalNode {
-	return s.GetToken(SfplParserOUTPUT, 0)
 }
 
 func (s *PruleContext) AllTAGS() []antlr.TerminalNode {
@@ -747,6 +1096,22 @@ func (s *PruleContext) Skipunknown(i int) ISkipunknownContext {
 	return t.(ISkipunknownContext)
 }
 
+func (s *PruleContext) AllACTION() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserACTION)
+}
+
+func (s *PruleContext) ACTION(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserACTION, i)
+}
+
+func (s *PruleContext) AllOUTPUT() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserOUTPUT)
+}
+
+func (s *PruleContext) OUTPUT(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserOUTPUT, i)
+}
+
 func (s *PruleContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -779,7 +1144,7 @@ func (s *PruleContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Prule() (localctx IPruleContext) {
 	localctx = NewPruleContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 2, SfplParserRULE_prule)
+	p.EnterRule(localctx, 4, SfplParserRULE_prule)
 	var _la int
 
 	defer func() {
@@ -800,152 +1165,156 @@ func (p *SfplParser) Prule() (localctx IPruleContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(52)
+		p.SetState(75)
 		p.Match(SfplParserDECL)
 	}
 	{
-		p.SetState(53)
+		p.SetState(76)
 		p.Match(SfplParserRULE)
 	}
 	{
-		p.SetState(54)
+		p.SetState(77)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(55)
+		p.SetState(78)
 		p.Text()
 	}
 	{
-		p.SetState(56)
+		p.SetState(79)
 		p.Match(SfplParserDESC)
 	}
 	{
-		p.SetState(57)
+		p.SetState(80)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(58)
+		p.SetState(81)
 		p.Text()
 	}
 	{
-		p.SetState(59)
+		p.SetState(82)
 		p.Match(SfplParserCOND)
 	}
 	{
-		p.SetState(60)
+		p.SetState(83)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(61)
+		p.SetState(84)
 		p.Expression()
 	}
-	{
-		p.SetState(62)
-		_la = p.GetTokenStream().LA(1)
-
-		if !(_la == SfplParserACTION || _la == SfplParserOUTPUT) {
-			p.GetErrorHandler().RecoverInline(p)
-		} else {
-			p.GetErrorHandler().ReportMatch(p)
-			p.Consume()
-		}
-	}
-	{
-		p.SetState(63)
-		p.Match(SfplParserDEF)
-	}
-	{
-		p.SetState(64)
-		p.Text()
-	}
-	{
-		p.SetState(65)
-		p.Match(SfplParserPRIORITY)
-	}
-	{
-		p.SetState(66)
-		p.Match(SfplParserDEF)
-	}
-	{
-		p.SetState(67)
-		p.Severity()
-	}
-	p.SetState(85)
+	p.SetState(108)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
-	for ((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<SfplParserTAGS)|(1<<SfplParserPREFILTER)|(1<<SfplParserENABLED)|(1<<SfplParserWARNEVTTYPE)|(1<<SfplParserSKIPUNKNOWN))) != 0 {
-		p.SetState(83)
+	for ((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<SfplParserACTION)|(1<<SfplParserOUTPUT)|(1<<SfplParserPRIORITY)|(1<<SfplParserTAGS)|(1<<SfplParserPREFILTER)|(1<<SfplParserENABLED)|(1<<SfplParserWARNEVTTYPE)|(1<<SfplParserSKIPUNKNOWN))) != 0 {
+		p.SetState(106)
 		p.GetErrorHandler().Sync(p)
 
 		switch p.GetTokenStream().LA(1) {
-		case SfplParserTAGS:
+		case SfplParserACTION, SfplParserOUTPUT:
 			{
-				p.SetState(68)
-				p.Match(SfplParserTAGS)
+				p.SetState(85)
+				_la = p.GetTokenStream().LA(1)
+
+				if !(_la == SfplParserACTION || _la == SfplParserOUTPUT) {
+					p.GetErrorHandler().RecoverInline(p)
+				} else {
+					p.GetErrorHandler().ReportMatch(p)
+					p.Consume()
+				}
 			}
 			{
-				p.SetState(69)
+				p.SetState(86)
 				p.Match(SfplParserDEF)
 			}
 			{
-				p.SetState(70)
+				p.SetState(87)
+				p.Text()
+			}
+
+		case SfplParserPRIORITY:
+			{
+				p.SetState(88)
+				p.Match(SfplParserPRIORITY)
+			}
+			{
+				p.SetState(89)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(90)
+				p.Severity()
+			}
+
+		case SfplParserTAGS:
+			{
+				p.SetState(91)
+				p.Match(SfplParserTAGS)
+			}
+			{
+				p.SetState(92)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(93)
 				p.Tags()
 			}
 
 		case SfplParserPREFILTER:
 			{
-				p.SetState(71)
+				p.SetState(94)
 				p.Match(SfplParserPREFILTER)
 			}
 			{
-				p.SetState(72)
+				p.SetState(95)
 				p.Match(SfplParserDEF)
 			}
 			{
-				p.SetState(73)
+				p.SetState(96)
 				p.Prefilter()
 			}
 
 		case SfplParserENABLED:
 			{
-				p.SetState(74)
+				p.SetState(97)
 				p.Match(SfplParserENABLED)
 			}
 			{
-				p.SetState(75)
+				p.SetState(98)
 				p.Match(SfplParserDEF)
 			}
 			{
-				p.SetState(76)
+				p.SetState(99)
 				p.Enabled()
 			}
 
 		case SfplParserWARNEVTTYPE:
 			{
-				p.SetState(77)
+				p.SetState(100)
 				p.Match(SfplParserWARNEVTTYPE)
 			}
 			{
-				p.SetState(78)
+				p.SetState(101)
 				p.Match(SfplParserDEF)
 			}
 			{
-				p.SetState(79)
+				p.SetState(102)
 				p.Warnevttype()
 			}
 
 		case SfplParserSKIPUNKNOWN:
 			{
-				p.SetState(80)
+				p.SetState(103)
 				p.Match(SfplParserSKIPUNKNOWN)
 			}
 			{
-				p.SetState(81)
+				p.SetState(104)
 				p.Match(SfplParserDEF)
 			}
 			{
-				p.SetState(82)
+				p.SetState(105)
 				p.Skipunknown()
 			}
 
@@ -953,7 +1322,522 @@ func (p *SfplParser) Prule() (localctx IPruleContext) {
 			panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
 		}
 
-		p.SetState(87)
+		p.SetState(110)
+		p.GetErrorHandler().Sync(p)
+		_la = p.GetTokenStream().LA(1)
+	}
+
+	return localctx
+}
+
+// ISruleContext is an interface to support dynamic dispatch.
+type ISruleContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// IsSruleContext differentiates from other interfaces.
+	IsSruleContext()
+}
+
+type SruleContext struct {
+	*antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptySruleContext() *SruleContext {
+	var p = new(SruleContext)
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.RuleIndex = SfplParserRULE_srule
+	return p
+}
+
+func (*SruleContext) IsSruleContext() {}
+
+func NewSruleContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *SruleContext {
+	var p = new(SruleContext)
+
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = SfplParserRULE_srule
+
+	return p
+}
+
+func (s *SruleContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *SruleContext) DECL() antlr.TerminalNode {
+	return s.GetToken(SfplParserDECL, 0)
+}
+
+func (s *SruleContext) RULE() antlr.TerminalNode {
+	return s.GetToken(SfplParserRULE, 0)
+}
+
+func (s *SruleContext) AllDEF() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserDEF)
+}
+
+func (s *SruleContext) DEF(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserDEF, i)
+}
+
+func (s *SruleContext) AllText() []ITextContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*ITextContext)(nil)).Elem())
+	var tst = make([]ITextContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(ITextContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *SruleContext) Text(i int) ITextContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ITextContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ITextContext)
+}
+
+func (s *SruleContext) DESC() antlr.TerminalNode {
+	return s.GetToken(SfplParserDESC, 0)
+}
+
+func (s *SruleContext) COND() antlr.TerminalNode {
+	return s.GetToken(SfplParserCOND, 0)
+}
+
+func (s *SruleContext) Expression() IExpressionContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExpressionContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExpressionContext)
+}
+
+func (s *SruleContext) AllPRIORITY() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserPRIORITY)
+}
+
+func (s *SruleContext) PRIORITY(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserPRIORITY, i)
+}
+
+func (s *SruleContext) AllSeverity() []ISeverityContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*ISeverityContext)(nil)).Elem())
+	var tst = make([]ISeverityContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(ISeverityContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *SruleContext) Severity(i int) ISeverityContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISeverityContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ISeverityContext)
+}
+
+func (s *SruleContext) AllTAGS() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserTAGS)
+}
+
+func (s *SruleContext) TAGS(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserTAGS, i)
+}
+
+func (s *SruleContext) AllTags() []ITagsContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*ITagsContext)(nil)).Elem())
+	var tst = make([]ITagsContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(ITagsContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *SruleContext) Tags(i int) ITagsContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ITagsContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ITagsContext)
+}
+
+func (s *SruleContext) AllPREFILTER() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserPREFILTER)
+}
+
+func (s *SruleContext) PREFILTER(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserPREFILTER, i)
+}
+
+func (s *SruleContext) AllPrefilter() []IPrefilterContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IPrefilterContext)(nil)).Elem())
+	var tst = make([]IPrefilterContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IPrefilterContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *SruleContext) Prefilter(i int) IPrefilterContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IPrefilterContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IPrefilterContext)
+}
+
+func (s *SruleContext) AllENABLED() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserENABLED)
+}
+
+func (s *SruleContext) ENABLED(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserENABLED, i)
+}
+
+func (s *SruleContext) AllEnabled() []IEnabledContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IEnabledContext)(nil)).Elem())
+	var tst = make([]IEnabledContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IEnabledContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *SruleContext) Enabled(i int) IEnabledContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IEnabledContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IEnabledContext)
+}
+
+func (s *SruleContext) AllWARNEVTTYPE() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserWARNEVTTYPE)
+}
+
+func (s *SruleContext) WARNEVTTYPE(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserWARNEVTTYPE, i)
+}
+
+func (s *SruleContext) AllWarnevttype() []IWarnevttypeContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IWarnevttypeContext)(nil)).Elem())
+	var tst = make([]IWarnevttypeContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IWarnevttypeContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *SruleContext) Warnevttype(i int) IWarnevttypeContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IWarnevttypeContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IWarnevttypeContext)
+}
+
+func (s *SruleContext) AllSKIPUNKNOWN() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserSKIPUNKNOWN)
+}
+
+func (s *SruleContext) SKIPUNKNOWN(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserSKIPUNKNOWN, i)
+}
+
+func (s *SruleContext) AllSkipunknown() []ISkipunknownContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*ISkipunknownContext)(nil)).Elem())
+	var tst = make([]ISkipunknownContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(ISkipunknownContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *SruleContext) Skipunknown(i int) ISkipunknownContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISkipunknownContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ISkipunknownContext)
+}
+
+func (s *SruleContext) AllACTION() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserACTION)
+}
+
+func (s *SruleContext) ACTION(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserACTION, i)
+}
+
+func (s *SruleContext) AllOUTPUT() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserOUTPUT)
+}
+
+func (s *SruleContext) OUTPUT(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserOUTPUT, i)
+}
+
+func (s *SruleContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *SruleContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *SruleContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SfplListener); ok {
+		listenerT.EnterSrule(s)
+	}
+}
+
+func (s *SruleContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SfplListener); ok {
+		listenerT.ExitSrule(s)
+	}
+}
+
+func (s *SruleContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case SfplVisitor:
+		return t.VisitSrule(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
+func (p *SfplParser) Srule() (localctx ISruleContext) {
+	localctx = NewSruleContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 6, SfplParserRULE_srule)
+	var _la int
+
+	defer func() {
+		p.ExitRule()
+	}()
+
+	defer func() {
+		if err := recover(); err != nil {
+			if v, ok := err.(antlr.RecognitionException); ok {
+				localctx.SetException(v)
+				p.GetErrorHandler().ReportError(p, v)
+				p.GetErrorHandler().Recover(p, v)
+			} else {
+				panic(err)
+			}
+		}
+	}()
+
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(111)
+		p.Match(SfplParserDECL)
+	}
+	{
+		p.SetState(112)
+		p.Match(SfplParserRULE)
+	}
+	{
+		p.SetState(113)
+		p.Match(SfplParserDEF)
+	}
+	{
+		p.SetState(114)
+		p.Text()
+	}
+	{
+		p.SetState(115)
+		p.Match(SfplParserDESC)
+	}
+	{
+		p.SetState(116)
+		p.Match(SfplParserDEF)
+	}
+	{
+		p.SetState(117)
+		p.Text()
+	}
+	{
+		p.SetState(118)
+		p.Match(SfplParserCOND)
+	}
+	{
+		p.SetState(119)
+		p.Match(SfplParserDEF)
+	}
+	{
+		p.SetState(120)
+		p.Expression()
+	}
+	p.SetState(144)
+	p.GetErrorHandler().Sync(p)
+	_la = p.GetTokenStream().LA(1)
+
+	for ((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<SfplParserACTION)|(1<<SfplParserOUTPUT)|(1<<SfplParserPRIORITY)|(1<<SfplParserTAGS)|(1<<SfplParserPREFILTER)|(1<<SfplParserENABLED)|(1<<SfplParserWARNEVTTYPE)|(1<<SfplParserSKIPUNKNOWN))) != 0 {
+		p.SetState(142)
+		p.GetErrorHandler().Sync(p)
+
+		switch p.GetTokenStream().LA(1) {
+		case SfplParserACTION, SfplParserOUTPUT:
+			{
+				p.SetState(121)
+				_la = p.GetTokenStream().LA(1)
+
+				if !(_la == SfplParserACTION || _la == SfplParserOUTPUT) {
+					p.GetErrorHandler().RecoverInline(p)
+				} else {
+					p.GetErrorHandler().ReportMatch(p)
+					p.Consume()
+				}
+			}
+			{
+				p.SetState(122)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(123)
+				p.Text()
+			}
+
+		case SfplParserPRIORITY:
+			{
+				p.SetState(124)
+				p.Match(SfplParserPRIORITY)
+			}
+			{
+				p.SetState(125)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(126)
+				p.Severity()
+			}
+
+		case SfplParserTAGS:
+			{
+				p.SetState(127)
+				p.Match(SfplParserTAGS)
+			}
+			{
+				p.SetState(128)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(129)
+				p.Tags()
+			}
+
+		case SfplParserPREFILTER:
+			{
+				p.SetState(130)
+				p.Match(SfplParserPREFILTER)
+			}
+			{
+				p.SetState(131)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(132)
+				p.Prefilter()
+			}
+
+		case SfplParserENABLED:
+			{
+				p.SetState(133)
+				p.Match(SfplParserENABLED)
+			}
+			{
+				p.SetState(134)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(135)
+				p.Enabled()
+			}
+
+		case SfplParserWARNEVTTYPE:
+			{
+				p.SetState(136)
+				p.Match(SfplParserWARNEVTTYPE)
+			}
+			{
+				p.SetState(137)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(138)
+				p.Warnevttype()
+			}
+
+		case SfplParserSKIPUNKNOWN:
+			{
+				p.SetState(139)
+				p.Match(SfplParserSKIPUNKNOWN)
+			}
+			{
+				p.SetState(140)
+				p.Match(SfplParserDEF)
+			}
+			{
+				p.SetState(141)
+				p.Skipunknown()
+			}
+
+		default:
+			panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
+		}
+
+		p.SetState(146)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
@@ -1079,7 +1963,7 @@ func (s *PfilterContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Pfilter() (localctx IPfilterContext) {
 	localctx = NewPfilterContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 4, SfplParserRULE_pfilter)
+	p.EnterRule(localctx, 8, SfplParserRULE_pfilter)
 	var _la int
 
 	defer func() {
@@ -1100,48 +1984,237 @@ func (p *SfplParser) Pfilter() (localctx IPfilterContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(88)
+		p.SetState(147)
 		p.Match(SfplParserDECL)
 	}
 	{
-		p.SetState(89)
+		p.SetState(148)
 		p.Match(SfplParserFILTER)
 	}
 	{
-		p.SetState(90)
+		p.SetState(149)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(91)
+		p.SetState(150)
 		p.Match(SfplParserID)
 	}
 	{
-		p.SetState(92)
+		p.SetState(151)
 		p.Match(SfplParserCOND)
 	}
 	{
-		p.SetState(93)
+		p.SetState(152)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(94)
+		p.SetState(153)
 		p.Expression()
 	}
-	p.SetState(98)
+	p.SetState(157)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	if _la == SfplParserENABLED {
 		{
-			p.SetState(95)
+			p.SetState(154)
 			p.Match(SfplParserENABLED)
 		}
 		{
-			p.SetState(96)
+			p.SetState(155)
 			p.Match(SfplParserDEF)
 		}
 		{
-			p.SetState(97)
+			p.SetState(156)
+			p.Enabled()
+		}
+
+	}
+
+	return localctx
+}
+
+// ISfilterContext is an interface to support dynamic dispatch.
+type ISfilterContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// IsSfilterContext differentiates from other interfaces.
+	IsSfilterContext()
+}
+
+type SfilterContext struct {
+	*antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptySfilterContext() *SfilterContext {
+	var p = new(SfilterContext)
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.RuleIndex = SfplParserRULE_sfilter
+	return p
+}
+
+func (*SfilterContext) IsSfilterContext() {}
+
+func NewSfilterContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *SfilterContext {
+	var p = new(SfilterContext)
+
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = SfplParserRULE_sfilter
+
+	return p
+}
+
+func (s *SfilterContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *SfilterContext) DECL() antlr.TerminalNode {
+	return s.GetToken(SfplParserDECL, 0)
+}
+
+func (s *SfilterContext) FILTER() antlr.TerminalNode {
+	return s.GetToken(SfplParserFILTER, 0)
+}
+
+func (s *SfilterContext) AllDEF() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserDEF)
+}
+
+func (s *SfilterContext) DEF(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserDEF, i)
+}
+
+func (s *SfilterContext) ID() antlr.TerminalNode {
+	return s.GetToken(SfplParserID, 0)
+}
+
+func (s *SfilterContext) COND() antlr.TerminalNode {
+	return s.GetToken(SfplParserCOND, 0)
+}
+
+func (s *SfilterContext) Expression() IExpressionContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExpressionContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExpressionContext)
+}
+
+func (s *SfilterContext) ENABLED() antlr.TerminalNode {
+	return s.GetToken(SfplParserENABLED, 0)
+}
+
+func (s *SfilterContext) Enabled() IEnabledContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IEnabledContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IEnabledContext)
+}
+
+func (s *SfilterContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *SfilterContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *SfilterContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SfplListener); ok {
+		listenerT.EnterSfilter(s)
+	}
+}
+
+func (s *SfilterContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SfplListener); ok {
+		listenerT.ExitSfilter(s)
+	}
+}
+
+func (s *SfilterContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case SfplVisitor:
+		return t.VisitSfilter(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
+func (p *SfplParser) Sfilter() (localctx ISfilterContext) {
+	localctx = NewSfilterContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 10, SfplParserRULE_sfilter)
+	var _la int
+
+	defer func() {
+		p.ExitRule()
+	}()
+
+	defer func() {
+		if err := recover(); err != nil {
+			if v, ok := err.(antlr.RecognitionException); ok {
+				localctx.SetException(v)
+				p.GetErrorHandler().ReportError(p, v)
+				p.GetErrorHandler().Recover(p, v)
+			} else {
+				panic(err)
+			}
+		}
+	}()
+
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(159)
+		p.Match(SfplParserDECL)
+	}
+	{
+		p.SetState(160)
+		p.Match(SfplParserFILTER)
+	}
+	{
+		p.SetState(161)
+		p.Match(SfplParserDEF)
+	}
+	{
+		p.SetState(162)
+		p.Match(SfplParserID)
+	}
+	{
+		p.SetState(163)
+		p.Match(SfplParserCOND)
+	}
+	{
+		p.SetState(164)
+		p.Match(SfplParserDEF)
+	}
+	{
+		p.SetState(165)
+		p.Expression()
+	}
+	p.SetState(169)
+	p.GetErrorHandler().Sync(p)
+	_la = p.GetTokenStream().LA(1)
+
+	if _la == SfplParserENABLED {
+		{
+			p.SetState(166)
+			p.Match(SfplParserENABLED)
+		}
+		{
+			p.SetState(167)
+			p.Match(SfplParserDEF)
+		}
+		{
+			p.SetState(168)
 			p.Enabled()
 		}
 
@@ -1222,6 +2295,20 @@ func (s *PmacroContext) Expression() IExpressionContext {
 	return t.(IExpressionContext)
 }
 
+func (s *PmacroContext) FAPPEND() antlr.TerminalNode {
+	return s.GetToken(SfplParserFAPPEND, 0)
+}
+
+func (s *PmacroContext) Fappend() IFappendContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IFappendContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IFappendContext)
+}
+
 func (s *PmacroContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -1254,7 +2341,8 @@ func (s *PmacroContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Pmacro() (localctx IPmacroContext) {
 	localctx = NewPmacroContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 6, SfplParserRULE_pmacro)
+	p.EnterRule(localctx, 12, SfplParserRULE_pmacro)
+	var _la int
 
 	defer func() {
 		p.ExitRule()
@@ -1274,32 +2362,51 @@ func (p *SfplParser) Pmacro() (localctx IPmacroContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(100)
+		p.SetState(171)
 		p.Match(SfplParserDECL)
 	}
 	{
-		p.SetState(101)
+		p.SetState(172)
 		p.Match(SfplParserMACRO)
 	}
 	{
-		p.SetState(102)
+		p.SetState(173)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(103)
+		p.SetState(174)
 		p.Match(SfplParserID)
 	}
 	{
-		p.SetState(104)
+		p.SetState(175)
 		p.Match(SfplParserCOND)
 	}
 	{
-		p.SetState(105)
+		p.SetState(176)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(106)
+		p.SetState(177)
 		p.Expression()
+	}
+	p.SetState(181)
+	p.GetErrorHandler().Sync(p)
+	_la = p.GetTokenStream().LA(1)
+
+	if _la == SfplParserFAPPEND {
+		{
+			p.SetState(178)
+			p.Match(SfplParserFAPPEND)
+		}
+		{
+			p.SetState(179)
+			p.Match(SfplParserDEF)
+		}
+		{
+			p.SetState(180)
+			p.Fappend()
+		}
+
 	}
 
 	return localctx
@@ -1409,7 +2516,7 @@ func (s *PlistContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Plist() (localctx IPlistContext) {
 	localctx = NewPlistContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 8, SfplParserRULE_plist)
+	p.EnterRule(localctx, 14, SfplParserRULE_plist)
 
 	defer func() {
 		p.ExitRule()
@@ -1429,32 +2536,163 @@ func (p *SfplParser) Plist() (localctx IPlistContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(108)
+		p.SetState(183)
 		p.Match(SfplParserDECL)
 	}
 	{
-		p.SetState(109)
+		p.SetState(184)
 		p.Match(SfplParserLIST)
 	}
 	{
-		p.SetState(110)
+		p.SetState(185)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(111)
+		p.SetState(186)
 		p.Match(SfplParserID)
 	}
 	{
-		p.SetState(112)
+		p.SetState(187)
 		p.Match(SfplParserITEMS)
 	}
 	{
-		p.SetState(113)
+		p.SetState(188)
 		p.Match(SfplParserDEF)
 	}
 	{
-		p.SetState(114)
+		p.SetState(189)
 		p.Items()
+	}
+
+	return localctx
+}
+
+// IPreqContext is an interface to support dynamic dispatch.
+type IPreqContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// IsPreqContext differentiates from other interfaces.
+	IsPreqContext()
+}
+
+type PreqContext struct {
+	*antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptyPreqContext() *PreqContext {
+	var p = new(PreqContext)
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.RuleIndex = SfplParserRULE_preq
+	return p
+}
+
+func (*PreqContext) IsPreqContext() {}
+
+func NewPreqContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *PreqContext {
+	var p = new(PreqContext)
+
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = SfplParserRULE_preq
+
+	return p
+}
+
+func (s *PreqContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *PreqContext) DECL() antlr.TerminalNode {
+	return s.GetToken(SfplParserDECL, 0)
+}
+
+func (s *PreqContext) REQ() antlr.TerminalNode {
+	return s.GetToken(SfplParserREQ, 0)
+}
+
+func (s *PreqContext) DEF() antlr.TerminalNode {
+	return s.GetToken(SfplParserDEF, 0)
+}
+
+func (s *PreqContext) Atom() IAtomContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IAtomContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IAtomContext)
+}
+
+func (s *PreqContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *PreqContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *PreqContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SfplListener); ok {
+		listenerT.EnterPreq(s)
+	}
+}
+
+func (s *PreqContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SfplListener); ok {
+		listenerT.ExitPreq(s)
+	}
+}
+
+func (s *PreqContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case SfplVisitor:
+		return t.VisitPreq(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
+func (p *SfplParser) Preq() (localctx IPreqContext) {
+	localctx = NewPreqContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 16, SfplParserRULE_preq)
+
+	defer func() {
+		p.ExitRule()
+	}()
+
+	defer func() {
+		if err := recover(); err != nil {
+			if v, ok := err.(antlr.RecognitionException); ok {
+				localctx.SetException(v)
+				p.GetErrorHandler().ReportError(p, v)
+				p.GetErrorHandler().Recover(p, v)
+			} else {
+				panic(err)
+			}
+		}
+	}()
+
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(191)
+		p.Match(SfplParserDECL)
+	}
+	{
+		p.SetState(192)
+		p.Match(SfplParserREQ)
+	}
+	{
+		p.SetState(193)
+		p.Match(SfplParserDEF)
+	}
+	{
+		p.SetState(194)
+		p.Atom()
 	}
 
 	return localctx
@@ -1540,7 +2778,7 @@ func (s *ExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Expression() (localctx IExpressionContext) {
 	localctx = NewExpressionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 10, SfplParserRULE_expression)
+	p.EnterRule(localctx, 18, SfplParserRULE_expression)
 
 	defer func() {
 		p.ExitRule()
@@ -1560,7 +2798,7 @@ func (p *SfplParser) Expression() (localctx IExpressionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(116)
+		p.SetState(196)
 		p.Or_expression()
 	}
 
@@ -1668,7 +2906,7 @@ func (s *Or_expressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{
 
 func (p *SfplParser) Or_expression() (localctx IOr_expressionContext) {
 	localctx = NewOr_expressionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 12, SfplParserRULE_or_expression)
+	p.EnterRule(localctx, 20, SfplParserRULE_or_expression)
 	var _la int
 
 	defer func() {
@@ -1689,24 +2927,24 @@ func (p *SfplParser) Or_expression() (localctx IOr_expressionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(118)
+		p.SetState(198)
 		p.And_expression()
 	}
-	p.SetState(123)
+	p.SetState(203)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	for _la == SfplParserOR {
 		{
-			p.SetState(119)
+			p.SetState(199)
 			p.Match(SfplParserOR)
 		}
 		{
-			p.SetState(120)
+			p.SetState(200)
 			p.And_expression()
 		}
 
-		p.SetState(125)
+		p.SetState(205)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
@@ -1815,7 +3053,7 @@ func (s *And_expressionContext) Accept(visitor antlr.ParseTreeVisitor) interface
 
 func (p *SfplParser) And_expression() (localctx IAnd_expressionContext) {
 	localctx = NewAnd_expressionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 14, SfplParserRULE_and_expression)
+	p.EnterRule(localctx, 22, SfplParserRULE_and_expression)
 	var _la int
 
 	defer func() {
@@ -1836,24 +3074,24 @@ func (p *SfplParser) And_expression() (localctx IAnd_expressionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(126)
+		p.SetState(206)
 		p.Term()
 	}
-	p.SetState(131)
+	p.SetState(211)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	for _la == SfplParserAND {
 		{
-			p.SetState(127)
+			p.SetState(207)
 			p.Match(SfplParserAND)
 		}
 		{
-			p.SetState(128)
+			p.SetState(208)
 			p.Term()
 		}
 
-		p.SetState(133)
+		p.SetState(213)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
@@ -2055,7 +3293,7 @@ func (s *TermContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Term() (localctx ITermContext) {
 	localctx = NewTermContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 16, SfplParserRULE_term)
+	p.EnterRule(localctx, 24, SfplParserRULE_term)
 	var _la int
 
 	defer func() {
@@ -2074,61 +3312,61 @@ func (p *SfplParser) Term() (localctx ITermContext) {
 		}
 	}()
 
-	p.SetState(167)
+	p.SetState(247)
 	p.GetErrorHandler().Sync(p)
-	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 10, p.GetParserRuleContext()) {
+	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 16, p.GetParserRuleContext()) {
 	case 1:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(134)
+			p.SetState(214)
 			p.Variable()
 		}
 
 	case 2:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(135)
+			p.SetState(215)
 			p.Match(SfplParserNOT)
 		}
 		{
-			p.SetState(136)
+			p.SetState(216)
 			p.Term()
 		}
 
 	case 3:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(137)
+			p.SetState(217)
 			p.Atom()
 		}
 		{
-			p.SetState(138)
+			p.SetState(218)
 			p.Unary_operator()
 		}
 
 	case 4:
 		p.EnterOuterAlt(localctx, 4)
 		{
-			p.SetState(140)
+			p.SetState(220)
 			p.Atom()
 		}
 		{
-			p.SetState(141)
+			p.SetState(221)
 			p.Binary_operator()
 		}
 		{
-			p.SetState(142)
+			p.SetState(222)
 			p.Atom()
 		}
 
 	case 5:
 		p.EnterOuterAlt(localctx, 5)
 		{
-			p.SetState(144)
+			p.SetState(224)
 			p.Atom()
 		}
 		{
-			p.SetState(145)
+			p.SetState(225)
 			_la = p.GetTokenStream().LA(1)
 
 			if !(_la == SfplParserIN || _la == SfplParserPMATCH) {
@@ -2139,50 +3377,50 @@ func (p *SfplParser) Term() (localctx ITermContext) {
 			}
 		}
 		{
-			p.SetState(146)
+			p.SetState(226)
 			p.Match(SfplParserLPAREN)
 		}
-		p.SetState(149)
+		p.SetState(229)
 		p.GetErrorHandler().Sync(p)
 
 		switch p.GetTokenStream().LA(1) {
 		case SfplParserLT, SfplParserGT, SfplParserID, SfplParserNUMBER, SfplParserPATH, SfplParserSTRING, SfplParserTAG:
 			{
-				p.SetState(147)
+				p.SetState(227)
 				p.Atom()
 			}
 
 		case SfplParserLBRACK:
 			{
-				p.SetState(148)
+				p.SetState(228)
 				p.Items()
 			}
 
 		default:
 			panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
 		}
-		p.SetState(158)
+		p.SetState(238)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
 		for _la == SfplParserLISTSEP {
 			{
-				p.SetState(151)
+				p.SetState(231)
 				p.Match(SfplParserLISTSEP)
 			}
-			p.SetState(154)
+			p.SetState(234)
 			p.GetErrorHandler().Sync(p)
 
 			switch p.GetTokenStream().LA(1) {
 			case SfplParserLT, SfplParserGT, SfplParserID, SfplParserNUMBER, SfplParserPATH, SfplParserSTRING, SfplParserTAG:
 				{
-					p.SetState(152)
+					p.SetState(232)
 					p.Atom()
 				}
 
 			case SfplParserLBRACK:
 				{
-					p.SetState(153)
+					p.SetState(233)
 					p.Items()
 				}
 
@@ -2190,27 +3428,27 @@ func (p *SfplParser) Term() (localctx ITermContext) {
 				panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
 			}
 
-			p.SetState(160)
+			p.SetState(240)
 			p.GetErrorHandler().Sync(p)
 			_la = p.GetTokenStream().LA(1)
 		}
 		{
-			p.SetState(161)
+			p.SetState(241)
 			p.Match(SfplParserRPAREN)
 		}
 
 	case 6:
 		p.EnterOuterAlt(localctx, 6)
 		{
-			p.SetState(163)
+			p.SetState(243)
 			p.Match(SfplParserLPAREN)
 		}
 		{
-			p.SetState(164)
+			p.SetState(244)
 			p.Expression()
 		}
 		{
-			p.SetState(165)
+			p.SetState(245)
 			p.Match(SfplParserRPAREN)
 		}
 
@@ -2328,7 +3566,7 @@ func (s *ItemsContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Items() (localctx IItemsContext) {
 	localctx = NewItemsContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 18, SfplParserRULE_items)
+	p.EnterRule(localctx, 26, SfplParserRULE_items)
 	var _la int
 
 	defer func() {
@@ -2347,42 +3585,57 @@ func (p *SfplParser) Items() (localctx IItemsContext) {
 		}
 	}()
 
+	var _alt int
+
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(169)
+		p.SetState(249)
 		p.Match(SfplParserLBRACK)
 	}
-	p.SetState(178)
+	p.SetState(258)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
-	if ((_la-20)&-(0x1f+1)) == 0 && ((1<<uint((_la-20)))&((1<<(SfplParserLT-20))|(1<<(SfplParserGT-20))|(1<<(SfplParserID-20))|(1<<(SfplParserNUMBER-20))|(1<<(SfplParserPATH-20))|(1<<(SfplParserSTRING-20))|(1<<(SfplParserTAG-20)))) != 0 {
+	if ((_la-22)&-(0x1f+1)) == 0 && ((1<<uint((_la-22)))&((1<<(SfplParserLT-22))|(1<<(SfplParserGT-22))|(1<<(SfplParserID-22))|(1<<(SfplParserNUMBER-22))|(1<<(SfplParserPATH-22))|(1<<(SfplParserSTRING-22))|(1<<(SfplParserTAG-22)))) != 0 {
 		{
-			p.SetState(170)
+			p.SetState(250)
 			p.Atom()
 		}
-		p.SetState(175)
+		p.SetState(255)
 		p.GetErrorHandler().Sync(p)
-		_la = p.GetTokenStream().LA(1)
+		_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 17, p.GetParserRuleContext())
 
-		for _la == SfplParserLISTSEP {
-			{
-				p.SetState(171)
-				p.Match(SfplParserLISTSEP)
-			}
-			{
-				p.SetState(172)
-				p.Atom()
-			}
+		for _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
+			if _alt == 1 {
+				{
+					p.SetState(251)
+					p.Match(SfplParserLISTSEP)
+				}
+				{
+					p.SetState(252)
+					p.Atom()
+				}
 
-			p.SetState(177)
+			}
+			p.SetState(257)
 			p.GetErrorHandler().Sync(p)
-			_la = p.GetTokenStream().LA(1)
+			_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 17, p.GetParserRuleContext())
+		}
+
+	}
+	p.SetState(261)
+	p.GetErrorHandler().Sync(p)
+	_la = p.GetTokenStream().LA(1)
+
+	if _la == SfplParserLISTSEP {
+		{
+			p.SetState(260)
+			p.Match(SfplParserLISTSEP)
 		}
 
 	}
 	{
-		p.SetState(180)
+		p.SetState(263)
 		p.Match(SfplParserRBRACK)
 	}
 
@@ -2498,7 +3751,7 @@ func (s *TagsContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Tags() (localctx ITagsContext) {
 	localctx = NewTagsContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 20, SfplParserRULE_tags)
+	p.EnterRule(localctx, 28, SfplParserRULE_tags)
 	var _la int
 
 	defer func() {
@@ -2517,42 +3770,57 @@ func (p *SfplParser) Tags() (localctx ITagsContext) {
 		}
 	}()
 
+	var _alt int
+
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(182)
+		p.SetState(265)
 		p.Match(SfplParserLBRACK)
 	}
-	p.SetState(191)
+	p.SetState(274)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
-	if ((_la-20)&-(0x1f+1)) == 0 && ((1<<uint((_la-20)))&((1<<(SfplParserLT-20))|(1<<(SfplParserGT-20))|(1<<(SfplParserID-20))|(1<<(SfplParserNUMBER-20))|(1<<(SfplParserPATH-20))|(1<<(SfplParserSTRING-20))|(1<<(SfplParserTAG-20)))) != 0 {
+	if ((_la-22)&-(0x1f+1)) == 0 && ((1<<uint((_la-22)))&((1<<(SfplParserLT-22))|(1<<(SfplParserGT-22))|(1<<(SfplParserID-22))|(1<<(SfplParserNUMBER-22))|(1<<(SfplParserPATH-22))|(1<<(SfplParserSTRING-22))|(1<<(SfplParserTAG-22)))) != 0 {
 		{
-			p.SetState(183)
+			p.SetState(266)
 			p.Atom()
 		}
-		p.SetState(188)
+		p.SetState(271)
 		p.GetErrorHandler().Sync(p)
-		_la = p.GetTokenStream().LA(1)
+		_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 20, p.GetParserRuleContext())
 
-		for _la == SfplParserLISTSEP {
-			{
-				p.SetState(184)
-				p.Match(SfplParserLISTSEP)
-			}
-			{
-				p.SetState(185)
-				p.Atom()
-			}
+		for _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
+			if _alt == 1 {
+				{
+					p.SetState(267)
+					p.Match(SfplParserLISTSEP)
+				}
+				{
+					p.SetState(268)
+					p.Atom()
+				}
 
-			p.SetState(190)
+			}
+			p.SetState(273)
 			p.GetErrorHandler().Sync(p)
-			_la = p.GetTokenStream().LA(1)
+			_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 20, p.GetParserRuleContext())
+		}
+
+	}
+	p.SetState(277)
+	p.GetErrorHandler().Sync(p)
+	_la = p.GetTokenStream().LA(1)
+
+	if _la == SfplParserLISTSEP {
+		{
+			p.SetState(276)
+			p.Match(SfplParserLISTSEP)
 		}
 
 	}
 	{
-		p.SetState(193)
+		p.SetState(279)
 		p.Match(SfplParserRBRACK)
 	}
 
@@ -2639,7 +3907,7 @@ func (s *PrefilterContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Prefilter() (localctx IPrefilterContext) {
 	localctx = NewPrefilterContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 22, SfplParserRULE_prefilter)
+	p.EnterRule(localctx, 30, SfplParserRULE_prefilter)
 
 	defer func() {
 		p.ExitRule()
@@ -2659,7 +3927,7 @@ func (p *SfplParser) Prefilter() (localctx IPrefilterContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(195)
+		p.SetState(281)
 		p.Items()
 	}
 
@@ -2740,7 +4008,7 @@ func (s *SeverityContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Severity() (localctx ISeverityContext) {
 	localctx = NewSeverityContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 24, SfplParserRULE_severity)
+	p.EnterRule(localctx, 32, SfplParserRULE_severity)
 
 	defer func() {
 		p.ExitRule()
@@ -2760,7 +4028,7 @@ func (p *SfplParser) Severity() (localctx ISeverityContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(197)
+		p.SetState(283)
 		p.Match(SfplParserSEVERITY)
 	}
 
@@ -2847,7 +4115,7 @@ func (s *EnabledContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Enabled() (localctx IEnabledContext) {
 	localctx = NewEnabledContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 26, SfplParserRULE_enabled)
+	p.EnterRule(localctx, 34, SfplParserRULE_enabled)
 
 	defer func() {
 		p.ExitRule()
@@ -2867,7 +4135,7 @@ func (p *SfplParser) Enabled() (localctx IEnabledContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(199)
+		p.SetState(285)
 		p.Atom()
 	}
 
@@ -2954,7 +4222,7 @@ func (s *WarnevttypeContext) Accept(visitor antlr.ParseTreeVisitor) interface{} 
 
 func (p *SfplParser) Warnevttype() (localctx IWarnevttypeContext) {
 	localctx = NewWarnevttypeContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 28, SfplParserRULE_warnevttype)
+	p.EnterRule(localctx, 36, SfplParserRULE_warnevttype)
 
 	defer func() {
 		p.ExitRule()
@@ -2974,7 +4242,7 @@ func (p *SfplParser) Warnevttype() (localctx IWarnevttypeContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(201)
+		p.SetState(287)
 		p.Atom()
 	}
 
@@ -3061,7 +4329,7 @@ func (s *SkipunknownContext) Accept(visitor antlr.ParseTreeVisitor) interface{} 
 
 func (p *SfplParser) Skipunknown() (localctx ISkipunknownContext) {
 	localctx = NewSkipunknownContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 30, SfplParserRULE_skipunknown)
+	p.EnterRule(localctx, 38, SfplParserRULE_skipunknown)
 
 	defer func() {
 		p.ExitRule()
@@ -3081,7 +4349,114 @@ func (p *SfplParser) Skipunknown() (localctx ISkipunknownContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(203)
+		p.SetState(289)
+		p.Atom()
+	}
+
+	return localctx
+}
+
+// IFappendContext is an interface to support dynamic dispatch.
+type IFappendContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// IsFappendContext differentiates from other interfaces.
+	IsFappendContext()
+}
+
+type FappendContext struct {
+	*antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptyFappendContext() *FappendContext {
+	var p = new(FappendContext)
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.RuleIndex = SfplParserRULE_fappend
+	return p
+}
+
+func (*FappendContext) IsFappendContext() {}
+
+func NewFappendContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *FappendContext {
+	var p = new(FappendContext)
+
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = SfplParserRULE_fappend
+
+	return p
+}
+
+func (s *FappendContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *FappendContext) Atom() IAtomContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IAtomContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IAtomContext)
+}
+
+func (s *FappendContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *FappendContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *FappendContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SfplListener); ok {
+		listenerT.EnterFappend(s)
+	}
+}
+
+func (s *FappendContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SfplListener); ok {
+		listenerT.ExitFappend(s)
+	}
+}
+
+func (s *FappendContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case SfplVisitor:
+		return t.VisitFappend(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
+func (p *SfplParser) Fappend() (localctx IFappendContext) {
+	localctx = NewFappendContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 40, SfplParserRULE_fappend)
+
+	defer func() {
+		p.ExitRule()
+	}()
+
+	defer func() {
+		if err := recover(); err != nil {
+			if v, ok := err.(antlr.RecognitionException); ok {
+				localctx.SetException(v)
+				p.GetErrorHandler().ReportError(p, v)
+				p.GetErrorHandler().Recover(p, v)
+			} else {
+				panic(err)
+			}
+		}
+	}()
+
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(291)
 		p.Atom()
 	}
 
@@ -3162,7 +4537,7 @@ func (s *VariableContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Variable() (localctx IVariableContext) {
 	localctx = NewVariableContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 32, SfplParserRULE_variable)
+	p.EnterRule(localctx, 42, SfplParserRULE_variable)
 
 	defer func() {
 		p.ExitRule()
@@ -3182,7 +4557,7 @@ func (p *SfplParser) Variable() (localctx IVariableContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(205)
+		p.SetState(293)
 		p.Match(SfplParserID)
 	}
 
@@ -3287,7 +4662,7 @@ func (s *AtomContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Atom() (localctx IAtomContext) {
 	localctx = NewAtomContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 34, SfplParserRULE_atom)
+	p.EnterRule(localctx, 44, SfplParserRULE_atom)
 	var _la int
 
 	defer func() {
@@ -3308,10 +4683,10 @@ func (p *SfplParser) Atom() (localctx IAtomContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(207)
+		p.SetState(295)
 		_la = p.GetTokenStream().LA(1)
 
-		if !(((_la-20)&-(0x1f+1)) == 0 && ((1<<uint((_la-20)))&((1<<(SfplParserLT-20))|(1<<(SfplParserGT-20))|(1<<(SfplParserID-20))|(1<<(SfplParserNUMBER-20))|(1<<(SfplParserPATH-20))|(1<<(SfplParserSTRING-20))|(1<<(SfplParserTAG-20)))) != 0) {
+		if !(((_la-22)&-(0x1f+1)) == 0 && ((1<<uint((_la-22)))&((1<<(SfplParserLT-22))|(1<<(SfplParserGT-22))|(1<<(SfplParserID-22))|(1<<(SfplParserNUMBER-22))|(1<<(SfplParserPATH-22))|(1<<(SfplParserSTRING-22))|(1<<(SfplParserTAG-22)))) != 0) {
 			p.GetErrorHandler().RecoverInline(p)
 		} else {
 			p.GetErrorHandler().ReportMatch(p)
@@ -3391,7 +4766,7 @@ func (s *TextContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 
 func (p *SfplParser) Text() (localctx ITextContext) {
 	localctx = NewTextContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 36, SfplParserRULE_text)
+	p.EnterRule(localctx, 46, SfplParserRULE_text)
 
 	defer func() {
 		p.ExitRule()
@@ -3412,13 +4787,13 @@ func (p *SfplParser) Text() (localctx ITextContext) {
 	var _alt int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(211)
+	p.SetState(299)
 	p.GetErrorHandler().Sync(p)
 	_alt = 1
 	for ok := true; ok; ok = _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
 		switch _alt {
 		case 1:
-			p.SetState(209)
+			p.SetState(297)
 
 			if !(!(p.GetCurrentToken().GetText() == "desc" ||
 				p.GetCurrentToken().GetText() == "condition" ||
@@ -3429,19 +4804,20 @@ func (p *SfplParser) Text() (localctx ITextContext) {
 				p.GetCurrentToken().GetText() == "prefilter" ||
 				p.GetCurrentToken().GetText() == "enabled" ||
 				p.GetCurrentToken().GetText() == "warn_evttypes" ||
-				p.GetCurrentToken().GetText() == "skip-if-unknown-filter")) {
-				panic(antlr.NewFailedPredicateException(p, "!(p.GetCurrentToken().GetText() == \"desc\" ||\n\t      p.GetCurrentToken().GetText() == \"condition\" ||\n\t      p.GetCurrentToken().GetText() == \"action\" ||\n\t      p.GetCurrentToken().GetText() == \"output\" ||\n\t      p.GetCurrentToken().GetText() == \"priority\" ||\n\t      p.GetCurrentToken().GetText() == \"tags\" ||\n\t\t  p.GetCurrentToken().GetText() == \"prefilter\" ||\n\t\t  p.GetCurrentToken().GetText() == \"enabled\" ||\n\t\t  p.GetCurrentToken().GetText() == \"warn_evttypes\" ||\n\t\t  p.GetCurrentToken().GetText() == \"skip-if-unknown-filter\")", ""))
+				p.GetCurrentToken().GetText() == "skip-if-unknown-filter" ||
+				p.GetCurrentToken().GetText() == "append")) {
+				panic(antlr.NewFailedPredicateException(p, "!(p.GetCurrentToken().GetText() == \"desc\" ||\n\t      p.GetCurrentToken().GetText() == \"condition\" ||\n\t      p.GetCurrentToken().GetText() == \"action\" ||\n\t      p.GetCurrentToken().GetText() == \"output\" ||\n\t      p.GetCurrentToken().GetText() == \"priority\" ||\n\t      p.GetCurrentToken().GetText() == \"tags\" ||\n\t\t  p.GetCurrentToken().GetText() == \"prefilter\" ||\n\t\t  p.GetCurrentToken().GetText() == \"enabled\" ||\n\t\t  p.GetCurrentToken().GetText() == \"warn_evttypes\" ||\n\t\t  p.GetCurrentToken().GetText() == \"skip-if-unknown-filter\" ||\n\t\t  p.GetCurrentToken().GetText() == \"append\")", ""))
 			}
-			p.SetState(210)
+			p.SetState(298)
 			p.MatchWildcard()
 
 		default:
 			panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
 		}
 
-		p.SetState(213)
+		p.SetState(301)
 		p.GetErrorHandler().Sync(p)
-		_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 15, p.GetParserRuleContext())
+		_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 23, p.GetParserRuleContext())
 	}
 
 	return localctx
@@ -3521,6 +4897,10 @@ func (s *Binary_operatorContext) STARTSWITH() antlr.TerminalNode {
 	return s.GetToken(SfplParserSTARTSWITH, 0)
 }
 
+func (s *Binary_operatorContext) ENDSWITH() antlr.TerminalNode {
+	return s.GetToken(SfplParserENDSWITH, 0)
+}
+
 func (s *Binary_operatorContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -3553,7 +4933,7 @@ func (s *Binary_operatorContext) Accept(visitor antlr.ParseTreeVisitor) interfac
 
 func (p *SfplParser) Binary_operator() (localctx IBinary_operatorContext) {
 	localctx = NewBinary_operatorContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 38, SfplParserRULE_binary_operator)
+	p.EnterRule(localctx, 48, SfplParserRULE_binary_operator)
 	var _la int
 
 	defer func() {
@@ -3574,10 +4954,10 @@ func (p *SfplParser) Binary_operator() (localctx IBinary_operatorContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(215)
+		p.SetState(303)
 		_la = p.GetTokenStream().LA(1)
 
-		if !(((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<SfplParserLT)|(1<<SfplParserLE)|(1<<SfplParserGT)|(1<<SfplParserGE)|(1<<SfplParserEQ)|(1<<SfplParserNEQ)|(1<<SfplParserCONTAINS)|(1<<SfplParserICONTAINS)|(1<<SfplParserSTARTSWITH))) != 0) {
+		if !(((_la-22)&-(0x1f+1)) == 0 && ((1<<uint((_la-22)))&((1<<(SfplParserLT-22))|(1<<(SfplParserLE-22))|(1<<(SfplParserGT-22))|(1<<(SfplParserGE-22))|(1<<(SfplParserEQ-22))|(1<<(SfplParserNEQ-22))|(1<<(SfplParserCONTAINS-22))|(1<<(SfplParserICONTAINS-22))|(1<<(SfplParserSTARTSWITH-22))|(1<<(SfplParserENDSWITH-22)))) != 0) {
 			p.GetErrorHandler().RecoverInline(p)
 		} else {
 			p.GetErrorHandler().ReportMatch(p)
@@ -3662,7 +5042,7 @@ func (s *Unary_operatorContext) Accept(visitor antlr.ParseTreeVisitor) interface
 
 func (p *SfplParser) Unary_operator() (localctx IUnary_operatorContext) {
 	localctx = NewUnary_operatorContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 40, SfplParserRULE_unary_operator)
+	p.EnterRule(localctx, 50, SfplParserRULE_unary_operator)
 
 	defer func() {
 		p.ExitRule()
@@ -3682,7 +5062,7 @@ func (p *SfplParser) Unary_operator() (localctx IUnary_operatorContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(217)
+		p.SetState(305)
 		p.Match(SfplParserEXISTS)
 	}
 
@@ -3691,7 +5071,7 @@ func (p *SfplParser) Unary_operator() (localctx IUnary_operatorContext) {
 
 func (p *SfplParser) Sempred(localctx antlr.RuleContext, ruleIndex, predIndex int) bool {
 	switch ruleIndex {
-	case 18:
+	case 23:
 		var t *TextContext = nil
 		if localctx != nil {
 			t = localctx.(*TextContext)
@@ -3715,7 +5095,8 @@ func (p *SfplParser) Text_Sempred(localctx antlr.RuleContext, predIndex int) boo
 			p.GetCurrentToken().GetText() == "prefilter" ||
 			p.GetCurrentToken().GetText() == "enabled" ||
 			p.GetCurrentToken().GetText() == "warn_evttypes" ||
-			p.GetCurrentToken().GetText() == "skip-if-unknown-filter")
+			p.GetCurrentToken().GetText() == "skip-if-unknown-filter" ||
+			p.GetCurrentToken().GetText() == "append")
 
 	default:
 		panic("No predicate with index: " + fmt.Sprint(predIndex))

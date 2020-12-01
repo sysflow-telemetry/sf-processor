@@ -178,6 +178,10 @@ github.com/syndtr/gocapability v0.0.0-20170704070218-db04d3cc01c8/go.mod h1:hkRG
 github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201029230226-b00c1f55c6b0 h1:ezn2cJhqCZTilHOX8S5botGSLf54V+PboDFsgXNr32M=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201029230226-b00c1f55c6b0/go.mod h1:rpTKky267xtopNUCoInTEZiaFkOrawhzE0HaZMEvIAI=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201201011053-576fd22887b8 h1:sVdEyr2LB6Q0LEjd3mEZHmXsJ0NtIoSa254sdSzZaWc=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201201011053-576fd22887b8/go.mod h1:rpTKky267xtopNUCoInTEZiaFkOrawhzE0HaZMEvIAI=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201201012055-dce1036e88db h1:WyomxNfhg5HwbyZCtn81DOcUFPu3VUhDcsBH+/hvcec=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201201012055-dce1036e88db/go.mod h1:rpTKky267xtopNUCoInTEZiaFkOrawhzE0HaZMEvIAI=
 github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201103193450-8a8ff771f88f/go.mod h1:BfOnmjyDWSaBaMMSeTlFYCXOEQjlkEaBQcly1coyzek=
 github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201103203109-db071a4dc1fa h1:wXgyjPTaVzYXh8SM+hy4QKIIqkQAaUJ8hiQOrYZiXyA=
 github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201103203109-db071a4dc1fa/go.mod h1:BfOnmjyDWSaBaMMSeTlFYCXOEQjlkEaBQcly1coyzek=

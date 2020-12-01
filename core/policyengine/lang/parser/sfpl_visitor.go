@@ -10,17 +10,29 @@ type SfplVisitor interface {
 	// Visit a parse tree produced by SfplParser#policy.
 	VisitPolicy(ctx *PolicyContext) interface{}
 
+	// Visit a parse tree produced by SfplParser#defs.
+	VisitDefs(ctx *DefsContext) interface{}
+
 	// Visit a parse tree produced by SfplParser#prule.
 	VisitPrule(ctx *PruleContext) interface{}
 
+	// Visit a parse tree produced by SfplParser#srule.
+	VisitSrule(ctx *SruleContext) interface{}
+
 	// Visit a parse tree produced by SfplParser#pfilter.
 	VisitPfilter(ctx *PfilterContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#sfilter.
+	VisitSfilter(ctx *SfilterContext) interface{}
 
 	// Visit a parse tree produced by SfplParser#pmacro.
 	VisitPmacro(ctx *PmacroContext) interface{}
 
 	// Visit a parse tree produced by SfplParser#plist.
 	VisitPlist(ctx *PlistContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#preq.
+	VisitPreq(ctx *PreqContext) interface{}
 
 	// Visit a parse tree produced by SfplParser#expression.
 	VisitExpression(ctx *ExpressionContext) interface{}
@@ -54,6 +66,9 @@ type SfplVisitor interface {
 
 	// Visit a parse tree produced by SfplParser#skipunknown.
 	VisitSkipunknown(ctx *SkipunknownContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#fappend.
+	VisitFappend(ctx *FappendContext) interface{}
 
 	// Visit a parse tree produced by SfplParser#variable.
 	VisitVariable(ctx *VariableContext) interface{}
