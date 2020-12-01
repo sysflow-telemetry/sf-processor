@@ -6,7 +6,7 @@
 
 # Supported tags and respective `Dockerfile` links
 
--	[`0.1.0`](https://github.com/sysflow-telemetry/sf-processor/blob/0.1.0/Dockerfile), [`latest`](https://github.com/sysflow-telemetry/sf-processor/blob/master/Dockerfile)
+-	[`0.2.0`](https://github.com/sysflow-telemetry/sf-processor/blob/0.2.0/Dockerfile), [`latest`](https://github.com/sysflow-telemetry/sf-processor/blob/master/Dockerfile)
 
 # Quick reference
 
@@ -72,8 +72,8 @@ services:
       - socket-vol:/sock/
       - ./resources/traces:/tests/traces
     environment:
-      EXPORTER_ID: ${HOSTNAME}
-      NODE_IP: <Host IP address>
+      EXPORTER_ID: local
+      NODE_IP: "127.0.0.1"
       FILTER: "container.name!=sf-collector and container.name!=sf-processor" 
       INTERVAL: 300 
       SOCK_FILE: /sock/sysflow.sock
