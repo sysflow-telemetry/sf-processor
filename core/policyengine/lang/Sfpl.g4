@@ -16,25 +16,43 @@ PREFILTER: 'prefilter';
 ENABLED: 'enabled';
 WARNEVTTYPE: 'warn_evttypes';
 SKIPUNKNOWN: 'skip-if-unknown-filter';
+FAPPEND: 'append';
+REQ: 'required_engine_version';
 
 policy
-	: (prule | pfilter | pmacro | plist)+ EOF
+	: (prule | pfilter | pmacro | plist | preq)+ EOF
+	;
+
+defs
+	: (srule | sfilter | pmacro | plist | preq)* EOF
 	;
 
 prule
-	: DECL RULE DEF text DESC DEF text COND DEF expression (ACTION|OUTPUT) DEF text PRIORITY DEF severity (TAGS DEF tags | PREFILTER DEF prefilter | ENABLED DEF enabled | WARNEVTTYPE DEF warnevttype | SKIPUNKNOWN DEF skipunknown)*
+	: DECL RULE DEF text DESC DEF text COND DEF expression ((ACTION|OUTPUT) DEF text | PRIORITY DEF severity | TAGS DEF tags | PREFILTER DEF prefilter | ENABLED DEF enabled | WARNEVTTYPE DEF warnevttype | SKIPUNKNOWN DEF skipunknown)*
+	;
+
+srule
+	: DECL RULE DEF text DESC DEF text COND DEF expression ((ACTION|OUTPUT) DEF text | PRIORITY DEF severity | TAGS DEF tags | PREFILTER DEF prefilter | ENABLED DEF enabled | WARNEVTTYPE DEF warnevttype | SKIPUNKNOWN DEF skipunknown)*
 	;
 
 pfilter
 	: DECL FILTER DEF ID COND DEF expression (ENABLED DEF enabled)?
 	;
 
+sfilter
+	: DECL FILTER DEF ID COND DEF expression (ENABLED DEF enabled)?
+	;
+
 pmacro
-	: DECL MACRO DEF ID COND DEF expression
+	: DECL MACRO DEF ID COND DEF expression (FAPPEND DEF fappend)?
 	;
 
 plist
 	: DECL LIST DEF ID ITEMS DEF items 
+	;
+
+preq
+	: DECL REQ DEF atom
 	;
 	
 expression 
@@ -59,11 +77,11 @@ term
 	;
 
 items 
-	: LBRACK (atom (LISTSEP atom)*)? RBRACK
+	: LBRACK (atom (LISTSEP atom)*)? (LISTSEP)? RBRACK
 	;
 
 tags
-	: LBRACK (atom (LISTSEP atom)*)? RBRACK
+	: LBRACK (atom (LISTSEP atom)*)? (LISTSEP)? RBRACK
 	;
 
 prefilter
@@ -83,6 +101,10 @@ warnevttype
 	;
 
 skipunknown
+	: atom
+	;
+
+fappend
 	: atom
 	;
 
@@ -110,7 +132,8 @@ text
 		  p.GetCurrentToken().GetText() == "prefilter" ||
 		  p.GetCurrentToken().GetText() == "enabled" ||
 		  p.GetCurrentToken().GetText() == "warn_evttypes" ||
-		  p.GetCurrentToken().GetText() == "skip-if-unknown-filter")}? .)+
+		  p.GetCurrentToken().GetText() == "skip-if-unknown-filter" ||
+		  p.GetCurrentToken().GetText() == "append")}? .)+
 	;
 	
 binary_operator 
@@ -123,6 +146,7 @@ binary_operator
 	| CONTAINS 
 	| ICONTAINS
 	| STARTSWITH
+	| ENDSWITH
 	;
 
 unary_operator 
@@ -180,6 +204,10 @@ ICONTAINS
 STARTSWITH 
 	: 'startswith'
 	;
+
+ENDSWITH
+	: 'endswith'
+	;
 	
 PMATCH
 	: 'pmatch'
@@ -223,20 +251,21 @@ SEVERITY
 	;
 
 SFSEVERITY
-	: 'high'
-	| 'medium'
-	| 'low'		
+	: H I G H
+	| M E D I U M 
+	| L O W
 	;
 
 FSEVERITY
-	: 'emergency'
-	| 'alert'
-	| 'critical'
-	| 'error'
-	| 'warning'
-	| 'notice'
-	| 'informational'
-	| 'debug'
+	: E M E R G E N C Y 	
+	| A L E R T	
+	| C R I T I C A L	
+	| E R R O R	
+	| W A R N I N G	
+	| N O T I C E	
+	| I N F O
+	| I N F O R M A T I O N A L	
+	| D E B U G
 	;
 
 ID
@@ -248,7 +277,7 @@ NUMBER
 	;
 	
 PATH
-	:  ('a'..'z' | 'A'..'Z' | '/' ) ('a'..'z' | 'A'..'Z' | '0'..'9' | '_' | '-' | '.' | '/' | '*' )*	
+	:  ('a'..'z' | 'A'..'Z' | '/' | '.') ('a'..'z' | 'A'..'Z' | '0'..'9' | '_' | '-' | '.' | '/' | '*' )*	
 	;
 
 STRING 
@@ -268,7 +297,7 @@ fragment STRLIT
 	;
 	
 fragment ESC : '\\"' | '\'\'' ;
-		
+	
 WS
 	: [ \t\r\n\u000C]+ -> channel(HIDDEN)
 	;
@@ -282,3 +311,30 @@ COMMENT
 	;
 	
 ANY : . ;
+
+fragment A : [aA]; // match either an 'a' or 'A'
+fragment B : [bB];
+fragment C : [cC];
+fragment D : [dD];
+fragment E : [eE];
+fragment F : [fF];
+fragment G : [gG];
+fragment H : [hH];
+fragment I : [iI];
+fragment J : [jJ];
+fragment K : [kK];
+fragment L : [lL];
+fragment M : [mM];
+fragment N : [nN];
+fragment O : [oO];
+fragment P : [pP];
+fragment Q : [qQ];
+fragment R : [rR];
+fragment S : [sS];
+fragment T : [tT];
+fragment U : [uU];
+fragment V : [vV];
+fragment W : [wW];
+fragment X : [xX];
+fragment Y : [yY];
+fragment Z : [zZ];

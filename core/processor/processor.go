@@ -137,6 +137,7 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 			file := s.getFile(fe.FileOID)
 			file2 := s.getOptFile(fe.NewFileOID)
 			s.hdl.HandleFileEvt(s.hdr, cont, proc, file, file2, fe)
+		case sfgo.SF_PROC_FLOW:
 		case sfgo.SF_NET_EVT:
 		default:
 			logger.Warn.Println("Error unsupported SysFlow Type: ", sf.Rec.UnionType)
