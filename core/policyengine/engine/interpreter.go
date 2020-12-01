@@ -67,8 +67,13 @@ func (pi PolicyInterpreter) compile(path string) error {
 	// Create the Parser
 	p := parser.NewSfplParser(stream)
 
+	// Pre-processing (to deal with usage before definitions of macros and lists)
+	antlr.ParseTreeWalkerDefault.Walk(&sfplListener{}, p.Defs())
+	p.GetInputStream().Seek(0)
+
 	// Parse the policy
 	antlr.ParseTreeWalkerDefault.Walk(&sfplListener{}, p.Policy())
+
 	return nil
 }
 
@@ -163,7 +168,7 @@ func (listener *sfplListener) ExitPrule(ctx *parser.PruleContext) {
 		condition: listener.visitExpression(ctx.Expression()),
 		Actions:   listener.getActions(ctx),
 		Tags:      listener.getTags(ctx),
-		Priority:  listener.getPriority(ctx.Severity().GetText()),
+		Priority:  listener.getPriority(ctx),
 		Prefilter: listener.getPrefilter(ctx),
 		Enabled:   ctx.ENABLED(0) == nil || listener.getEnabledFlag(ctx.Enabled(0)),
 	}
@@ -204,40 +209,46 @@ func (listener *sfplListener) getPrefilter(ctx *parser.PruleContext) []string {
 	return pfs
 }
 
-func (listener *sfplListener) getPriority(p string) Priority {
-	switch strings.ToLower(p) {
-	case Low.String():
-		return Low
-	case Medium.String():
-		return Medium
-	case High.String():
-		return High
-	case FPriorityDebug:
-		return Low
-	case FPriorityInfo:
-		return Low
-	case FPriorityNotice:
-		return Low
-	case FPriorityWarning:
-		return Medium
-	case FPriorityError:
-		return High
-	case FPriorityCritical:
-		return High
-	case FPriorityEmergency:
-		return High
-	default:
-		logger.Warn.Printf("Unrecognized priority value %s. Deferring to %s\n", p, Low.String())
-		break
+func (listener *sfplListener) getPriority(ctx *parser.PruleContext) Priority {
+	ictx := ctx.Severity(0)
+	if ictx != nil {
+		p := ictx.GetText()
+		switch strings.ToLower(p) {
+		case Low.String():
+			return Low
+		case Medium.String():
+			return Medium
+		case High.String():
+			return High
+		case FPriorityDebug:
+			return Low
+		case FPriorityInfo:
+			return Low
+		case FPriorityInformational:
+			return Low
+		case FPriorityNotice:
+			return Low
+		case FPriorityWarning:
+			return Medium
+		case FPriorityError:
+			return High
+		case FPriorityCritical:
+			return High
+		case FPriorityEmergency:
+			return High
+		default:
+			logger.Warn.Printf("Unrecognized priority value %s. Deferring to %s\n", p, Low.String())
+			break
+		}
 	}
 	return Low
 }
 
 func (listener *sfplListener) getActions(ctx *parser.PruleContext) []Action {
 	var actions []Action
-	if ctx.OUTPUT() != nil {
+	if ctx.OUTPUT(0) != nil {
 		actions = append(actions, Alert)
-	} else if ctx.ACTION() != nil {
+	} else if ctx.ACTION(0) != nil {
 		astr := ctx.Text(2).GetText()
 		l := listener.extractList(astr)
 		for _, v := range l {
@@ -343,6 +354,8 @@ func (listener *sfplListener) visitTerm(ctx parser.ITermContext) Criterion {
 			return IContains(lop, rop)
 		} else if opCtx.STARTSWITH() != nil {
 			return StartsWith(lop, rop)
+		} else if opCtx.ENDSWITH() != nil {
+			return EndsWith(lop, rop)
 		} else if opCtx.EQ() != nil {
 			return Eq(lop, rop)
 		} else if opCtx.NEQ() != nil {
