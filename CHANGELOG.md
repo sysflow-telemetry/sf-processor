@@ -29,7 +29,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Updates the grammar and intepreter to support falco policies.
 - Several refactorings and performance optimizations in policy engine.
 - Tuned filter policy for k8s clusters.
-- Updates compose file to run processor as unprivileged container.
 
 ### Fixed
 
