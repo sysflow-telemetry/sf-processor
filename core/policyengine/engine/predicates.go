@@ -134,6 +134,14 @@ func StartsWith(lattr string, rattr string) Criterion {
 	return Criterion{p}
 }
 
+// EndsWith creates a criterion for a ends-with predicate.
+func EndsWith(lattr string, rattr string) Criterion {
+	ml := Mapper.MapStr(lattr)
+	mr := Mapper.MapStr(rattr)
+	p := func(r *Record) bool { return eval(ml(r), mr(r), ops.endswith) }
+	return Criterion{p}
+}
+
 // Contains creates a criterion for a contains predicate.
 func Contains(lattr string, rattr string) Criterion {
 	ml := Mapper.MapStr(lattr)
@@ -187,6 +195,7 @@ type operators struct {
 	contains   operator
 	icontains  operator
 	startswith operator
+	endswith   operator
 }
 
 // ops defines boolean comparison operators over strings.
@@ -195,6 +204,7 @@ var ops = operators{
 	contains:   func(l string, r string) bool { return strings.Contains(l, r) },
 	icontains:  func(l string, r string) bool { return strings.Contains(strings.ToLower(l), strings.ToLower(r)) },
 	startswith: func(l string, r string) bool { return strings.HasPrefix(l, r) },
+	endswith:   func(l string, r string) bool { return strings.HasSuffix(l, r) },
 }
 
 // Eval evaluates a boolean operator over two predicates.

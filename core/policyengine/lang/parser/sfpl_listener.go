@@ -10,17 +10,29 @@ type SfplListener interface {
 	// EnterPolicy is called when entering the policy production.
 	EnterPolicy(c *PolicyContext)
 
+	// EnterDefs is called when entering the defs production.
+	EnterDefs(c *DefsContext)
+
 	// EnterPrule is called when entering the prule production.
 	EnterPrule(c *PruleContext)
 
+	// EnterSrule is called when entering the srule production.
+	EnterSrule(c *SruleContext)
+
 	// EnterPfilter is called when entering the pfilter production.
 	EnterPfilter(c *PfilterContext)
+
+	// EnterSfilter is called when entering the sfilter production.
+	EnterSfilter(c *SfilterContext)
 
 	// EnterPmacro is called when entering the pmacro production.
 	EnterPmacro(c *PmacroContext)
 
 	// EnterPlist is called when entering the plist production.
 	EnterPlist(c *PlistContext)
+
+	// EnterPreq is called when entering the preq production.
+	EnterPreq(c *PreqContext)
 
 	// EnterExpression is called when entering the expression production.
 	EnterExpression(c *ExpressionContext)
@@ -55,6 +67,9 @@ type SfplListener interface {
 	// EnterSkipunknown is called when entering the skipunknown production.
 	EnterSkipunknown(c *SkipunknownContext)
 
+	// EnterFappend is called when entering the fappend production.
+	EnterFappend(c *FappendContext)
+
 	// EnterVariable is called when entering the variable production.
 	EnterVariable(c *VariableContext)
 
@@ -73,17 +88,29 @@ type SfplListener interface {
 	// ExitPolicy is called when exiting the policy production.
 	ExitPolicy(c *PolicyContext)
 
+	// ExitDefs is called when exiting the defs production.
+	ExitDefs(c *DefsContext)
+
 	// ExitPrule is called when exiting the prule production.
 	ExitPrule(c *PruleContext)
 
+	// ExitSrule is called when exiting the srule production.
+	ExitSrule(c *SruleContext)
+
 	// ExitPfilter is called when exiting the pfilter production.
 	ExitPfilter(c *PfilterContext)
+
+	// ExitSfilter is called when exiting the sfilter production.
+	ExitSfilter(c *SfilterContext)
 
 	// ExitPmacro is called when exiting the pmacro production.
 	ExitPmacro(c *PmacroContext)
 
 	// ExitPlist is called when exiting the plist production.
 	ExitPlist(c *PlistContext)
+
+	// ExitPreq is called when exiting the preq production.
+	ExitPreq(c *PreqContext)
 
 	// ExitExpression is called when exiting the expression production.
 	ExitExpression(c *ExpressionContext)
@@ -117,6 +144,9 @@ type SfplListener interface {
 
 	// ExitSkipunknown is called when exiting the skipunknown production.
 	ExitSkipunknown(c *SkipunknownContext)
+
+	// ExitFappend is called when exiting the fappend production.
+	ExitFappend(c *FappendContext)
 
 	// ExitVariable is called when exiting the variable production.
 	ExitVariable(c *VariableContext)

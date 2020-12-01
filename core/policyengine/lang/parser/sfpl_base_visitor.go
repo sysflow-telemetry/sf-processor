@@ -11,11 +11,23 @@ func (v *BaseSfplVisitor) VisitPolicy(ctx *PolicyContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseSfplVisitor) VisitDefs(ctx *DefsContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseSfplVisitor) VisitPrule(ctx *PruleContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseSfplVisitor) VisitSrule(ctx *SruleContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseSfplVisitor) VisitPfilter(ctx *PfilterContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseSfplVisitor) VisitSfilter(ctx *SfilterContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
@@ -24,6 +36,10 @@ func (v *BaseSfplVisitor) VisitPmacro(ctx *PmacroContext) interface{} {
 }
 
 func (v *BaseSfplVisitor) VisitPlist(ctx *PlistContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseSfplVisitor) VisitPreq(ctx *PreqContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
@@ -68,6 +84,10 @@ func (v *BaseSfplVisitor) VisitWarnevttype(ctx *WarnevttypeContext) interface{} 
 }
 
 func (v *BaseSfplVisitor) VisitSkipunknown(ctx *SkipunknownContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseSfplVisitor) VisitFappend(ctx *FappendContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

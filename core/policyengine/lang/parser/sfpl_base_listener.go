@@ -26,17 +26,35 @@ func (s *BaseSfplListener) EnterPolicy(ctx *PolicyContext) {}
 // ExitPolicy is called when production policy is exited.
 func (s *BaseSfplListener) ExitPolicy(ctx *PolicyContext) {}
 
+// EnterDefs is called when production defs is entered.
+func (s *BaseSfplListener) EnterDefs(ctx *DefsContext) {}
+
+// ExitDefs is called when production defs is exited.
+func (s *BaseSfplListener) ExitDefs(ctx *DefsContext) {}
+
 // EnterPrule is called when production prule is entered.
 func (s *BaseSfplListener) EnterPrule(ctx *PruleContext) {}
 
 // ExitPrule is called when production prule is exited.
 func (s *BaseSfplListener) ExitPrule(ctx *PruleContext) {}
 
+// EnterSrule is called when production srule is entered.
+func (s *BaseSfplListener) EnterSrule(ctx *SruleContext) {}
+
+// ExitSrule is called when production srule is exited.
+func (s *BaseSfplListener) ExitSrule(ctx *SruleContext) {}
+
 // EnterPfilter is called when production pfilter is entered.
 func (s *BaseSfplListener) EnterPfilter(ctx *PfilterContext) {}
 
 // ExitPfilter is called when production pfilter is exited.
 func (s *BaseSfplListener) ExitPfilter(ctx *PfilterContext) {}
+
+// EnterSfilter is called when production sfilter is entered.
+func (s *BaseSfplListener) EnterSfilter(ctx *SfilterContext) {}
+
+// ExitSfilter is called when production sfilter is exited.
+func (s *BaseSfplListener) ExitSfilter(ctx *SfilterContext) {}
 
 // EnterPmacro is called when production pmacro is entered.
 func (s *BaseSfplListener) EnterPmacro(ctx *PmacroContext) {}
@@ -49,6 +67,12 @@ func (s *BaseSfplListener) EnterPlist(ctx *PlistContext) {}
 
 // ExitPlist is called when production plist is exited.
 func (s *BaseSfplListener) ExitPlist(ctx *PlistContext) {}
+
+// EnterPreq is called when production preq is entered.
+func (s *BaseSfplListener) EnterPreq(ctx *PreqContext) {}
+
+// ExitPreq is called when production preq is exited.
+func (s *BaseSfplListener) ExitPreq(ctx *PreqContext) {}
 
 // EnterExpression is called when production expression is entered.
 func (s *BaseSfplListener) EnterExpression(ctx *ExpressionContext) {}
@@ -115,6 +139,12 @@ func (s *BaseSfplListener) EnterSkipunknown(ctx *SkipunknownContext) {}
 
 // ExitSkipunknown is called when production skipunknown is exited.
 func (s *BaseSfplListener) ExitSkipunknown(ctx *SkipunknownContext) {}
+
+// EnterFappend is called when production fappend is entered.
+func (s *BaseSfplListener) EnterFappend(ctx *FappendContext) {}
+
+// ExitFappend is called when production fappend is exited.
+func (s *BaseSfplListener) ExitFappend(ctx *FappendContext) {}
 
 // EnterVariable is called when production variable is entered.
 func (s *BaseSfplListener) EnterVariable(ctx *VariableContext) {}
