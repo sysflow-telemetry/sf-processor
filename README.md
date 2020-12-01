@@ -72,8 +72,8 @@ services:
       - socket-vol:/sock/
       - ./resources/traces:/tests/traces
     environment:
-      EXPORTER_ID: local
-      NODE_IP: "127.0.0.1"
+      EXPORTER_ID: ${HOSTNAME}
+      NODE_IP: <Host IP address>
       FILTER: "container.name!=sf-collector and container.name!=sf-processor" 
       INTERVAL: 300 
       SOCK_FILE: /sock/sysflow.sock
