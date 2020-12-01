@@ -72,7 +72,7 @@ type, and comparative Falco attribute name. Our policy engine supports both SysF
 | Attributes     | Description       | Values | Falco Attribute |
 |:----------------|:-----------------|:------|----------|
 | sf.type           | Record type       | PE,PF,NF,FF,FE | N/A |
-| sf.opflags        | Operation flags   | [Operation Flags List](https://sysflow.readthedocs.io/en/latest/spec.html#operation-flags): remove `OP_` prefix | evt.type |
+| sf.opflags        | Operation flags   | [Operation Flags List](https://sysflow.readthedocs.io/en/latest/spec.html#operation-flags): remove `OP_` prefix | evt.type (remapped as falco event types) |
 | sf.ret            | Return code       | int   |  evt.res |
 | sf.ts             | start timestamp(ns)| int64 | evt.time |
 | sf.endts          | end timestamp(ns) | int64  |  N/A |
@@ -105,7 +105,7 @@ type, and comparative Falco attribute name. Our policy engine supports both SysF
 | sf.pproc.createts | Parent process creation timestamp | int64 | N/A |
 | sf.file.fd        | File descriptor number | int |  fd.num |
 | sf.file.path      | File path | string | fd.name |
-| sf.file.newpath   | New file path (used in some FileEvents) | string | evt.args |
+| sf.file.newpath   | New file path (used in some FileEvents) | string | N/A |
 | sf.file.name      | File name (qo) | string | fd.filename |
 | sf.file.directory | File directory (qo) | string | fd.directory |
 | sf.file.type      | File type | char 'f': file, 4: IPv4, 6: IPv6, 'u': unix socket, 'p': pipe, 'e': eventfd, 's': signalfd, 'l': eventpoll, 'i': inotify, 'o': unknown. | fd.typechar |  
@@ -149,7 +149,8 @@ The policy language supports the following operations:
 | A > B |  Returns true if A is greater than B.  Note, if B is a list, A only has to be greater than one element in the list. If B is a list, it must be explicit.  It cannot be a variable. | sf.flow.wops > 1000 |
 | A >= B |  Returns true if A is greater than or equal to B.  Note, if B is a list, A only has to be greater than or equal to one element in the list. If B is a list, it must be explicit.  It cannot be a variable. | sf.flow.wops >= 1000 |
 | A in B |  Returns true if value A is an exact match to one of the elements in list B. Note: B must be a list.  Note: () can be used on B to merge multiple list objects into one list. | sf.proc.exe in (bin_binaries, usr_bin_binaries) |
-| A startswith B | Returns true if string A startswith string B |  sf.file.path startswith '/home' |
+| A startswith B | Returns true if string A starts with string B |  sf.file.path startswith '/home' |
+| A endswith B | Returns true if string A ends with string B |  sf.file.path endswith '.json' |
 | A contains B |  Returns true if string A contains string B |  sf.pproc.name=java and sf.pproc.cmdline contains org.apache.hadoop |
 | A icontains B |  Returns true if string A contains string B ignoring capitalization |  sf.pproc.name=java and sf.pproc.cmdline icontains org.apache.hadooP |
 | A pmatch B |  Returns true if string A partial matches one of the elements in B. Note: B must be a list.  Note: () can be used on B to merge multiple list objects into one list. |  sf.proc.name pmatch (modify_passwd_binaries, verify_passwd_binaries, user_util_binaries) |
