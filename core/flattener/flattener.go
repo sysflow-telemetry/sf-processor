@@ -20,6 +20,9 @@
 package flattener
 
 import (
+	"encoding/hex"
+	"fmt"
+
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
@@ -149,6 +152,7 @@ func (s *Flattener) HandleFileEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_TS_INT] = file2.Ts
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_RESTYPE_INT] = int64(file2.Restype)
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_PATH_STR] = file2.Path
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_OID_STR] = getOIDStr(file2.Oid[:])
 		if file2.ContainerId != nil && file2.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_CONTAINERID_STRING_STR] = file2.ContainerId.String
 		} else {
@@ -160,6 +164,7 @@ func (s *Flattener) HandleFileEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_RESTYPE_INT] = sfgo.Zeros.Int64
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_PATH_STR] = sfgo.Zeros.String
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_OID_STR] = sfgo.Zeros.String
 	}
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.FILE_EVT
 	s.fillEntities(hdr, cont, proc, file1, fr)
@@ -271,6 +276,7 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FILE_TS_INT] = file.Ts
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FILE_RESTYPE_INT] = int64(file.Restype)
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_PATH_STR] = file.Path
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_OID_STR] = getOIDStr(file.Oid[:])
 		if file.ContainerId != nil && file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
 			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_CONTAINERID_STRING_STR] = file.ContainerId.String
 		} else {
@@ -282,7 +288,13 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FILE_RESTYPE_INT] = sfgo.Zeros.Int64
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_PATH_STR] = sfgo.Zeros.String
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_OID_STR] = sfgo.Zeros.String
 	}
+}
+
+func getOIDStr(bs []byte) string {
+	//return fmt.Sprintf("%x", bs)
+	return fmt.Sprintf("%s\n", hex.EncodeToString(bs))
 }
 
 func newFlatRecord() *sfgo.FlatRecord {
