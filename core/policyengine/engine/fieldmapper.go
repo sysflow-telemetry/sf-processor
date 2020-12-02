@@ -158,12 +158,12 @@ func getExportedMappers() map[string]FieldMap {
 		SF_FILE_NAME:            mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
 		SF_FILE_PATH:            mapPath(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
 		SF_FILE_SYMLINK:         mapSymlink(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
-		SF_FILE_OID:             mapOID(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
+		SF_FILE_OID:             mapStr(sfgo.SYSFLOW_SRC, sfgo.FILE_OID_STR),
 		SF_FILE_DIRECTORY:       mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR),
 		SF_FILE_NEWNAME:         mapName(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
 		SF_FILE_NEWPATH:         mapPath(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
 		SF_FILE_NEWSYMLINK:      mapSymlink(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
-		SF_FILE_NEWOID:          mapOID(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
+		SF_FILE_NEWOID:          mapStr(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_OID_STR),
 		SF_FILE_NEWDIRECTORY:    mapDir(sfgo.SYSFLOW_SRC, sfgo.SEC_FILE_PATH_STR),
 		SF_FILE_TYPE:            mapFileType(sfgo.SYSFLOW_SRC, sfgo.FILE_RESTYPE_INT),
 		SF_FILE_IS_OPEN_WRITE:   mapIsOpenWrite(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT),
@@ -545,29 +545,8 @@ func mapCachedValue(src sfgo.Source, attr RecAttribute) FieldMap {
 func mapOID(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		h := xxhash.New()
-		rtype := mapRecType(src)(r)
 		for _, attr := range attrs {
-			switch attr {
-			case sfgo.FILE_PATH_STR:
-				if rtype == TyFF || rtype == TyFE {
-					h.Write([]byte(r.GetStr(attr, src)))
-				} else {
-					return sfgo.Zeros.String
-				}
-				break
-			case sfgo.SEC_FILE_PATH_STR:
-				opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT, src)
-				hassecfile := opflags&sfgo.OP_RENAME == sfgo.OP_RENAME || opflags&sfgo.OP_SYMLINK == sfgo.OP_SYMLINK || opflags&sfgo.OP_LINK == sfgo.OP_LINK
-				if rtype == TyFE && hassecfile {
-					h.Write([]byte(r.GetStr(attr, src)))
-				} else {
-					return sfgo.Zeros.String
-				}
-				break
-			default:
-				h.Write([]byte(fmt.Sprintf("%v", r.GetInt(attr, src))))
-				break
-			}
+			h.Write([]byte(fmt.Sprintf("%v", r.GetInt(attr, src))))
 		}
 		return fmt.Sprintf("%x", h.Sum(nil))
 	}
