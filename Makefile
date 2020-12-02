@@ -41,6 +41,7 @@ test:
 clean:
 	cd $(SRC) && $(GOCLEAN)
 	rm -f $(SRC)/$(BIN)
+	rm -f $(SRC)/manifest/manifest.go
 
 .PHONY: install
 install: build
