@@ -21,7 +21,6 @@ package flattener
 
 import (
 	"encoding/hex"
-	"fmt"
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
@@ -293,8 +292,7 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 }
 
 func getOIDStr(bs []byte) string {
-	//return fmt.Sprintf("%x", bs)
-	return fmt.Sprintf("%s\n", hex.EncodeToString(bs))
+	return hex.EncodeToString(bs)
 }
 
 func newFlatRecord() *sfgo.FlatRecord {
