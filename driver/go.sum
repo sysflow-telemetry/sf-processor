@@ -176,15 +176,8 @@ github.com/subosito/gotenv v1.2.0 h1:Slr1R9HxAlEKefgq5jn9U+DnETlIUa6HfgEzj0g5d7s
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/syndtr/gocapability v0.0.0-20170704070218-db04d3cc01c8/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201029230226-b00c1f55c6b0 h1:ezn2cJhqCZTilHOX8S5botGSLf54V+PboDFsgXNr32M=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201029230226-b00c1f55c6b0/go.mod h1:rpTKky267xtopNUCoInTEZiaFkOrawhzE0HaZMEvIAI=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201201011053-576fd22887b8 h1:sVdEyr2LB6Q0LEjd3mEZHmXsJ0NtIoSa254sdSzZaWc=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201201011053-576fd22887b8/go.mod h1:rpTKky267xtopNUCoInTEZiaFkOrawhzE0HaZMEvIAI=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201201012055-dce1036e88db h1:WyomxNfhg5HwbyZCtn81DOcUFPu3VUhDcsBH+/hvcec=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201201012055-dce1036e88db/go.mod h1:rpTKky267xtopNUCoInTEZiaFkOrawhzE0HaZMEvIAI=
-github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201103193450-8a8ff771f88f/go.mod h1:BfOnmjyDWSaBaMMSeTlFYCXOEQjlkEaBQcly1coyzek=
-github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201103203109-db071a4dc1fa h1:wXgyjPTaVzYXh8SM+hy4QKIIqkQAaUJ8hiQOrYZiXyA=
-github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201103203109-db071a4dc1fa/go.mod h1:BfOnmjyDWSaBaMMSeTlFYCXOEQjlkEaBQcly1coyzek=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201202020536-373aa902821c h1:6BeNvZ7D6+uB9kUnzxzrQRSTC32yn7poDwWAoE4gqmg=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201202020536-373aa902821c/go.mod h1:rpTKky267xtopNUCoInTEZiaFkOrawhzE0HaZMEvIAI=
 github.com/tchap/go-patricia v2.3.0+incompatible/go.mod h1:bmLyhP68RS6kStMGxByiQ23RP/odRBOTVjwp2cDyi6I=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/urfave/cli v0.0.0-20171014202726-7bc6a0acffa5/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=

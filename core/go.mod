@@ -28,5 +28,5 @@ require (
 	github.com/enriquebris/goconcurrentqueue v0.6.0
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/stretchr/testify v1.6.1
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201201012055-dce1036e88db
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201202020536-373aa902821c
 )
