@@ -545,8 +545,29 @@ func mapCachedValue(src sfgo.Source, attr RecAttribute) FieldMap {
 func mapOID(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		h := xxhash.New()
+		rtype := mapRecType(src)(r)
 		for _, attr := range attrs {
-			h.Write([]byte(fmt.Sprintf("%v", r.GetInt(attr, src))))
+			switch attr {
+			case sfgo.FILE_PATH_STR:
+				if rtype == TyFF || rtype == TyFE {
+					h.Write([]byte(r.GetStr(attr, src)))
+				} else {
+					return sfgo.Zeros.String
+				}
+				break
+			case sfgo.SEC_FILE_PATH_STR:
+				opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT, src)
+				hassecfile := opflags&sfgo.OP_RENAME == sfgo.OP_RENAME || opflags&sfgo.OP_SYMLINK == sfgo.OP_SYMLINK || opflags&sfgo.OP_LINK == sfgo.OP_LINK
+				if rtype == TyFE && hassecfile {
+					h.Write([]byte(r.GetStr(attr, src)))
+				} else {
+					return sfgo.Zeros.String
+				}
+				break
+			default:
+				h.Write([]byte(fmt.Sprintf("%v", r.GetInt(attr, src))))
+				break
+			}
 		}
 		return fmt.Sprintf("%x", h.Sum(nil))
 	}

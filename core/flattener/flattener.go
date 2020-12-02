@@ -154,6 +154,12 @@ func (s *Flattener) HandleFileEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 		} else {
 			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
 		}
+	} else {
+		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_STATE_INT] = sfgo.Zeros.Int64
+		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_TS_INT] = sfgo.Zeros.Int64
+		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_RESTYPE_INT] = sfgo.Zeros.Int64
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_PATH_STR] = sfgo.Zeros.String
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
 	}
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.FILE_EVT
 	s.fillEntities(hdr, cont, proc, file1, fr)
