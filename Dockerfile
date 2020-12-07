@@ -85,7 +85,9 @@ COPY ./LICENSE.md /licenses/
 
 # Copy files from previous stage
 COPY --from=base --chown=1001:1001 /usr/local/sysflow/ /usr/local/sysflow/
-RUN mkdir -p /sock && chown -R 1001:1001 /sock
+RUN microdnf -y update && \
+    ( microdnf -y clean all ; rm -rf /var/cache/{dnf,yum} ; true ) && \
+    mkdir -p /sock && chown -R 1001:1001 /sock
 VOLUME /sock
 USER 1001
 
