@@ -13,7 +13,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 > - **Fixed**: for any bug fixes.
 > - **Security**: in case of vulnerabilities.
 
-## [[UNRELEASED](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.1...HEAD)]
+## [[UNRELEASED](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...HEAD)]
+
+## [[0.2.2](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.1...0.2.2)] - 2020-12-07
+
+### Changed
+
+- Updated dependencies to latest `sf-apis`.
 
 ## [[0.2.1](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.0...0.2.1)] - 2020-12-02
 
