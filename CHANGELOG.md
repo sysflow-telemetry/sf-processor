@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
-- Updated dependencies to latest `sf-apis`.
+- Updated dependencies to latest `sf-apis`.
 
 ## [[0.2.1](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.0...0.2.1)] - 2020-12-02
 
@@ -33,7 +33,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - Adds lists and macro preprocessing to deal with usage before declarations in input policy language.
 - Adds empty handling for process flow objects.
-- Adds `endswith` binary operator to policy expression language.
+- Adds `endswith` binary operator to policy expression language.
 - Added initial documentation.
 
 ### Changed
