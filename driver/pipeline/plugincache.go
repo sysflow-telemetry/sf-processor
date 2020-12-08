@@ -44,13 +44,13 @@ type PluginCache struct {
 	procFuncMap map[string]interface{}
 	hdlFuncMap  map[string]interface{}
 	chanFuncMap map[string]interface{}
-	config      *viper.Viper
+	config      *Config
 	configFile  string
 }
 
 // NewPluginCache creates a new PluginCache instance.
 func NewPluginCache(conf string) *PluginCache {
-	plug := &PluginCache{config: viper.New(),
+	plug := &PluginCache{config: new(Config),
 		chanMap:     make(map[string]interface{}),
 		driverMap:   make(map[string]interface{}),
 		procFuncMap: make(map[string]interface{}),
@@ -141,23 +141,23 @@ func (p *PluginCache) GetConfig() (*Config, error) {
 		return nil, errors.New("Pipeline config file is not a file")
 	}
 	dir := filepath.Dir(p.configFile)
-	p.config.SetConfigName(strings.TrimSuffix(filepath.Base(p.configFile), filepath.Ext(p.configFile)))
-	p.config.SetConfigType("json")
-	p.config.AddConfigPath(dir)
 
-	conf := new(Config)
-	err = p.config.ReadInConfig()
+	configReader := viper.New()
+	configReader.SetConfigName(strings.TrimSuffix(filepath.Base(p.configFile), filepath.Ext(p.configFile)))
+	configReader.SetConfigType("json")
+	configReader.AddConfigPath(dir)
 
+	err = configReader.ReadInConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	err = p.config.Unmarshal(conf)
+	err = configReader.Unmarshal(p.config)
 	if err != nil {
 		return nil, err
 	}
+	p.updateConfigFromEnv()
 
-	p.updateConfigFromEnv(conf)
 	return conf, nil
 }
 
@@ -165,8 +165,8 @@ func (p *PluginCache) GetConfig() (*Config, error) {
 // It assumes the following convention:
 // - Environment variables follow the naming schema <PROCESSOR NAME>_<CONFIG ATTRIBUTE NAME>
 // - Processor name in pipeline.json is all lower case
-func (p *PluginCache) updateConfigFromEnv(config *Config) {
-	for _, c := range config.Pipeline {
+func (p *PluginCache) updateConfigFromEnv() {
+	for _, c := range p.config.Pipeline {
 		if proc, ok := c[ProcConfig]; ok {
 			for k, v := range p.getEnv(proc) {
 				c[k] = v
