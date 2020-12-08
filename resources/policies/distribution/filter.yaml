@@ -126,14 +126,13 @@
 
 - macro: _drop_out_noisy_file_read_events_from_specific_high_level_dirs
   condition: file_read_or_file_opened_for_read
-             and (sf.file.directory startswith /usr/
-              or sf.file.directory startswith /proc/
-              or sf.file.directory startswith /sys/
-              or sf.file.directory startswith /lib/
-              or sf.file.directory startswith /lib64/
-              or sf.file.directory startswith //sys/
-              or sf.file.directory startswith /dev/
-              or sf.file.directory startswith /tmp/)
+             and (sf.file.directory startswith /usr
+              or sf.file.directory startswith /proc
+              or sf.file.directory startswith /sys
+              or sf.file.directory startswith /lib
+              or sf.file.directory startswith //sys
+              or sf.file.directory startswith /dev
+              or sf.file.directory startswith /tmp)
 
 - macro: _drop_out_noisy_file_read_events_from_pipes_and_sockets
   condition: file_read_or_file_opened_for_read and sf.file.type in (u, p)
