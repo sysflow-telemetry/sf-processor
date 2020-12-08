@@ -92,6 +92,9 @@
 - list: _openshift_infrastructure_container_noisy_process_clone_by_parent_process
   items: [/usr/bin/runc, /usr/libexec/crio/conmon, /usr/bin/crio, /bin/bash, /usr/bin/sh, /usr/bin/bash, /usr/share/openvswitch/scripts/ovs-ctl, /proc/self/exe, /usr/bin/ceph, /usr/bin/openshift-tuned, /usr/sbin/tuned-adm, /usr/bin/python2, /usr/bin/ansible-runner, /usr/bin/ansible-playbook]
 
+- macro: _drop_out_noisy_process_clone_events_from_ansible
+  condition: clone_syscall and ansible_in_infrastructure_containers
+
 - macro: bash_and_parent_process_proc_self_exe_with_cri_grandparents
   condition: sf.proc.exe = /bin/bash and sf.pproc.exe = /proc/self/exe
              and (sf.proc.aexe in (/usr/bin/runc) and sf.proc.aexe in (/usr/libexec/crio/conmon) and sf.proc.aexe in (/usr/bin/crio))
@@ -470,6 +473,7 @@
 - filter: __global__
   condition: _drop_out_noisy_process_clone_events
              or _drop_thread_clone_events
+             or _drop_out_noisy_process_clone_events_from_ansible
              or _drop_out_noisy_process_clone_events_from_bash_proc_self_exe
              or _drop_out_noisy_file_read_events
              or _drop_out_noisy_file_read_events_from_nginx_ingress_controller
