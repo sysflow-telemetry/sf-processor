@@ -79,6 +79,12 @@ func (pl *Pipeline) AddChannel(channelName string, channel interface{}) {
 
 // Load loads and enables the pipeline
 func (pl *Pipeline) Load(driverName string) error {
+	conf, err := pl.pluginCache.GetConfig()
+	if err != nil {
+		logger.Error.Println("Unable to load pipeline config: ", err)
+		return err
+	}
+	setManifestInfo(conf)
 	if err := pl.pluginCache.LoadDrivers(pl.driverDir); err != nil {
 		logger.Error.Println("Unable to load dynamic driver: ", err)
 		return err
@@ -87,12 +93,6 @@ func (pl *Pipeline) Load(driverName string) error {
 		logger.Error.Println("Unable to load dynamic plugins: ", err)
 		return err
 	}
-	conf, err := pl.pluginCache.GetConfig()
-	if err != nil {
-		logger.Error.Println("Unable to load pipeline config: ", err)
-		return err
-	}
-	setManifestInfo(conf)
 	if pl.driver, err = pl.pluginCache.GetDriver(driverName); err != nil {
 		logger.Error.Println("Unable to load driver: ", err)
 		return err
