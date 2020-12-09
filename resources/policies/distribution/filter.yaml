@@ -75,6 +75,9 @@
 - macro: nginx_ingress_controller_container
   condition: sf.container.image pmatch (nginx-ingress-controller)
 
+- macro: nvidia_gpu_operator
+  condition: sf.container.image pmatch (gpu-operator)
+
 #### Process Clone tuning
 
 - macro: _drop_thread_clone_events
@@ -139,6 +142,12 @@
 
 - macro: _drop_noisy_file_read_from_ansible_in_infrastructure_containers
   condition: file_read_or_file_opened_for_read and ansible_in_infrastructure_containers
+
+- macro: _drop_out_noisy_file_read_events_from_nvidia_gpu_operator
+  condition: file_read_or_file_opened_for_read and nvidia_gpu_operator and sf.proc.exe = /usr/bin/gpu-operator
+             and (sf.file.directory startswith /opt/gpu-operator
+                  or sf.file.directory startswith /var/run
+                  or sf.file.path = /host-etc/os-release)
 
 - macro: _drop_file_read_list_of_file_paths
   condition: file_read_or_file_opened_for_read
@@ -245,6 +254,11 @@
              and sf.file.type = u
              and (sf.proc.exe in (/usr/bin/ldd, /usr/bin/kubelet, /usr/libexec/sssd/sssd_nss)
                  or sf.pproc.exe in (/usr/bin/ldd, /usr/bin/kubelet))
+
+- macro: _drop_file_write_from_nvidia_gpu_operator_to_unix_socket_and_pipes
+  condition: file_write_or_file_opened_for_write and nvidia_gpu_operator
+             and sf.file.type in (u, p)
+             and sf.proc.exe = /usr/bin/gpu-operator
 
 - macro: _drop_file_write_from_kubelet_specific_file_paths
   condition: file_write_or_file_opened_for_write
@@ -481,6 +495,7 @@
              or _drop_out_noisy_process_clone_events_from_bash_proc_self_exe
              or _drop_out_noisy_file_read_events
              or _drop_out_noisy_file_read_events_from_nginx_ingress_controller
+             or _drop_out_noisy_file_read_events_from_nvidia_gpu_operator
              or _drop_file_read_list_of_file_paths
              or _drop_out_noisy_file_read_events_from_proc_self_exe
              or _drop_out_noisy_file_read_events_from_specific_high_level_dirs
@@ -499,6 +514,7 @@
              or _drop_file_write_from_some_processes_to_unix_socket
              or _drop_file_write_from_sshd_to_unix_domain
              or _drop_file_write_from_nginx_ingress_controller
+             or _drop_file_write_from_nvidia_gpu_operator_to_unix_socket_and_pipes
              or _drop_noisy_file_write_from_ansible_in_infrastructure_containers
              or _drop_write_from_infrastructure_containers_to_pipe_or_unix_domain_socket
              or _drop_file_write_from_proc_self_exe_part_1
@@ -680,4 +696,3 @@
   action: [alert]
   priority: low
   prefilter: [NF]
-
