@@ -48,7 +48,6 @@ type HandlerCache struct {
 
 // newHandlerCache creates a new HandlerCache instance.
 func newHandlerCache(pc plugins.SFPluginCache) *HandlerCache {
-	fmt.Printf("Value of pc: %p\n", pc)
 	hdl := &HandlerCache{
 		hdlFuncMap:  make(map[string]interface{}),
 		pluginCache: pc}

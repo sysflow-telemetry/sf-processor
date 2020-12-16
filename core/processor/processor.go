@@ -20,7 +20,6 @@
 package processor
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
@@ -63,7 +62,6 @@ func NewSysFlowChan(size int) interface{} {
 
 // Register registers plugin to plugin cache.
 func (s *SysFlowProcessor) Register(pc plugins.SFPluginCache) {
-	fmt.Printf("Called SFPROCESSOR REGISTER\n")
 	pc.AddProcessor(pluginName, NewSysFlowProcessor)
 	pc.AddChannel(channelName, NewSysFlowChan)
 	sPCOnce.Do(func() {
