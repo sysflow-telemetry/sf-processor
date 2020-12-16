@@ -60,48 +60,48 @@ type Config struct {
 }
 
 // CreateConfig creates a new config object from config dictionary.
-func CreateConfig(conf map[string]string) Config {
+func CreateConfig(conf map[string]interface{}) Config {
 	var c Config = Config{Host: "localhost", Port: 514, Path: "./export.out", Tag: "sysflow"} // default values
-	if v, ok := conf[ExportConfigKey]; ok {
+	if v, ok := conf[ExportConfigKey].(string); ok {
 		c.Export = parseExportConfig(v)
 	}
-	if v, ok := conf[ExpTypeConfigKey]; ok {
+	if v, ok := conf[ExpTypeConfigKey].(string); ok {
 		c.ExpType = parseExportTypeConfig(v)
 	}
-	if v, ok := conf[FormatConfigKey]; ok {
+	if v, ok := conf[FormatConfigKey].(string); ok {
 		c.Format = parseFormatConfig(v)
 	}
-	if v, ok := conf[FlatConfigKey]; ok && v == "true" {
+	if v, ok := conf[FlatConfigKey].(string); ok && v == "true" {
 		c.Flat = true
 	}
-	if v, ok := conf[ProtoConfigKey]; ok {
+	if v, ok := conf[ProtoConfigKey].(string); ok {
 		c.Proto = parseProtoConfig(v)
 	}
-	if v, ok := conf[TagConfigKey]; ok {
+	if v, ok := conf[TagConfigKey].(string); ok {
 		c.Tag = v
 	}
-	if v, ok := conf[LogSourceConfigKey]; ok {
+	if v, ok := conf[LogSourceConfigKey].(string); ok {
 		c.LogSource = v
 	}
-	if v, ok := conf[HostConfigKey]; ok {
+	if v, ok := conf[HostConfigKey].(string); ok {
 		c.Host = v
 	}
-	if v, ok := conf[PortConfigKey]; ok {
+	if v, ok := conf[PortConfigKey].(string); ok {
 		c.Port, _ = strconv.Atoi(v)
 	}
-	if v, ok := conf[PathConfigKey]; ok {
+	if v, ok := conf[PathConfigKey].(string); ok {
 		c.Path = v
 	}
-	if v, ok := conf[EventBufferConfigKey]; ok {
+	if v, ok := conf[EventBufferConfigKey].(string); ok {
 		c.EventBuffer, _ = strconv.Atoi(v)
 	}
-	if v, ok := conf[VersionKey]; ok {
+	if v, ok := conf[VersionKey].(string); ok {
 		c.Version = v
 	}
-	if v, ok := conf[JSONSchemaVersionKey]; ok {
+	if v, ok := conf[JSONSchemaVersionKey].(string); ok {
 		c.JSONSchemaVersion = v
 	}
-	if v, ok := conf[BuildNumberKey]; ok {
+	if v, ok := conf[BuildNumberKey].(string); ok {
 		c.BuildNumber = v
 	}
 	return c
