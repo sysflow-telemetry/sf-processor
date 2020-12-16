@@ -79,19 +79,19 @@ func (pl *Pipeline) AddChannel(channelName string, channel interface{}) {
 
 // Load loads and enables the pipeline
 func (pl *Pipeline) Load(driverName string) error {
-	if err := pl.pluginCache.LoadDrivers(pl.driverDir); err != nil {
-		logger.Error.Println("Unable to load dynamic driver: ", err)
-		return err
-	}
-	if err := pl.pluginCache.LoadPlugins(pl.pluginDir); err != nil {
-		logger.Error.Println("Unable to load dynamic plugins: ", err)
-		return err
-	}
 	conf, err := pl.pluginCache.GetConfig()
 	if err != nil {
 		logger.Error.Println("Unable to load pipeline config: ", err)
 		return err
 	}
+	if err := pl.pluginCache.LoadDrivers(pl.driverDir); err != nil {
+		logger.Error.Println("Unable to load dynamic driver: ", err)
+		return err
+	}
+	/*if err := pl.pluginCache.LoadPlugins(pl.pluginDir, conf); err != nil {
+		logger.Error.Println("Unable to load dynamic plugins: ", err)
+		return err
+	}*/
 	setManifestInfo(conf)
 	if pl.driver, err = pl.pluginCache.GetDriver(driverName); err != nil {
 		logger.Error.Println("Unable to load driver: ", err)
@@ -100,7 +100,7 @@ func (pl *Pipeline) Load(driverName string) error {
 	var in interface{}
 	var out interface{}
 	for _, p := range conf.Pipeline {
-		hdler := false
+		/*hdler := false
 		var hdl plugins.SFHandler
 		if val, ok := p[HdlConfig]; ok {
 			hdl, err = pl.pluginCache.GetHandler(val)
@@ -112,10 +112,10 @@ func (pl *Pipeline) Load(driverName string) error {
 			xType := fmt.Sprintf("%T", hdl)
 			logger.Trace.Println(xType)
 			hdler = true
-		}
+		}*/
 		var prc plugins.SFProcessor
-		if val, ok := p[ProcConfig]; ok {
-			prc, err = pl.pluginCache.GetProcessor(val, hdl, hdler)
+		if val, ok := p[ProcConfig].(string); ok {
+			prc, err = pl.pluginCache.GetProcessor(pl.pluginDir, val)
 			if err != nil {
 				logger.Error.Println(err)
 				return err
@@ -128,11 +128,15 @@ func (pl *Pipeline) Load(driverName string) error {
 				return err
 			}
 		} else {
-			logger.Error.Println("Processor or handler tag must exist in plugin config")
+			logger.Error.Println("processor tag must exist in plugin config")
 			return err
 		}
-		if v, o := p[InChanConfig]; o {
+		if v, o := p[InChanConfig].(string); o {
 			in, err = pl.pluginCache.GetChan(v, ChanSize)
+			if err != nil {
+				logger.Error.Println(err)
+				return err
+			}
 			pl.channels = append(pl.channels, in)
 			chp := fmt.Sprintf("%T", in)
 			logger.Trace.Println(chp)
@@ -140,12 +144,20 @@ func (pl *Pipeline) Load(driverName string) error {
 			logger.Error.Println("in tag must exist in plugin config")
 			return errors.New("in tag must exist in plugin config")
 		}
-		if v, o := p[OutChanConfig]; o {
-			out, err = pl.pluginCache.GetChan(v, ChanSize)
-			chp := fmt.Sprintf("%T", out)
-			pl.channels = append(pl.channels, out)
-			logger.Trace.Println(chp)
-			prc.SetOutChan(out)
+		if v, o := p[OutChanConfig].([]interface{}); o {
+			var channels []interface{}
+			for _, channel := range v {
+				out, err = pl.pluginCache.GetChan(channel.(string), ChanSize)
+				if err != nil {
+					logger.Error.Println(err)
+					return err
+				}
+				channels = append(channels, out)
+				chp := fmt.Sprintf("%T", out)
+				pl.channels = append(pl.channels, out)
+				logger.Trace.Println(chp)
+			}
+			prc.SetOutChan(channels)
 		}
 		pl.processors = append(pl.processors, prc)
 		pl.wg.Add(1)
