@@ -144,10 +144,23 @@ func (pl *Pipeline) Load(driverName string) error {
 			logger.Error.Println("in tag must exist in plugin config")
 			return errors.New("in tag must exist in plugin config")
 		}
-		if v, o := p[OutChanConfig].([]interface{}); o {
+		if v, o := p[OutChanConfig]; o {
 			var channels []interface{}
-			for _, channel := range v {
-				out, err = pl.pluginCache.GetChan(channel.(string), ChanSize)
+			switch t := v.(type) {
+			case []interface{}:
+				for _, channel := range t {
+					out, err = pl.pluginCache.GetChan(channel.(string), ChanSize)
+					if err != nil {
+						logger.Error.Println(err)
+						return err
+					}
+					channels = append(channels, out)
+					chp := fmt.Sprintf("%T", out)
+					pl.channels = append(pl.channels, out)
+					logger.Trace.Println(chp)
+				}
+			case string:
+				out, err = pl.pluginCache.GetChan(t, ChanSize)
 				if err != nil {
 					logger.Error.Println(err)
 					return err
