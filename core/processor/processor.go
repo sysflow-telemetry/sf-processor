@@ -20,13 +20,13 @@
 package processor
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/cache"
-	"github.com/sysflow-telemetry/sf-processor/core/flattener"
 )
 
 const (
@@ -41,11 +41,13 @@ type SysFlowProcessor struct {
 	tables *cache.SFTables
 }
 
+var sPluginCache plugins.SFPluginCache
+var sPCOnce sync.Once
+
 // NewSysFlowProcessor creates a new SysFlowProcessor instance.
-func NewSysFlowProcessor(hdl plugins.SFHandler) plugins.SFProcessor {
+func NewSysFlowProcessor() plugins.SFProcessor {
 	logger.Trace.Println("Calling NewSysFlowProc")
 	p := new(SysFlowProcessor)
-	p.hdl = hdl
 	return p
 }
 
@@ -61,19 +63,28 @@ func NewSysFlowChan(size int) interface{} {
 
 // Register registers plugin to plugin cache.
 func (s *SysFlowProcessor) Register(pc plugins.SFPluginCache) {
+	fmt.Printf("Called SFPROCESSOR REGISTER\n")
 	pc.AddProcessor(pluginName, NewSysFlowProcessor)
 	pc.AddChannel(channelName, NewSysFlowChan)
-	(&flattener.Flattener{}).Register(pc)
+	sPCOnce.Do(func() {
+		sPluginCache = pc
+	})
 }
 
 // Init initializes the processor with a configuration map.
-func (s *SysFlowProcessor) Init(conf map[string]string) error {
+func (s *SysFlowProcessor) Init(conf map[string]interface{}) error {
 	s.tables = cache.GetInstance()
+	hdlCache := getInstance(sPluginCache)
+	hdl, err := hdlCache.GetHandler(conf)
+	if err != nil {
+		return err
+	}
+	s.hdl = hdl
 	return nil
 }
 
 // SetOutChan sets the output channel of the plugin.
-func (s *SysFlowProcessor) SetOutChan(ch interface{}) {
+func (s *SysFlowProcessor) SetOutChan(ch []interface{}) {
 	s.hdl.SetOutChan(ch)
 }
 

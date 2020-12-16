@@ -1,0 +1,10 @@
+{
+  "pipeline":[
+    {
+     "processor": "sysflowreader",
+     "handler": "printer",
+     "in": "sysflow sysflowchan",
+     "handlerlibpath": "../resources/handlers/"
+    }
+  ]
+}

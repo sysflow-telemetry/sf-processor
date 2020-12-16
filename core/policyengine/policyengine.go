@@ -40,7 +40,7 @@ const (
 type PolicyEngine struct {
 	pi         engine.PolicyInterpreter
 	tables     *cache.SFTables
-	outCh      chan *engine.Record
+	outCh      []chan *engine.Record
 	filterOnly bool
 	bypass     bool
 	config     engine.Config
@@ -68,7 +68,7 @@ func (s *PolicyEngine) Register(pc plugins.SFPluginCache) {
 }
 
 // Init initializes the plugin.
-func (s *PolicyEngine) Init(conf map[string]string) error {
+func (s *PolicyEngine) Init(conf map[string]interface{}) error {
 	config, err := engine.CreateConfig(conf)
 	if err != nil {
 		return err
@@ -100,7 +100,11 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 	in := ch.(*flattener.FlatChannel).In
 	defer wg.Done()
 	logger.Trace.Println("Starting policy engine with capacity: ", cap(in))
-	out := func(r *engine.Record) { s.outCh <- r }
+	out := func(r *engine.Record) {
+		for _, c := range s.outCh {
+			c <- r
+		}
+	}
 	for {
 		if fc, ok := <-in; ok {
 			if s.bypass {
@@ -116,14 +120,18 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 }
 
 // SetOutChan sets the output channel of the plugin.
-func (s *PolicyEngine) SetOutChan(ch interface{}) {
-	s.outCh = (ch.(*engine.RecordChannel)).In
+func (s *PolicyEngine) SetOutChan(ch []interface{}) {
+	for _, c := range ch {
+		s.outCh = append(s.outCh, (c.(*engine.RecordChannel)).In)
+	}
 }
 
 // Cleanup clean up the plugin resources.
 func (s *PolicyEngine) Cleanup() {
 	logger.Trace.Println("Exiting ", pluginName)
 	if s.outCh != nil {
-		close(s.outCh)
+		for _, c := range s.outCh {
+			close(c)
+		}
 	}
 }

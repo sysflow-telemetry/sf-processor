@@ -40,23 +40,23 @@ type Config struct {
 }
 
 // CreateConfig creates a new config object from config dictionary.
-func CreateConfig(conf map[string]string) (Config, error) {
+func CreateConfig(conf map[string]interface{}) (Config, error) {
 	var c Config = Config{Mode: AlertMode} // default values
-	if v, ok := conf[PoliciesConfigKey]; ok {
+	if v, ok := conf[PoliciesConfigKey].(string); ok {
 		c.PoliciesPath = v
 	} else {
 		return c, errors.New("Configuration tag 'policies' missing from policy engine plugin settings")
 	}
-	if v, ok := conf[ModeConfigKey]; ok {
+	if v, ok := conf[ModeConfigKey].(string); ok {
 		c.Mode = parseModeConfig(v)
 	}
-	if v, ok := conf[VersionKey]; ok {
+	if v, ok := conf[VersionKey].(string); ok {
 		c.Version = v
 	}
-	if v, ok := conf[JSONSchemaVersionKey]; ok {
+	if v, ok := conf[JSONSchemaVersionKey].(string); ok {
 		c.JSONSchemaVersion = v
 	}
-	if v, ok := conf[BuildNumberKey]; ok {
+	if v, ok := conf[BuildNumberKey].(string); ok {
 		c.BuildNumber = v
 	}
 	return c, nil

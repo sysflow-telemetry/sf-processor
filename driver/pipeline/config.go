@@ -47,7 +47,7 @@ const (
 type inputType int
 
 // PluginConfig defines a map for plugin configuration
-type PluginConfig map[string]string
+type PluginConfig map[string]interface{}
 
 // Config defines a pipeline configuration object
 type Config struct {
