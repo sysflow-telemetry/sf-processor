@@ -158,7 +158,7 @@ func (p *PluginCache) GetConfig() (*Config, error) {
 	}
 	p.updateConfigFromEnv()
 
-	return conf, nil
+	return p.config, nil
 }
 
 // updateConfigFromEnv updates config object with environment variables if set.

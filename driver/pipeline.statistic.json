@@ -1,0 +1,32 @@
+{
+   "_comment": "Dynamic plugin example. To build the plugin, run `make` under ../plugins/example.",
+   "pipeline":[
+     {
+      "processor": "sysflowreader",
+      "handler": "flattener",
+      "in": "sysflow sysflowchan",
+      "out": "flat flattenerchan"
+     },
+     {
+      "processor": "statistic",
+      "in": "flat flattenerchan",
+      "out": "flat2 flattenerchan",
+      "hostnane": "localhost", 
+      "period": "250ms"          
+     },
+     {
+      "processor": "policyengine",
+      "in": "flat2 flattenerchan",
+      "out": "evt eventchan",
+      "policies": "../resources/policies/distribution/filter.yaml", 
+      "mode": "bypass"     
+     },
+     {
+      "processor": "exporter",
+      "in": "evt eventchan",
+      "export": "file",
+      "path": "/tmp/out2",
+      "type": "telemetry"     
+     }
+   ]
+}

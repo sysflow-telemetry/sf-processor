@@ -82,27 +82,27 @@ func (s *Flattener) Cleanup() {
 }
 
 // HandleHeader processes Header entities.
-func (s *Flattener) HandleHeader(hdr *sfgo.SFHeader) error {
+func (s *Flattener) HandleHeader(sf *sfgo.SysFlow, hdr *sfgo.SFHeader) error {
 	return nil
 }
 
 // HandleContainer processes Container entities.
-func (s *Flattener) HandleContainer(hdr *sfgo.SFHeader, cont *sfgo.Container) error {
+func (s *Flattener) HandleContainer(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container) error {
 	return nil
 }
 
 // HandleProcess processes Process entities.
-func (s *Flattener) HandleProcess(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process) error {
+func (s *Flattener) HandleProcess(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process) error {
 	return nil
 }
 
 // HandleFile processes File entities.
-func (s *Flattener) HandleFile(hdr *sfgo.SFHeader, cont *sfgo.Container, file *sfgo.File) error {
+func (s *Flattener) HandleFile(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, file *sfgo.File) error {
 	return nil
 }
 
 // HandleNetFlow processes Network Flows.
-func (s *Flattener) HandleNetFlow(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, nf *sfgo.NetworkFlow) error {
+func (s *Flattener) HandleNetFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, nf *sfgo.NetworkFlow) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.NET_FLOW
 	s.fillEntities(hdr, cont, proc, nil, fr)
@@ -125,7 +125,7 @@ func (s *Flattener) HandleNetFlow(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 }
 
 // HandleFileFlow processes File Flows.
-func (s *Flattener) HandleFileFlow(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file *sfgo.File, ff *sfgo.FileFlow) error {
+func (s *Flattener) HandleFileFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file *sfgo.File, ff *sfgo.FileFlow) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.FILE_FLOW
 	s.fillEntities(hdr, cont, proc, file, fr)
@@ -144,7 +144,7 @@ func (s *Flattener) HandleFileFlow(hdr *sfgo.SFHeader, cont *sfgo.Container, pro
 }
 
 // HandleFileEvt processes File Events.
-func (s *Flattener) HandleFileEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file1 *sfgo.File, file2 *sfgo.File, fe *sfgo.FileEvent) error {
+func (s *Flattener) HandleFileEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file1 *sfgo.File, file2 *sfgo.File, fe *sfgo.FileEvent) error {
 	fr := newFlatRecord()
 	if file2 != nil {
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_STATE_INT] = int64(file2.State)
@@ -175,8 +175,16 @@ func (s *Flattener) HandleFileEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc
 	return nil
 }
 
+func (s *Flattener) HandleNetEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, ne *sfgo.NetworkEvent) error {
+	return nil
+}
+
+func (s *Flattener) HandleProcFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, pf *sfgo.ProcessFlow) error {
+	return nil
+}
+
 // HandleProcEvt processes Process Events.
-func (s *Flattener) HandleProcEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, pe *sfgo.ProcessEvent) error {
+func (s *Flattener) HandleProcEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, pe *sfgo.ProcessEvent) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.PROC_EVT
 	s.fillEntities(hdr, cont, proc, nil, fr)
