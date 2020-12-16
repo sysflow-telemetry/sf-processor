@@ -107,47 +107,47 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 			s.hdr = hdr
 			s.tables.Reset()
 			if entEnabled {
-				s.hdl.HandleHeader(s.hdr)
+				s.hdl.HandleHeader(sf, s.hdr)
 			}
 		case sfgo.SF_CONT:
 			cont := sf.Rec.Container
 			s.tables.SetCont(cont.Id, cont)
 			if entEnabled {
-				s.hdl.HandleContainer(s.hdr, cont)
+				s.hdl.HandleContainer(sf, s.hdr, cont)
 			}
 		case sfgo.SF_PROCESS:
 			proc := sf.Rec.Process
 			s.tables.SetProc(*proc.Oid, proc)
 			if entEnabled {
 				cont := s.getContFromProc(proc)
-				s.hdl.HandleProcess(s.hdr, cont, proc)
+				s.hdl.HandleProcess(sf, s.hdr, cont, proc)
 			}
 		case sfgo.SF_FILE:
 			file := sf.Rec.File
 			s.tables.SetFile(file.Oid, file)
 			if entEnabled {
 				cont := s.getContFromFile(file)
-				s.hdl.HandleFile(s.hdr, cont, file)
+				s.hdl.HandleFile(sf, s.hdr, cont, file)
 			}
 		case sfgo.SF_PROC_EVT:
 			pe := sf.Rec.ProcessEvent
 			cont, proc := s.getContAndProc(pe.ProcOID)
-			s.hdl.HandleProcEvt(s.hdr, cont, proc, pe)
+			s.hdl.HandleProcEvt(sf, s.hdr, cont, proc, pe)
 		case sfgo.SF_NET_FLOW:
 			nf := sf.Rec.NetworkFlow
 			cont, proc := s.getContAndProc(nf.ProcOID)
-			s.hdl.HandleNetFlow(s.hdr, cont, proc, nf)
+			s.hdl.HandleNetFlow(sf, s.hdr, cont, proc, nf)
 		case sfgo.SF_FILE_FLOW:
 			ff := sf.Rec.FileFlow
 			cont, proc := s.getContAndProc(ff.ProcOID)
 			file := s.getFile(ff.FileOID)
-			s.hdl.HandleFileFlow(s.hdr, cont, proc, file, ff)
+			s.hdl.HandleFileFlow(sf, s.hdr, cont, proc, file, ff)
 		case sfgo.SF_FILE_EVT:
 			fe := sf.Rec.FileEvent
 			cont, proc := s.getContAndProc(fe.ProcOID)
 			file := s.getFile(fe.FileOID)
 			file2 := s.getOptFile(fe.NewFileOID)
-			s.hdl.HandleFileEvt(s.hdr, cont, proc, file, file2, fe)
+			s.hdl.HandleFileEvt(sf, s.hdr, cont, proc, file, file2, fe)
 		case sfgo.SF_PROC_FLOW:
 		case sfgo.SF_NET_EVT:
 		default:
