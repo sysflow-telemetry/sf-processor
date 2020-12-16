@@ -30,3 +30,5 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201207153955-828257760aa4
 )
+
+replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go
