@@ -24,7 +24,7 @@
 
 # What is SysFlow?
 
-The SysFlow Telemetry Pipeline is a framework for monitoring cloud workloads and for creating performance and security analytics. The goal of this project is to build all the plumbing required for system telemetry so that users can focus on writing and sharing analytics on a scalable, common open-source platform. The backbone of the telemetry pipeline is a new data format called SysFlow, which lifts raw system event information into an abstraction that describes process behaviors, and their relationships with containers, files, and network. This object-relational format is highly compact, yet it provides broad visibility into container clouds. We have also built several APIs that allow users to process SysFlow with their favorite toolkits. Learn more about SysFlow in the [SysFlow specification document](https://sysflow.readthedocs.io/en/latest/spec.html).
+The SysFlow Telemetry Pipeline is a framework for monitoring cloud workloads and for creating performance and security analytics. The goal of this project is to build all the plumbing required for system telemetry so that users can focus on writing and sharing analytics on a scalable, common open-source platform. The backbone of the telemetry pipeline is a new data format called SysFlow, which lifts raw system event information into an abstraction that describes process behaviors, and their relationships with containers, files, and network. This object-relational format is highly compact, yet it provides broad visibility into container clouds. We have also built several APIs that allow users to process SysFlow with their favorite toolkits. Learn more about SysFlow in the [SysFlow documentation](https://sysflow.readthedocs.io).
 
 # About this image
 
@@ -35,58 +35,21 @@ Please check [Sysflow Processor](https://sysflow.readthedocs.io/en/latest/proces
 # How to use this image
 
 ### Starting the processor
-The easiest way to run the SysFlow Processor is using [docker-compose](https://github.com/sysflow-telemetry/sf-processor/edit/master/docker-compose.yml). The following compose file shows how to run sf-processor with processor events exported to rsyslog.
 
-```yaml
-version: "3.5"
-services:
-  sf-processor:
-    container_name: sf-processor
-    image: sysflowtelemetry/sf-processor:latest
-    privileged: true
-    volumes:
-      - socket-vol:/sock/
-    environment:
-      DRIVER: socket
-      INPUT_PATH: /sock/sysflow.sock
-      POLICYENGINE_MODE: alert
-      EXPORTER_TYPE: telemetry
-      EXPORTER_SOURCE: ${HOSTNAME}
-      EXPORTER_EXPORT: terminal
-      EXPORTER_HOST: localhost
-      EXPORTER_PORT: 514
-  sf-collector:
-    container_name: sf-collector
-    image: sysflowtelemetry/sf-collector:latest
-    depends_on:
-      - "sf-processor"
-    privileged: true
-    volumes:
-      - /var/run/docker.sock:/host/var/run/docker.sock 
-      - /dev:/host/dev 
-      - /proc:/host/proc:ro 
-      - /boot:/host/boot:ro 
-      - /lib/modules:/host/lib/modules:ro 
-      - /usr:/host/usr:ro
-      - /mnt/data:/mnt/data
-      - socket-vol:/sock/
-      - ./resources/traces:/tests/traces
-    environment:
-      EXPORTER_ID: ${HOSTNAME}
-      NODE_IP: <Host IP address>
-      FILTER: "container.name!=sf-collector and container.name!=sf-processor" 
-      INTERVAL: 300 
-      SOCK_FILE: /sock/sysflow.sock
-volumes:
-  socket-vol:
+The easiest way to run the SysFlow Processor is using [docker-compose](https://github.com/sysflow-telemetry/sf-deployments/tree/master/docker). The provided `docker-compose.processor.yml` file deploys the SysFlow processor and collector. First, configure the rsyslog endpoint in the processor settings. Processor configuration is located in `./config/.env.processor`. Collector settings can be changed in `./config/.env.collector`. Additional settings can be configured directly in the compose file.
+
+To start the telemetry stack:
+
+```bash
+docker-compose -f docker-compose.processor.yml up                                
 ```
 
-Instructions for `docker-compose` and `helm` deployments are available in [here](https://sysflow.readthedocs.io/en/latest/deploy.html).
+Instructions for `docker-compose`, `helm`, and `oc operator` deployments are available [here](https://sysflow.readthedocs.io/en/latest/deploy.html).
 
-### Configuration
+<!-- ### Configuration
 
 Create a JSON file specifying the edge processing pipeline plugins and configuration settings.
-See [template](https://github.com/sysflow-telemetry/sf-processor/blob/master/driver/pipeline.template.json) for available options. The config settings can also be overridden by setting environment variables following the convension \<PLUGINNAME\>\_\<CONFIGKEY\>. For example, you can override _export_ in the exporter plugin by specifying ```-E EXPORTER_TYPE=file``` when running the container.
+See [template](https://github.com/sysflow-telemetry/sf-processor/blob/master/driver/pipeline.template.json) for available options. The config settings can also be overridden by setting environment variables following the convension \<PLUGINNAME\>\_\<CONFIGKEY\>. For example, you can override _export_ in the exporter plugin by specifying ```-E EXPORTER_TYPE=file``` when running the container. -->
 
 # License
 
