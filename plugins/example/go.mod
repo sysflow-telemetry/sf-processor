@@ -22,6 +22,8 @@ module github.com/sysflow-telemetry/sf-processor/plugins/example
 go 1.14
 
 require (
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201029230226-b00c1f55c6b0
-	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201103193450-8a8ff771f88f
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201207202918-76781bc531be
+	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201209134442-13e2a6e66430
 )
+
+replace github.com/sysflow-telemetry/sf-processor/core => ../../core
