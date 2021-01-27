@@ -36,9 +36,7 @@ Please check [Sysflow Processor](https://sysflow.readthedocs.io/en/latest/proces
 
 ### Starting the processor
 
-The easiest way to run the SysFlow Processor is using [docker-compose](https://github.com/sysflow-telemetry/sf-deployments/tree/master/docker). The provided `docker-compose.processor.yml` file deploys the SysFlow processor and collector. First, configure the rsyslog endpoint in the processor settings. Processor configuration is located in `./config/.env.processor`. Collector settings can be changed in `./config/.env.collector`. Additional settings can be configured directly in the compose file.
-
-To start the telemetry stack:
+The easiest way to run the SysFlow Processor is by using [docker-compose](https://github.com/sysflow-telemetry/sf-deployments/tree/master/docker). The provided `docker-compose.processor.yml` file deploys the SysFlow processor and collector. The rsyslog endpoint should be configured in `./config/.env.processor`. Collector settings can be changed in `./config/.env.collector`. Additional settings can be configured directly in the compose file.
 
 ```bash
 docker-compose -f docker-compose.processor.yml up                                
