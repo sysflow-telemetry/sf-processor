@@ -55,8 +55,8 @@ func newHandlerCache(pc plugins.SFPluginCache) *HandlerCache {
 	return hdl
 }
 
-// getInstance returns HandlerCache singleton instance
-func getInstance(pc plugins.SFPluginCache) *HandlerCache {
+// GetHandlerCacheInstance returns HandlerCache singleton instance
+func GetHandlerCacheInstance(pc plugins.SFPluginCache) *HandlerCache {
 	sHCOnce.Do(func() {
 		sHCInstance = newHandlerCache(pc)
 	})

@@ -72,11 +72,12 @@ func (s *SysFlowProcessor) Register(pc plugins.SFPluginCache) {
 // Init initializes the processor with a configuration map.
 func (s *SysFlowProcessor) Init(conf map[string]interface{}) error {
 	s.tables = cache.GetInstance()
-	hdlCache := getInstance(sPluginCache)
+	hdlCache := GetHandlerCacheInstance(sPluginCache)
 	hdl, err := hdlCache.GetHandler(conf)
 	if err != nil {
 		return err
 	}
+	hdl.Init(conf)
 	s.hdl = hdl
 	return nil
 }
