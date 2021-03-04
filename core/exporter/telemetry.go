@@ -25,6 +25,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
@@ -169,7 +170,7 @@ func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 						r.Pproc[kc[2]] = value
 					}
 				case net:
-					if r.Type == engine.TyNF {
+					if r.Type == sfgo.TyNFStr {
 						if r.NetData == nil {
 							r.NetData = new(NetData)
 							r.NetData.Net = make(map[string]interface{})
@@ -177,7 +178,7 @@ func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 						r.Net[kc[2]] = value
 					}
 				case file:
-					if r.Type == engine.TyFF || r.Type == engine.TyFE {
+					if r.Type == sfgo.TyFFStr || r.Type == sfgo.TyFEStr {
 						if r.FileData == nil {
 							r.FileData = new(FileData)
 							r.FileData.File = make(map[string]interface{})
@@ -185,7 +186,7 @@ func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 						r.File[kc[2]] = value
 					}
 				case flow:
-					if r.Type == engine.TyFF || r.Type == engine.TyNF {
+					if r.Type == sfgo.TyFFStr || r.Type == sfgo.TyNFStr {
 						if r.FlowData == nil {
 							r.FlowData = new(FlowData)
 							r.FlowData.Flow = make(map[string]interface{})
