@@ -27,19 +27,6 @@ const (
 	SPACE   string = " "
 )
 
-// SysFlow object types.
-const (
-	TyP      string = "P"
-	TyF      string = "F"
-	TyC      string = "C"
-	TyH      string = "H"
-	TyPE     string = "PE"
-	TyFE     string = "FE"
-	TyFF     string = "FF"
-	TyNF     string = "NF"
-	TyUnknow string = ""
-)
-
 // Falco priority values.
 const (
 	FPriorityEmergency     = "emergency"

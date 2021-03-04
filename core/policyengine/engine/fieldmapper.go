@@ -365,33 +365,15 @@ func mapJoin(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 
 func mapRecType(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
-		switch r.GetInt(sfgo.SF_REC_TYPE, src) {
-		case sfgo.PROC:
-			return TyP
-		case sfgo.FILE:
-			return TyF
-		case sfgo.CONT:
-			return TyC
-		case sfgo.PROC_EVT:
-			return TyPE
-		case sfgo.FILE_EVT:
-			return TyFE
-		case sfgo.FILE_FLOW:
-			return TyFF
-		case sfgo.NET_FLOW:
-			return TyNF
-		case sfgo.HEADER:
-			return TyH
-		default:
-			return TyUnknow
-		}
+		rtype, _ := sfgo.ParseRecordType(r.GetInt(sfgo.SF_REC_TYPE, src))
+		return rtype.String()
 	}
 }
 
 func mapOpFlags(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
 		opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT, src)
-		rtype := mapRecType(src)(r).(string)
+		rtype, _ := sfgo.ParseRecordType(r.GetInt(sfgo.SF_REC_TYPE, src))
 		return strings.Join(sfgo.GetOpFlags(int32(opflags), rtype), LISTSEP)
 	}
 }
@@ -399,7 +381,7 @@ func mapOpFlags(src sfgo.Source) FieldMap {
 func mapEvtType(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
 		opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT, src)
-		rtype := mapRecType(src)(r).(string)
+		rtype, _ := sfgo.ParseRecordType(r.GetInt(sfgo.SF_REC_TYPE, src))
 		return strings.Join(sfgo.GetEvtTypes(int32(opflags), rtype), LISTSEP)
 	}
 }
