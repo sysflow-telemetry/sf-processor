@@ -23,4 +23,5 @@ package exporter
 type Event interface {
 	ToJSON() []byte
 	ToJSONStr() string
+	ID() string
 }
