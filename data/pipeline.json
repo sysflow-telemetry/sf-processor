@@ -1,0 +1,32 @@
+{
+  "pipeline":[
+    {
+     "processor": "sysflowreader",
+     "handler": "flattener",
+     "in": "sysflow sysflowchan",
+     "out": "flat flattenerchan"
+    },
+    {
+     "processor": "policyengine",
+     "in": "flat flattenerchan",
+     "out": "evt eventchan",
+     "policies": "../data/runtimeintegrity"
+    },
+    {
+     "processor": "exporter",
+     "type": "batch",
+     "in": "evt eventchan",
+     "format": "ecs",
+     "flat": "true",
+     "buffer": 4000,
+     "export": "es",
+     "es.addresses": "https://127.0.0.1:9200",
+     "es.index": "my-index",
+     "es.username": "elastic",
+     "es.password": "changeme",
+     "es.bulk.numWorkers": 1,
+     "es.bulk.flushBuffer": 32000000,
+     "es.bulk.flushTimeout": "1m"
+    }
+  ]
+}

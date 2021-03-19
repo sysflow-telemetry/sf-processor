@@ -322,7 +322,7 @@ func GetEvent(tr *TelemetryRecord, category string, event_type string, action st
 		ECS_EVENT_END: ToIsoTimeStr(end),
 		ECS_EVENT_DURATION: end - start,
 	}
-	if sf_type == engine.TyPE || sf_type == engine.TyFE {
+	if sf_type == sfgo.TyPEStr || sf_type == sfgo.TyFEStr {
 		event[ECS_EVENT_SFRET] = sf_ret
 	}
 
@@ -532,10 +532,10 @@ func ToECS(tr TelemetryRecord) *ECSRecord {
 	}
 
 	switch sfType {
-	case engine.TyNF: ecs.HandleNF(&tr)
-	case engine.TyFF: ecs.HandleFF(&tr)
-	case engine.TyFE: ecs.HandleFE(&tr)
-	case engine.TyPE: ecs.HandlePE(&tr)
+	case sfgo.TyNFStr: ecs.HandleNF(&tr)
+	case sfgo.TyFFStr: ecs.HandleFF(&tr)
+	case sfgo.TyFEStr: ecs.HandleFE(&tr)
+	case sfgo.TyPEStr: ecs.HandlePE(&tr)
 	}
 
 	// map policy ids to event.reason

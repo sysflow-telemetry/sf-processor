@@ -1,0 +1,35 @@
+- list: _misc_tools
+  items: [calico-node]
+ 
+- list: _edr_tools
+  items: [/crowdstrike/cmd.sh, besclient, BESClient]
+
+- list: _log_tools
+  items: [logdna, splunk, rsyslog]
+  
+- list: _infrastructure_containers
+  items: [syslog-configurator, ibmcloud-object-storage-driver-container, ibmcloud-object-storage-plugin-container, bes-relay, vpn, vpn-client, kube-auditlog-forwarder]
+
+- macro: _heartbeat
+  condition: (sf.pproc.cmdline contains syslog-configurator 
+              and sf.proc.exe contains nsenter
+              and sf.proc.args icontains Heartbeat)
+ 
+- macro: _container_init_process
+  condition:  sf.proc.exe startswith /proc/self/fd/6
+              and sf.proc.args in (init)
+              and sf.proc.exe = sf.pproc.exe   
+
+# Customize this macro for global filtering                
+- macro: _whitelist
+  condition: (not sf.container.name in (_infrastructure_containers)
+              and not sf.proc.aname pmatch (_edr_tools, _log_tools, _misc_tools) 
+              and not sf.proc.exe pmatch (_edr_tools, _log_tools, _misc_tools)
+              and not sf.proc.cmdline startswith '/usr/bin/dpkg --print-foreign-architectures'
+              and not sf.proc.cmdline startswith '/usr/bin/apt-get --print-foreign-architectures'              
+              and not sf.proc.args contains '/sbin/ldconfig -p'
+              and not _heartbeat
+              and not _container_init_process) 
+
+- filter: __global__
+  condition: not _whitelist

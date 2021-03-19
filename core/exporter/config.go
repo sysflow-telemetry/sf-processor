@@ -76,7 +76,7 @@ type Config struct {
 }
 
 // CreateConfig creates a new config object from config dictionary.
-func CreateConfig(conf map[string]string) Config {
+func CreateConfig(conf map[string]interface{}) Config {
 	// default values
 	var c Config = Config{
 			Host: "localhost",
@@ -87,67 +87,67 @@ func CreateConfig(conf map[string]string) Config {
 			ESFlushBuffer: 5e+6,
 			ESFlushTimeout: 30 * time.Second}
 
-	if v, ok := conf[ExportConfigKey]; ok {
+	if v, ok := conf[ExportConfigKey].(string); ok {
 		c.Export = parseExportConfig(v)
 	}
-	if v, ok := conf[ExpTypeConfigKey]; ok {
+	if v, ok := conf[ExpTypeConfigKey].(string); ok {
 		c.ExpType = parseExportTypeConfig(v)
 	}
-	if v, ok := conf[FormatConfigKey]; ok {
+	if v, ok := conf[FormatConfigKey].(string); ok {
 		c.Format = parseFormatConfig(v)
 	}
-	if v, ok := conf[FlatConfigKey]; ok && v == "true" {
+	if v, ok := conf[FlatConfigKey].(string); ok && v == "true" {
 		c.Flat = true
 	}
-	if v, ok := conf[ProtoConfigKey]; ok {
+	if v, ok := conf[ProtoConfigKey].(string); ok {
 		c.Proto = parseProtoConfig(v)
 	}
-	if v, ok := conf[TagConfigKey]; ok {
+	if v, ok := conf[TagConfigKey].(string); ok {
 		c.Tag = v
 	}
-	if v, ok := conf[LogSourceConfigKey]; ok {
+	if v, ok := conf[LogSourceConfigKey].(string); ok {
 		c.LogSource = v
 	}
-	if v, ok := conf[HostConfigKey]; ok {
+	if v, ok := conf[HostConfigKey].(string); ok {
 		c.Host = v
 	}
-	if v, ok := conf[PortConfigKey]; ok {
+	if v, ok := conf[PortConfigKey].(string); ok {
 		c.Port, _ = strconv.Atoi(v)
 	}
-	if v, ok := conf[PathConfigKey]; ok {
+	if v, ok := conf[PathConfigKey].(string); ok {
 		c.Path = v
 	}
-	if v, ok := conf[ESAddressesConfigKey]; ok {
+	if v, ok := conf[ESAddressesConfigKey].(string); ok {
 		c.ESAddresses = strings.Split(v, ",")
 	}
-	if v, ok := conf[ESIndexConfigKey]; ok {
+	if v, ok := conf[ESIndexConfigKey].(string); ok {
 		c.ESIndex = v
 	}
-	if v, ok := conf[ESUsernameConfigKey]; ok {
+	if v, ok := conf[ESUsernameConfigKey].(string); ok {
 		c.ESUsername = v
 	}
-	if v, ok := conf[ESPasswordConfigKey]; ok {
+	if v, ok := conf[ESPasswordConfigKey].(string); ok {
 		c.ESPassword = v
 	}
-	if v, ok := conf[ESWorkersConfigKey]; ok {
+	if v, ok := conf[ESWorkersConfigKey].(string); ok {
 		c.ESNumWorkers, _ = strconv.Atoi(v)
 	}
-	if v, ok := conf[ESFBufferConfigKey]; ok {
+	if v, ok := conf[ESFBufferConfigKey].(string); ok {
 		c.ESFlushBuffer, _ = strconv.Atoi(v)
 	}
-	if v, ok := conf[ESFTimeoutConfigKey]; ok {
+	if v, ok := conf[ESFTimeoutConfigKey].(string); ok {
 		c.ESFlushTimeout, _ = time.ParseDuration(v)
 	}
-	if v, ok := conf[EventBufferConfigKey]; ok {
+	if v, ok := conf[EventBufferConfigKey].(string); ok {
 		c.EventBuffer, _ = strconv.Atoi(v)
 	}
-	if v, ok := conf[VersionKey]; ok {
+	if v, ok := conf[VersionKey].(string); ok {
 		c.Version = v
 	}
-	if v, ok := conf[JSONSchemaVersionKey]; ok {
+	if v, ok := conf[JSONSchemaVersionKey].(string); ok {
 		c.JSONSchemaVersion = v
 	}
-	if v, ok := conf[BuildNumberKey]; ok {
+	if v, ok := conf[BuildNumberKey].(string); ok {
 		c.BuildNumber = v
 	}
 	return c
