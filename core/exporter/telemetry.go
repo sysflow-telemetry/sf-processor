@@ -20,9 +20,11 @@
 package exporter
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
@@ -46,6 +48,7 @@ type TelemetryRecord struct {
 	*DataRecord `json:",omitempty"`
 	Hashes      *engine.HashSet `json:"hashes,omitempty"`
 	Policies    []Policy        `json:"policies,omitempty"`
+	AsECS       bool
 }
 
 // FlatRecord type
@@ -121,12 +124,38 @@ func (s TelemetryRecord) ToJSONStr() string {
 
 // ToJSON returns a JSON bytearray representation of an observation
 func (s TelemetryRecord) ToJSON() []byte {
-	o, _ := json.Marshal(s)
+	var o []byte
+	if s.AsECS {
+		o, _ = json.Marshal(ToECS(s))
+	} else {
+		o, _ = json.Marshal(s)
+	}
 	return o
+}
+
+func (s TelemetryRecord) ID() string {
+	var b bytes.Buffer
+	if s.FlatRecord != nil {
+		data := s.FlatRecord.Data
+		b.WriteString(strconv.FormatInt(data[engine.SF_TS].(int64), 10))
+		b.WriteString(data[engine.SF_CONTAINER_ID].(string))
+		b.WriteString(data[engine.SF_TYPE].(string))
+		b.WriteString(strconv.FormatInt(data[engine.SF_PROC_PID].(int64), 10))
+		b.WriteString(strconv.FormatInt(data[engine.SF_PROC_CREATETS].(int64), 10))
+	} else {
+		data := s.DataRecord
+		b.WriteString(strconv.FormatInt(data.Ts, 10))
+		b.WriteString(data.ContData.Container["id"].(string))
+		b.WriteString(data.Type)
+		b.WriteString(strconv.FormatInt(data.ProcData.Proc["pid"].(int64), 10))
+		b.WriteString(strconv.FormatInt(data.ProcData.Proc["createts"].(int64), 10))
+	}
+	return Sha256Hex(b.Bytes())
 }
 
 func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
 	r := TelemetryRecord{}
+	r.AsECS = (config.Format == ECSFormat)
 	r.Version = config.JSONSchemaVersion
 	if config.Flat {
 		r.FlatRecord = new(FlatRecord)
