@@ -72,7 +72,7 @@ func (s *Exporter) Register(pc plugins.SFPluginCache) {
 }
 
 // Init initializes the plugin with a configuration map and cache.
-func (s *Exporter) Init(conf map[string]string) error {
+func (s *Exporter) Init(conf map[string]interface{}) error {
 	var err error
 	s.config = CreateConfig(conf)
 	if s.config.Export == FileExport {
@@ -264,7 +264,7 @@ func Sha256Hex(val []byte) string {
 }
 
 // SetOutChan sets the output channel of the plugin.
-func (s *Exporter) SetOutChan(ch interface{}) {}
+func (s *Exporter) SetOutChan(ch []interface{}) {}
 
 // Cleanup tears down plugin resources.
 func (s *Exporter) Cleanup() {
