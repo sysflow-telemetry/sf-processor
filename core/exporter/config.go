@@ -23,31 +23,36 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
+	"github.com/sysflow-telemetry/sf-apis/go/secrets"
 )
 
 // Configuration keys.
 const (
-	ExportConfigKey      string = "export"
-	ExpTypeConfigKey     string = "type"
-	FormatConfigKey      string = "format"
-	FlatConfigKey        string = "flat"
-	ProtoConfigKey       string = "proto"
-	TagConfigKey         string = "tag"
-	LogSourceConfigKey   string = "source"
-	HostConfigKey        string = "host"
-	PortConfigKey        string = "port"
-	PathConfigKey        string = "path"
-        ESAddressesConfigKey string = "es.addresses"
-	ESIndexConfigKey     string = "es.index"
-	ESUsernameConfigKey  string = "es.username"
-	ESPasswordConfigKey  string = "es.password"
-	ESWorkersConfigKey   string = "es.bulk.numWorkers"
-	ESFBufferConfigKey   string = "es.bulk.flushBuffer"
-	ESFTimeoutConfigKey  string = "es.bulk.flushTimeout"
-	EventBufferConfigKey string = "buffer"
-	VersionKey           string = "version"
-	JSONSchemaVersionKey string = "jsonschemaversion"
-	BuildNumberKey       string = "buildnumber"
+	ExportConfigKey       string = "export"
+	ExpTypeConfigKey      string = "type"
+	FormatConfigKey       string = "format"
+	FlatConfigKey         string = "flat"
+	VaultEnabledConfigKey string = "vault.secrets"
+	VaultPathConfigKey    string = "vault.path"
+	ProtoConfigKey        string = "proto"
+	TagConfigKey          string = "tag"
+	LogSourceConfigKey    string = "source"
+	HostConfigKey         string = "host"
+	PortConfigKey         string = "port"
+	PathConfigKey         string = "path"
+	ESAddressesConfigKey  string = "es.addresses"
+	ESIndexConfigKey      string = "es.index"
+	ESUsernameConfigKey   string = "es.username"
+	ESPasswordConfigKey   string = "es.password"
+	ESWorkersConfigKey    string = "es.bulk.numWorkers"
+	ESFBufferConfigKey    string = "es.bulk.flushBuffer"
+	ESFTimeoutConfigKey   string = "es.bulk.flushTimeout"
+	EventBufferConfigKey  string = "buffer"
+	VersionKey            string = "version"
+	JSONSchemaVersionKey  string = "jsonschemaversion"
+	BuildNumberKey        string = "buildnumber"
 )
 
 // Config defines a configuration object for the exporter.
@@ -56,13 +61,16 @@ type Config struct {
 	ExpType           ExportType
 	Format            Format
 	Flat              bool
+	VaultEnabled      bool
+	VaultMountPath    string
+	secrets           *secrets.Secrets
 	Proto             Proto
 	Tag               string
 	LogSource         string
 	Host              string
 	Port              int
 	Path              string
-	ESAddresses	  []string
+	ESAddresses       []string
 	ESIndex           string
 	ESUsername        string
 	ESPassword        string
@@ -76,16 +84,33 @@ type Config struct {
 }
 
 // CreateConfig creates a new config object from config dictionary.
-func CreateConfig(conf map[string]interface{}) Config {
+func CreateConfig(conf map[string]interface{}) (Config, error) {
 	// default values
 	var c Config = Config{
-			Host: "localhost",
-			Port: 514,
-			Path: "./export.out",
-			Tag: "sysflow",
-			ESNumWorkers: 0,
-			ESFlushBuffer: 5e+6,
-			ESFlushTimeout: 30 * time.Second}
+		Host:           "localhost",
+		Port:           514,
+		Path:           "./export.out",
+		Tag:            "sysflow",
+		ESNumWorkers:   0,
+		ESFlushBuffer:  5e+6,
+		ESFlushTimeout: 30 * time.Second}
+
+	// wrapper for reading from secrets vault
+	if v, ok := conf[VaultEnabledConfigKey].(string); ok && v == "true" {
+		c.VaultEnabled = true
+		var s *secrets.Secrets
+		var err error
+		if p, ok := conf[VaultPathConfigKey].(string); ok {
+			s, err = secrets.NewSecretsWithCustomPath(p)
+		} else {
+			s, err = secrets.NewSecrets()
+		}
+		if err != nil {
+			logger.Error.Printf("Could not read secrets from vault: %v", err)
+			return c, err
+		}
+		c.secrets = s
+	}
 
 	if v, ok := conf[ExportConfigKey].(string); ok {
 		c.Export = parseExportConfig(v)
@@ -125,9 +150,21 @@ func CreateConfig(conf map[string]interface{}) Config {
 	}
 	if v, ok := conf[ESUsernameConfigKey].(string); ok {
 		c.ESUsername = v
+	} else if c.VaultEnabled {
+		s, err := c.secrets.GetDecoded(ESUsernameConfigKey)
+		if err != nil {
+			logger.Error.Printf("Could not read secret %s from vault: %v", ESUsernameConfigKey, err)
+		}
+		c.ESUsername = string(s)
 	}
 	if v, ok := conf[ESPasswordConfigKey].(string); ok {
 		c.ESPassword = v
+	} else if c.VaultEnabled {
+		s, err := c.secrets.GetDecoded(ESPasswordConfigKey)
+		if err != nil {
+			logger.Error.Printf("Could not read secret %s from vault: %v", ESPasswordConfigKey, err)
+		}
+		c.ESPassword = string(s)
 	}
 	if v, ok := conf[ESWorkersConfigKey].(string); ok {
 		c.ESNumWorkers, _ = strconv.Atoi(v)
@@ -150,7 +187,7 @@ func CreateConfig(conf map[string]interface{}) Config {
 	if v, ok := conf[BuildNumberKey].(string); ok {
 		c.BuildNumber = v
 	}
-	return c
+	return c, nil
 }
 
 // Export type.

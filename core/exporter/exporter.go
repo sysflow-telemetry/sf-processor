@@ -27,16 +27,16 @@ import (
 	"crypto/tls"
 	"encoding/hex"
 	"fmt"
-        netmod "net"
+	netmod "net"
 	"net/http"
 	"os"
 	"sync"
 	"time"
 
 	syslog "github.com/RackSec/srslog"
-        elasticsearch "github.com/elastic/go-elasticsearch/v8"
-        estransport "github.com/elastic/go-elasticsearch/v8/estransport"
-        esutil "github.com/elastic/go-elasticsearch/v8/esutil"
+	elasticsearch "github.com/elastic/go-elasticsearch/v8"
+	estransport "github.com/elastic/go-elasticsearch/v8/estransport"
+	esutil "github.com/elastic/go-elasticsearch/v8/esutil"
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
@@ -53,7 +53,7 @@ type Exporter struct {
 	recs    []*engine.Record
 	counter int
 	sysl    *syslog.Writer
-        es	*elasticsearch.Client
+	es      *elasticsearch.Client
 	config  Config
 }
 
@@ -75,7 +75,10 @@ func (s *Exporter) Register(pc plugins.SFPluginCache) {
 // Init initializes the plugin with a configuration map and cache.
 func (s *Exporter) Init(conf map[string]interface{}) error {
 	var err error
-	s.config = CreateConfig(conf)
+	s.config, err = CreateConfig(conf)
+	if err != nil {
+		return err
+	}
 	if s.config.Export == FileExport {
 		os.Remove(s.config.Path)
 	} else if s.config.Export == SyslogExport {
@@ -101,7 +104,7 @@ func (s *Exporter) Init(conf map[string]interface{}) error {
 			Transport: &http.Transport{
 				//MaxIdleConnsPerHost:   10,
 				//ResponseHeaderTimeout: time.Second,
-				DialContext:           (&netmod.Dialer{Timeout: time.Second}).DialContext,
+				DialContext: (&netmod.Dialer{Timeout: time.Second}).DialContext,
 				TLSClientConfig: &tls.Config{
 					//MinVersion: tls.VersionTLS11,
 					InsecureSkipVerify: true,
@@ -111,7 +114,7 @@ func (s *Exporter) Init(conf map[string]interface{}) error {
 				},
 			},
 			//CACert:    ioutil.ReadFile("path/to/ca.crt"),
-			Logger:    &estransport.JSONLogger{ Output: os.Stdout },
+			Logger: &estransport.JSONLogger{Output: os.Stdout},
 			//Logger:    &estransport.ColorLogger{ Output: os.Stdout, EnableRequestBody: true },
 		}
 
@@ -208,7 +211,7 @@ func (s *Exporter) exportAsJSON(events []Event) {
 				break
 			}
 		}
-        case ESExport:
+	case ESExport:
 		logger.Info.Printf("Bulk size: %d events", len(events))
 
 		ctx := context.Background()
@@ -216,13 +219,13 @@ func (s *Exporter) exportAsJSON(events []Event) {
 		bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 			Index:         s.config.ESIndex,
 			Client:        s.es,
-			NumWorkers:    s.config.ESNumWorkers,     // default: 0 (= number of CPUs)
-			FlushBytes:    s.config.ESFlushBuffer,    // default: 5M
-			FlushInterval: s.config.ESFlushTimeout,   // default: 30s
+			NumWorkers:    s.config.ESNumWorkers,   // default: 0 (= number of CPUs)
+			FlushBytes:    s.config.ESFlushBuffer,  // default: 5M
+			FlushInterval: s.config.ESFlushTimeout, // default: 30s
 		})
 		if err != nil {
 			logger.Error.Printf("Failed to create bulk indexer: %s", err)
-                        return
+			return
 		}
 
 		start := time.Now().UTC()
@@ -232,7 +235,7 @@ func (s *Exporter) exportAsJSON(events []Event) {
 				Action:     "create",
 				DocumentID: evt.ID(),
 				Body:       bytes.NewReader(evt.ToJSON()),
-				OnFailure:  func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error) {
+				OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error) {
 					if err != nil {
 						logger.Error.Print(err)
 					} else {
@@ -260,8 +263,8 @@ func (s *Exporter) exportAsJSON(events []Event) {
 }
 
 func Sha256Hex(val []byte) string {
-        hash := sha256.Sum256(val)
-        return hex.EncodeToString(hash[0:sha256.Size])
+	hash := sha256.Sum256(val)
+	return hex.EncodeToString(hash[0:sha256.Size])
 }
 
 // SetOutChan sets the output channel of the plugin.

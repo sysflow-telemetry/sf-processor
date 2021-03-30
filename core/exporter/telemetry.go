@@ -146,7 +146,11 @@ func (s TelemetryRecord) ID() string {
 	} else {
 		data := s.DataRecord
 		b.WriteString(strconv.FormatInt(data.Ts, 10))
-		b.WriteString(data.ContData.Container["id"].(string))
+		if data.ContData != nil {
+			if v, ok := data.ContData.Container["id"]; ok {
+				b.WriteString(v.(string))
+			}
+		}
 		b.WriteString(data.Type)
 		b.WriteString(strconv.FormatInt(data.ProcData.Proc["pid"].(int64), 10))
 		b.WriteString(strconv.FormatInt(data.ProcData.Proc["createts"].(int64), 10))
