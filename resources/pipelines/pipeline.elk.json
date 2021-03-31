@@ -1,0 +1,29 @@
+{
+    "pipeline":[
+      {
+       "processor": "sysflowreader",
+       "handler": "flattener",
+       "in": "sysflow sysflowchan",
+       "out": "flat flattenerchan"
+      },
+      {
+       "processor": "policyengine",
+       "in": "flat flattenerchan",
+       "out": "evt eventchan",
+       "policies": "../resources/policies/distribution/filter.yaml"
+      },
+      {
+       "processor": "exporter",
+       "in": "evt eventchan",
+       "export": "es",
+       "format": "ecs",
+       "es.addresses": "http://172.17.0.1",
+       "es.index": "sysflow",
+       "es.username": "elastic",
+       "es.password": "changeme",
+       "es.bulk.numWorkers": "0",
+       "es.bulk.flushBuffer": "5000000",
+       "es.bulk.flushTimeout": "30"
+      }
+    ]
+}
