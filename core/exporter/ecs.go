@@ -176,13 +176,18 @@ func GetProcess(tr *TelemetryRecord) JsonData {
 		createts = data[LastPart(engine.SF_PROC_CREATETS)]
 	}
 
+	argsCount := len(strings.Fields(args))
+	if argsCount == 0 && len(args) != 0 {
+		argsCount = 1
+	}
+
 	process := JsonData{
 		ECS_PROC_ARGS_COUNT: len(strings.Fields(args)),
 		ECS_PROC_EXE:        exe,
 		ECS_PROC_PID:        pid,
 		ECS_PROC_START:      ToIsoTimeStr(createts.(int64)),
 	}
-	if args != "" {
+	if argsCount != 0 {
 		process[ECS_PROC_ARGS] = args
 		process[ECS_PROC_CMDLINE] = exe + " " + args
 	} else {
@@ -225,13 +230,18 @@ func GetProcess(tr *TelemetryRecord) JsonData {
 		}
 	}
 
+	pArgsCount := len(strings.Fields(pargs))
+	if pArgsCount == 0 && len(pargs) != 0 {
+		pArgsCount = 1
+	}
+
 	parent := JsonData{
-		ECS_PROC_ARGS_COUNT: len(strings.Fields(pargs)),
+		ECS_PROC_ARGS_COUNT: pArgsCount,
 		ECS_PROC_EXE:        pexe,
 		ECS_PROC_PID:        ppid,
 		ECS_PROC_START:      ToIsoTimeStr(pcreatets.(int64)),
 	}
-	if pargs != "" {
+	if pArgsCount != 0 {
 		parent[ECS_PROC_ARGS] = pargs
 		parent[ECS_PROC_CMDLINE] = pexe + " " + pargs
 	} else {
