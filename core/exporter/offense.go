@@ -20,6 +20,7 @@
 package exporter
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -74,8 +75,31 @@ func (s Offense) ToJSONStr() string {
 
 // ToJSON returns a JSON bytearray representation of an offense
 func (s Offense) ToJSON() []byte {
-	o, _ := json.Marshal(s)
-	return o
+	var b bytes.Buffer
+	b.WriteString("{\"groupId\":")
+	m, _ := json.Marshal(s.GroupID)
+	b.Write(m)
+	b.WriteString(",\"observations\":[")
+	for i, tr := range s.Observations {
+		b.Write(tr.ToJSON())
+		if i + 1 < len(s.Observations) {
+			b.WriteString(",")
+		}
+	}
+	b.WriteString("]}")
+	return b.Bytes()
+
+// Old code here:
+//	o, _ := json.Marshal(s)
+//	return o
+}
+
+func (s Offense) ID() string {
+	var b bytes.Buffer
+	for _, tr := range s.Observations {
+		b.WriteString(tr.ID())
+	}
+	return Sha256Hex(b.Bytes())
 }
 
 // CreateObservations creates offense instances based on a list of records

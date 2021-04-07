@@ -25,6 +25,7 @@ require (
 	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0
 	github.com/cespare/xxhash v1.1.0
+	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210317102009-a9d74cec0186 // indirect
 	github.com/enriquebris/goconcurrentqueue v0.6.0
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/stretchr/testify v1.6.1
