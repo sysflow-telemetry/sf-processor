@@ -247,10 +247,11 @@ const (
 	FileExport
 	SyslogExport
 	ESExport
+	SAExport
 )
 
 func (s Export) String() string {
-	return [...]string{"terminal", "file", "syslog", "es"}[s]
+	return [...]string{"terminal", "file", "syslog", "es", "sa"}[s]
 }
 
 func parseExportConfig(s string) Export {
@@ -262,6 +263,9 @@ func parseExportConfig(s string) Export {
 	}
 	if ESExport.String() == s {
 		return ESExport
+	}
+	if SAExport.String() == s {
+		return SAExport
 	}
 	return StdOutExport
 }
