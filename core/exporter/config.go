@@ -30,29 +30,37 @@ import (
 
 // Configuration keys.
 const (
-	ExportConfigKey       string = "export"
-	ExpTypeConfigKey      string = "type"
-	FormatConfigKey       string = "format"
-	FlatConfigKey         string = "flat"
-	VaultEnabledConfigKey string = "vault.secrets"
-	VaultPathConfigKey    string = "vault.path"
-	ProtoConfigKey        string = "proto"
-	TagConfigKey          string = "tag"
-	LogSourceConfigKey    string = "source"
-	HostConfigKey         string = "host"
-	PortConfigKey         string = "port"
-	PathConfigKey         string = "path"
-	ESAddressesConfigKey  string = "es.addresses"
-	ESIndexConfigKey      string = "es.index"
-	ESUsernameConfigKey   string = "es.username"
-	ESPasswordConfigKey   string = "es.password"
-	ESWorkersConfigKey    string = "es.bulk.numWorkers"
-	ESFBufferConfigKey    string = "es.bulk.flushBuffer"
-	ESFTimeoutConfigKey   string = "es.bulk.flushTimeout"
-	EventBufferConfigKey  string = "buffer"
-	VersionKey            string = "version"
-	JSONSchemaVersionKey  string = "jsonschemaversion"
-	BuildNumberKey        string = "buildnumber"
+	ExportConfigKey        string = "export"
+	ExpTypeConfigKey       string = "type"
+	FormatConfigKey        string = "format"
+	FlatConfigKey          string = "flat"
+	VaultEnabledConfigKey  string = "vault.secrets"
+	VaultPathConfigKey     string = "vault.path"
+	ProtoConfigKey         string = "proto"
+	TagConfigKey           string = "tag"
+	LogSourceConfigKey     string = "source"
+	HostConfigKey          string = "host"
+	PortConfigKey          string = "port"
+	PathConfigKey          string = "path"
+	ESAddressesConfigKey   string = "es.addresses"
+	ESIndexConfigKey       string = "es.index"
+	ESUsernameConfigKey    string = "es.username"
+	ESPasswordConfigKey    string = "es.password"
+	ESWorkersConfigKey     string = "es.bulk.numWorkers"
+	ESFBufferConfigKey     string = "es.bulk.flushBuffer"
+	ESFTimeoutConfigKey    string = "es.bulk.flushTimeout"
+	SAApiKeyConfigKey      string = "sa.apikey"
+	SAUrlConfigKey         string = "sa.url"
+	SAAccountIDConfigKey   string = "sa.accountid"
+	SAProviderIDConfigKey  string = "sa.provider"
+	SANoteIDConfigKey      string = "sa.note"
+	SASqlQueryUrlConifgKey string = "sa.sqlqueryurl"
+	SASqlQueryCrnConfigKey string = "sa.sqlquerycrn"
+	RegionConfigKey        string = "region"
+	EventBufferConfigKey   string = "buffer"
+	VersionKey             string = "version"
+	JSONSchemaVersionKey   string = "jsonschemaversion"
+	BuildNumberKey         string = "buildnumber"
 )
 
 // Config defines a configuration object for the exporter.
@@ -77,6 +85,14 @@ type Config struct {
 	ESNumWorkers      int
 	ESFlushBuffer     int
 	ESFlushTimeout    time.Duration
+	SAApiKey          string
+	SAUrl             string
+	SAAccountID       string
+	SAProviderID      string
+	SANoteID          string
+	SASqlQueryUrl     string
+	SASqlQueryCrn     string
+	Region            string
 	EventBuffer       int
 	Version           string
 	JSONSchemaVersion string
@@ -93,7 +109,9 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 		Tag:            "sysflow",
 		ESNumWorkers:   0,
 		ESFlushBuffer:  5e+6,
-		ESFlushTimeout: 30 * time.Second}
+		ESFlushTimeout: 30 * time.Second,
+		SAUrl:          "https://us-south.secadvisor.cloud.ibm.com/findings",
+		SASqlQueryUrl:  "https://us.sql-query.cloud.ibm.com/sqlquery"}
 
 	// wrapper for reading from secrets vault
 	if v, ok := conf[VaultEnabledConfigKey].(string); ok && v == "true" {
@@ -174,6 +192,36 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 	}
 	if v, ok := conf[ESFTimeoutConfigKey].(string); ok {
 		c.ESFlushTimeout, _ = time.ParseDuration(v)
+	}
+	if v, ok := conf[SAApiKeyConfigKey].(string); ok {
+		c.SAApiKey = v
+	} else if c.VaultEnabled {
+		s, err := c.secrets.GetDecoded(SAApiKeyConfigKey)
+		if err != nil {
+			logger.Error.Printf("Could not read secret %s from vault: %v", SAApiKeyConfigKey, err)
+		}
+		c.SAApiKey = string(s)
+	}
+	if v, ok := conf[SAAccountIDConfigKey].(string); ok {
+		c.SAAccountID = v
+	}
+	if v, ok := conf[SAUrlConfigKey].(string); ok {
+		c.SAUrl = v
+	}
+	if v, ok := conf[SAProviderIDConfigKey].(string); ok {
+		c.SAProviderID = v
+	}
+	if v, ok := conf[SANoteIDConfigKey].(string); ok {
+		c.SANoteID = v
+	}
+	if v, ok := conf[SASqlQueryUrlConifgKey].(string); ok {
+		c.SASqlQueryUrl = v
+	}
+	if v, ok := conf[SASqlQueryCrnConfigKey].(string); ok {
+		c.SASqlQueryCrn = v
+	}
+	if v, ok := conf[RegionConfigKey].(string); ok {
+		c.Region = v
 	}
 	if v, ok := conf[EventBufferConfigKey].(string); ok {
 		c.EventBuffer, _ = strconv.Atoi(v)
