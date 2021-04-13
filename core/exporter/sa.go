@@ -23,14 +23,17 @@ import (
 	"fmt"
 
 	"github.com/IBM/go-sdk-core/v3/core"
+	cqueue "github.com/enriquebris/goconcurrentqueue"
 	"github.com/ibm-cloud-security/security-advisor-sdk-go/findingsapiv1"
+	cmap "github.com/orcaman/concurrent-map"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/findings"
 )
 
 const (
-	details     = "Occurrence Details"
-	queryUrlFmt = "%s/?instance_crn=%s&statement=%s"
+	details             = "Occurrence Details"
+	queryUrlFmt         = "%s/?instance_crn=%s&statement=%s"
+	exportQueueCapacity = 2
 )
 
 // Severity type for enumeration.
@@ -63,6 +66,7 @@ func (s Certainty) String() string {
 	return [...]string{"LOW", "MEDIUM", "HIGH"}[s]
 }
 
+// Occurrence object.
 type Occurrence struct {
 	ID         string
 	ShortDescr string
@@ -75,23 +79,61 @@ type Occurrence struct {
 	NoteID     string
 }
 
+// SAClient implements a custom client for IBM Cloud Security and Compliance Insights.
+type SAClient struct {
+	exportQueue *cqueue.FIFO
+	AccountID   string
+	ProviderID  string
+	ApiKey      string
+	SAUrl       string
+	SqlQueryUrl string
+	SqlQueryCrn string
+	Region      string
+}
+
+// NewSAClient is a constructor for SAClient.
+func NewSAClient(config Config) *SAClient {
+	queue := cqueue.NewFIFO()
+	queue.Enqueue(cmap.New())
+	return &SAClient{AccountID: config.SAAccountID,
+		exportQueue: queue,
+		ProviderID:  config.SAProviderID,
+		ApiKey:      config.SAApiKey,
+		SAUrl:       config.SAUrl,
+		SqlQueryUrl: config.SASqlQueryUrl,
+		SqlQueryCrn: config.SASqlQueryCrn,
+		Region:      config.Region}
+}
+
+// AddAlert adds alert to export queue.
+func (s *SAClient) AddAlert(event Event) {
+	// if r, ok := event.(TelemetryRecord); ok {
+	// 	r.Container[]
+	// 	s.exportQueue.Get(0)[]
+	// }
+
+}
+
 //CreateFindingOccurrence creates a new occurrence of type finding.
-func CreateOccurrence(occ *Occurrence, config Config) error {
-	service, err := findings.NewFindingsApi(config.SAApiKey, config.SAUrl)
+func (s *SAClient) CreateOccurrence(occ *Occurrence) error {
+	service, err := findings.NewFindingsApi(s.ApiKey, s.SAUrl)
 	if err != nil {
 		logger.Error.Printf("Error while creating Findings API wrapper %v", err)
 		return err
 	}
 
-	noteName := fmt.Sprintf("%s/providers/%s/notes/%s", config.SAAccountID, config.SAProviderID, occ.NoteID)
-	nextStep := []findingsapiv1.RemediationStep{{
-		Title: core.StringPtr(details),
-		URL:   core.StringPtr(fmt.Sprintf(queryUrlFmt, config.SASqlQueryUrl, config.SASqlQueryCrn, occ.AlertQuery))},
+	noteName := fmt.Sprintf("%s/providers/%s/notes/%s", s.AccountID, s.ProviderID, occ.NoteID)
+	var nextStep []findingsapiv1.RemediationStep
+	if occ.AlertQuery != "" {
+		nextStep = []findingsapiv1.RemediationStep{{
+			Title: core.StringPtr(details),
+			URL:   core.StringPtr(fmt.Sprintf(queryUrlFmt, s.SqlQueryUrl, s.SqlQueryCrn, occ.AlertQuery))},
+		}
 	}
 	finding := findingsapiv1.Finding{Severity: core.StringPtr(occ.Severity.String()), Certainty: core.StringPtr(occ.Certainty.String()), NextSteps: nextStep}
-	context := findingsapiv1.Context{Region: core.StringPtr(config.Region), ResourceType: core.StringPtr(occ.ResType), ResourceName: core.StringPtr(occ.ResName)}
+	context := findingsapiv1.Context{Region: core.StringPtr(s.Region), ResourceType: core.StringPtr(occ.ResType), ResourceName: core.StringPtr(occ.ResName)}
 
-	var options = service.NewCreateCustomOccurrenceOptions(config.SAAccountID, config.SAProviderID, noteName, occ.ID)
+	var options = service.NewCreateCustomOccurrenceOptions(s.AccountID, s.ProviderID, noteName, occ.ID)
 	options.SetFinding(&finding)
 	options.SetContext(&context)
 	options.SetLongDescription(occ.LongDescr)

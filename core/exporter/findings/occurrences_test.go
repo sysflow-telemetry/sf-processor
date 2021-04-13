@@ -15,6 +15,13 @@ func TestMain(m *testing.M) {
 }
 
 func TestCreateOccurrence(t *testing.T) {
+	config := exporter.Config{
+		SAAccountID:   "79b06b84fc25fe1bd84a1e81d2e73cf0",
+		SAApiKey:      "sBdD7pvDDIX7U9muci16gn81IVXa59wqLi3tloFZCcIX",
+		SAProviderID:  "system-analytics-pipeline",
+		SASqlQueryCrn: "crn:v1:bluemix:public:sql-query:us-south:a/49f48a067ac4433a911740653049e83d:abdf1dc1-0232-4083-9f43-67eeaddd6d08::",
+		Region:        "us-south",
+	}
 	occ := &exporter.Occurrence{ID: "notification-23243",
 		LongDescr:  "This is a long description",
 		ShortDescr: "Short description",
@@ -24,13 +31,7 @@ func TestCreateOccurrence(t *testing.T) {
 		ResType:    "Docker",
 		NoteID:     "notification",
 	}
-	config := exporter.Config{
-		SAAccountID:   "79b06b84fc25fe1bd84a1e81d2e73cf0",
-		SAApiKey:      "sBdD7pvDDIX7U9muci16gn81IVXa59wqLi3tloFZCcIX",
-		SAProviderID:  "system-analytics-pipeline",
-		SASqlQueryCrn: "crn:v1:bluemix:public:sql-query:us-south:a/49f48a067ac4433a911740653049e83d:abdf1dc1-0232-4083-9f43-67eeaddd6d08::",
-		Region:        "us-south",
-	}
-	err := exporter.CreateOccurrence(occ, config)
+	sa := exporter.NewSAClient(config)
+	err := sa.CreateOccurrence(occ)
 	assert.NoError(t, err)
 }

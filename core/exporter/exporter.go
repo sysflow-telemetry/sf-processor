@@ -54,6 +54,7 @@ type Exporter struct {
 	counter int
 	sysl    *syslog.Writer
 	es      *elasticsearch.Client
+	sa      *SAClient
 	config  Config
 }
 
@@ -122,6 +123,8 @@ func (s *Exporter) Init(conf map[string]interface{}) error {
 		if err == nil {
 			logger.Info.Printf("Successfully created ES client for endpoints: %v", cfg.Addresses)
 		}
+	} else if s.config.Export == SAExport {
+		s.sa = NewSAClient(s.config)
 	}
 	return err
 }
@@ -213,9 +216,7 @@ func (s *Exporter) exportAsJSON(events []Event) {
 		}
 	case ESExport:
 		logger.Info.Printf("Bulk size: %d events", len(events))
-
 		ctx := context.Background()
-
 		bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 			Index:         s.config.ESIndex,
 			Client:        s.es,
@@ -227,9 +228,7 @@ func (s *Exporter) exportAsJSON(events []Event) {
 			logger.Error.Printf("Failed to create bulk indexer: %s", err)
 			return
 		}
-
 		start := time.Now().UTC()
-
 		for _, evt := range events {
 			err = bi.Add(ctx, esutil.BulkIndexerItem{
 				Action:     "create",
@@ -247,18 +246,17 @@ func (s *Exporter) exportAsJSON(events []Event) {
 				logger.Error.Printf("Failed to add document: %s", err)
 			}
 		}
-
 		if err := bi.Close(ctx); err != nil {
 			logger.Error.Printf("Failed to close bulk indexer: %s", err)
 			return
 		}
-
 		duration := time.Since(start)
 		biStats := bi.Stats()
 		v := 1000.0 * float64(biStats.NumAdded) / float64(duration/time.Millisecond)
 		logger.Info.Printf("add=%d\tflush=%d\tfail=%d\treqs=%d\tdur=%-6s\t%6d recs/s",
 			biStats.NumAdded, biStats.NumFlushed, biStats.NumFailed, biStats.NumRequests,
 			duration.Truncate(time.Millisecond), int64(v))
+	case SAExport:
 	}
 }
 
