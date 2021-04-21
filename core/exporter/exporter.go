@@ -23,9 +23,7 @@ package exporter
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
 	"crypto/tls"
-	"encoding/hex"
 	"fmt"
 	netmod "net"
 	"net/http"
@@ -33,6 +31,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cespare/xxhash"
 	syslog "github.com/RackSec/srslog"
 	elasticsearch "github.com/elastic/go-elasticsearch/v8"
 	estransport "github.com/elastic/go-elasticsearch/v8/estransport"
@@ -262,10 +261,20 @@ func (s *Exporter) exportAsJSON(events []Event) {
 	}
 }
 
-func Sha256Hex(val []byte) string {
-	hash := sha256.Sum256(val)
-	return hex.EncodeToString(hash[0:sha256.Size])
+// GetHashStr computes the hash string of its input arguments.
+// TODO: move it to sf-apis/go
+func GetHashStr(objs ...interface{}) string {
+	h := xxhash.New()
+	for _, o := range objs {
+		h.Write([]byte(fmt.Sprintf("%v", o)))
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
+
+//func Sha256Hex(val []byte) string {
+//	hash := sha256.Sum256(val)
+//	return hex.EncodeToString(hash[0:sha256.Size])
+//}
 
 // SetOutChan sets the output channel of the plugin.
 func (s *Exporter) SetOutChan(ch []interface{}) {}

@@ -95,11 +95,11 @@ func (s Offense) ToJSON() []byte {
 }
 
 func (s Offense) ID() string {
-	var b bytes.Buffer
+	var h = make([]string, 0)
 	for _, tr := range s.Observations {
-		b.WriteString(tr.ID())
+		h = append(h, tr.ID())
 	}
-	return Sha256Hex(b.Bytes())
+	return GetHashStr(h)
 }
 
 // CreateObservations creates offense instances based on a list of records

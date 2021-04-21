@@ -20,11 +20,9 @@
 package exporter
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
@@ -135,27 +133,51 @@ func (s TelemetryRecord) ToJSON() []byte {
 }
 
 func (s TelemetryRecord) ID() string {
-	var b bytes.Buffer
+	var h = make([]interface{}, 0)
 	if s.FlatRecord != nil {
 		data := s.FlatRecord.Data
-		b.WriteString(strconv.FormatInt(data[engine.SF_TS].(int64), 10))
-		b.WriteString(data[engine.SF_CONTAINER_ID].(string))
-		b.WriteString(data[engine.SF_TYPE].(string))
-		b.WriteString(strconv.FormatInt(data[engine.SF_PROC_PID].(int64), 10))
-		b.WriteString(strconv.FormatInt(data[engine.SF_PROC_CREATETS].(int64), 10))
+		t := data[engine.SF_TYPE].(string)
+		h = append(h, data[engine.SF_NODE_ID],
+			      data[engine.SF_CONTAINER_ID],
+			      data[engine.SF_TS],
+			      data[engine.SF_PROC_TID],
+			      data[engine.SF_PROC_CREATETS],
+			      t)
+		switch t {
+		case sfgo.TyFFStr, sfgo.TyFEStr:
+			h = append(h, data[engine.SF_FILE_OID])
+		case sfgo.TyNFStr:
+			h = append(h, data[engine.SF_NET_SIP],
+			              data[engine.SF_NET_SPORT],
+				      data[engine.SF_NET_DIP],
+				      data[engine.SF_NET_DPORT],
+				      data[engine.SF_NET_PROTO])
+		}
 	} else {
 		data := s.DataRecord
-		b.WriteString(strconv.FormatInt(data.Ts, 10))
+		h = append(h, data.NodeData.Node[LastPart(engine.SF_NODE_ID)])
 		if data.ContData != nil {
-			if v, ok := data.ContData.Container["id"]; ok {
-				b.WriteString(v.(string))
+			if v, ok := data.ContData.Container[LastPart(engine.SF_CONTAINER_ID)]; ok {
+				h = append(h, v)
 			}
 		}
-		b.WriteString(data.Type)
-		b.WriteString(strconv.FormatInt(data.ProcData.Proc["pid"].(int64), 10))
-		b.WriteString(strconv.FormatInt(data.ProcData.Proc["createts"].(int64), 10))
+		h = append(h, data.Ts,
+			      data.ProcData.Proc[LastPart(engine.SF_PROC_TID)],
+			      data.ProcData.Proc[LastPart(engine.SF_PROC_CREATETS)],
+			      data.Type)
+		switch data.Type {
+		case sfgo.TyFFStr, sfgo.TyFEStr:
+			h = append(h, data.FileData.File[LastPart(engine.SF_FILE_OID)])
+		case sfgo.TyNFStr:
+			net := data.NetData.Net
+			h = append(h, net[LastPart(engine.SF_NET_SIP)],
+			              net[LastPart(engine.SF_NET_SPORT)],
+				      net[LastPart(engine.SF_NET_DIP)],
+				      net[LastPart(engine.SF_NET_DPORT)],
+				      net[LastPart(engine.SF_NET_PROTO)])
+		}
 	}
-	return Sha256Hex(b.Bytes())
+	return GetHashStr(h)
 }
 
 func extractTelemetryRecord(rec *engine.Record, config Config) TelemetryRecord {
