@@ -23,7 +23,8 @@
        "es.password": "changeme",
        "es.bulk.numWorkers": "0",
        "es.bulk.flushBuffer": "5000000",
-       "es.bulk.flushTimeout": "30"
+       "es.bulk.flushTimeout": "30", 
+       "buffer": 1000
       }
     ]
 }
