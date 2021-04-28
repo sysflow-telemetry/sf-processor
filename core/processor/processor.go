@@ -20,6 +20,7 @@
 package processor
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
@@ -116,6 +117,8 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 			}
 		case sfgo.SF_PROCESS:
 			proc := sf.Rec.Process
+			proc.Exe = strings.TrimSpace(proc.Exe)
+			proc.ExeArgs = strings.TrimSpace(proc.ExeArgs)
 			s.tables.SetProc(*proc.Oid, proc)
 			if entEnabled {
 				cont := s.getContFromProc(proc)

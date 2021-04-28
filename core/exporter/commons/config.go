@@ -17,7 +17,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package exporter
+package commons
 
 import (
 	"strconv"
@@ -30,8 +30,7 @@ import (
 
 // Configuration keys.
 const (
-	ExportConfigKey        string = "export"
-	ExpTypeConfigKey       string = "type"
+	TransportConfigKey     string = "export"
 	FormatConfigKey        string = "format"
 	FlatConfigKey          string = "flat"
 	VaultEnabledConfigKey  string = "vault.secrets"
@@ -65,8 +64,7 @@ const (
 
 // Config defines a configuration object for the exporter.
 type Config struct {
-	Export            Export
-	ExpType           ExportType
+	Transport         Transport
 	Format            Format
 	Flat              bool
 	VaultEnabled      bool
@@ -130,11 +128,8 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 		c.secrets = s
 	}
 
-	if v, ok := conf[ExportConfigKey].(string); ok {
-		c.Export = parseExportConfig(v)
-	}
-	if v, ok := conf[ExpTypeConfigKey].(string); ok {
-		c.ExpType = parseExportTypeConfig(v)
+	if v, ok := conf[TransportConfigKey].(string); ok {
+		c.Transport = parseTransportConfig(v)
 	}
 	if v, ok := conf[FormatConfigKey].(string); ok {
 		c.Format = parseFormatConfig(v)
@@ -238,56 +233,40 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 	return c, nil
 }
 
-// Export type.
-type Export int
+// Transport type.
+type Transport int
 
-// Export config options.
+// Transport config options.
 const (
-	StdOutExport Export = iota
-	FileExport
-	SyslogExport
-	ESExport
-	SAExport
+	StdOutTransport Transport = iota
+	FileTransport
+	SyslogTransport
+	ESTransport
+	FindingsTransport
+	NullTransport
 )
 
-func (s Export) String() string {
-	return [...]string{"terminal", "file", "syslog", "es", "sa"}[s]
+func (s Transport) String() string {
+	return [...]string{"terminal", "file", "syslog", "es", "findings", "null"}[s]
 }
 
-func parseExportConfig(s string) Export {
-	if FileExport.String() == s {
-		return FileExport
+func parseTransportConfig(s string) Transport {
+	if FileTransport.String() == s {
+		return FileTransport
 	}
-	if SyslogExport.String() == s {
-		return SyslogExport
+	if SyslogTransport.String() == s {
+		return SyslogTransport
 	}
-	if ESExport.String() == s {
-		return ESExport
+	if ESTransport.String() == s {
+		return ESTransport
 	}
-	if SAExport.String() == s {
-		return SAExport
+	if FindingsTransport.String() == s {
+		return FindingsTransport
 	}
-	return StdOutExport
-}
-
-// ExportType type.
-type ExportType int
-
-// ExportType config options.
-const (
-	TelemetryType ExportType = iota
-	BatchType
-)
-
-func (s ExportType) String() string {
-	return [...]string{"telemetry", "batch"}[s]
-}
-
-func parseExportTypeConfig(s string) ExportType {
-	if BatchType.String() == s {
-		return BatchType
+	if NullTransport.String() == s {
+		return NullTransport
 	}
-	return TelemetryType
+	return StdOutTransport
 }
 
 // Format type.
@@ -295,12 +274,13 @@ type Format int
 
 // Format config options.
 const (
-	JSONFormat Format = iota
-	ECSFormat
+	JSONFormat       Format = iota // JSON schema
+	ECSFormat                      // Elastic Common Schema
+	OccurrenceFormat               // IBM Findings Occurrence
 )
 
 func (s Format) String() string {
-	return [...]string{"json", "ecs"}[s]
+	return [...]string{"json", "ecs", "occurrence"}[s]
 }
 
 func parseFormatConfig(s string) Format {
@@ -309,6 +289,8 @@ func parseFormatConfig(s string) Format {
 		return JSONFormat
 	case ECSFormat.String():
 		return ECSFormat
+	case OccurrenceFormat.String():
+		return OccurrenceFormat
 	}
 	return JSONFormat
 }

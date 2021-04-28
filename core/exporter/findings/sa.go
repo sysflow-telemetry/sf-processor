@@ -17,7 +17,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package exporter
+package findings
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ import (
 	"github.com/ibm-cloud-security/security-advisor-sdk-go/findingsapiv1"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
-	"github.com/sysflow-telemetry/sf-processor/core/exporter/findings"
+	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 )
 
 const (
@@ -92,31 +92,31 @@ type SAClient struct {
 }
 
 // NewSAClient is a constructor for SAClient.
-func NewSAClient(config Config) *SAClient {
+func NewSAClient(conf commons.Config) *SAClient {
 	queue := cqueue.NewFIFO()
 	queue.Enqueue(cmap.New())
-	return &SAClient{AccountID: config.SAAccountID,
+	return &SAClient{AccountID: conf.SAAccountID,
 		exportQueue: queue,
-		ProviderID:  config.SAProviderID,
-		ApiKey:      config.SAApiKey,
-		SAUrl:       config.SAUrl,
-		SqlQueryUrl: config.SASqlQueryUrl,
-		SqlQueryCrn: config.SASqlQueryCrn,
-		Region:      config.Region}
+		ProviderID:  conf.SAProviderID,
+		ApiKey:      conf.SAApiKey,
+		SAUrl:       conf.SAUrl,
+		SqlQueryUrl: conf.SASqlQueryUrl,
+		SqlQueryCrn: conf.SASqlQueryCrn,
+		Region:      conf.Region}
 }
 
 // AddAlert adds alert to export queue.
-func (s *SAClient) AddAlert(event Event) {
-	// if r, ok := event.(TelemetryRecord); ok {
-	// 	r.Container[]
-	// 	s.exportQueue.Get(0)[]
-	// }
+// func (s *SAClient) AddAlert(event Event) {
+// 	// if r, ok := event.(TelemetryRecord); ok {
+// 	// 	r.Container[]
+// 	// 	s.exportQueue.Get(0)[]
+// 	// }
 
-}
+// }
 
 //CreateFindingOccurrence creates a new occurrence of type finding.
 func (s *SAClient) CreateOccurrence(occ *Occurrence) error {
-	service, err := findings.NewFindingsApi(s.ApiKey, s.SAUrl)
+	service, err := NewFindingsApi(s.ApiKey, s.SAUrl)
 	if err != nil {
 		logger.Error.Printf("Error while creating Findings API wrapper %v", err)
 		return err

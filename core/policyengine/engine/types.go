@@ -117,7 +117,7 @@ type RecordChannel struct {
 }
 
 // RecAttribute denotes a record attribute enumeration.
-type RecAttribute int
+type RecAttribute int8
 
 // List of auxialiary record attributes enumerations.
 const (
@@ -151,7 +151,7 @@ func (r Record) GetInt(attr sfgo.Attribute, src sfgo.Source) int64 {
 func (r Record) GetStr(attr sfgo.Attribute, src sfgo.Source) string {
 	for idx, s := range r.Fr.Sources {
 		if s == src {
-			return strings.TrimSpace(r.Fr.Strs[idx][attr])
+			return r.Fr.Strs[idx][attr]
 		}
 	}
 	return sfgo.Zeros.String
@@ -170,7 +170,8 @@ func (r Record) getProcProv(ID sfgo.OID) []*sfgo.Process {
 	return ptree
 }
 
-func (r Record) memoizePtree(ID sfgo.OID) []*sfgo.Process {
+// MemoizePtree caches the processes hierachy given the ID.
+func (r Record) MemoizePtree(ID sfgo.OID) []*sfgo.Process {
 	if ptree, ok := r.Ptree[ID]; ok {
 		return ptree
 	}
@@ -180,7 +181,7 @@ func (r Record) memoizePtree(ID sfgo.OID) []*sfgo.Process {
 
 // GetCachedValue returns the value of attr from cache for process ID.
 func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
-	if ptree := r.memoizePtree(ID); ptree != nil {
+	if ptree := r.MemoizePtree(ID); ptree != nil {
 		switch attr {
 		case PProcName:
 			if len(ptree) > 1 {
@@ -229,7 +230,10 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 			break
 		case PProcCmdLine:
 			if len(ptree) > 1 {
-				return ptree[1].Exe + SPACE + ptree[1].ExeArgs
+				if len(ptree[1].ExeArgs) > 0 {
+					return ptree[1].Exe + SPACE + ptree[1].ExeArgs
+				}
+				return ptree[1].Exe
 			}
 			break
 		case ProcAName:
@@ -247,7 +251,11 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 		case ProcACmdLine:
 			var s []string
 			for _, p := range ptree {
-				s = append(s, p.Exe+SPACE+p.ExeArgs)
+				if len(p.ExeArgs) > 0 {
+					s = append(s, p.Exe+SPACE+p.ExeArgs)
+				} else {
+					s = append(s, p.Exe)
+				}
 			}
 			return strings.Join(s, LISTSEP)
 		case ProcAPID:
