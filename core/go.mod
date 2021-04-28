@@ -22,18 +22,22 @@ module github.com/sysflow-telemetry/sf-processor/core
 go 1.14
 
 require (
-	github.com/IBM/go-sdk-core/v3 v3.3.1 // indirect
+	github.com/IBM/go-sdk-core/v3 v3.3.1
 	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0
 	github.com/cespare/xxhash v1.1.0
-	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210317102009-a9d74cec0186
+	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae
 	github.com/enriquebris/goconcurrentqueue v0.6.0
-	github.com/go-openapi/strfmt v0.19.4 // indirect
-	github.com/ibm-cloud-security/security-advisor-sdk-go v1.1.1 // indirect
+	github.com/go-openapi/strfmt v0.19.4
+	github.com/golang/protobuf v1.3.3 // indirect
+	github.com/google/go-cmp v0.4.0 // indirect
+	github.com/ibm-cloud-security/security-advisor-sdk-go v1.1.1
+	github.com/mailru/easyjson v0.7.6
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/stretchr/testify v1.6.1
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201207153955-828257760aa4
-	github.com/xitongsys/parquet-go v1.6.0 // indirect
+	golang.org/x/net v0.0.0-20200222125558-5a598a2470a0 // indirect
+	golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae // indirect
 )
 
 replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go

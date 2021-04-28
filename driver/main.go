@@ -27,6 +27,7 @@ import (
 	"os/signal"
 	"runtime"
 	"runtime/pprof"
+	"runtime/trace"
 	"syscall"
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
@@ -59,6 +60,7 @@ func main() {
 	inputType := flag.String("driver", "file", fmt.Sprintf("Driver name {file|socket|<custom>}"))
 	cpuprofile := flag.String("cpuprofile", "", "Write cpu profile to `file`")
 	memprofile := flag.String("memprofile", "", "Write memory profile to `file`")
+	traceprofile := flag.String("traceprofile", "", "Write trace profile to `file`")
 	configFile := flag.String("config", "pipeline.json", "Path to pipeline configuration file")
 	logLevel := flag.String("log", "info", "Log level {trace|info|warn|error}")
 	driverDir := flag.String("driverdir", pipeline.DriverDir, "Dynamic driver directory")
@@ -109,6 +111,22 @@ func main() {
 			log.Fatal("Could not start CPU profile: ", err)
 		}
 		defer pprof.StopCPUProfile()
+	}
+
+	if *traceprofile != "" {
+		f, err := os.Create(*traceprofile)
+		if err != nil {
+			log.Fatal("Could not create Trace profile: ", err)
+			panic(err)
+		}
+		defer f.Close()
+
+		err = trace.Start(f)
+		if err != nil {
+			log.Fatal("Could not create Trace profile: ", err)
+			panic(err)
+		}
+		defer trace.Stop()
 	}
 
 	// load pipeline

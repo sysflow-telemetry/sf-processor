@@ -3,6 +3,7 @@
 //
 // Authors:
 // Andreas Schade <san@zurich.ibm.com>
+// Frederico Araujo <frederico.araujo@ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,10 +17,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package exporter
+package encoders
 
+// ECS version
 const ECS_VERSION = "1.7.0"
 
+// Agent type
 const ECS_AGENT_TYPE = "SysFlow"
 
 // ECS attributes used in JsonData
@@ -43,8 +46,8 @@ const (
 	ECS_EVENT_DURATION = "duration"
 	ECS_EVENT_SFTYPE   = "sf_type"
 	ECS_EVENT_SFRET    = "sf_ret"
-
-	ECS_EVENT_REASON = "reason"
+	ECS_EVENT_REASON   = "reason"
+	ECS_EVENT_SEVERITY = "severity"
 
 	ECS_FILE_DIR    = "directory"
 	ECS_FILE_NAME   = "name"
@@ -75,6 +78,8 @@ const (
 	ECS_PROC_NAME       = "name"
 	ECS_PROC_PARENT     = "parent"
 	ECS_PROC_PID        = "pid"
+	ECS_PROC_THREAD     = "thread"
+	ECS_PROC_TID        = "id"
 	ECS_PROC_START      = "start"
 
 	ECS_SF_FA_RBYTES = "bytes_read"
@@ -84,6 +89,11 @@ const (
 
 	ECS_USER_ID   = "id"
 	ECS_USER_NAME = "name"
+
+	ECS_THREAT_FRAMEWORK    = "framework"
+	ECS_THREAT_TECHNIQUE_ID = "id"
+
+	ECS_TAGS = "tags"
 )
 
 // ECS kind values
@@ -105,9 +115,9 @@ const (
 	ECS_TYPE_CREATE     = "creation"
 	ECS_TYPE_DELETE     = "deletion"
 	ECS_TYPE_START      = "start"
-	ECS_TYPE_END        = "end"
+	ECS_TYPE_EXIT       = "exit"
 	ECS_TYPE_TSTART     = "thread-start"
-	ECS_TYPE_TEND       = "thread-end"
+	ECS_TYPE_TEXIT      = "thread-exit"
 )
 
 // ECS action suffixes that differ from ECS types

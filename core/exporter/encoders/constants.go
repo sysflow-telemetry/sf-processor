@@ -17,11 +17,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package exporter
+package encoders
 
-// Event defines an interface for exported event objects.
-type Event interface {
-	ToJSON() []byte
-	ToJSONStr() string
-	ID() string
-}
+// SysFlow record components
+const (
+	PROC      = "proc"
+	PPROC     = "pproc"
+	NET       = "net"
+	FILEF     = "file"
+	FLOW      = "flow"
+	CONTAINER = "container"
+	NODE      = "node"
+
+	BEGIN_STATE = iota
+	PROC_STATE
+	PPROC_STATE
+	NET_STATE
+	FILE_STATE
+	FLOW_STATE
+	CONT_STATE
+	NODE_STATE
+)
+
+// Export schema shared attribute names.
+const (
+	VERSION_ATTR      = "version"
+	GROUP_ID_ATTR     = "groupId"
+	OBSERVATIONS_ATTR = "observations"
+	POLICIES_ATTR     = "policies"
+	ID_TAG_ATTR       = "id"
+	DESC_ATTR         = "desc"
+	PRIORITY_ATTR     = "priority"
+	TAGS_ATTR         = "tags"
+)
