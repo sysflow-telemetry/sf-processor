@@ -17,20 +17,105 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package findings
+package transports
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/go-openapi/strfmt"
 	"github.com/ibm-cloud-security/security-advisor-sdk-go/common"
 	"github.com/ibm-cloud-security/security-advisor-sdk-go/findingsapiv1"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
+	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
+	"github.com/sysflow-telemetry/sf-processor/core/exporter/encoders"
 )
 
 const (
-	kind = "FINDING"
+	kind        = "FINDING"
+	details     = "Occurrence Details"
+	queryUrlFmt = "%s/?instance_crn=%s&statement=%s"
 )
+
+// FindingsApiProto implements a custom client for IBM Cloud Security and Compliance Insights.
+type FindingsApiProto struct {
+	AccountID   string
+	ProviderID  string
+	ApiKey      string
+	FindingsUrl string
+	SqlQueryUrl string
+	SqlQueryCrn string
+	Region      string
+}
+
+// NewFindingsApiProto is a constructor for FindingsApiProto.
+func NewFindingsApiProto(conf commons.Config) TransportProtocol {
+	return &FindingsApiProto{AccountID: conf.FindingsAccountID,
+		ProviderID:  conf.FindingsProviderID,
+		ApiKey:      conf.FindingsApiKey,
+		FindingsUrl: conf.FindingsUrl,
+		SqlQueryUrl: conf.FindingsSqlQueryUrl,
+		SqlQueryCrn: conf.FindingsSqlQueryCrn,
+		Region:      conf.FindingsRegion}
+}
+
+// Init intializes a new null protocol object.
+func (s *FindingsApiProto) Init() error {
+	return nil
+}
+
+// Export does nothing.
+func (s *FindingsApiProto) Export(data commons.EncodedData) error {
+	if occ, ok := data.(*encoders.Occurrence); ok {
+		return s.CreateOccurrence(occ)
+	}
+	return errors.New("Expected Occurrence object as exported data")
+}
+
+// Register registers the null protocol object with the exporter.
+func (s *FindingsApiProto) Register(eps map[commons.Transport]TransportProtocolFactory) {
+	eps[commons.FindingsTransport] = NewFindingsApiProto
+}
+
+// Cleanup cleans up the null protocol object.
+func (s *FindingsApiProto) Cleanup() {}
+
+//CreateFindingOccurrence creates a new occurrence of type finding.
+func (s *FindingsApiProto) CreateOccurrence(occ *encoders.Occurrence) error {
+	service, err := NewFindingsApi(s.ApiKey, s.FindingsUrl)
+	if err != nil {
+		logger.Error.Printf("Error while creating Findings API wrapper %v", err)
+		return err
+	}
+
+	noteName := fmt.Sprintf("%s/providers/%s/notes/%s", s.AccountID, s.ProviderID, occ.NoteID)
+	var nextStep []findingsapiv1.RemediationStep
+	if occ.AlertQuery != "" {
+		nextStep = []findingsapiv1.RemediationStep{{
+			Title: core.StringPtr(details),
+			URL:   core.StringPtr(fmt.Sprintf(queryUrlFmt, s.SqlQueryUrl, s.SqlQueryCrn, occ.AlertQuery))},
+		}
+	}
+	finding := findingsapiv1.Finding{Severity: core.StringPtr(occ.Severity.String()), Certainty: core.StringPtr(occ.Certainty.String()), NextSteps: nextStep}
+	context := findingsapiv1.Context{Region: core.StringPtr(s.Region), ResourceType: core.StringPtr(occ.ResType), ResourceName: core.StringPtr(occ.ResName)}
+
+	var options = service.NewCreateCustomOccurrenceOptions(s.AccountID, s.ProviderID, noteName, occ.ID)
+	options.SetFinding(&finding)
+	options.SetContext(&context)
+	options.SetLongDescription(occ.LongDescr)
+	options.SetShortDescription(occ.ShortDescr)
+
+	result, response, err := service.CreateCustomOccurrence(options)
+	if err != nil {
+		logger.Error.Println("Failed to create occurrence: ", err)
+		logger.Error.Println(response.Result)
+		return err
+	}
+	logger.Info.Println(response.StatusCode)
+	logger.Info.Println(*result.ID)
+	return nil
+}
 
 // FindingsApi implements an API for IBM Findings.
 type FindingsApi struct {

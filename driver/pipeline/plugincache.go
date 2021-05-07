@@ -177,7 +177,7 @@ func (p *PluginCache) updateConfigFromEnv() {
 	}
 }
 
-// getEnv returns the environemnt config settings for processor proc.
+// getEnv returns the environment config settings for processor proc.
 func (p *PluginCache) getEnv(proc string) map[string]string {
 	var conf = make(map[string]string)
 	for _, e := range os.Environ() {

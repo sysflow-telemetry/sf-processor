@@ -26,6 +26,14 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
+// Events is an event slice.
+type Events []Event
+
+// Event is an event associated with an occurrence, used as context for the occurrence.
+type Event struct {
+	Record *engine.Record
+}
+
 // Occurrence object for IBM Findings API.
 type Occurrence struct {
 	ID         string
@@ -58,11 +66,24 @@ func (oe *OccurrenceEncoder) Register(codecs map[commons.Format]EncoderFactory) 
 
 // Encodes a telemetry record into an occurrence representation.
 func (oe *OccurrenceEncoder) Encode(r *engine.Record) (data commons.EncodedData, err error) {
+	oe.addEvent(r)
 	return
 }
 
 // addEvent adds a record to export queue.
 func (oe *OccurrenceEncoder) addEvent(r *engine.Record) {
-	// r.Container[]
-	// s.exportQueue.Get(0)[]
+	cid := engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(r)
+	head, _ := oe.exportQueue.Get(0)
+	m := head.(cmap.ConcurrentMap)
+	e := oe.encodeEvent(r)
+	if es, ok := m.Get(cid); ok {
+		es = append(es.([]Event), e)
+	} else {
+		m.Set(cid, e)
+	}
+}
+
+// encodeEvent maps a record into an event that can be associated with an occurrence.
+func (oe *OccurrenceEncoder) encodeEvent(r *engine.Record) Event {
+	return Event{Record: r}
 }

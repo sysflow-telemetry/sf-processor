@@ -23,7 +23,6 @@ go 1.14
 
 require (
 	github.com/actgardner/gogen-avro/v7 v7.1.1
-	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210317102009-a9d74cec0186 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/linkedin/goavro v2.1.0+incompatible

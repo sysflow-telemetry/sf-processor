@@ -46,5 +46,5 @@ func (s *NullProto) Register(eps map[commons.Transport]TransportProtocolFactory)
 	eps[commons.NullTransport] = NewNullProto
 }
 
-//Cleanup cleans up the null protocol object.
+// Cleanup cleans up the null protocol object.
 func (s *NullProto) Cleanup() {}
