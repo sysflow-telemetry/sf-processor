@@ -43,7 +43,6 @@ func (s *TerminalProto) Export(data commons.EncodedData) error {
 	if buf, ok := data.([]byte); ok {
 		fmt.Println(unsafeBytesToString(buf))
 	}
-	fmt.Printf("%v\n", data)
 	return nil
 }
 

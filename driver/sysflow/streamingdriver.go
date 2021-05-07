@@ -76,13 +76,13 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 
 	records := sfChannel.In
 	if err := os.RemoveAll(path); err != nil {
-		logger.Error.Println("remove error:", err)
+		logger.Error.Println("Remove error: ", err)
 		return err
 	}
 
 	l, err := net.ListenUnix("unixpacket", &net.UnixAddr{Name: path, Net: "unixpacket"})
 	if err != nil {
-		logger.Error.Println("listen error:", err)
+		logger.Error.Println("Listen error: ", err)
 		return err
 	}
 	defer l.Close()
@@ -90,7 +90,7 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 	sFlow := sfgo.NewSysFlow()
 	deser, err := compiler.CompileSchemaBytes([]byte(sFlow.Schema()), []byte(sFlow.Schema()))
 	if err != nil {
-		logger.Error.Println("compiler error:", err)
+		logger.Error.Println("Compilation error: ", err)
 		return err
 	}
 
@@ -100,25 +100,25 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 		reader := bytes.NewReader(buf)
 		s.conn, err = l.AcceptUnix()
 		if err != nil {
-			logger.Error.Println("accept error:", err)
+			logger.Error.Println("Accept error: ", err)
 			break
 		}
 		for *running {
 			sFlow = sfgo.NewSysFlow()
 			_, _, flags, _, err := s.conn.ReadMsgUnix(buf[:], oobuf[:])
 			if err != nil {
-				logger.Error.Println("read error:", err)
+				logger.Error.Println("Read error: ", err)
 				break
 			}
 			if flags == 0 {
 				reader.Reset(buf)
 				err = vm.Eval(reader, deser, sFlow)
 				if err != nil {
-					logger.Error.Println("deserialize:", err)
+					logger.Error.Println("Deserialization error: ", err)
 				}
 				records <- sFlow
 			} else {
-				logger.Error.Println("Flag error ReadMsgUnix:", flags)
+				logger.Error.Println("Flag error ReadMsgUnix: ", flags)
 			}
 		}
 		s.conn.Close()
