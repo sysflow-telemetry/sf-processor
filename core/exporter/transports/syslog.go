@@ -73,7 +73,7 @@ func (s *SyslogProto) Register(eps map[commons.Transport]TransportProtocolFactor
 	eps[commons.SyslogTransport] = NewSyslogProto
 }
 
-// Cleanup  closes the syslog connection.
+// Cleanup closes the syslog connection.
 func (s *SyslogProto) Cleanup() {
 	if s.sysl != nil {
 		s.sysl.Close()

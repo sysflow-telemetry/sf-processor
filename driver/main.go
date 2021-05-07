@@ -78,7 +78,7 @@ func main() {
 		fmt.Println()
 	}
 
-	// parse args and validade positional args
+	// parse args and validate positional args
 	flag.Parse()
 	if !*version && flag.NArg() < 1 {
 		flag.Usage()
