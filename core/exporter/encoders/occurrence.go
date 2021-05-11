@@ -26,8 +26,13 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
-// Events is an event slice.
-type Events []Event
+// EventGroup contains an event slice with metadata annotations.
+type EventGroup struct {
+	Events      []Event
+	EventTypes  int
+	TopSeverity Severity
+	// add bloom filters for file paths, remote IPs, and process cmdline.
+}
 
 // Event is an event associated with an occurrence, used as context for the occurrence.
 type Event struct {
@@ -73,13 +78,20 @@ func (oe *OccurrenceEncoder) Encode(r *engine.Record) (data commons.EncodedData,
 // addEvent adds a record to export queue.
 func (oe *OccurrenceEncoder) addEvent(r *engine.Record) {
 	cid := engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(r)
+	severity := Severity(engine.Mapper.MapInt(engine.SF_CONTAINER_ID)(r))
 	head, _ := oe.exportQueue.Get(0)
 	m := head.(cmap.ConcurrentMap)
 	e := oe.encodeEvent(r)
-	if es, ok := m.Get(cid); ok {
-		es = append(es.([]Event), e)
+	if v, ok := m.Get(cid); ok {
+		eg := v.(EventGroup)
+		eg.Events = append(eg.Events, e)
 	} else {
-		m.Set(cid, e)
+		eg := EventGroup{
+			Events:      []Event{e},
+			EventTypes:  1,
+			TopSeverity: severity,
+		}
+		m.Set(cid, eg)
 	}
 }
 
