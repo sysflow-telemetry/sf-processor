@@ -36,6 +36,7 @@ require (
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/stretchr/testify v1.6.1
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20201207153955-828257760aa4
+	github.com/xitongsys/parquet-go v1.6.0 // indirect
 	golang.org/x/net v0.0.0-20200222125558-5a598a2470a0 // indirect
 	golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae // indirect
 )
