@@ -7,7 +7,7 @@ const (
 	FindingsAccountIDConfigKey   string = "findings.accountid"
 	FindingsProviderIDConfigKey  string = "findings.provider"
 	FindingsNoteIDConfigKey      string = "findings.note"
-	FindingsSqlQueryUrlConifgKey string = "findings.sqlqueryurl"
+	FindingsSqlQueryUrlConfigKey string = "findings.sqlqueryurl"
 	FindingsSqlQueryCrnConfigKey string = "findings.sqlquerycrn"
 	FindingsRegionConfigKey      string = "findings.region"
 )
@@ -53,7 +53,7 @@ func CreateFindingsConfig(bc Config, conf map[string]interface{}) (c FindingsCon
 	if v, ok := conf[FindingsNoteIDConfigKey].(string); ok {
 		c.FindingsNoteID = v
 	}
-	if v, ok := conf[FindingsSqlQueryUrlConifgKey].(string); ok {
+	if v, ok := conf[FindingsSqlQueryUrlConfigKey].(string); ok {
 		c.FindingsSqlQueryUrl = v
 	}
 	if v, ok := conf[FindingsSqlQueryCrnConfigKey].(string); ok {
