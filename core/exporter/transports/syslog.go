@@ -27,6 +27,7 @@ import (
 	syslog "github.com/RackSec/srslog"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
+	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
 )
 
 // SyslogProto implements the TransportProtocol interface for syslog.
@@ -63,7 +64,7 @@ func (s *SyslogProto) Init() error {
 // Export sends buffer to syslog daemon as an alert.
 func (s *SyslogProto) Export(data commons.EncodedData) error {
 	if buf, ok := data.([]byte); ok {
-		return s.sysl.Alert(unsafeBytesToString(buf))
+		return s.sysl.Alert(utils.UnsafeBytesToString(buf))
 	}
 	return errors.New("Expected byte array as export data")
 }
