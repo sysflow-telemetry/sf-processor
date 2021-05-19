@@ -30,6 +30,7 @@ import (
 	"github.com/cespare/xxhash"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
+	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
@@ -87,7 +88,7 @@ func (t *ECSEncoder) Encode(rec *engine.Record) (commons.EncodedData, error) {
 	ecs.Agent.Version = t.config.JSONSchemaVersion
 	ecs.Agent.Type = ECS_AGENT_TYPE
 	ecs.Ecs.Version = ECS_VERSION
-	ecs.Ts = toIsoTimeStr(engine.Mapper.MapInt(engine.SF_TS)(rec))
+	ecs.Ts = utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_TS)(rec))
 
 	// encode specific record components
 	sfType := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
@@ -111,7 +112,7 @@ func (t *ECSEncoder) Encode(rec *engine.Record) (commons.EncodedData, error) {
 		for _, r := range rules {
 			reasons = append(reasons, r.Name)
 			tags = append(tags, extracTags(r.Tags)...)
-			priority = max(priority, int(r.Priority))
+			priority = utils.Max(priority, int(r.Priority))
 		}
 		ecs.Event[ECS_EVENT_REASON] = strings.Join(reasons, ", ")
 		ecs.Event[ECS_EVENT_SEVERITY] = priority
@@ -304,7 +305,7 @@ func encodeProcess(rec *engine.Record) JsonData {
 		ECS_PROC_ARGS:    engine.Mapper.MapStr(engine.SF_PROC_ARGS)(rec),
 		ECS_PROC_CMDLINE: engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(rec),
 		ECS_PROC_PID:     engine.Mapper.MapInt(engine.SF_PROC_PID)(rec),
-		ECS_PROC_START:   toIsoTimeStr(engine.Mapper.MapInt(engine.SF_PROC_CREATETS)(rec)),
+		ECS_PROC_START:   utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_PROC_CREATETS)(rec)),
 		ECS_PROC_NAME:    path.Base(exe),
 		ECS_PROC_THREAD:  JsonData{ECS_PROC_TID: engine.Mapper.MapInt(engine.SF_PROC_TID)(rec)},
 	}
@@ -314,7 +315,7 @@ func encodeProcess(rec *engine.Record) JsonData {
 		ECS_PROC_ARGS:    engine.Mapper.MapStr(engine.SF_PPROC_ARGS)(rec),
 		ECS_PROC_CMDLINE: engine.Mapper.MapStr(engine.SF_PPROC_CMDLINE)(rec),
 		ECS_PROC_PID:     engine.Mapper.MapInt(engine.SF_PPROC_PID)(rec),
-		ECS_PROC_START:   toIsoTimeStr(engine.Mapper.MapInt(engine.SF_PPROC_CREATETS)(rec)),
+		ECS_PROC_START:   utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_PPROC_CREATETS)(rec)),
 		ECS_PROC_NAME:    path.Base(pexe),
 	}
 	process[ECS_PROC_PARENT] = parent
@@ -340,8 +341,8 @@ func encodeEvent(rec *engine.Record, category string, eventType string, action s
 		ECS_EVENT_ACTION:   action,
 		ECS_EVENT_ORIGINAL: string(orig),
 		ECS_EVENT_SFTYPE:   sf_type,
-		ECS_EVENT_START:    toIsoTimeStr(start),
-		ECS_EVENT_END:      toIsoTimeStr(end),
+		ECS_EVENT_START:    utils.ToIsoTimeStr(start),
+		ECS_EVENT_END:      utils.ToIsoTimeStr(end),
 		ECS_EVENT_DURATION: end - start,
 	}
 	if sf_type == sfgo.TyPEStr || sf_type == sfgo.TyFEStr {

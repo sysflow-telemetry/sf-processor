@@ -19,6 +19,28 @@
 //
 package encoders
 
+// Formatted string constants.
+const (
+	rightArrow = "\u2192"
+
+	peStrFmt = "Process execution %s " + rightArrow + " %s"
+	feStrFmt = "Filesystem manipulation %s " + rightArrow + " %s"
+	ffStrFmt = "File access %s " + rightArrow + " %s"
+	nfStrFmt = "Network traffic %s " + rightArrow + " %s"
+
+	policiesStrFmt = "<b>Policies</b><br>%s"
+	tagsStrFmt     = "<b>Tags</b><br>%s"
+	detailsStrFmt  = "%s<br><br>%s<br><br>%s"
+	noteIDStrFmt   = "%s-%d"
+	connStrFmt     = "%s:%d-%s:%d"
+
+	sqlQueryStrFmt = "SELECT ts, description, severity, node_id, container_id, record_type, op_flags, pproc_cmd, proc_cmd, pproc_pid, proc_pid, resource, tags, trace FROM %s STORED AS PARQUET LIMIT 5000"
+
+	listSep = ","
+
+	hostFileName = "host"
+)
+
 // Severity type for enumeration.
 type Severity int
 

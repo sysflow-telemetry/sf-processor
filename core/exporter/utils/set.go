@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2020 IBM Corporation.
+// Copyright (C) 2021 IBM Corporation.
 //
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
@@ -17,34 +17,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package encoders
+package utils
 
-import (
-	"time"
-)
+var exists = struct{}{}
 
-func trimBoundingQuotes(s string) string {
-	if len(s) > 0 && (s[0] == '"' || s[0] == '\'') {
-		s = s[1:]
-	}
-	if len(s) > 0 && (s[len(s)-1] == '"' || s[len(s)-1] == '\'') {
-		s = s[:len(s)-1]
-	}
+type Set struct {
+	m map[string]struct{}
+}
+
+func NewSet() *Set {
+	s := &Set{}
+	s.m = make(map[string]struct{})
 	return s
 }
 
-// Max returns the larger of two integers, x or y.
-func max(x, y int) int {
-	if x < y {
-		return y
-	}
-	return x
+func (s *Set) Add(value string) {
+	s.m[value] = exists
 }
 
-// converts a unix time value in ns to UTC time and returns an RFC3399 string
-func toIsoTimeStr(ts int64) string {
-	ts_sec := int64(ts / 1E+9)
-	ts_ns := int64(ts % 1E+9)
-	t := time.Unix(ts_sec, ts_ns).In(time.UTC)
-	return t.Format(time.RFC3339Nano)
+func (s *Set) Remove(value string) {
+	delete(s.m, value)
+}
+
+func (s *Set) Contains(value string) bool {
+	_, c := s.m[value]
+	return c
+}
+
+func (s *Set) Len() int {
+	return len(s.m)
 }

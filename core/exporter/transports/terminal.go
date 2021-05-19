@@ -23,6 +23,7 @@ import (
 	"fmt"
 
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
+	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
 )
 
 // TerminalProto implements the TransportProtocol interface of a terminal output.
@@ -41,7 +42,7 @@ func (s *TerminalProto) Init() error {
 // Export exports the contents of buffer for the terminal.
 func (s *TerminalProto) Export(data commons.EncodedData) error {
 	if buf, ok := data.([]byte); ok {
-		fmt.Println(unsafeBytesToString(buf))
+		fmt.Println(utils.UnsafeBytesToString(buf))
 	}
 	return nil
 }
