@@ -27,6 +27,7 @@ import (
 	"github.com/mailru/easyjson/jwriter"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
+	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
@@ -326,14 +327,14 @@ func MapJSON(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 	switch fv.Entry.Type {
 	case engine.MapStrVal:
 		v := r.GetStr(fv.Entry.FlatIndex, fv.Entry.Source)
-		writer.String(trimBoundingQuotes(v))
+		writer.String(utils.TrimBoundingQuotes(v))
 	case engine.MapIntVal:
 		writer.Int64(r.GetInt(fv.Entry.FlatIndex, fv.Entry.Source))
 	case engine.MapBoolVal:
 		writer.Bool(r.GetInt(fv.Entry.FlatIndex, fv.Entry.Source) == 1)
 	case engine.MapSpecialStr:
 		v := fv.Entry.Map(r).(string)
-		writer.String(trimBoundingQuotes(v))
+		writer.String(utils.TrimBoundingQuotes(v))
 	case engine.MapSpecialInt:
 		writer.Int64(fv.Entry.Map(r).(int64))
 	case engine.MapSpecialBool:
@@ -370,17 +371,17 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 		switch attr {
 		case engine.PProcName:
 			if len(ptree) > 1 {
-				writer.String(trimBoundingQuotes(filepath.Base(ptree[1].Exe)))
+				writer.String(utils.TrimBoundingQuotes(filepath.Base(ptree[1].Exe)))
 			}
 			break
 		case engine.PProcExe:
 			if len(ptree) > 1 {
-				writer.String(trimBoundingQuotes(ptree[1].Exe))
+				writer.String(utils.TrimBoundingQuotes(ptree[1].Exe))
 			}
 			break
 		case engine.PProcArgs:
 			if len(ptree) > 1 {
-				writer.String(trimBoundingQuotes(ptree[1].ExeArgs))
+				writer.String(utils.TrimBoundingQuotes(ptree[1].ExeArgs))
 			}
 			break
 		case engine.PProcUID:
@@ -390,7 +391,7 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 			break
 		case engine.PProcUser:
 			if len(ptree) > 1 {
-				writer.String(trimBoundingQuotes(ptree[1].UserName))
+				writer.String(utils.TrimBoundingQuotes(ptree[1].UserName))
 			}
 			break
 		case engine.PProcGID:
@@ -400,7 +401,7 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 			break
 		case engine.PProcGroup:
 			if len(ptree) > 1 {
-				writer.String(trimBoundingQuotes(ptree[1].GroupName))
+				writer.String(utils.TrimBoundingQuotes(ptree[1].GroupName))
 			}
 			break
 		case engine.PProcTTY:
@@ -415,8 +416,8 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 			break
 		case engine.PProcCmdLine:
 			if len(ptree) > 1 {
-				exe := trimBoundingQuotes(ptree[1].Exe)
-				exeArgs := trimBoundingQuotes(ptree[1].ExeArgs)
+				exe := utils.TrimBoundingQuotes(ptree[1].Exe)
+				exeArgs := utils.TrimBoundingQuotes(ptree[1].ExeArgs)
 				writer.RawByte(DOUBLE_QUOTE)
 				stringNoQuotes(exe, writer)
 				if len(exeArgs) > 0 {
@@ -430,7 +431,7 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 			l := len(ptree)
 			writer.RawByte(BEGIN_SQUARE)
 			for i, p := range ptree {
-				writer.String(trimBoundingQuotes(filepath.Base(p.Exe)))
+				writer.String(utils.TrimBoundingQuotes(filepath.Base(p.Exe)))
 				if i < (l - 1) {
 					writer.RawByte(COMMA)
 				}
@@ -440,7 +441,7 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 			l := len(ptree)
 			writer.RawByte(BEGIN_SQUARE)
 			for i, p := range ptree {
-				writer.String(trimBoundingQuotes(p.Exe))
+				writer.String(utils.TrimBoundingQuotes(p.Exe))
 				if i < (l - 1) {
 					writer.RawByte(COMMA)
 				}
@@ -450,8 +451,8 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 			l := len(ptree)
 			writer.RawByte(BEGIN_SQUARE)
 			for i, p := range ptree {
-				exe := trimBoundingQuotes(p.Exe)
-				exeArgs := trimBoundingQuotes(p.ExeArgs)
+				exe := utils.TrimBoundingQuotes(p.Exe)
+				exeArgs := utils.TrimBoundingQuotes(p.ExeArgs)
 				writer.RawByte(DOUBLE_QUOTE)
 				stringNoQuotes(exe, writer)
 				if len(exeArgs) > 0 {

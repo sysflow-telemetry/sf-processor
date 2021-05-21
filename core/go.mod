@@ -34,6 +34,8 @@ require (
 	github.com/ibm-cloud-security/security-advisor-sdk-go v1.1.1
 	github.com/mailru/easyjson v0.7.6
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
+	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570 // indirect
+	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210517193019-659b69737720
 	github.com/xitongsys/parquet-go v1.6.0 // indirect
