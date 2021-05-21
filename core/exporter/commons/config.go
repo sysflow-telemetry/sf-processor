@@ -81,7 +81,10 @@ func CreateConfig(conf map[string]interface{}) (c Config, err error) {
 		c.Format = parseFormatConfig(v)
 	}
 	if v, ok := conf[EventBufferConfigKey].(string); ok {
-		c.EventBuffer, _ = strconv.Atoi(v)
+		c.EventBuffer, err = strconv.Atoi(v)
+		if err != nil {
+			return c, err
+		}
 	}
 	if v, ok := conf[VersionKey].(string); ok {
 		c.Version = v
