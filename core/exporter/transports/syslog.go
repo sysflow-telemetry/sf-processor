@@ -21,6 +21,7 @@ package transports
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -65,8 +66,10 @@ func (s *SyslogProto) Init() error {
 func (s *SyslogProto) Export(data commons.EncodedData) error {
 	if buf, ok := data.([]byte); ok {
 		return s.sysl.Alert(utils.UnsafeBytesToString(buf))
+	} else if buf, err := json.Marshal(data); err == nil {
+		return s.sysl.Alert(utils.UnsafeBytesToString(buf))
 	}
-	return errors.New("Expected byte array as export data")
+	return errors.New("Expected byte array or serializable object as export data")
 }
 
 // Register registers the syslog proto object with the exporter.

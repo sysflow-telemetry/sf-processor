@@ -17,17 +17,24 @@
      {
       "processor": "exporter",
       "in": "evt eventchan",
-      "export": "terminal|file|syslog (default: terminal)",            
-      "flat": "false|true (default: false)",
-      "path": "output file path (default: ./export.out)",
-      "proto": "rsyslog protocol tcp|udp|tcp+tls (default: tcp)",
-      "tag": "rsyslog tag (default: sysflow)",
-      "source": "rsyslog source hostname (default: hostname)",
-      "host": "rsyslog host (default: localhost)",
-      "port": "ryslog port (default: 514)",
-      "format": "json",
-      "type": "telemetry|batch (default: telemetry)",
-      "buffer": "event batching aggregation buffer (default: 0)"
+      "export": "terminal|file|syslog|es|findings|null (default: terminal)",            
+      "format": "json|ecs|occurrence",   
+      "buffer": "event aggregation buffer (default: 0)",
+      "vault.secrets": "true|false",
+      "vault.path": "/run/secrets (default)",
+      "file.path": "output file path (default: ./export.out)",
+      "syslog.proto": "rsyslog protocol tcp|udp|tcp+tls (default: tcp)",
+      "syslog.tag": "rsyslog tag (default: sysflow)",
+      "syslog.source": "rsyslog source hostname (default: hostname)",
+      "syslog.host": "rsyslog host (default: localhost)",
+      "syslog.port": "ryslog port (default: 514)",    
+      "es.addresses": "ip1,ip2,... (comma-separated list)",
+      "es.index": "sysflow (default)",
+      "es.username": "elastic (default)",
+      "es.password": "changeme (default)",
+      "es.bulk.numWorkers": "0 (default)",
+      "es.bulk.flushBuffer": "5000000 (default)",
+      "es.bulk.flushTimeout": "30 (default, in seconds)"
      }
    ]
 }

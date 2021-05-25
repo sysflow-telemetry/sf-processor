@@ -20,6 +20,7 @@
 package transports
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -48,6 +49,10 @@ func (s *TextFileProto) Init() error {
 // Export writes the buffer to the open file.
 func (s *TextFileProto) Export(data commons.EncodedData) error {
 	if buf, ok := data.([]byte); ok {
+		_, err := s.fhandle.Write(buf)
+		s.fhandle.WriteString("\n")
+		return err
+	} else if buf, err := json.Marshal(data); err == nil {
 		_, err := s.fhandle.Write(buf)
 		s.fhandle.WriteString("\n")
 		return err
