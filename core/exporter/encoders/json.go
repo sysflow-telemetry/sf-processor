@@ -184,6 +184,19 @@ func (t *JSONEncoder) Encode(rec *engine.Record) (commons.EncodedData, error) {
 					t.writer.RawByte(COMMA)
 					t.writeAttribute(fv, 2, rec)
 				}
+			case engine.SectMeta:
+				if state != META_STATE {
+					if state != BEGIN_STATE && existed {
+						t.writer.RawString(END_SQUIGGLE_COMMA)
+					}
+					existed = true
+					t.writeSectionBegin(META)
+					t.writeAttribute(fv, 2, rec)
+					state = META_STATE
+				} else {
+					t.writer.RawByte(COMMA)
+					t.writeAttribute(fv, 2, rec)
+				}
 			}
 		}
 	}
@@ -372,46 +385,64 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 		case engine.PProcName:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(filepath.Base(ptree[1].Exe)))
+			} else {
+				writer.String(EMPTY_STRING)
 			}
 			break
 		case engine.PProcExe:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(ptree[1].Exe))
+			} else {
+				writer.String(EMPTY_STRING)
 			}
 			break
 		case engine.PProcArgs:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(ptree[1].ExeArgs))
+			} else {
+				writer.String(EMPTY_STRING)
 			}
 			break
 		case engine.PProcUID:
 			if len(ptree) > 1 {
 				writer.Int64(int64(ptree[1].Uid))
+			} else {
+				writer.Int64(sfgo.Zeros.Int64)
 			}
 			break
 		case engine.PProcUser:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(ptree[1].UserName))
+			} else {
+				writer.String(EMPTY_STRING)
 			}
 			break
 		case engine.PProcGID:
 			if len(ptree) > 1 {
 				writer.Int64(int64(ptree[1].Gid))
+			} else {
+				writer.Int64(sfgo.Zeros.Int64)
 			}
 			break
 		case engine.PProcGroup:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(ptree[1].GroupName))
+			} else {
+				writer.String(EMPTY_STRING)
 			}
 			break
 		case engine.PProcTTY:
 			if len(ptree) > 1 {
 				writer.Bool(ptree[1].Tty)
+			} else {
+				writer.Bool(false)
 			}
 			break
 		case engine.PProcEntry:
 			if len(ptree) > 1 {
 				writer.Bool(ptree[1].Entry)
+			} else {
+				writer.Bool(false)
 			}
 			break
 		case engine.PProcCmdLine:
@@ -425,6 +456,8 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 					stringNoQuotes(exeArgs, writer)
 				}
 				writer.RawByte(DOUBLE_QUOTE)
+			} else {
+				writer.String(EMPTY_STRING)
 			}
 			break
 		case engine.ProcAName:

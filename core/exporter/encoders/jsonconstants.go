@@ -47,6 +47,7 @@ const (
 	PRIORITY           = ",\"" + PRIORITY_ATTR + "\":"
 	TAGS               = ",\"" + TAGS_ATTR + "\":["
 	PERIOD             = '.'
+	EMPTY_STRING	   = "\"\""
 )
 
 const chars = "0123456789abcdef"

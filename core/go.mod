@@ -37,7 +37,7 @@ require (
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570 // indirect
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
 	github.com/stretchr/testify v1.6.1
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210517193019-659b69737720
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210524150929-c27c596c3781
 	github.com/xitongsys/parquet-go v1.6.0 // indirect
 	golang.org/x/net v0.0.0-20200222125558-5a598a2470a0 // indirect
 	golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae // indirect
