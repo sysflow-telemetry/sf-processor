@@ -8,7 +8,7 @@
 #-----------------------
 # Stage: base
 #-----------------------
-FROM registry.access.redhat.com/ubi8/ubi:8.3-297.1618432833 AS base
+FROM registry.access.redhat.com/ubi8/ubi:8.4-199 AS base
 
 # Environment and build args
 ARG VERSION=dev
@@ -45,7 +45,7 @@ RUN cd ${SRC_ROOT} && \
 #-----------------------
 # Stage: runtime
 #-----------------------
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.3-298.1618432845 AS runtime
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4-200 AS runtime
 
 # Environment and build args
 ARG VERSION=dev
