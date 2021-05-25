@@ -28,6 +28,7 @@ const (
 	FLOW      = "flow"
 	CONTAINER = "container"
 	NODE      = "node"
+	META      = "meta"
 
 	BEGIN_STATE = iota
 	PROC_STATE
@@ -37,6 +38,7 @@ const (
 	FLOW_STATE
 	CONT_STATE
 	NODE_STATE
+	META_STATE
 )
 
 // Export schema shared attribute names.

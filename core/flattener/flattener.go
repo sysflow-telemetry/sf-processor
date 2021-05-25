@@ -218,6 +218,7 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SFHE_VERSION_INT] = hdr.Version
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SFHE_EXPORTER_STR] = hdr.Exporter
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SFHE_IP_STR] = hdr.Ip
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SFHE_FILENAME_STR] = hdr.Filename
 	} else {
 		logger.Warn.Println("Event does not have a related header.  This should not happen.")
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SFHE_VERSION_INT] = sfgo.Zeros.Int64

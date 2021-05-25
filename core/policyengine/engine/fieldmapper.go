@@ -62,6 +62,7 @@ const (
 	SectFlow  SectionType = 5
 	SectCont  SectionType = 6
 	SectNode  SectionType = 7
+	SectMeta  SectionType = 8
 )
 
 // Attribute ID constants
@@ -275,7 +276,8 @@ func getExportedMappers() map[string]*FieldEntry {
 		SF_CONTAINER_PRIVILEGED: &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.CONT_PRIVILEGED_INT), FlatIndex: sfgo.CONT_PRIVILEGED_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
 		SF_NODE_ID:              &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_EXPORTER_STR), FlatIndex: sfgo.SFHE_EXPORTER_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectNode},
 		SF_NODE_IP:              &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_IP_STR), FlatIndex: sfgo.SFHE_IP_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectNode},
-		SF_SCHEMA_VERSION:       &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.SFHE_VERSION_INT), FlatIndex: sfgo.SFHE_VERSION_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectNode},
+		SF_SCHEMA_VERSION:       &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.SFHE_VERSION_INT), FlatIndex: sfgo.SFHE_VERSION_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectMeta},
+		SF_TRACENAME:           &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_FILENAME_STR), FlatIndex: sfgo.SFHE_FILENAME_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectMeta},
 	}
 }
 
