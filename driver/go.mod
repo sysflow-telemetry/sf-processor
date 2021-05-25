@@ -22,7 +22,7 @@ module github.com/sysflow-telemetry/sf-processor/driver
 go 1.14
 
 require (
-	github.com/actgardner/gogen-avro/v7 v7.1.1
+	github.com/actgardner/gogen-avro/v7 v7.3.1
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/linkedin/goavro v2.1.0+incompatible

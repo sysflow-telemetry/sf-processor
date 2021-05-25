@@ -19,39 +19,47 @@
 //
 package commons
 
+import "strconv"
+
 // Configuration keys.
 const (
-	FindingsApiKeyConfigKey      string = "findings.apikey"
-	FindingsUrlConfigKey         string = "findings.url"
-	FindingsAccountIDConfigKey   string = "findings.accountid"
-	FindingsProviderIDConfigKey  string = "findings.provider"
-	FindingsNoteIDConfigKey      string = "findings.note"
-	FindingsSqlQueryUrlConfigKey string = "findings.sqlqueryurl"
-	FindingsSqlQueryCrnConfigKey string = "findings.sqlquerycrn"
-	FindingsRegionConfigKey      string = "findings.region"
-	FindingsPathConfigKey        string = "findings.path"
+	FindingsApiKeyConfigKey       string = "findings.apikey"
+	FindingsUrlConfigKey          string = "findings.url"
+	FindingsAccountIDConfigKey    string = "findings.accountid"
+	FindingsProviderIDConfigKey   string = "findings.provider"
+	FindingsNoteIDConfigKey       string = "findings.note"
+	FindingsSqlQueryUrlConfigKey  string = "findings.sqlqueryurl"
+	FindingsSqlQueryCrnConfigKey  string = "findings.sqlquerycrn"
+	FindingsRegionConfigKey       string = "findings.region"
+	FindingsPathConfigKey         string = "findings.path"
+	FindingsPoolCapacityConfigKey string = "findings.pool.capacity"
+	FindingsPoolMaxAgeConfigKey   string = "findings.pool.maxage"
 )
 
 // FindingsConfig holds IBM Findings API specific configuration.
 type FindingsConfig struct {
-	FindingsApiKey      string
-	FindingsUrl         string
-	FindingsAccountID   string
-	FindingsProviderID  string
-	FindingsNoteID      string
-	FindingsSqlQueryUrl string
-	FindingsSqlQueryCrn string
-	FindingsRegion      string
-	FindingsPath        string
+	FindingsApiKey       string
+	FindingsUrl          string
+	FindingsAccountID    string
+	FindingsProviderID   string
+	FindingsNoteID       string
+	FindingsSqlQueryUrl  string
+	FindingsSqlQueryCrn  string
+	FindingsRegion       string
+	FindingsPath         string
+	FindingsPoolCapacity int
+	FindingsPoolMaxAge   int
 }
 
 // CreateFindingsConfig creates a new config object from config dictionary.
 func CreateFindingsConfig(bc Config, conf map[string]interface{}) (c FindingsConfig, err error) {
 	// default values
 	c = FindingsConfig{
-		FindingsUrl:         "https://us-south.secadvisor.cloud.ibm.com/findings",
-		FindingsSqlQueryUrl: "https://us.sql-query.cloud.ibm.com/sqlquery",
-		FindingsPath:        "/mnt/occurrences"}
+		FindingsUrl:          "https://us-south.secadvisor.cloud.ibm.com/findings",
+		FindingsSqlQueryUrl:  "https://us.sql-query.cloud.ibm.com/sqlquery",
+		FindingsPath:         "/mnt/occurrences",
+		FindingsPoolCapacity: 250,
+		FindingsPoolMaxAge:   1440} // 24 hours (specified in minutes)
 
 	// parse config map
 	if v, ok := conf[FindingsApiKeyConfigKey].(string); ok {
@@ -86,6 +94,18 @@ func CreateFindingsConfig(bc Config, conf map[string]interface{}) (c FindingsCon
 	}
 	if v, ok := conf[FindingsPathConfigKey].(string); ok {
 		c.FindingsPath = v
+	}
+	if v, ok := conf[FindingsPoolCapacityConfigKey].(string); ok {
+		c.FindingsPoolCapacity, err = strconv.Atoi(v)
+		if err != nil {
+			return c, err
+		}
+	}
+	if v, ok := conf[FindingsPoolMaxAgeConfigKey].(string); ok {
+		c.FindingsPoolMaxAge, err = strconv.Atoi(v)
+		if err != nil {
+			return c, err
+		}
 	}
 	return
 }

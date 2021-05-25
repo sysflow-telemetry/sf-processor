@@ -1,0 +1,48 @@
+{
+  "type" : "record",
+  "name" : "Event",
+  "namespace" : "event",
+  "fields" : [ {
+    "name" : "ts",
+    "type" : "long"
+  }, {
+    "name" : "description",
+    "type" : "string"
+  }, {
+    "name" : "severity",
+    "type" : "string"
+  }, {
+    "name" : "nodeID",
+    "type" : "string"
+  }, {
+    "name" : "containerID",
+    "type" : "string"
+  }, {
+    "name" : "recordType",
+    "type" : "string"
+  }, {
+    "name" : "opFlags",
+    "type" : "string"
+  }, {
+    "name" : "pProcCmd",
+    "type" : "string"
+  }, {
+    "name" : "pProcPID",
+    "type" : "long"
+  }, {
+    "name" : "procCmd",
+    "type" : "string"
+  }, {
+    "name" : "procPID",
+    "type" : "long"
+  }, {
+    "name" : "Resource",
+    "type" : "string"
+  }, {
+    "name" : "Tags",
+    "type" : "string"
+  }, {
+    "name" : "Trace",
+    "type" : "string"
+  } ]
+}
