@@ -10,16 +10,17 @@
      "processor": "policyengine",
      "in": "flat flattenerchan",
      "out": "evt eventchan",
-     "policies": "/usr/local/sysflow/resources/policies/"
+     "policies": "/usr/local/sysflow/resources/policies/distribution"
     },
     {
      "processor": "exporter",
      "in": "evt eventchan",
      "export": "syslog",
-     "proto": "tcp",
-     "tag": "sysflow",
-     "host": "localhost",
-     "port": "514"
+     "format": "json",
+     "syslog.proto": "tcp",
+     "syslog.tag": "sysflow",
+     "syslog.host": "localhost",
+     "syslog.port": "514"
     }
   ]
 }
