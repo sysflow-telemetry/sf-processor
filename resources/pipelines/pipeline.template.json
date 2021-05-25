@@ -29,12 +29,23 @@
       "syslog.host": "rsyslog host (default: localhost)",
       "syslog.port": "ryslog port (default: 514)",    
       "es.addresses": "ip1,ip2,... (comma-separated list)",
-      "es.index": "sysflow (default)",
-      "es.username": "elastic (default)",
-      "es.password": "changeme (default)",
-      "es.bulk.numWorkers": "0 (default)",
-      "es.bulk.flushBuffer": "5000000 (default)",
-      "es.bulk.flushTimeout": "30 (default, in seconds)"
-     }
+      "es.index": "elastic index (default: sysflow)",
+      "es.username": "elastic username (do not set it if reading from secret vault)",
+      "es.password": "elastic password (do not set it if reading from secret vault)",
+      "es.bulk.numWorkers": "number of bulk exporter workers (default: 0)",
+      "es.bulk.flushBuffer": "bulk exporter buffer size (default: 5000000)",
+      "es.bulk.flushTimeout": "bulk exporter flush timeout in seconds (default: 30)",
+      "findings.apikey": "findings API key (do not set it if reading from secret vault)",
+      "findings.url": "findings API URL (default: https://us-south.secadvisor.cloud.ibm.com/findings",
+      "findings.accountid": "findings API account ID",
+      "findings.provider": "findings API provider",
+      "findings.note": "findings API node ID",
+      "findings.sqlqueryurl": "SQL Query URL (default: https://us.sql-query.cloud.ibm.com/sqlquery)", 
+      "findings.sqlquerycrn": "SQL Query instance crn", 
+      "findings.region": "findings API region", 
+      "findings.path": "findings events path (default: /mnt/occurrences)", 
+      "findings.pool.capacity": "findings event pool capacity (default: 250)",
+      "findings.pool.maxage": "findings event pool age limit in minutes (default: 1440)"   
+     }   
    ]
 }
