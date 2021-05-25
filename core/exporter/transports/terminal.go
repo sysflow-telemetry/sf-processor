@@ -20,6 +20,7 @@
 package transports
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
@@ -43,6 +44,10 @@ func (s *TerminalProto) Init() error {
 func (s *TerminalProto) Export(data commons.EncodedData) error {
 	if buf, ok := data.([]byte); ok {
 		fmt.Println(utils.UnsafeBytesToString(buf))
+	} else if buf, err := json.Marshal(data); err == nil {
+		fmt.Printf("%v\n", buf)
+	} else {
+		fmt.Printf("%v\n", data)
 	}
 	return nil
 }

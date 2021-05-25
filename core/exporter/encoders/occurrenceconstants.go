@@ -41,6 +41,12 @@ const (
 	hostFileName = "host"
 )
 
+// Bloom filter settings.
+const (
+	maxElements = 100000
+	probCollide = 0.0000001
+)
+
 // Severity type for enumeration.
 type Severity int
 
