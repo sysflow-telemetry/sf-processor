@@ -67,6 +67,7 @@ func (s *Exporter) Register(pc plugins.SFPluginCache) {
 func (s *Exporter) registerCodecs() {
 	(&encoders.JSONEncoder{}).Register(codecs)
 	(&encoders.ECSEncoder{}).Register(codecs)
+	(&encoders.OccurrenceEncoder{}).Register(codecs)
 }
 
 // registerExportProtocols register transport protocols for exporting processor data.
