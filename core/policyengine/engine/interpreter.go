@@ -124,11 +124,15 @@ func (pi *PolicyInterpreter) ProcessAsync(applyFilters bool, filterOnly bool, r 
 	if filterOnly {
 		out(r)
 	}
+	match := false
 	for _, rule := range rules {
-		//fmt.Println("Rule: ", rule.Name, rule.Enabled, rule.isApplicable(r))
 		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
 			pi.ahdl.HandleActionAsync(rule, r, out)
+			match = true
 		}
+	}
+	if match {
+		out(r)
 	}
 }
 
