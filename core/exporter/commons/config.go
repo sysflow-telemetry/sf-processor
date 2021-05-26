@@ -97,25 +97,20 @@ func CreateConfig(conf map[string]interface{}) (c Config, err error) {
 	}
 
 	// parse specialized configs
-	switch c.Transport {
-	case FileTransport:
-		c.FileConfig, err = CreateFileConfig(c, conf)
-		if err != nil {
-			return
-		}
-	case SyslogTransport:
-		c.SyslogConfig, err = CreateSyslogConfig(c, conf)
-		if err != nil {
-			return
-		}
-	case ESTransport:
-		c.ESConfig, err = CreateElasticConfig(c, conf)
-		if err != nil {
-			return
-		}
-	case FindingsTransport:
-		c.FindingsConfig, err = CreateFindingsConfig(c, conf)
+	c.FileConfig, err = CreateFileConfig(c, conf)
+	if err != nil {
+		return
 	}
+	c.SyslogConfig, err = CreateSyslogConfig(c, conf)
+	if err != nil {
+		return
+	}
+	c.ESConfig, err = CreateElasticConfig(c, conf)
+	if err != nil {
+		return
+	}
+	c.FindingsConfig, err = CreateFindingsConfig(c, conf)
+
 	return
 }
 
