@@ -17,14 +17,14 @@
        "in": "evt eventchan",
        "export": "es",
        "format": "ecs",
-       "es.addresses": "http://172.17.0.1",
-       "es.index": "sysflow",
+       "es.addresses": "https://localhost:9200",
+       "es.index": "my-index",
        "es.username": "elastic",
        "es.password": "changeme",
-       "es.bulk.numWorkers": "0",
+       "es.bulk.numWorkers": "1",
        "es.bulk.flushBuffer": "5000000",
-       "es.bulk.flushTimeout": "30", 
-       "buffer": 1000
+       "es.bulk.flushTimeout": "30s", 
+       "buffer": "1000"
       }
     ]
 }
