@@ -37,7 +37,7 @@ func (s *NullProto) Init() error {
 }
 
 // Export does nothing.
-func (s *NullProto) Export(data commons.EncodedData) error {
+func (s *NullProto) Export(data []commons.EncodedData) error {
 	return nil
 }
 

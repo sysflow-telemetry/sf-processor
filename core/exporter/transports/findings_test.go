@@ -55,6 +55,6 @@ func TestCreateOccurrence(t *testing.T) {
 		NoteID:     "notification",
 	}
 	proto := transports.NewFindingsApiProto(config)
-	err := proto.Export(occ)
+	err := proto.Export([]commons.EncodedData{occ})
 	assert.NoError(t, err)
 }

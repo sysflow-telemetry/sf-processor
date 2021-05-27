@@ -66,11 +66,17 @@ func (s *FindingsApiProto) Init() error {
 }
 
 // Export does nothing.
-func (s *FindingsApiProto) Export(data commons.EncodedData) error {
-	if occ, ok := data.(*encoders.Occurrence); ok {
-		return s.CreateOccurrence(occ)
+func (s *FindingsApiProto) Export(data []commons.EncodedData) (err error) {
+	for _, d := range data {
+		if occ, ok := d.(*encoders.Occurrence); ok {
+			if err = s.CreateOccurrence(occ); err != nil {
+				return err
+			}
+		} else {
+			return errors.New("Expected Occurrence object as exported data")
+		}
 	}
-	return errors.New("Expected Occurrence object as exported data")
+	return
 }
 
 // Register registers the null protocol object with the exporter.
