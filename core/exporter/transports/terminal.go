@@ -41,13 +41,15 @@ func (s *TerminalProto) Init() error {
 }
 
 // Export exports the contents of buffer for the terminal.
-func (s *TerminalProto) Export(data commons.EncodedData) error {
-	if buf, ok := data.([]byte); ok {
-		fmt.Println(utils.UnsafeBytesToString(buf))
-	} else if buf, err := json.Marshal(data); err == nil {
-		fmt.Printf("%v\n", buf)
-	} else {
-		fmt.Printf("%v\n", data)
+func (s *TerminalProto) Export(data []commons.EncodedData) error {
+	for _, d := range data {
+		if buf, ok := d.([]byte); ok {
+			fmt.Println(utils.UnsafeBytesToString(buf))
+		} else if buf, err := json.Marshal(d); err == nil {
+			fmt.Println(utils.UnsafeBytesToString(buf))
+		} else {
+			fmt.Printf("%v\n", data)
+		}
 	}
 	return nil
 }
