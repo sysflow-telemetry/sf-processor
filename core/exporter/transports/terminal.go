@@ -48,7 +48,7 @@ func (s *TerminalProto) Export(data []commons.EncodedData) error {
 		} else if buf, err := json.Marshal(d); err == nil {
 			fmt.Println(utils.UnsafeBytesToString(buf))
 		} else {
-			fmt.Printf("%v\n", data)
+			fmt.Printf("%v\n", d)
 		}
 	}
 	return nil

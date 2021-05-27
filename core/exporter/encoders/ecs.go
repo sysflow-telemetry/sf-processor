@@ -20,7 +20,6 @@
 package encoders
 
 import (
-//	"encoding/json"
 	"fmt"
 	"net"
 	"path"
@@ -65,13 +64,14 @@ type ECSRecord struct {
 type ECSEncoder struct {
 	config      commons.Config
 	jsonencoder JSONEncoder
+	batch       []commons.EncodedData
 }
 
 // NewECSEncoder instantiates an ECS encoder.
 func NewECSEncoder(config commons.Config) Encoder {
 	return &ECSEncoder{
 		config: config,
-	}
+		batch:  make([]commons.EncodedData, 0, config.EventBuffer)}
 }
 
 // Register registers the encoder to the codecs cache.
@@ -79,55 +79,58 @@ func (t *ECSEncoder) Register(codecs map[commons.Format]EncoderFactory) {
 	codecs[commons.ECSFormat] = NewECSEncoder
 }
 
-// Encodes a telemetry record into an ECS representation.
+// Encodes telemetry records into an ECS representation.
 func (t *ECSEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
-	var ecs_recs = make([]commons.EncodedData, 0)
-
+	t.batch = t.batch[:0]
 	for _, rec := range recs {
-		ecs := &ECSRecord{
-			ID:        encodeID(rec),
-			Container: encodeContainer(rec),
-			Process:   encodeProcess(rec),
-			User:      encodeUser(rec),
-		}
-		ecs.Agent.Version = t.config.JSONSchemaVersion
-		ecs.Agent.Type = ECS_AGENT_TYPE
-		ecs.Ecs.Version = ECS_VERSION
-		ecs.Ts = utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_TS)(rec))
+		ecs := t.encode(rec)
+		t.batch = append(t.batch, ecs)
+	}
+	return t.batch, nil
+}
 
-		// encode specific record components
-		sfType := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
-		switch sfType {
-		case sfgo.TyNFStr:
-			ecs.encodeNetworkFlow(rec)
-		case sfgo.TyFFStr:
-			ecs.encodeFileFlow(rec)
-		case sfgo.TyFEStr:
-			ecs.encodeFileEvent(rec)
-		case sfgo.TyPEStr:
-			ecs.encodeProcessEvent(rec)
-		}
+// Encodes a telemetry record into an ECS representation.
+func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
+	ecs := &ECSRecord{
+		ID:        encodeID(rec),
+		Container: encodeContainer(rec),
+		Process:   encodeProcess(rec),
+		User:      encodeUser(rec),
+	}
+	ecs.Agent.Version = t.config.JSONSchemaVersion
+	ecs.Agent.Type = ECS_AGENT_TYPE
+	ecs.Ecs.Version = ECS_VERSION
+	ecs.Ts = utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_TS)(rec))
 
-		// encode tags and policy information
-		rules := rec.Ctx.GetRules()
-		if len(rules) > 0 {
-			reasons := make([]string, 0)
-			tags := make([]string, 0)
-			priority := int(engine.Low)
-			for _, r := range rules {
-				reasons = append(reasons, r.Name)
-				tags = append(tags, extracTags(r.Tags)...)
-				priority = utils.Max(priority, int(r.Priority))
-			}
-			ecs.Event[ECS_EVENT_REASON] = strings.Join(reasons, ", ")
-			ecs.Event[ECS_EVENT_SEVERITY] = priority
-			ecs.Tags = tags
-		}
-
-		ecs_recs = append(ecs_recs, ecs)
+	// encode specific record components
+	sfType := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
+	switch sfType {
+	case sfgo.TyNFStr:
+		ecs.encodeNetworkFlow(rec)
+	case sfgo.TyFFStr:
+		ecs.encodeFileFlow(rec)
+	case sfgo.TyFEStr:
+		ecs.encodeFileEvent(rec)
+	case sfgo.TyPEStr:
+		ecs.encodeProcessEvent(rec)
 	}
 
-	return ecs_recs, nil
+	// encode tags and policy information
+	rules := rec.Ctx.GetRules()
+	if len(rules) > 0 {
+		reasons := make([]string, 0)
+		tags := make([]string, 0)
+		priority := int(engine.Low)
+		for _, r := range rules {
+			reasons = append(reasons, r.Name)
+			tags = append(tags, extracTags(r.Tags)...)
+			priority = utils.Max(priority, int(r.Priority))
+		}
+		ecs.Event[ECS_EVENT_REASON] = strings.Join(reasons, ", ")
+		ecs.Event[ECS_EVENT_SEVERITY] = priority
+		ecs.Tags = tags
+	}
+	return ecs
 }
 
 // encodeID returns the ECS document identifier.
