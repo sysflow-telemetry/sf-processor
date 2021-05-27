@@ -90,7 +90,7 @@ func (s *ElasticProto) Export(data []commons.EncodedData) (err error) {
 	s.ctx = context.Background()
 	s.start = time.Now().UTC()
 
-	for _,d := range data {
+	for _, d := range data {
 		if r, ok := d.(*encoders.ECSRecord); ok {
 			body, err := json.Marshal(r)
 			if err != nil {
