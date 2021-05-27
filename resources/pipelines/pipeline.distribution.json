@@ -10,7 +10,7 @@
      "processor": "policyengine",
      "in": "flat flattenerchan",
      "out": "evt eventchan",
-     "policies": "/usr/local/sysflow/resources/policies/distribution"
+     "policies": "/usr/local/sysflow/resources/policies"
     },
     {
      "processor": "exporter",
