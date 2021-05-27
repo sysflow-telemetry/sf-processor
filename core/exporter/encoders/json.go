@@ -54,206 +54,216 @@ func (t *JSONEncoder) Register(codecs map[commons.Format]EncoderFactory) {
 }
 
 // Encodes a telemetry record into a JSON representation.
-func (t *JSONEncoder) Encode(rec *engine.Record) (commons.EncodedData, error) {
-	t.writer.RawString(VERSION_STR)
-	t.writer.RawString(t.config.JSONSchemaVersion)
-	t.writer.RawByte(COMMA)
-	state := BEGIN_STATE
-	pprocID := engine.Mapper.MapInt(engine.SF_PPROC_PID)(rec)
-	sftype := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
-	pprocExists := !reflect.ValueOf(pprocID).IsZero()
-	ct := engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(rec)
-	ctExists := !reflect.ValueOf(ct).IsZero()
-	existed := true
+func (t *JSONEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
+        var json = make([]commons.EncodedData, 0)
 
-	for _, fv := range t.fieldCache {
-		numFields := len(fv.FieldSects)
-		if numFields == 2 {
-			t.writeAttribute(fv, 1, rec)
-			t.writer.RawByte(COMMA)
-		} else if numFields == 3 {
-			switch fv.Entry.Section {
-			case engine.SectProc:
-				if state != PROC_STATE {
-					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
-					}
-					existed = true
-					t.writeSectionBegin(PROC)
-					t.writeAttribute(fv, 2, rec)
-					state = PROC_STATE
-				} else {
-					t.writer.RawByte(COMMA)
-					t.writeAttribute(fv, 2, rec)
-				}
-			case engine.SectPProc:
-				if state != PPROC_STATE {
-					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
-					}
-					if pprocExists {
+        for _, rec := range recs {
+		t.writer.RawString(VERSION_STR)
+		t.writer.RawString(t.config.JSONSchemaVersion)
+		t.writer.RawByte(COMMA)
+		state := BEGIN_STATE
+		pprocID := engine.Mapper.MapInt(engine.SF_PPROC_PID)(rec)
+		sftype := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
+		pprocExists := !reflect.ValueOf(pprocID).IsZero()
+		ct := engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(rec)
+		ctExists := !reflect.ValueOf(ct).IsZero()
+		existed := true
+
+		for _, fv := range t.fieldCache {
+			numFields := len(fv.FieldSects)
+			if numFields == 2 {
+				t.writeAttribute(fv, 1, rec)
+				t.writer.RawByte(COMMA)
+			} else if numFields == 3 {
+				switch fv.Entry.Section {
+				case engine.SectProc:
+					if state != PROC_STATE {
+						if state != BEGIN_STATE && existed {
+							t.writer.RawString(END_SQUIGGLE_COMMA)
+						}
 						existed = true
-						t.writeSectionBegin(PPROC)
+						t.writeSectionBegin(PROC)
 						t.writeAttribute(fv, 2, rec)
+						state = PROC_STATE
 					} else {
-						existed = false
-					}
-					state = PPROC_STATE
-				} else if pprocExists {
-					t.writer.RawByte(COMMA)
-					t.writeAttribute(fv, 2, rec)
-				}
-			case engine.SectNet:
-				if state != NET_STATE {
-					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
-					}
-					if sftype == sfgo.TyNFStr {
-						t.writeSectionBegin(NET)
+						t.writer.RawByte(COMMA)
 						t.writeAttribute(fv, 2, rec)
+					}
+				case engine.SectPProc:
+					if state != PPROC_STATE {
+						if state != BEGIN_STATE && existed {
+							t.writer.RawString(END_SQUIGGLE_COMMA)
+						}
+						if pprocExists {
+							existed = true
+							t.writeSectionBegin(PPROC)
+							t.writeAttribute(fv, 2, rec)
+						} else {
+							existed = false
+						}
+						state = PPROC_STATE
+					} else if pprocExists {
+						t.writer.RawByte(COMMA)
+						t.writeAttribute(fv, 2, rec)
+					}
+				case engine.SectNet:
+					if state != NET_STATE {
+						if state != BEGIN_STATE && existed {
+							t.writer.RawString(END_SQUIGGLE_COMMA)
+						}
+						if sftype == sfgo.TyNFStr {
+							t.writeSectionBegin(NET)
+							t.writeAttribute(fv, 2, rec)
+							existed = true
+						} else {
+							existed = false
+						}
+						state = NET_STATE
+					} else if sftype == sfgo.TyNFStr {
+						t.writer.RawByte(COMMA)
+						t.writeAttribute(fv, 2, rec)
+					}
+				case engine.SectFile:
+					if state != FILE_STATE {
+						if state != BEGIN_STATE && existed {
+							t.writer.RawString(END_SQUIGGLE_COMMA)
+						}
+						if sftype == sfgo.TyFFStr || sftype == sfgo.TyFEStr {
+							t.writeSectionBegin(FILEF)
+							t.writeAttribute(fv, 2, rec)
+							existed = true
+						} else {
+							existed = false
+						}
+						state = FILE_STATE
+					} else if sftype == sfgo.TyFFStr || sftype == sfgo.TyFEStr {
+						t.writer.RawByte(COMMA)
+						t.writeAttribute(fv, 2, rec)
+					}
+				case engine.SectFlow:
+					if state != FLOW_STATE {
+						if state != BEGIN_STATE && existed {
+							t.writer.RawString(END_SQUIGGLE_COMMA)
+						}
+						if sftype == sfgo.TyFFStr || sftype == sfgo.TyNFStr {
+							t.writeSectionBegin(FLOW)
+							t.writeAttribute(fv, 2, rec)
+							existed = true
+						} else {
+							existed = false
+						}
+						state = FLOW_STATE
+					} else if sftype == sfgo.TyFFStr || sftype == sfgo.TyNFStr {
+						t.writer.RawByte(COMMA)
+						t.writeAttribute(fv, 2, rec)
+					}
+				case engine.SectCont:
+					if state != CONT_STATE {
+						if state != BEGIN_STATE && existed {
+							t.writer.RawString(END_SQUIGGLE_COMMA)
+						}
+						if ctExists {
+							t.writeSectionBegin(CONTAINER)
+							t.writeAttribute(fv, 2, rec)
+							existed = true
+						} else {
+							existed = false
+						}
+						state = CONT_STATE
+					} else if ctExists {
+						t.writer.RawByte(COMMA)
+						t.writeAttribute(fv, 2, rec)
+					}
+				case engine.SectNode:
+					if state != NODE_STATE {
+						if state != BEGIN_STATE && existed {
+							t.writer.RawString(END_SQUIGGLE_COMMA)
+						}
 						existed = true
-					} else {
-						existed = false
-					}
-					state = NET_STATE
-				} else if sftype == sfgo.TyNFStr {
-					t.writer.RawByte(COMMA)
-					t.writeAttribute(fv, 2, rec)
-				}
-			case engine.SectFile:
-				if state != FILE_STATE {
-					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
-					}
-					if sftype == sfgo.TyFFStr || sftype == sfgo.TyFEStr {
-						t.writeSectionBegin(FILEF)
+						t.writeSectionBegin(NODE)
 						t.writeAttribute(fv, 2, rec)
-						existed = true
+						state = NODE_STATE
 					} else {
-						existed = false
-					}
-					state = FILE_STATE
-				} else if sftype == sfgo.TyFFStr || sftype == sfgo.TyFEStr {
-					t.writer.RawByte(COMMA)
-					t.writeAttribute(fv, 2, rec)
-				}
-			case engine.SectFlow:
-				if state != FLOW_STATE {
-					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
-					}
-					if sftype == sfgo.TyFFStr || sftype == sfgo.TyNFStr {
-						t.writeSectionBegin(FLOW)
+						t.writer.RawByte(COMMA)
 						t.writeAttribute(fv, 2, rec)
+					}
+				case engine.SectMeta:
+					if state != META_STATE {
+						if state != BEGIN_STATE && existed {
+							t.writer.RawString(END_SQUIGGLE_COMMA)
+						}
 						existed = true
-					} else {
-						existed = false
-					}
-					state = FLOW_STATE
-				} else if sftype == sfgo.TyFFStr || sftype == sfgo.TyNFStr {
-					t.writer.RawByte(COMMA)
-					t.writeAttribute(fv, 2, rec)
-				}
-			case engine.SectCont:
-				if state != CONT_STATE {
-					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
-					}
-					if ctExists {
-						t.writeSectionBegin(CONTAINER)
+						t.writeSectionBegin(META)
 						t.writeAttribute(fv, 2, rec)
-						existed = true
+						state = META_STATE
 					} else {
-						existed = false
+						t.writer.RawByte(COMMA)
+						t.writeAttribute(fv, 2, rec)
 					}
-					state = CONT_STATE
-				} else if ctExists {
-					t.writer.RawByte(COMMA)
-					t.writeAttribute(fv, 2, rec)
-				}
-			case engine.SectNode:
-				if state != NODE_STATE {
-					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
-					}
-					existed = true
-					t.writeSectionBegin(NODE)
-					t.writeAttribute(fv, 2, rec)
-					state = NODE_STATE
-				} else {
-					t.writer.RawByte(COMMA)
-					t.writeAttribute(fv, 2, rec)
-				}
-			case engine.SectMeta:
-				if state != META_STATE {
-					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
-					}
-					existed = true
-					t.writeSectionBegin(META)
-					t.writeAttribute(fv, 2, rec)
-					state = META_STATE
-				} else {
-					t.writer.RawByte(COMMA)
-					t.writeAttribute(fv, 2, rec)
 				}
 			}
-		}
-	}
-	t.writer.RawByte(END_SQUIGGLE)
-	/* // Need to add hash support
-	hashset := rec.Ctx.GetHashes()
-	if !reflect.ValueOf(hashset.MD5).IsZero() {
-		r.Hashes = &hashset
-	} */
-	rules := rec.Ctx.GetRules()
-	numRules := len(rules)
-	if numRules > 0 {
-		t.writer.RawString(POLICIES)
-		for id, r := range rules {
-			t.writer.RawString(ID_TAG)
-			t.writer.String(r.Name)
-			t.writer.RawString(DESC)
-			t.writer.String(r.Desc)
-			t.writer.RawString(PRIORITY)
-			t.writer.Int64(int64(r.Priority))
-			numTags := len(r.Tags)
-			currentTag := 0
-			if numTags > 0 {
-				t.writer.RawString(TAGS)
-				for _, tag := range r.Tags {
-					switch tag.(type) {
-					case []string:
-						tags := tag.([]string)
-						numTags := numTags + len(tags) - 1
-						for _, s := range tags {
-							t.writer.String(s)
+			}
+		t.writer.RawByte(END_SQUIGGLE)
+		/* // Need to add hash support
+		hashset := rec.Ctx.GetHashes()
+		if !reflect.ValueOf(hashset.MD5).IsZero() {
+			r.Hashes = &hashset
+		} */
+		rules := rec.Ctx.GetRules()
+		numRules := len(rules)
+		if numRules > 0 {
+			t.writer.RawString(POLICIES)
+			for id, r := range rules {
+				t.writer.RawString(ID_TAG)
+				t.writer.String(r.Name)
+				t.writer.RawString(DESC)
+				t.writer.String(r.Desc)
+				t.writer.RawString(PRIORITY)
+				t.writer.Int64(int64(r.Priority))
+				numTags := len(r.Tags)
+				currentTag := 0
+				if numTags > 0 {
+					t.writer.RawString(TAGS)
+					for _, tag := range r.Tags {
+						switch tag.(type) {
+						case []string:
+							tags := tag.([]string)
+							numTags := numTags + len(tags) - 1
+							for _, s := range tags {
+								t.writer.String(s)
+								if currentTag < (numTags - 1) {
+									t.writer.RawByte(COMMA)
+								}
+								currentTag += 1
+							}
+						default:
+							t.writer.String(tag.(string))
 							if currentTag < (numTags - 1) {
 								t.writer.RawByte(COMMA)
 							}
 							currentTag += 1
 						}
-					default:
-						t.writer.String(tag.(string))
-						if currentTag < (numTags - 1) {
-							t.writer.RawByte(COMMA)
-						}
-						currentTag += 1
 					}
+					t.writer.RawByte(END_SQUARE)
 				}
-				t.writer.RawByte(END_SQUARE)
+				t.writer.RawByte(END_SQUIGGLE)
+				if id < (numRules - 1) {
+					t.writer.RawByte(COMMA)
+				}
 			}
-			t.writer.RawByte(END_SQUIGGLE)
-			if id < (numRules - 1) {
-				t.writer.RawByte(COMMA)
-			}
+			t.writer.RawByte(END_SQUARE)
 		}
-		t.writer.RawByte(END_SQUARE)
-	}
-	t.writer.RawByte(END_SQUIGGLE)
+		t.writer.RawByte(END_SQUIGGLE)
 
-	// BuildBytes returns writer data as a single byte slice. It tries to reuse buf.
-	return t.writer.BuildBytes(t.buf)
+		// BuildBytes returns writer data as a single byte slice. It tries to reuse buf.
+		j, err := t.writer.BuildBytes(t.buf)
+		if err != nil {
+			return nil, err
+		}
+		json = append(json, j)
+	}
+
+	return json, nil
 }
 
 func (t *JSONEncoder) writeAttribute(fv *engine.FieldValue, fieldId int, rec *engine.Record) {

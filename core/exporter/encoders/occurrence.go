@@ -163,10 +163,11 @@ func (oe *OccurrenceEncoder) Register(codecs map[commons.Format]EncoderFactory) 
 }
 
 // Encodes a telemetry record into an occurrence representation.
-func (oe *OccurrenceEncoder) Encode(r *engine.Record) (data commons.EncodedData, err error) {
-	if e, ep, alert := oe.addEvent(r); alert {
-		oe.createOccurrence(e, ep)
-		// data = oe.createOccurrence(e, ep)
+func (oe *OccurrenceEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
+	for _, r := range recs {
+		if e, ep, alert := oe.addEvent(r); alert {
+			oe.createOccurrence(e, ep)
+		}
 	}
 	return nil, nil
 }
