@@ -20,14 +20,16 @@
 package encoders
 
 import (
-	"encoding/json"
+//	"encoding/json"
 	"fmt"
+	"net"
 	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/cespare/xxhash"
+	"github.com/satta/gommunityid"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
@@ -78,50 +80,57 @@ func (t *ECSEncoder) Register(codecs map[commons.Format]EncoderFactory) {
 }
 
 // Encodes a telemetry record into an ECS representation.
-func (t *ECSEncoder) Encode(rec *engine.Record) (commons.EncodedData, error) {
-	ecs := &ECSRecord{
-		ID:        encodeID(rec),
-		Container: encodeContainer(rec),
-		Process:   encodeProcess(rec),
-		User:      encodeUser(rec),
-	}
-	ecs.Agent.Version = t.config.JSONSchemaVersion
-	ecs.Agent.Type = ECS_AGENT_TYPE
-	ecs.Ecs.Version = ECS_VERSION
-	ecs.Ts = utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_TS)(rec))
+func (t *ECSEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
+	var ecs_recs = make([]commons.EncodedData, 0)
 
-	// encode specific record components
-	sfType := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
-	switch sfType {
-	case sfgo.TyNFStr:
-		ecs.encodeNetworkFlow(rec)
-	case sfgo.TyFFStr:
-		ecs.encodeFileFlow(rec)
-	case sfgo.TyFEStr:
-		ecs.encodeFileEvent(rec)
-	case sfgo.TyPEStr:
-		ecs.encodeProcessEvent(rec)
-	}
-
-	// encode tags and policy information
-	rules := rec.Ctx.GetRules()
-	if len(rules) > 0 {
-		reasons := make([]string, 0)
-		tags := make([]string, 0)
-		priority := int(engine.Low)
-		for _, r := range rules {
-			reasons = append(reasons, r.Name)
-			tags = append(tags, extracTags(r.Tags)...)
-			priority = utils.Max(priority, int(r.Priority))
+	for _, rec := range recs {
+		ecs := &ECSRecord{
+			ID:        encodeID(rec),
+			Container: encodeContainer(rec),
+			Process:   encodeProcess(rec),
+			User:      encodeUser(rec),
 		}
-		ecs.Event[ECS_EVENT_REASON] = strings.Join(reasons, ", ")
-		ecs.Event[ECS_EVENT_SEVERITY] = priority
-		ecs.Tags = tags
+		ecs.Agent.Version = t.config.JSONSchemaVersion
+		ecs.Agent.Type = ECS_AGENT_TYPE
+		ecs.Ecs.Version = ECS_VERSION
+		ecs.Ts = utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_TS)(rec))
+
+		// encode specific record components
+		sfType := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
+		switch sfType {
+		case sfgo.TyNFStr:
+			ecs.encodeNetworkFlow(rec)
+		case sfgo.TyFFStr:
+			ecs.encodeFileFlow(rec)
+		case sfgo.TyFEStr:
+			ecs.encodeFileEvent(rec)
+		case sfgo.TyPEStr:
+			ecs.encodeProcessEvent(rec)
+		}
+
+		// encode tags and policy information
+		rules := rec.Ctx.GetRules()
+		if len(rules) > 0 {
+			reasons := make([]string, 0)
+			tags := make([]string, 0)
+			priority := int(engine.Low)
+			for _, r := range rules {
+				reasons = append(reasons, r.Name)
+				tags = append(tags, extracTags(r.Tags)...)
+				priority = utils.Max(priority, int(r.Priority))
+			}
+			ecs.Event[ECS_EVENT_REASON] = strings.Join(reasons, ", ")
+			ecs.Event[ECS_EVENT_SEVERITY] = priority
+			ecs.Tags = tags
+		}
+
+		ecs_recs = append(ecs_recs, ecs)
 	}
-	return ecs, nil
+
+	return ecs_recs, nil
 }
 
-// ID returns the ECS document identifier.
+// encodeID returns the ECS document identifier.
 func encodeID(rec *engine.Record) string {
 	h := xxhash.New()
 	t := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
@@ -155,9 +164,14 @@ func (ecs *ECSRecord) encodeNetworkFlow(rec *engine.Record) {
 	sport := engine.Mapper.MapInt(engine.SF_NET_SPORT)(rec)
 	dport := engine.Mapper.MapInt(engine.SF_NET_DPORT)(rec)
 	proto := engine.Mapper.MapInt(engine.SF_NET_PROTO)(rec)
+
+	cid, _ := gommunityid.GetCommunityIDByVersion(1, 0)
+	ft := gommunityid.MakeFlowTuple(net.ParseIP(sip), net.ParseIP(dip), uint16(sport), uint16(dport), uint8(proto))
+
+	// Calculate Base64-encoded value
 	ecs.Network = JsonData{
 		ECS_NET_BYTES: rbytes + wbytes,
-		ECS_NET_CID:   fmt.Sprintf("%s:%d-%s:%d", sip, sport, dip, dport),
+		ECS_NET_CID:   cid.CalcBase64(ft),
 		ECS_NET_IANA:  strconv.FormatInt(proto, 10),
 		ECS_NET_PROTO: sfgo.GetProto(proto),
 	}
@@ -332,14 +346,14 @@ func encodeEvent(rec *engine.Record, category string, eventType string, action s
 	sf_type := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
 	sf_ret := engine.Mapper.MapInt(engine.SF_RET)(rec)
 
-	// TODO: use JSONEncoder
-	orig, _ := json.Marshal(rec)
+	// TODO: use JSONEncoder if we want the original
+	//orig, _ := json.Marshal(rec)
 	event := JsonData{
 		ECS_EVENT_KIND:     ECS_KIND_EVENT,
 		ECS_EVENT_CATEGORY: category,
 		ECS_EVENT_TYPE:     eventType,
 		ECS_EVENT_ACTION:   action,
-		ECS_EVENT_ORIGINAL: string(orig),
+		//ECS_EVENT_ORIGINAL: string(orig),
 		ECS_EVENT_SFTYPE:   sf_type,
 		ECS_EVENT_START:    utils.ToIsoTimeStr(start),
 		ECS_EVENT_END:      utils.ToIsoTimeStr(end),
