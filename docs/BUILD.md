@@ -114,7 +114,7 @@ This pipeline specifies three built-in plugins:
 
 - [sysflowreader](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/processor/processor.go): is a generic reader plugin that ingests sysflow from the driver, caches entities, and presents sysflow objects to a handler object (i.e., an object that implements the [handler interface](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/handler.go)) for processing. In this case, we are using the [flattener](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/flattener/flattener.go) handler, but custom handlers are possible.
 - [policyengine](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/policyengine/policyengine.go): is the policy engine, which takes [flattened](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/sfgo/flatrecord.go) (row-oriented) SysFlow records as input and outputs [records](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/policyengine/engine/types.go), which represent alerts, or filtered sysflow records depending on the policy engine's _mode_ (more on this later).  
-- [exporter](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/exporter/exporter.go): takes records from the policy engine, and exports them to syslog, file, or terminal, in a JSON format. Note that custom export plugins can be created to export to other serialization formats and transport protocols.
+- [exporter](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/exporter/exporter.go): takes records from the policy engine, and exports them to ElasticSearch, syslog, file, or terminal, in a JSON format or in Elastic Common Schema (ECS) format. Note that custom export plugins can be created to export to other serialization formats and transport protocols.
 
 Each plugin has a set of general attributes that are present in all plugins, and a set of attributes that are custom to the specific plugins. For more details on the specific attributes in this example, see the pipeline configuration [template](https://github.com/sysflow-telemetry/sf-processor/blob/master/driver/pipeline.template.json)
 
@@ -126,6 +126,33 @@ The general attributes are as follows:
 - _out_ (optional): the output channel (i.e. golang channel) for objects that are pushed out of the plugin, and into the next plugin in the pipeline sequence.
 
 Channels are modeled as channel objects that have an `In` attribute representing some golang channel of objects. See [SFChannel](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/processor.go) for an example. The syntax for a channel in the pipeline is `[channel name] [channel type]`.  Where channel type is the label given to the channel type at plugin registration (more on this later), and channel name is a unique identifier for the current channel instance. The name and type of an output channel in one plugin must match that of the name and type of the input channel of the next plugin in the pipeline sequence.
+
+### Export to ElasticSearch
+
+The export target is specified via the `export` parammeter of the exporter plugin section of the pipeline configuration. Export to ElasticSearch is enabled by setting the config parameter:
+
+```json
+"export": "es"
+```
+
+The export format can be set via the exporter parameter `format` which accepts two values: `json` (default) or `ecs`. The export format can be specified independently of the exporter type. Since ES accepts any JSON-formatted input both values are permissable. For ingestion into ES we recommend to use ECS:
+
+```json
+"format": "ecs"
+```
+
+Export to ES is done via bulk ingestion. The ingestion can be controlled by some additional parameters which are read when the `es` export target is selected. Required parameters specify the ES target, index and credentials. Optional parameters control some aspects of the behavior of the bulk ingestion and may have an effect on performance. You may need to adapt their valuesfor optimal performance in your environment.
+
+| Parameter              | Type       | Default Value | Description |
+|------------------------|------------|---------------|-------------|
+| `es.addresses`         | *required* | *none*   | comma-separated list of ES endpoints |
+| `es.index`             | *required* | *none*   | name of the ES index to ingest into |
+| `es.username`          | *required* | *none*   | ES username |
+| `es.password`          | *required* | *none*   | password for the specified ES user |
+| `buffer`               | *optional* | `"0"`      | Bulk size as number of records to be ingested at once. A value of `"0"` indicates record-by-record ingestion which may be highly inefficient. |
+| `es.bulk.numWorkers`   | *optional* | `"0"`      | Number of workers  used in parallel. A value of `"0"` means that the exporter uses as many workers are there are cores on the machine.        |
+| `es.bulk.flashBuffer`  | *optional* | `"5+e6"`   | Size (in bytes) of the flush buffer for ingestion. It should be large enough to hold one bulk (the number of records specified in `buffer`), otherwise the bulk is broken into smaller chunks. |
+| `es.bulk.flushTimeout` | *optional* | `"30s"`    | Flush buffer time threshold. Valid values are golang duration strings. |
 
 ## Override plugin configuration attributes with environment variables
 
