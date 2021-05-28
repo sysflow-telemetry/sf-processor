@@ -45,14 +45,13 @@ func TestCreateOccurrence(t *testing.T) {
 			FindingsRegion:      "us-south",
 		},
 	}
-	occ := &encoders.Occurrence{ID: "notification-23243",
+	occ := &encoders.Occurrence{ID: "notification-23243fff",
 		LongDescr:  "This is a long description",
 		ShortDescr: "Short description",
 		Certainty:  encoders.CertaintyMedium,
 		Severity:   encoders.SeverityLow,
 		ResName:    "Container ABC",
 		ResType:    "Docker",
-		NoteID:     "notification",
 	}
 	proto := transports.NewFindingsApiProto(config)
 	err := proto.Export([]commons.EncodedData{occ})
