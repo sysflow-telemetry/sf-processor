@@ -42,6 +42,9 @@ import (
 type ElasticProto struct {
 	es     *elasticsearch.Client
 	config commons.Config
+	bi     esutil.BulkIndexer
+	ctx    context.Context
+	start  time.Time
 }
 
 //  NewElasticProto creates a new syslog protocol object.
@@ -50,8 +53,7 @@ func NewElasticProto(conf commons.Config) TransportProtocol {
 }
 
 // Init initializes the syslog daemon connection.
-func (s *ElasticProto) Init() error {
-	var err error
+func (s *ElasticProto) Init() (err error) {
 	cfg := elasticsearch.Config{
 		Addresses: s.config.ESAddresses,
 		Username:  s.config.ESUsername,
@@ -71,55 +73,65 @@ func (s *ElasticProto) Init() error {
 	return err
 }
 
-// Export sends buffer to syslog daemon as an alert.
-func (s *ElasticProto) Export(data commons.EncodedData) error {
-	if r, ok := data.(encoders.ECSRecord); ok {
-		ctx := context.Background()
-		bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
-			Index:         s.config.ESIndex,
-			Client:        s.es,
-			NumWorkers:    s.config.ESNumWorkers,   // default: 0 (= number of CPUs)
-			FlushBytes:    s.config.ESFlushBuffer,  // default: 5M
-			FlushInterval: s.config.ESFlushTimeout, // default: 30s
-		})
-		if err != nil {
-			logger.Error.Println("Failed to create bulk indexer")
-			return err
-		}
-		start := time.Now().UTC()
-		body, err := json.Marshal(r)
-		if err != nil {
-			logger.Error.Println("Unable to marshal ECS record")
-			return err
-		}
-		err = bi.Add(ctx, esutil.BulkIndexerItem{
-			Action:     "create",
-			DocumentID: r.ID,
-			Body:       bytes.NewReader(body),
-			OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error) {
-				if err != nil {
-					logger.Error.Print(err)
-				} else {
-					logger.Error.Printf("%s: %s", res.Error.Type, res.Error.Reason)
-				}
-			},
-		})
-		if err != nil {
-			logger.Error.Println("Failed to add document")
-			return err
-		}
-		if err := bi.Close(ctx); err != nil {
-			logger.Error.Printf("Failed to close bulk indexer")
-			return err
-		}
-		duration := time.Since(start)
-		biStats := bi.Stats()
-		v := 1000.0 * float64(biStats.NumAdded) / float64(duration/time.Millisecond)
-		logger.Info.Printf("add=%d\tflush=%d\tfail=%d\treqs=%d\tdur=%-6s\t%6d recs/s",
-			biStats.NumAdded, biStats.NumFlushed, biStats.NumFailed, biStats.NumRequests,
-			duration.Truncate(time.Millisecond), int64(v))
+// Export creates the batch, adds the ecs data and executes it
+func (s *ElasticProto) Export(data []commons.EncodedData) (err error) {
+	s.bi, err = esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
+		Index:         s.config.ESIndex,
+		Client:        s.es,
+		NumWorkers:    s.config.ESNumWorkers,   // default: 0 (= number of CPUs)
+		FlushBytes:    s.config.ESFlushBuffer,  // default: 5M
+		FlushInterval: s.config.ESFlushTimeout, // default: 30s
+	})
+	if err != nil {
+		logger.Error.Println("Failed to create bulk indexer")
+		return err
 	}
-	return errors.New("Expected ECSRecord as exported data")
+
+	s.ctx = context.Background()
+	s.start = time.Now().UTC()
+
+	for _, d := range data {
+		if r, ok := d.(*encoders.ECSRecord); ok {
+			body, err := json.Marshal(r)
+			if err != nil {
+				logger.Error.Println("Failed to create json")
+				return err
+			}
+
+			err = s.bi.Add(s.ctx, esutil.BulkIndexerItem{
+				Action:     "create",
+				DocumentID: r.ID,
+				Body:       bytes.NewReader(body),
+				OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error) {
+					if err != nil {
+						logger.Error.Print(err)
+					} else {
+						logger.Error.Printf("%s: %s", res.Error.Type, res.Error.Reason)
+					}
+				},
+			})
+			if err != nil {
+				logger.Error.Println("Failed to add document")
+				return err
+			}
+		} else {
+			return errors.New("Expected ECSRecord as exported data")
+		}
+	}
+
+	if err = s.bi.Close(s.ctx); err != nil {
+		logger.Error.Println("Failed to close bulk indexer")
+		return err
+	}
+
+	duration := time.Since(s.start)
+	biStats := s.bi.Stats()
+	v := 1000.0 * float64(biStats.NumAdded) / float64(duration/time.Millisecond)
+	logger.Info.Printf("add=%d\tflush=%d\tfail=%d\treqs=%d\tdur=%-6s\t%6d recs/s",
+		biStats.NumAdded, biStats.NumFlushed, biStats.NumFailed, biStats.NumRequests,
+		duration.Truncate(time.Millisecond), int64(v))
+
+	return
 }
 
 // Register registers the syslog proto object with the exporter.

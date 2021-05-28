@@ -63,13 +63,21 @@ func (s *SyslogProto) Init() error {
 }
 
 // Export sends buffer to syslog daemon as an alert.
-func (s *SyslogProto) Export(data commons.EncodedData) error {
-	if buf, ok := data.([]byte); ok {
-		return s.sysl.Alert(utils.UnsafeBytesToString(buf))
-	} else if buf, err := json.Marshal(data); err == nil {
-		return s.sysl.Alert(utils.UnsafeBytesToString(buf))
+func (s *SyslogProto) Export(data []commons.EncodedData) (err error) {
+	for _, d := range data {
+		if buf, ok := d.([]byte); ok {
+			if err = s.sysl.Alert(utils.UnsafeBytesToString(buf)); err != nil {
+				return err
+			}
+		} else if buf, err :=  json.Marshal(d); err == nil {
+			if err = s.sysl.Alert(utils.UnsafeBytesToString(buf)); err != nil {
+				return err
+			}
+		} else {
+			return errors.New("Expected byte array or serializable object as export data")
+		}
 	}
-	return errors.New("Expected byte array or serializable object as export data")
+	return
 }
 
 // Register registers the syslog proto object with the exporter.

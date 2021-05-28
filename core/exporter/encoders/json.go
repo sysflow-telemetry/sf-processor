@@ -37,15 +37,17 @@ type JSONEncoder struct {
 	fieldCache []*engine.FieldValue
 	writer     *jwriter.Writer
 	buf        []byte
+	batch      []commons.EncodedData
 }
 
 // NewJSONEncoder instantiates a JSON encoder.
-func NewJSONEncoder(conf commons.Config) Encoder {
+func NewJSONEncoder(config commons.Config) Encoder {
 	return &JSONEncoder{
 		fieldCache: engine.FieldValues,
-		config:     conf,
+		config:     config,
 		writer:     &jwriter.Writer{},
-		buf:        make([]byte, 0, BUFFER_SIZE)}
+		buf:        make([]byte, 0, BUFFER_SIZE),
+		batch:      make([]commons.EncodedData, 0, config.EventBuffer)}
 }
 
 // Register registers the encoder to the codecs cache.
@@ -53,8 +55,21 @@ func (t *JSONEncoder) Register(codecs map[commons.Format]EncoderFactory) {
 	codecs[commons.JSONFormat] = NewJSONEncoder
 }
 
+// Encodes telemetry records into a JSON representation.
+func (t *JSONEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
+	t.batch = t.batch[:0]
+	for _, rec := range recs {
+		if j, err := t.encode(rec); err != nil {
+			return nil, err
+		} else {
+			t.batch = append(t.batch, j)
+		}
+	}
+	return t.batch, nil
+}
+
 // Encodes a telemetry record into a JSON representation.
-func (t *JSONEncoder) Encode(rec *engine.Record) (commons.EncodedData, error) {
+func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 	t.writer.RawString(VERSION_STR)
 	t.writer.RawString(t.config.JSONSchemaVersion)
 	t.writer.RawByte(COMMA)

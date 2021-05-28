@@ -25,7 +25,7 @@ import "github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 type TransportProtocol interface {
 	Register(eps map[commons.Transport]TransportProtocolFactory)
 	Init() error
-	Export(data commons.EncodedData) error
+	Export(data []commons.EncodedData) error
 	Cleanup()
 }
 

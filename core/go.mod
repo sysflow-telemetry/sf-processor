@@ -24,7 +24,7 @@ go 1.14
 require (
 	github.com/IBM/go-sdk-core/v3 v3.3.1
 	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91
-	github.com/actgardner/gogen-avro/v7 v7.3.1 // indirect
+	github.com/actgardner/gogen-avro/v7 v7.3.1
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0
 	github.com/cespare/xxhash v1.1.0
 	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae
@@ -35,14 +35,13 @@ require (
 	github.com/ibm-cloud-security/security-advisor-sdk-go v1.1.1
 	github.com/mailru/easyjson v0.7.6
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
-	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570 // indirect
+	github.com/satta/gommunityid v0.0.0-20210315182841-1cdcb73ce408
+	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210524150929-c27c596c3781
 	github.com/xitongsys/parquet-go v1.6.0 // indirect
 	github.com/xitongsys/parquet-go-source v0.0.0-20201108113611-f372b7d813be // indirect
-	golang.org/x/net v0.0.0-20200222125558-5a598a2470a0 // indirect
-	golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae // indirect
 )
 
 //replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go

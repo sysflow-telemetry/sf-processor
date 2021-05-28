@@ -151,10 +151,14 @@ type Occurrence struct {
 type OccurrenceEncoder struct {
 	config      commons.Config
 	exportCache cmap.ConcurrentMap
+	batch       []commons.EncodedData
 }
 
-func NewOccurrenceEncoder(conf commons.Config) Encoder {
-	return &OccurrenceEncoder{config: conf, exportCache: cmap.New()}
+func NewOccurrenceEncoder(config commons.Config) Encoder {
+	return &OccurrenceEncoder{
+		config:      config,
+		exportCache: cmap.New(),
+		batch:       make([]commons.EncodedData, 0, config.EventBuffer)}
 }
 
 // Register registers the encoder to the codecs cache.
@@ -163,12 +167,21 @@ func (oe *OccurrenceEncoder) Register(codecs map[commons.Format]EncoderFactory) 
 }
 
 // Encodes a telemetry record into an occurrence representation.
-func (oe *OccurrenceEncoder) Encode(r *engine.Record) (data commons.EncodedData, err error) {
-	if e, ep, alert := oe.addEvent(r); alert {
-		oe.createOccurrence(e, ep)
-		// data = oe.createOccurrence(e, ep)
+func (oe *OccurrenceEncoder) encode(rec *engine.Record) (data commons.EncodedData, err error) {
+	if e, ep, alert := oe.addEvent(rec); alert {
+		data = oe.createOccurrence(e, ep)
 	}
-	return nil, nil
+	return
+}
+
+// Encodes telemetry records into an occurrence representation.
+func (oe *OccurrenceEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
+	oe.batch = oe.batch[:0]
+	for _, r := range recs {
+		data, _ := oe.encode(r)
+		oe.batch = append(oe.batch, data)
+	}
+	return oe.batch, nil
 }
 
 // addEvent adds a record to export queue.
