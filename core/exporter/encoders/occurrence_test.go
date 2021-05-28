@@ -23,6 +23,7 @@ func TestEventSerialization(t *testing.T) {
 		err := e.Serialize(fw)
 		assert.NoError(t, err)
 	}
+	fw.Close()
 	fr, err := os.OpenFile(path, os.O_RDONLY, 0644)
 	assert.NoError(t, err)
 	var events []*event.Event
@@ -34,6 +35,6 @@ func TestEventSerialization(t *testing.T) {
 		}
 	}
 	assert.Equal(t, count, len(events))
-	fw.Close()
+	fr.Close()
 	os.Remove(path)
 }

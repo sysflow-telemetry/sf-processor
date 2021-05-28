@@ -27,7 +27,6 @@ const (
 	FindingsUrlConfigKey          string = "findings.url"
 	FindingsAccountIDConfigKey    string = "findings.accountid"
 	FindingsProviderIDConfigKey   string = "findings.provider"
-	FindingsNoteIDConfigKey       string = "findings.note"
 	FindingsSqlQueryUrlConfigKey  string = "findings.sqlqueryurl"
 	FindingsSqlQueryCrnConfigKey  string = "findings.sqlquerycrn"
 	FindingsRegionConfigKey       string = "findings.region"
@@ -42,7 +41,6 @@ type FindingsConfig struct {
 	FindingsUrl          string
 	FindingsAccountID    string
 	FindingsProviderID   string
-	FindingsNoteID       string
 	FindingsSqlQueryUrl  string
 	FindingsSqlQueryCrn  string
 	FindingsRegion       string
@@ -79,9 +77,6 @@ func CreateFindingsConfig(bc Config, conf map[string]interface{}) (c FindingsCon
 	}
 	if v, ok := conf[FindingsProviderIDConfigKey].(string); ok {
 		c.FindingsProviderID = v
-	}
-	if v, ok := conf[FindingsNoteIDConfigKey].(string); ok {
-		c.FindingsNoteID = v
 	}
 	if v, ok := conf[FindingsSqlQueryUrlConfigKey].(string); ok {
 		c.FindingsSqlQueryUrl = v

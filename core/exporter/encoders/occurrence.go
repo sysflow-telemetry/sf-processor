@@ -23,14 +23,14 @@ import (
 	"fmt"
 	"hash"
 	"os"
+	"path"
 	"strings"
 	"time"
-
-	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 
 	"github.com/cespare/xxhash"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/steakknife/bloomfilter"
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/encoders/avro/occurrence/event"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
@@ -68,7 +68,6 @@ func (ep *EventPool) Aged(maxAge int) bool {
 
 // ReachedCapacity indicates whether the pool has reached its configured event capacity.
 func (ep *EventPool) ReachedCapacity(capacity int) bool {
-	fmt.Printf("DEBUG: pool size: %v, capacity: %v\n", len(ep.Events), capacity)
 	return len(ep.Events) >= capacity
 }
 
@@ -77,11 +76,15 @@ func (ep *EventPool) Flush(pathPrefix string) (err error) {
 	var currentExportPath string
 	var fw *os.File
 	for _, v := range ep.Events {
-		path := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath())
-		if path != currentExportPath {
-			currentExportPath = path
+		filepath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath())
+		if filepath != currentExportPath {
+			currentExportPath = filepath
+			dir := path.Dir(currentExportPath)
+			if _, err := os.Stat(dir); os.IsNotExist(err) {
+				os.MkdirAll(dir, 0755)
+			}
+			fw, err = os.OpenFile(currentExportPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		}
-		fw, err = os.OpenFile(currentExportPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
 		}
@@ -130,7 +133,7 @@ func (e Event) getExportFilePath() string {
 
 // getTimePartitions obtains time partitions from timestamp.
 func (e Event) getTimePartitions(ts int64) (year int, month int, day int) {
-	timeStamp := time.Unix(ts, 0)
+	timeStamp := time.Unix(0, ts)
 	return timeStamp.Year(), int(timeStamp.Month()), timeStamp.Day()
 }
 
@@ -144,7 +147,13 @@ type Occurrence struct {
 	ResType    string
 	ResName    string
 	AlertQuery string
-	NoteID     string
+}
+
+func (occ *Occurrence) NoteID() string {
+	if occ.Severity < SeverityHigh {
+		return "notification"
+	}
+	return "actionable-offense"
 }
 
 // OccurrenceEncoder is an encoder for IBM Findings' occurrences.
@@ -191,29 +200,24 @@ func (oe *OccurrenceEncoder) addEvent(r *engine.Record) (e *Event, ep *EventPool
 
 	// record the event pool state prior to adding a new event
 	rco, so := ep.State()
-	fmt.Printf("DEBUG: ep original state: %v, %v\n", rco, so)
 
 	// encode and add event to event pool
 	e = oe.encodeEvent(r)
 	ep.Events = append(ep.Events, e)
 	for _, rule := range r.Ctx.GetRules() {
-		fmt.Printf("\tDEBUG: adding rule %v\n", rule.Name)
 		ep.RuleTypes.Add(rule.Name)
 		ep.TopSeverity = Severity(utils.Max(int(ep.TopSeverity), int(rule.Priority)))
 	}
 
 	// check if a semantically equivalent record has been seen before
 	h := oe.semanticHash(r)
-	fmt.Printf("\tDEBUG: semantic hash %x\n", h.Sum(nil))
 	if !ep.Filter.Contains(h) {
-		fmt.Printf("\tDEBUG: semantic hash not found %x\n", h.Sum(nil))
 		ep.Filter.Add(h)
 		alert = true
 	}
 
 	// check for state changes in the pool after adding the event
 	rc, s := ep.State()
-	fmt.Printf("DEBUG: ep new state: %v, %v\n", rc, s)
 	if rco != rc || so != s {
 		alert = true
 	}
@@ -225,7 +229,6 @@ func (oe *OccurrenceEncoder) addEvent(r *engine.Record) (e *Event, ep *EventPool
 	full := ep.ReachedCapacity(oe.config.FindingsPoolCapacity)
 	aged := ep.Aged(oe.config.FindingsPoolMaxAge)
 	if alert || full || aged {
-		fmt.Printf("DEBUG: alerting: %v, %v, %v\n", alert, full, aged)
 		ep.Flush(oe.config.FindingsPath)
 		if aged {
 			ep.Reset()
@@ -249,8 +252,9 @@ func (oe *OccurrenceEncoder) getEventPool(cid string) *EventPool {
 }
 
 // createOccurrence creates a new Occurence object.
-func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) Occurrence {
-	oc := Occurrence{Certainty: CertaintyMedium}
+func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurrence {
+	oc := new(Occurrence)
+	oc.Certainty = CertaintyMedium
 	oc.ID = fmt.Sprintf(noteIDStrFmt, ep.CID, time.Now().UTC().UnixNano()/1000)
 	if ep.CID != sfgo.Zeros.String {
 		oc.ResName = fmt.Sprintf("%s:%s [%s]", ep.CID, engine.Mapper.MapStr(engine.SF_CONTAINER_NAME)(e.Record), e.NodeID)
@@ -291,11 +295,6 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) Occurrenc
 	}
 	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, e.getExportFilePath())
 	return oc
-}
-
-// createDigest creates a new Occurrence object summarizing all findings in the event pool.
-func (oe *OccurrenceEncoder) createDigest(ep *EventPool) Occurrence {
-	return Occurrence{}
 }
 
 // summarizePolicy extracts a summary of rules applied to a record.
