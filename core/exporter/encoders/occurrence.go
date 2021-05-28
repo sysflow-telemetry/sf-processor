@@ -293,7 +293,7 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 		oc.ShortDescr = detStr
 		oc.LongDescr = fmt.Sprintf(detailsStrFmt, detStr, polStr, tagsStr)
 	}
-	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, e.getExportFilePath())
+	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, oe.config.FindingsS3Region, oe.config.FindingsS3Bucket, e.getExportFilePath())
 	return oc
 }
 
