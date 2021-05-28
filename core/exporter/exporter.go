@@ -77,6 +77,7 @@ func (s *Exporter) registerExportProtocols() {
 	(&transports.TextFileProto{}).Register(protocols)
 	(&transports.NullProto{}).Register(protocols)
 	(&transports.FindingsApiProto{}).Register(protocols)
+	(&transports.ElasticProto{}).Register(protocols)
 }
 
 // Init initializes the plugin with a configuration map and cache.
@@ -136,14 +137,16 @@ RecLoop:
 			if ok {
 				s.counter++
 				s.recs = append(s.recs, fc)
-				if s.counter > s.config.EventBuffer {
+				if s.counter >= s.config.EventBuffer {
 					s.process()
 					s.recs = s.recs[:0]
 					s.counter = 0
 					lastFlush = time.Now()
 				}
 			} else {
-				s.process()
+				if s.counter > 0 {
+					s.process()
+				}
 				logger.Trace.Println("Channel closed. Shutting down.")
 				break RecLoop
 			}
@@ -160,16 +163,14 @@ RecLoop:
 }
 
 func (s *Exporter) process() error {
-	for _, r := range s.recs {
-		data, err := s.encoder.Encode(r)
+	data, err := s.encoder.Encode(s.recs)
+	if err != nil {
+		return err
+	}
+	if len(data) > 0 {
+		err = s.transport.Export(data)
 		if err != nil {
 			return err
-		}
-		if data != nil {
-			err = s.transport.Export(data)
-			if err != nil {
-				return err
-			}
 		}
 	}
 	return nil

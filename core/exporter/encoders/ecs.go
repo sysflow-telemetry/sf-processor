@@ -20,14 +20,15 @@
 package encoders
 
 import (
-	"encoding/json"
 	"fmt"
+	"net"
 	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/cespare/xxhash"
+	"github.com/satta/gommunityid"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
@@ -63,13 +64,14 @@ type ECSRecord struct {
 type ECSEncoder struct {
 	config      commons.Config
 	jsonencoder JSONEncoder
+	batch       []commons.EncodedData
 }
 
 // NewECSEncoder instantiates an ECS encoder.
 func NewECSEncoder(config commons.Config) Encoder {
 	return &ECSEncoder{
 		config: config,
-	}
+		batch:  make([]commons.EncodedData, 0, config.EventBuffer)}
 }
 
 // Register registers the encoder to the codecs cache.
@@ -77,8 +79,18 @@ func (t *ECSEncoder) Register(codecs map[commons.Format]EncoderFactory) {
 	codecs[commons.ECSFormat] = NewECSEncoder
 }
 
+// Encodes telemetry records into an ECS representation.
+func (t *ECSEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
+	t.batch = t.batch[:0]
+	for _, rec := range recs {
+		ecs := t.encode(rec)
+		t.batch = append(t.batch, ecs)
+	}
+	return t.batch, nil
+}
+
 // Encodes a telemetry record into an ECS representation.
-func (t *ECSEncoder) Encode(rec *engine.Record) (commons.EncodedData, error) {
+func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 	ecs := &ECSRecord{
 		ID:        encodeID(rec),
 		Container: encodeContainer(rec),
@@ -118,10 +130,10 @@ func (t *ECSEncoder) Encode(rec *engine.Record) (commons.EncodedData, error) {
 		ecs.Event[ECS_EVENT_SEVERITY] = priority
 		ecs.Tags = tags
 	}
-	return ecs, nil
+	return ecs
 }
 
-// ID returns the ECS document identifier.
+// encodeID returns the ECS document identifier.
 func encodeID(rec *engine.Record) string {
 	h := xxhash.New()
 	t := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
@@ -155,9 +167,14 @@ func (ecs *ECSRecord) encodeNetworkFlow(rec *engine.Record) {
 	sport := engine.Mapper.MapInt(engine.SF_NET_SPORT)(rec)
 	dport := engine.Mapper.MapInt(engine.SF_NET_DPORT)(rec)
 	proto := engine.Mapper.MapInt(engine.SF_NET_PROTO)(rec)
+
+	cid, _ := gommunityid.GetCommunityIDByVersion(1, 0)
+	ft := gommunityid.MakeFlowTuple(net.ParseIP(sip), net.ParseIP(dip), uint16(sport), uint16(dport), uint8(proto))
+
+	// Calculate Base64-encoded value
 	ecs.Network = JsonData{
 		ECS_NET_BYTES: rbytes + wbytes,
-		ECS_NET_CID:   fmt.Sprintf("%s:%d-%s:%d", sip, sport, dip, dport),
+		ECS_NET_CID:   cid.CalcBase64(ft),
 		ECS_NET_IANA:  strconv.FormatInt(proto, 10),
 		ECS_NET_PROTO: sfgo.GetProto(proto),
 	}
@@ -332,14 +349,14 @@ func encodeEvent(rec *engine.Record, category string, eventType string, action s
 	sf_type := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
 	sf_ret := engine.Mapper.MapInt(engine.SF_RET)(rec)
 
-	// TODO: use JSONEncoder
-	orig, _ := json.Marshal(rec)
+	// TODO: use JSONEncoder if we want the original
+	//orig, _ := json.Marshal(rec)
 	event := JsonData{
 		ECS_EVENT_KIND:     ECS_KIND_EVENT,
 		ECS_EVENT_CATEGORY: category,
 		ECS_EVENT_TYPE:     eventType,
 		ECS_EVENT_ACTION:   action,
-		ECS_EVENT_ORIGINAL: string(orig),
+		//ECS_EVENT_ORIGINAL: string(orig),
 		ECS_EVENT_SFTYPE:   sf_type,
 		ECS_EVENT_START:    utils.ToIsoTimeStr(start),
 		ECS_EVENT_END:      utils.ToIsoTimeStr(end),

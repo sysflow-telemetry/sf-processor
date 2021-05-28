@@ -47,18 +47,25 @@ func (s *TextFileProto) Init() error {
 }
 
 // Export writes the buffer to the open file.
-func (s *TextFileProto) Export(data commons.EncodedData) error {
-	if buf, ok := data.([]byte); ok {
-		_, err := s.fhandle.Write(buf)
-		s.fhandle.WriteString("\n")
-		return err
-	} else if buf, err := json.Marshal(data); err == nil {
-		_, err := s.fhandle.Write(buf)
-		s.fhandle.WriteString("\n")
-		return err
+func (s *TextFileProto) Export(data []commons.EncodedData) (err error) {
+	for _, d := range data {
+		if buf, ok := d.([]byte); ok {
+			if _, err = s.fhandle.Write(buf); err != nil {
+				return err
+			}
+			s.fhandle.WriteString("\n")
+		} else if buf, err := json.Marshal(d); err == nil {
+			if _, err = s.fhandle.Write(buf); err != nil {
+				return err
+			}
+			s.fhandle.WriteString("\n")
+		} else {
+			if _, err = s.fhandle.WriteString(fmt.Sprintf("%v\n", d)); err != nil {
+				return err
+			}
+		}
 	}
-	_, err := s.fhandle.WriteString(fmt.Sprintf("%v\n", data))
-	return err
+	return
 }
 
 // Register registers the text file proto object with the exporter.
