@@ -69,7 +69,9 @@ func (s *FindingsApiProto) Init() error {
 func (s *FindingsApiProto) Export(data []commons.EncodedData) (err error) {
 	for _, d := range data {
 		if occ, ok := d.(*encoders.Occurrence); ok {
+			fmt.Printf("DEBUG: Exporting occurrence: %v\n", occ)
 			if err = s.CreateOccurrence(occ); err != nil {
+				fmt.Printf("DEBUG: Error Exporting occurrence: %v\n", occ)
 				return err
 			}
 		} else {
@@ -95,7 +97,7 @@ func (s *FindingsApiProto) CreateOccurrence(occ *encoders.Occurrence) error {
 		return err
 	}
 
-	noteName := fmt.Sprintf("%s/providers/%s/notes/%s", s.AccountID, s.ProviderID, occ.NoteID)
+	noteName := fmt.Sprintf("%s/providers/%s/notes/%s", s.AccountID, s.ProviderID, occ.NoteID())
 	var nextStep []findingsapiv1.RemediationStep
 	if occ.AlertQuery != "" {
 		nextStep = []findingsapiv1.RemediationStep{{

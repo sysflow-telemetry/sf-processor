@@ -34,7 +34,7 @@ const (
 	noteIDStrFmt   = "%s-%d"
 	connStrFmt     = "%s:%d-%s:%d"
 
-	sqlQueryStrFmt = "SELECT ts, description, severity, node_id, container_id, record_type, op_flags, pproc_cmd, proc_cmd, pproc_pid, proc_pid, resource, tags, trace FROM %s STORED AS PARQUET LIMIT 5000"
+	sqlQueryStrFmt = "SELECT * FROM cos://%s/%s/%s STORED AS AVRO LIMIT 5000"
 
 	listSep = ","
 
@@ -53,8 +53,8 @@ type Severity int
 // Severity enumeration.
 const (
 	SeverityLow Severity = iota
-	SMedium
-	SHigh
+	SeverityMedium
+	SeverityHigh
 )
 
 // String returns the string representation of a severity instance.
