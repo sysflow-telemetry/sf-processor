@@ -20,14 +20,16 @@
        "findings.apikey": "findings API key (do not set it if reading from secret vault)",
        "findings.url": "findings API URL (default: https://us-south.secadvisor.cloud.ibm.com/findings",
        "findings.accountid": "findings API account ID",
-       "findings.provider": "findings API provider",
-       "findings.note": "findings API node ID",
+       "findings.provider": "findings API provider",       
        "findings.sqlqueryurl": "SQL Query URL (default: https://us.sql-query.cloud.ibm.com/sqlquery)", 
        "findings.sqlquerycrn": "SQL Query instance crn", 
        "findings.region": "findings API region", 
+       "findings.s3region": "S3 region", 
+       "findings.s3bucket": "S3 bucket", 
        "findings.path": "findings events path (default: /mnt/occurrences)", 
        "findings.pool.capacity": "findings event pool capacity (default: 250)",
-       "findings.pool.maxage": "findings event pool age limit in minutes (default: 1440)" 
+       "findings.pool.maxage": "findings event pool age limit in minutes (default: 1440)",
+       "vault.secrets": "true|false (set to true if using vaults)"
       }
     ]
 }

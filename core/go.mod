@@ -29,6 +29,7 @@ require (
 	github.com/cespare/xxhash v1.1.0
 	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae
 	github.com/enriquebris/goconcurrentqueue v0.6.0
+	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-openapi/strfmt v0.19.4
 	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/google/go-cmp v0.4.0 // indirect
