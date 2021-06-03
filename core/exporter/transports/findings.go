@@ -141,7 +141,8 @@ func NewFindingsApi(apiKey string, url string) (service *FindingsApi, err error)
 		Authenticator: authenticator,
 	}
 
-	baseService, err := core.NewBaseService(serviceOptions)
+	var baseService *core.BaseService
+	baseService, err = core.NewBaseService(serviceOptions)
 	if err != nil {
 		return
 	}
