@@ -69,10 +69,8 @@ func (s *FindingsApiProto) Init() error {
 func (s *FindingsApiProto) Export(data []commons.EncodedData) (err error) {
 	for _, d := range data {
 		if occ, ok := d.(*encoders.Occurrence); ok {
-			fmt.Printf("DEBUG: Exporting occurrence: %v\n", occ)
 			if err = s.CreateOccurrence(occ); err != nil {
-				fmt.Printf("DEBUG: Error Exporting occurrence: %v\n", occ)
-				return err
+				return
 			}
 		} else {
 			return errors.New("Expected Occurrence object as exported data")
