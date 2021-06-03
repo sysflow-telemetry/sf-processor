@@ -187,8 +187,9 @@ func (oe *OccurrenceEncoder) encode(rec *engine.Record) (data commons.EncodedDat
 func (oe *OccurrenceEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
 	oe.batch = oe.batch[:0]
 	for _, r := range recs {
-		data, _ := oe.encode(r)
-		oe.batch = append(oe.batch, data)
+		if data, _ := oe.encode(r); data != nil {
+			oe.batch = append(oe.batch, data)
+		}
 	}
 	return oe.batch, nil
 }

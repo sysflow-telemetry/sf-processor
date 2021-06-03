@@ -120,8 +120,8 @@ func (s *FindingsApiProto) CreateOccurrence(occ *encoders.Occurrence) error {
 		}
 		return err
 	}
-	logger.Info.Println(response.StatusCode)
-	logger.Info.Println(*result.ID)
+	logger.Trace.Println(response.StatusCode)
+	logger.Trace.Println(*result.ID)
 	return nil
 }
 
