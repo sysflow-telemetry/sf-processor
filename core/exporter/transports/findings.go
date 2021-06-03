@@ -115,7 +115,9 @@ func (s *FindingsApiProto) CreateOccurrence(occ *encoders.Occurrence) error {
 	result, response, err := service.CreateCustomOccurrence(options)
 	if err != nil {
 		logger.Error.Println("Failed to create occurrence: ", err)
-		logger.Error.Println(response.Result)
+		if response != nil {
+			logger.Error.Println(response.Result)
+		}
 		return err
 	}
 	logger.Info.Println(response.StatusCode)
