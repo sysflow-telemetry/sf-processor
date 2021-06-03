@@ -165,11 +165,13 @@ RecLoop:
 func (s *Exporter) process() error {
 	data, err := s.encoder.Encode(s.recs)
 	if err != nil {
+		logger.Error.Printf("Caught exception while encoding records for export %v\n", err)
 		return err
 	}
 	if len(data) > 0 {
 		err = s.transport.Export(data)
 		if err != nil {
+			logger.Error.Printf("Caught exception while exporting records %v\n", err)
 			return err
 		}
 	}
