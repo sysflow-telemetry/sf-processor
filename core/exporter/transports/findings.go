@@ -51,6 +51,7 @@ type FindingsApiProto struct {
 
 // NewFindingsApiProto is a constructor for FindingsApiProto.
 func NewFindingsApiProto(conf commons.Config) TransportProtocol {
+	logger.Info.Printf("Account ID: %v, Provider ID: %v, API Key: %v", conf.FindingsAccountID, conf.FindingsProviderID, conf.FindingsApiKey)
 	return &FindingsApiProto{AccountID: conf.FindingsAccountID,
 		ProviderID:  conf.FindingsProviderID,
 		ApiKey:      conf.FindingsApiKey,
