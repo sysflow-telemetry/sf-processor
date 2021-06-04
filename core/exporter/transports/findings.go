@@ -145,12 +145,14 @@ func NewFindingsApi(apiKey string, url string) (service *FindingsApi, err error)
 	var baseService *core.BaseService
 	baseService, err = core.NewBaseService(serviceOptions)
 	if err != nil {
+		logger.Error.Println(err)
 		return
 	}
 
 	if url != "" {
 		err = baseService.SetServiceURL(url)
 		if err != nil {
+			logger.Error.Println(err)
 			return
 		}
 	}
