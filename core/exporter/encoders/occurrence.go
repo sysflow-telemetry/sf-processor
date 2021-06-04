@@ -268,32 +268,29 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 	oc.Severity = severity
 	polStr := fmt.Sprintf(policiesStrFmt, strings.Join(rnames, listSep))
 	tagsStr := fmt.Sprintf(tagsStrFmt, strings.Join(tags, listSep))
+	var detStr string
 	switch e.Record.GetInt(sfgo.SF_REC_TYPE, sfgo.SYSFLOW_SRC) {
 	case sfgo.PROC_EVT:
 		proc := engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(e.Record)
 		pproc := engine.Mapper.MapStr(engine.SF_PPROC_CMDLINE)(e.Record)
-		detStr := fmt.Sprintf(peStrFmt, pproc, proc)
-		oc.ShortDescr = detStr
-		oc.LongDescr = fmt.Sprintf(detailsStrFmt, detStr, polStr, tagsStr)
+		detStr = fmt.Sprintf(peStrFmt, pproc, proc)
 	case sfgo.FILE_EVT:
 		proc := engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(e.Record)
 		path := oe.formatResource(e.Record)
-		detStr := fmt.Sprintf(feStrFmt, proc, path)
-		oc.ShortDescr = detStr
-		oc.LongDescr = fmt.Sprintf(detailsStrFmt, detStr, polStr, tagsStr)
+		detStr = fmt.Sprintf(feStrFmt, proc, path)
 	case sfgo.FILE_FLOW:
 		proc := engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(e.Record)
 		path := oe.formatResource(e.Record)
-		detStr := fmt.Sprintf(ffStrFmt, proc, path)
-		oc.ShortDescr = detStr
-		oc.LongDescr = fmt.Sprintf(detailsStrFmt, detStr, polStr, tagsStr)
+		detStr = fmt.Sprintf(ffStrFmt, proc, path)
 	case sfgo.NET_FLOW:
 		proc := engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(e.Record)
 		conn := oe.formatResource(e.Record)
-		detStr := fmt.Sprintf(nfStrFmt, proc, conn)
-		oc.ShortDescr = detStr
-		oc.LongDescr = fmt.Sprintf(detailsStrFmt, detStr, polStr, tagsStr)
+		detStr = fmt.Sprintf(nfStrFmt, proc, conn)
 	}
+	// sanitizes details string to avoid being flagged by tools like CloudFlare
+	encDetStr := strings.ReplaceAll(detStr, "/", fwdSlash)
+	oc.ShortDescr = encDetStr
+	oc.LongDescr = fmt.Sprintf(detailsStrFmt, encDetStr, polStr, tagsStr)
 	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, oe.config.FindingsS3Region, oe.config.FindingsS3Bucket, e.getExportFilePath())
 	return oc
 }
