@@ -169,10 +169,12 @@ func NewFindingsApi(apiKey string, url string) (service *FindingsApi, err error)
 func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCustomOccurrenceOptions) (result *ApiCustomOccurrence, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(createOccurrenceOptions, "createOccurrenceOptions cannot be nil")
 	if err != nil {
+		logger.Error.Println(err)
 		return
 	}
 	err = core.ValidateStruct(createOccurrenceOptions, "createOccurrenceOptions")
 	if err != nil {
+		logger.Error.Println(err)
 		return
 	}
 
@@ -182,6 +184,7 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 	builder := core.NewRequestBuilder(core.POST)
 	_, err = builder.ConstructHTTPURL(s.Service.Options.URL, pathSegments, pathParameters)
 	if err != nil {
+		logger.Error.Println(err)
 		return
 	}
 
@@ -239,11 +242,13 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
+		logger.Error.Println(err)
 		return
 	}
 
 	request, err := builder.Build()
 	if err != nil {
+		logger.Error.Println(err)
 		return
 	}
 
@@ -254,6 +259,8 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 		if !ok {
 			err = fmt.Errorf("An error occurred while processing the operation response")
 		}
+	} else {
+		logger.Error.Println(err)
 	}
 
 	return
