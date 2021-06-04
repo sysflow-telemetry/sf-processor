@@ -35,6 +35,7 @@ const (
 	VersionKey            string = "version"
 	JSONSchemaVersionKey  string = "jsonschemaversion"
 	BuildNumberKey        string = "buildnumber"
+	ClusterIDKey          string = "cluster.id"
 )
 
 // Config defines a configuration object for the exporter.
