@@ -252,6 +252,7 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 		return
 	}
 
+	fmt.Printf("DEBUG: Request: %v\n", request)
 	response, err = s.Service.Request(request, new(ApiCustomOccurrence))
 	if err == nil {
 		var ok bool
