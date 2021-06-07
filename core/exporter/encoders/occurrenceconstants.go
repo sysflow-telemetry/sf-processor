@@ -22,7 +22,7 @@ package encoders
 // Formatted string constants.
 const (
 	rightArrow = "\u2192"
-	fwdSlash   = "\u2192"
+	fwdSlash   = "\u2215"
 
 	peStrFmt = "Process execution %s " + rightArrow + " %s"
 	feStrFmt = "Filesystem manipulation %s " + rightArrow + " %s"
