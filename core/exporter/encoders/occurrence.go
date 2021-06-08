@@ -27,6 +27,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/actgardner/gogen-avro/v7/container"
 	"github.com/cespare/xxhash"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/steakknife/bloomfilter"
@@ -75,6 +76,7 @@ func (ep *EventPool) ReachedCapacity(capacity int) bool {
 func (ep *EventPool) Flush(pathPrefix string) (err error) {
 	var currentExportPath string
 	var fw *os.File
+	var cw *container.Writer
 	for _, v := range ep.Events {
 		filepath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath())
 		if filepath != currentExportPath {
@@ -83,19 +85,24 @@ func (ep *EventPool) Flush(pathPrefix string) (err error) {
 			if _, err := os.Stat(dir); os.IsNotExist(err) {
 				os.MkdirAll(dir, 0755)
 			}
-			fw, err = os.OpenFile(currentExportPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if fw, err = os.OpenFile(currentExportPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err == nil {
+				cw, err = event.NewEventWriter(fw, container.Snappy, eventsBlockSize)
+			}
 		}
 		if err != nil {
-			return err
-		}
-		if err = v.Serialize(fw); err != nil {
 			return
 		}
+		if err = cw.WriteRecord(v); err != nil {
+			return
+		}
+	}
+	if cw != nil && cw.Flush() != nil {
+		return
 	}
 	ep.Events = nil
 	ep.LastFlushTime = time.Now()
 	fw.Close()
-	return nil
+	return
 }
 
 // Reset clears event slice and resets sketch counters and filter.
