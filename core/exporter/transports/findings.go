@@ -51,6 +51,8 @@ type FindingsApiProto struct {
 
 // NewFindingsApiProto is a constructor for FindingsApiProto.
 func NewFindingsApiProto(conf commons.Config) TransportProtocol {
+	logger.Info.Printf("Account ID: %v, Provider ID: %v, API Key: %v", conf.FindingsAccountID, conf.FindingsProviderID, conf.FindingsApiKey)
+	logger.Info.Printf("Config: %v", conf)
 	return &FindingsApiProto{AccountID: conf.FindingsAccountID,
 		ProviderID:  conf.FindingsProviderID,
 		ApiKey:      conf.FindingsApiKey,
@@ -69,10 +71,8 @@ func (s *FindingsApiProto) Init() error {
 func (s *FindingsApiProto) Export(data []commons.EncodedData) (err error) {
 	for _, d := range data {
 		if occ, ok := d.(*encoders.Occurrence); ok {
-			fmt.Printf("DEBUG: Exporting occurrence: %v\n", occ)
 			if err = s.CreateOccurrence(occ); err != nil {
-				fmt.Printf("DEBUG: Error Exporting occurrence: %v\n", occ)
-				return err
+				return
 			}
 		} else {
 			return errors.New("Expected Occurrence object as exported data")
@@ -117,11 +117,13 @@ func (s *FindingsApiProto) CreateOccurrence(occ *encoders.Occurrence) error {
 	result, response, err := service.CreateCustomOccurrence(options)
 	if err != nil {
 		logger.Error.Println("Failed to create occurrence: ", err)
-		logger.Error.Println(response.Result)
+		if response != nil {
+			logger.Error.Println(response.Result)
+		}
 		return err
 	}
-	logger.Info.Println(response.StatusCode)
-	logger.Info.Println(*result.ID)
+	logger.Trace.Println(response.StatusCode)
+	logger.Trace.Println(*result.ID)
 	return nil
 }
 
@@ -141,14 +143,17 @@ func NewFindingsApi(apiKey string, url string) (service *FindingsApi, err error)
 		Authenticator: authenticator,
 	}
 
-	baseService, err := core.NewBaseService(serviceOptions)
+	var baseService *core.BaseService
+	baseService, err = core.NewBaseService(serviceOptions)
 	if err != nil {
+		logger.Error.Println(err)
 		return
 	}
 
 	if url != "" {
 		err = baseService.SetServiceURL(url)
 		if err != nil {
+			logger.Error.Println(err)
 			return
 		}
 	}
@@ -164,10 +169,12 @@ func NewFindingsApi(apiKey string, url string) (service *FindingsApi, err error)
 func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCustomOccurrenceOptions) (result *ApiCustomOccurrence, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(createOccurrenceOptions, "createOccurrenceOptions cannot be nil")
 	if err != nil {
+		logger.Error.Println(err)
 		return
 	}
 	err = core.ValidateStruct(createOccurrenceOptions, "createOccurrenceOptions")
 	if err != nil {
+		logger.Error.Println(err)
 		return
 	}
 
@@ -177,6 +184,7 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 	builder := core.NewRequestBuilder(core.POST)
 	_, err = builder.ConstructHTTPURL(s.Service.Options.URL, pathSegments, pathParameters)
 	if err != nil {
+		logger.Error.Println(err)
 		return
 	}
 
@@ -234,14 +242,17 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
+		logger.Error.Println(err)
 		return
 	}
 
 	request, err := builder.Build()
 	if err != nil {
+		logger.Error.Println(err)
 		return
 	}
 
+	fmt.Printf("DEBUG: Request: %v\n", request)
 	response, err = s.Service.Request(request, new(ApiCustomOccurrence))
 	if err == nil {
 		var ok bool
@@ -249,6 +260,8 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 		if !ok {
 			err = fmt.Errorf("An error occurred while processing the operation response")
 		}
+	} else {
+		logger.Error.Println(err)
 	}
 
 	return

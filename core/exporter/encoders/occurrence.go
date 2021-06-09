@@ -27,6 +27,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/actgardner/gogen-avro/v7/container"
 	"github.com/cespare/xxhash"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/steakknife/bloomfilter"
@@ -75,6 +76,7 @@ func (ep *EventPool) ReachedCapacity(capacity int) bool {
 func (ep *EventPool) Flush(pathPrefix string) (err error) {
 	var currentExportPath string
 	var fw *os.File
+	var cw *container.Writer
 	for _, v := range ep.Events {
 		filepath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath())
 		if filepath != currentExportPath {
@@ -83,19 +85,24 @@ func (ep *EventPool) Flush(pathPrefix string) (err error) {
 			if _, err := os.Stat(dir); os.IsNotExist(err) {
 				os.MkdirAll(dir, 0755)
 			}
-			fw, err = os.OpenFile(currentExportPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if fw, err = os.OpenFile(currentExportPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err == nil {
+				cw, err = event.NewEventWriter(fw, container.Snappy, eventsBlockSize)
+			}
 		}
 		if err != nil {
-			return err
-		}
-		if err = v.Serialize(fw); err != nil {
 			return
 		}
+		if err = cw.WriteRecord(v); err != nil {
+			return
+		}
+	}
+	if cw != nil && cw.Flush() != nil {
+		return
 	}
 	ep.Events = nil
 	ep.LastFlushTime = time.Now()
 	fw.Close()
-	return nil
+	return
 }
 
 // Reset clears event slice and resets sketch counters and filter.
@@ -187,8 +194,9 @@ func (oe *OccurrenceEncoder) encode(rec *engine.Record) (data commons.EncodedDat
 func (oe *OccurrenceEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
 	oe.batch = oe.batch[:0]
 	for _, r := range recs {
-		data, _ := oe.encode(r)
-		oe.batch = append(oe.batch, data)
+		if data, _ := oe.encode(r); data != nil {
+			oe.batch = append(oe.batch, data)
+		}
 	}
 	return oe.batch, nil
 }
@@ -267,32 +275,29 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 	oc.Severity = severity
 	polStr := fmt.Sprintf(policiesStrFmt, strings.Join(rnames, listSep))
 	tagsStr := fmt.Sprintf(tagsStrFmt, strings.Join(tags, listSep))
+	var detStr string
 	switch e.Record.GetInt(sfgo.SF_REC_TYPE, sfgo.SYSFLOW_SRC) {
 	case sfgo.PROC_EVT:
 		proc := engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(e.Record)
 		pproc := engine.Mapper.MapStr(engine.SF_PPROC_CMDLINE)(e.Record)
-		detStr := fmt.Sprintf(peStrFmt, pproc, proc)
-		oc.ShortDescr = detStr
-		oc.LongDescr = fmt.Sprintf(detailsStrFmt, detStr, polStr, tagsStr)
+		detStr = fmt.Sprintf(peStrFmt, pproc, proc)
 	case sfgo.FILE_EVT:
 		proc := engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(e.Record)
 		path := oe.formatResource(e.Record)
-		detStr := fmt.Sprintf(feStrFmt, proc, path)
-		oc.ShortDescr = detStr
-		oc.LongDescr = fmt.Sprintf(detailsStrFmt, detStr, polStr, tagsStr)
+		detStr = fmt.Sprintf(feStrFmt, proc, path)
 	case sfgo.FILE_FLOW:
 		proc := engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(e.Record)
 		path := oe.formatResource(e.Record)
-		detStr := fmt.Sprintf(ffStrFmt, proc, path)
-		oc.ShortDescr = detStr
-		oc.LongDescr = fmt.Sprintf(detailsStrFmt, detStr, polStr, tagsStr)
+		detStr = fmt.Sprintf(ffStrFmt, proc, path)
 	case sfgo.NET_FLOW:
 		proc := engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(e.Record)
 		conn := oe.formatResource(e.Record)
-		detStr := fmt.Sprintf(nfStrFmt, proc, conn)
-		oc.ShortDescr = detStr
-		oc.LongDescr = fmt.Sprintf(detailsStrFmt, detStr, polStr, tagsStr)
+		detStr = fmt.Sprintf(nfStrFmt, proc, conn)
 	}
+	// sanitizes details string to avoid being flagged by tools like CloudFlare
+	encDetStr := strings.ReplaceAll(detStr, "/", fwdSlash)
+	oc.ShortDescr = encDetStr
+	oc.LongDescr = fmt.Sprintf(detailsStrFmt, encDetStr, polStr, tagsStr)
 	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, oe.config.FindingsS3Region, oe.config.FindingsS3Bucket, e.getExportFilePath())
 	return oc
 }
