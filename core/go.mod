@@ -32,6 +32,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-openapi/strfmt v0.19.4
 	github.com/golang/protobuf v1.3.3 // indirect
+	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/ibm-cloud-security/security-advisor-sdk-go v1.1.1
 	github.com/mailru/easyjson v0.7.6
@@ -41,8 +42,6 @@ require (
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210524150929-c27c596c3781
-	github.com/xitongsys/parquet-go v1.6.0 // indirect
-	github.com/xitongsys/parquet-go-source v0.0.0-20201108113611-f372b7d813be // indirect
 )
 
 //replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go

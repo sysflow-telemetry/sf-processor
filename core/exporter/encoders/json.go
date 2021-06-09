@@ -268,7 +268,8 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 	t.writer.RawByte(END_SQUIGGLE)
 
 	// BuildBytes returns writer data as a single byte slice. It tries to reuse buf.
-	return t.writer.BuildBytes(t.buf)
+	//return t.writer.BuildBytes(t.buf)
+	return t.writer.BuildBytes()
 }
 
 func (t *JSONEncoder) writeAttribute(fv *engine.FieldValue, fieldId int, rec *engine.Record) {

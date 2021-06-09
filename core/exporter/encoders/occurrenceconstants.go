@@ -22,6 +22,7 @@ package encoders
 // Formatted string constants.
 const (
 	rightArrow = "\u2192"
+	fwdSlash   = "\u2215"
 
 	peStrFmt = "Process execution %s " + rightArrow + " %s"
 	feStrFmt = "Filesystem manipulation %s " + rightArrow + " %s"
@@ -34,7 +35,7 @@ const (
 	noteIDStrFmt   = "%s-%d"
 	connStrFmt     = "%s:%d-%s:%d"
 
-	sqlQueryStrFmt = "SELECT * FROM cos://%s/%s/%s STORED AS AVRO LIMIT 5000"
+	sqlQueryStrFmt = "SELECT * FROM cos://%s/%s/%s STORED AS AVRO LIMIT 500"
 
 	listSep = ","
 
@@ -45,6 +46,11 @@ const (
 const (
 	maxElements = 100000
 	probCollide = 0.0000001
+)
+
+// Avro encodersettings
+const (
+	eventsBlockSize = 512
 )
 
 // Severity type for enumeration.
