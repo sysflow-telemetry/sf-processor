@@ -24,7 +24,6 @@ import (
 	"errors"
 	"fmt"
 	"hash"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -83,15 +82,14 @@ func (ep *EventPool) Flush(pathPrefix string) (err error) {
 	var events []interface{}
 	for _, v := range ep.Events {
 		exportPath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath())
-		fmt.Println("updating writer")
-		if err = ep.UpdateEventPoolWriter(exportPath); err != nil {
+		if err = ep.UpdateEventPoolWriter(exportPath, v.Schema()); err != nil {
 			return
 		}
 		var m map[string]interface{}
-		fmt.Println(v)
-		s, _ := json.Marshal(v)
+		logger.Warn.Println(v)
+		s, _ := json.Marshal(v.Event)
 		json.Unmarshal(s, &m)
-		fmt.Println(m)
+		logger.Warn.Println(m)
 		events = append(events, m)
 	}
 	if len(events) > 0 && ep.epw != nil {
@@ -121,7 +119,7 @@ func (ep *EventPool) Reset() (err error) {
 // UpdateEventPoolWriter updates the EventPoolWriter for exportPath.
 // It reuses the current EventPoolWriter if already point to the given exportPath.
 // Otherwise, it creates a new OCF writer and the export directory structure if not present.
-func (ep *EventPool) UpdateEventPoolWriter(exportPath string) (err error) {
+func (ep *EventPool) UpdateEventPoolWriter(exportPath string, schema string) (err error) {
 	if ep.epw == nil {
 		ep.epw = new(EventPoolWriter)
 	}
@@ -133,9 +131,10 @@ func (ep *EventPool) UpdateEventPoolWriter(exportPath string) (err error) {
 				return
 			}
 		}
-		if err = ep.epw.UpdateOCFWriter(exportPath); err != nil {
+		if err = ep.epw.UpdateOCFWriter(exportPath, schema); err != nil {
 			return
 		}
+		fmt.Println(ep.epw.ocfw)
 	}
 	// sanity check for cached OCF writer
 	if ep.epw.ocfw == nil {
@@ -152,20 +151,8 @@ type EventPoolWriter struct {
 	ocfw              *goavro.OCFWriter
 }
 
-func (epw *EventPoolWriter) NewCodec() (codec *goavro.Codec, err error) {
-	var buf []byte
-	buf, err = ioutil.ReadFile("./avro/occurrence/avsc/Event.avsc")
-	if err != nil {
-		return
-	}
-	codec, err = goavro.NewCodec(string(buf))
-	if err != nil {
-		return
-	}
-	return
-}
-
-func (epw *EventPoolWriter) UpdateOCFWriter(exportPath string) (err error) {
+// UpdateOCFWriter creates a new OCF writer.
+func (epw *EventPoolWriter) UpdateOCFWriter(exportPath string, schema string) (err error) {
 	// close the current file writer before creating a new one
 	if epw.fw != nil {
 		epw.fw.Close()
@@ -176,8 +163,9 @@ func (epw *EventPoolWriter) UpdateOCFWriter(exportPath string) (err error) {
 		return
 	}
 	if epw.codec == nil {
-		epw.codec, err = epw.NewCodec()
+		epw.codec, err = goavro.NewCodec(schema)
 		if err != nil {
+			logger.Warn.Println(err)
 			return
 		}
 	}
@@ -186,6 +174,8 @@ func (epw *EventPoolWriter) UpdateOCFWriter(exportPath string) (err error) {
 		Codec:           epw.codec,
 		CompressionName: "snappy",
 	})
+	logger.Warn.Println(epw.ocfw)
+	logger.Warn.Println(err)
 	return
 }
 
@@ -207,20 +197,20 @@ type Event struct {
 }
 
 // getExportFileName returns the name of the file where the event should be exported.
-func (e Event) getExportFileName() string {
+func (e *Event) getExportFileName() string {
 	if e.ContainerID == sfgo.Zeros.String {
 		return hostFileName
 	}
 	return e.ContainerID
 }
 
-func (e Event) getExportFilePath() string {
+func (e *Event) getExportFilePath() string {
 	y, m, d := e.getTimePartitions(e.Ts)
 	return fmt.Sprintf("%s/%d/%d/%d/%s.avro", e.NodeID, y, m, d, e.getExportFileName())
 }
 
 // getTimePartitions obtains time partitions from timestamp.
-func (e Event) getTimePartitions(ts int64) (year int, month int, day int) {
+func (e *Event) getTimePartitions(ts int64) (year int, month int, day int) {
 	timeStamp := time.Unix(0, ts)
 	return timeStamp.Year(), int(timeStamp.Month()), timeStamp.Day()
 }
@@ -414,10 +404,12 @@ func (oe *OccurrenceEncoder) encodeEvent(r *engine.Record) *Event {
 	e.RecordType = engine.Mapper.MapStr(engine.SF_TYPE)(r)
 	e.OpFlags = engine.Mapper.MapStr(engine.SF_OPFLAGS)(r)
 	e.PProcCmd = engine.Mapper.MapStr(engine.SF_PPROC_CMDLINE)(r)
+	e.PProcPID = engine.Mapper.MapInt(engine.SF_PPROC_PID)(r)
 	e.ProcCmd = engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(r)
+	e.ProcPID = engine.Mapper.MapInt(engine.SF_PROC_PID)(r)
 	e.Resource = oe.formatResource(r)
 	e.Tags = strings.Join(tags, listSep)
-	e.Trace = ""
+	e.Trace = engine.Mapper.MapStr(engine.SF_TRACENAME)(r)
 	return e
 }
 
