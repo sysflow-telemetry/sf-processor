@@ -34,7 +34,7 @@ import (
 
 const (
 	kind        = "FINDING"
-	details     = "Occurrence Details"
+	details     = "Finding Context"
 	queryUrlFmt = "%s/?instance_crn=%s&statement=%s"
 )
 
