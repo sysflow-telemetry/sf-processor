@@ -184,5 +184,6 @@ func (s *Exporter) SetOutChan(ch []interface{}) {}
 // Cleanup tears down plugin resources.
 func (s *Exporter) Cleanup() {
 	logger.Trace.Println("Exiting ", pluginName)
+	s.encoder.Cleanup()
 	s.transport.Cleanup()
 }

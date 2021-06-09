@@ -51,8 +51,6 @@ type FindingsApiProto struct {
 
 // NewFindingsApiProto is a constructor for FindingsApiProto.
 func NewFindingsApiProto(conf commons.Config) TransportProtocol {
-	logger.Info.Printf("Account ID: %v, Provider ID: %v, API Key: %v", conf.FindingsAccountID, conf.FindingsProviderID, conf.FindingsApiKey)
-	logger.Info.Printf("Config: %v", conf)
 	return &FindingsApiProto{AccountID: conf.FindingsAccountID,
 		ProviderID:  conf.FindingsProviderID,
 		ApiKey:      conf.FindingsApiKey,
@@ -93,7 +91,6 @@ func (s *FindingsApiProto) Cleanup() {}
 func (s *FindingsApiProto) CreateOccurrence(occ *encoders.Occurrence) error {
 	service, err := NewFindingsApi(s.ApiKey, s.FindingsUrl)
 	if err != nil {
-		logger.Error.Printf("Error while creating Findings API wrapper %v", err)
 		return err
 	}
 
@@ -116,14 +113,15 @@ func (s *FindingsApiProto) CreateOccurrence(occ *encoders.Occurrence) error {
 
 	result, response, err := service.CreateCustomOccurrence(options)
 	if err != nil {
-		logger.Error.Println("Failed to create occurrence: ", err)
 		if response != nil {
 			logger.Error.Println(response.Result)
 		}
 		return err
 	}
+
 	logger.Trace.Println(response.StatusCode)
 	logger.Trace.Println(*result.ID)
+
 	return nil
 }
 
@@ -252,7 +250,6 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 		return
 	}
 
-	fmt.Printf("DEBUG: Request: %v\n", request)
 	response, err = s.Service.Request(request, new(ApiCustomOccurrence))
 	if err == nil {
 		var ok bool
