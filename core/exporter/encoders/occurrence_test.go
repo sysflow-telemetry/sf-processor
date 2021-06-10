@@ -78,7 +78,7 @@ func TestGoavroEventSerialization(t *testing.T) {
 	path := "/tmp/events_goavro.avro"
 	count := 25
 
-	fw, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	fw, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	assert.NoError(t, err)
 
 	buf, err := ioutil.ReadFile("./avro/occurrence/avsc/Event.avsc")
@@ -116,7 +116,6 @@ func TestGoavroEventSerialization(t *testing.T) {
 		assert.NoError(t, err)
 		events = append(events, d)
 	}
-	fmt.Println(events)
 	assert.Equal(t, count, len(events))
 
 	values = nil
@@ -142,7 +141,6 @@ func TestGoavroEventSerialization(t *testing.T) {
 		assert.NoError(t, err)
 		events = append(events, d)
 	}
-	fmt.Println(events)
 	assert.Equal(t, 2*count, len(events))
 
 	fw.Close()

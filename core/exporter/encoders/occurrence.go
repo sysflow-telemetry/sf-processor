@@ -158,7 +158,7 @@ func (epw *EventPoolWriter) UpdateOCFWriter(exportPath string, schema string) (e
 		epw.fw.Close()
 	}
 	epw.currentExportPath = exportPath
-	epw.fw, err = os.OpenFile(epw.currentExportPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	epw.fw, err = os.OpenFile(epw.currentExportPath, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		return
 	}
