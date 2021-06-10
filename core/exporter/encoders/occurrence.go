@@ -371,7 +371,8 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 	encDetStr := strings.ReplaceAll(detStr, "/", fwdSlash)
 	oc.ShortDescr = encDetStr
 	oc.LongDescr = fmt.Sprintf(detailsStrFmt, encDetStr, polStr, tagsStr)
-	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, oe.config.FindingsS3Region, oe.config.FindingsS3Bucket, e.getExportFilePath())
+	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, oe.config.FindingsS3Region, oe.config.FindingsS3Bucket,
+		e.getExportFilePath(), oe.config.FindingsS3Region, oe.config.FindingsS3Bucket)
 	return oc
 }
 
