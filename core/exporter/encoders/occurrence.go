@@ -96,6 +96,7 @@ func (ep *EventPool) Flush(pathPrefix string, clusterID string) (err error) {
 		if err = ep.epw.Append(events); err != nil {
 			return
 		}
+		ep.epw.fw.Sync()
 	}
 	ep.Events = nil
 	ep.LastFlushTime = time.Now()
@@ -134,7 +135,6 @@ func (ep *EventPool) UpdateEventPoolWriter(exportPath string, schema string) (er
 		if err = ep.epw.UpdateOCFWriter(exportPath, schema); err != nil {
 			return
 		}
-		fmt.Println(ep.epw.ocfw)
 	}
 	// sanity check for cached OCF writer
 	if ep.epw.ocfw == nil {
@@ -165,7 +165,7 @@ func (epw *EventPoolWriter) UpdateOCFWriter(exportPath string, schema string) (e
 	if epw.codec == nil {
 		epw.codec, err = goavro.NewCodec(schema)
 		if err != nil {
-			logger.Warn.Println(err)
+			logger.Error.Println(err)
 			return
 		}
 	}
@@ -174,8 +174,6 @@ func (epw *EventPoolWriter) UpdateOCFWriter(exportPath string, schema string) (e
 		Codec:           epw.codec,
 		CompressionName: "snappy",
 	})
-	logger.Warn.Println(epw.ocfw)
-	logger.Warn.Println(err)
 	return
 }
 
