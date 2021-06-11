@@ -78,10 +78,10 @@ func (ep *EventPool) ReachedCapacity(capacity int) bool {
 }
 
 // Flush writes off event slice.
-func (ep *EventPool) Flush(pathPrefix string) (err error) {
+func (ep *EventPool) Flush(pathPrefix string, clusterID string) (err error) {
 	var events []interface{}
 	for _, v := range ep.Events {
-		exportPath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath())
+		exportPath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath(clusterID))
 		if err = ep.UpdateEventPoolWriter(exportPath, v.Schema()); err != nil {
 			return
 		}
@@ -204,9 +204,9 @@ func (e *Event) getExportFileName() string {
 	return e.ContainerID
 }
 
-func (e *Event) getExportFilePath() string {
+func (e *Event) getExportFilePath(clusterID string) string {
 	y, m, d := e.getTimePartitions(e.Ts)
-	return fmt.Sprintf("%s/%d/%d/%d/%s.avro", e.NodeID, y, m, d, e.getExportFileName())
+	return fmt.Sprintf("%s/%s/%d/%d/%d/%s.avro", clusterID, e.NodeID, y, m, d, e.getExportFileName())
 }
 
 // getTimePartitions obtains time partitions from timestamp.
@@ -308,7 +308,7 @@ func (oe *OccurrenceEncoder) addEvent(r *engine.Record) (e *Event, ep *EventPool
 	full := ep.ReachedCapacity(oe.config.FindingsPoolCapacity)
 	aged := ep.Aged(oe.config.FindingsPoolMaxAge)
 	if alert || full || aged {
-		if err := ep.Flush(oe.config.FindingsPath); err != nil {
+		if err := ep.Flush(oe.config.FindingsPath, oe.config.ClusterID); err != nil {
 			logger.Error.Println(err)
 		}
 		if aged {
@@ -372,7 +372,7 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 	oc.ShortDescr = encDetStr
 	oc.LongDescr = fmt.Sprintf(detailsStrFmt, encDetStr, polStr, tagsStr)
 	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, oe.config.FindingsS3Region, oe.config.FindingsS3Bucket,
-		e.getExportFilePath(), oe.config.FindingsS3Region, oe.config.FindingsS3Bucket)
+		e.getExportFilePath(oe.config.ClusterID), oe.config.FindingsS3Region, oe.config.FindingsS3Bucket)
 	return oc
 }
 
