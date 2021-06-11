@@ -206,6 +206,15 @@ func (e *Event) getExportFileName() string {
 
 func (e *Event) getExportFilePath(clusterID string) string {
 	y, m, d := e.getTimePartitions(e.Ts)
+	if clusterID == sfgo.Zeros.String && e.NodeID == sfgo.Zeros.String {
+		return fmt.Sprintf("%d/%d/%d/%s.avro", y, m, d, e.getExportFileName())
+	}
+	if clusterID == sfgo.Zeros.String {
+		return fmt.Sprintf("%s/%d/%d/%d/%s.avro", e.NodeID, y, m, d, e.getExportFileName())
+	}
+	if e.NodeID == sfgo.Zeros.String {
+		return fmt.Sprintf("%s/%d/%d/%d/%s.avro", clusterID, y, m, d, e.getExportFileName())
+	}
 	return fmt.Sprintf("%s/%s/%d/%d/%d/%s.avro", clusterID, e.NodeID, y, m, d, e.getExportFileName())
 }
 
