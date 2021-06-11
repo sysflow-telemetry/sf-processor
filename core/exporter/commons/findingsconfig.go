@@ -66,7 +66,7 @@ func CreateFindingsConfig(bc Config, conf map[string]interface{}) (c FindingsCon
 	// parse config map
 	if v, ok := conf[FindingsApiKeyConfigKey].(string); ok {
 		c.FindingsApiKey = v
-	} else if bc.VaultEnabled {
+	} else if bc.VaultEnabled && bc.Transport == FindingsTransport {
 		s, err := bc.secrets.GetDecoded(FindingsApiKeyConfigKey)
 		if err != nil {
 			return c, err
