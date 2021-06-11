@@ -35,7 +35,7 @@ const (
 	noteIDStrFmt   = "%s-%d"
 	connStrFmt     = "%s:%d-%s:%d"
 
-	sqlQueryStrFmt = "SELECT * FROM cos://%s/%s/%s STORED AS AVRO LIMIT 500"
+	sqlQueryStrFmt = "SELECT * FROM cos://%s/%s/%s STORED AS AVRO LIMIT 500 INTO cos://%s/%s/sql-query"
 
 	listSep = ","
 

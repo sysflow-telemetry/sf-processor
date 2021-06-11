@@ -435,3 +435,6 @@ func extracTags(tags []engine.EnrichmentTag) []string {
 	}
 	return s
 }
+
+// Cleanup cleans up resources.
+func (t *ECSEncoder) Cleanup() {}

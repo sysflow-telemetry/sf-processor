@@ -28,6 +28,7 @@ import (
 type Encoder interface {
 	Register(codecs map[commons.Format]EncoderFactory)
 	Encode(recs []*engine.Record) ([]commons.EncodedData, error)
+	Cleanup()
 }
 
 // EncoderFactory defines a factory type for record encoders.
