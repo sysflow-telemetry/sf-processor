@@ -49,6 +49,7 @@ type Config struct {
 	Version           string
 	JSONSchemaVersion string
 	BuildNumber       string
+	ClusterID         string
 	FileConfig
 	SyslogConfig
 	ESConfig
@@ -95,6 +96,9 @@ func CreateConfig(conf map[string]interface{}) (c Config, err error) {
 	}
 	if v, ok := conf[BuildNumberKey].(string); ok {
 		c.BuildNumber = v
+	}
+	if v, ok := conf[ClusterIDKey].(string); ok {
+		c.ClusterID = v
 	}
 
 	// parse specialized configs
