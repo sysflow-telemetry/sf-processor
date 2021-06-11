@@ -64,7 +64,7 @@ func CreateElasticConfig(bc Config, conf map[string]interface{}) (c ESConfig, er
 	}
 	if v, ok := conf[ESUsernameConfigKey].(string); ok {
 		c.ESUsername = v
-	} else if bc.VaultEnabled {
+	} else if bc.VaultEnabled && bc.Transport == ESTransport {
 		s, err := bc.secrets.GetDecoded(ESUsernameConfigKey)
 		if err != nil {
 			return c, err
@@ -73,7 +73,7 @@ func CreateElasticConfig(bc Config, conf map[string]interface{}) (c ESConfig, er
 	}
 	if v, ok := conf[ESPasswordConfigKey].(string); ok {
 		c.ESPassword = v
-	} else if bc.VaultEnabled {
+	} else if bc.VaultEnabled && bc.Transport == ESTransport {
 		s, err := bc.secrets.GetDecoded(ESPasswordConfigKey)
 		if err != nil {
 			return c, err
