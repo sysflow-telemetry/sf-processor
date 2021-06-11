@@ -20,6 +20,8 @@
 package encoders
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"hash"
 	"os"
@@ -27,8 +29,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/actgardner/gogen-avro/v7/container"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
+
 	"github.com/cespare/xxhash"
+	"github.com/linkedin/goavro"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/steakknife/bloomfilter"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
@@ -46,6 +50,7 @@ type EventPool struct {
 	RuleTypes     *utils.Set
 	TopSeverity   Severity
 	LastFlushTime time.Time
+	epw           *EventPoolWriter
 }
 
 // NewEventPool creates a new EventPool instace.
@@ -74,34 +79,26 @@ func (ep *EventPool) ReachedCapacity(capacity int) bool {
 
 // Flush writes off event slice.
 func (ep *EventPool) Flush(pathPrefix string) (err error) {
-	var currentExportPath string
-	var fw *os.File
-	var cw *container.Writer
+	var events []interface{}
 	for _, v := range ep.Events {
-		filepath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath())
-		if filepath != currentExportPath {
-			currentExportPath = filepath
-			dir := path.Dir(currentExportPath)
-			if _, err := os.Stat(dir); os.IsNotExist(err) {
-				os.MkdirAll(dir, 0755)
-			}
-			if fw, err = os.OpenFile(currentExportPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err == nil {
-				cw, err = event.NewEventWriter(fw, container.Snappy, eventsBlockSize)
-			}
-		}
-		if err != nil {
+		exportPath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath())
+		if err = ep.UpdateEventPoolWriter(exportPath, v.Schema()); err != nil {
 			return
 		}
-		if err = cw.WriteRecord(v); err != nil {
-			return
-		}
+		var m map[string]interface{}
+		logger.Warn.Println(v)
+		s, _ := json.Marshal(v.Event)
+		json.Unmarshal(s, &m)
+		logger.Warn.Println(m)
+		events = append(events, m)
 	}
-	if cw != nil && cw.Flush() != nil {
-		return
+	if len(events) > 0 && ep.epw != nil {
+		if err = ep.epw.Append(events); err != nil {
+			return
+		}
 	}
 	ep.Events = nil
 	ep.LastFlushTime = time.Now()
-	fw.Close()
 	return
 }
 
@@ -119,6 +116,80 @@ func (ep *EventPool) Reset() (err error) {
 	return
 }
 
+// UpdateEventPoolWriter updates the EventPoolWriter for exportPath.
+// It reuses the current EventPoolWriter if already point to the given exportPath.
+// Otherwise, it creates a new OCF writer and the export directory structure if not present.
+func (ep *EventPool) UpdateEventPoolWriter(exportPath string, schema string) (err error) {
+	if ep.epw == nil {
+		ep.epw = new(EventPoolWriter)
+	}
+	if exportPath != ep.epw.currentExportPath {
+		dir := path.Dir(exportPath)
+		if _, err = os.Stat(dir); os.IsNotExist(err) {
+			err = os.MkdirAll(dir, 0755)
+			if err != nil {
+				return
+			}
+		}
+		if err = ep.epw.UpdateOCFWriter(exportPath, schema); err != nil {
+			return
+		}
+		fmt.Println(ep.epw.ocfw)
+	}
+	// sanity check for cached OCF writer
+	if ep.epw.ocfw == nil {
+		return errors.New("EventPoolWriter's OCF file writer should not be null")
+	}
+	return
+}
+
+// EventPoolWriter is an EventPool writer.
+type EventPoolWriter struct {
+	currentExportPath string
+	fw                *os.File
+	codec             *goavro.Codec
+	ocfw              *goavro.OCFWriter
+}
+
+// UpdateOCFWriter creates a new OCF writer.
+func (epw *EventPoolWriter) UpdateOCFWriter(exportPath string, schema string) (err error) {
+	// close the current file writer before creating a new one
+	if epw.fw != nil {
+		epw.fw.Close()
+	}
+	epw.currentExportPath = exportPath
+	epw.fw, err = os.OpenFile(epw.currentExportPath, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return
+	}
+	if epw.codec == nil {
+		epw.codec, err = goavro.NewCodec(schema)
+		if err != nil {
+			logger.Warn.Println(err)
+			return
+		}
+	}
+	epw.ocfw, err = goavro.NewOCFWriter(goavro.OCFConfig{
+		W:               epw.fw,
+		Codec:           epw.codec,
+		CompressionName: "snappy",
+	})
+	logger.Warn.Println(epw.ocfw)
+	logger.Warn.Println(err)
+	return
+}
+
+func (epw *EventPoolWriter) Append(events []interface{}) error {
+	if epw.ocfw != nil {
+		return epw.ocfw.Append(events)
+	}
+	return errors.New("Trying to append events using a null OCF file writer reference")
+}
+
+func (epw *EventPoolWriter) Cleanup() error {
+	return epw.fw.Close()
+}
+
 // Event is an event associated with an occurrence, used as context for the occurrence.
 type Event struct {
 	*event.Event
@@ -126,20 +197,20 @@ type Event struct {
 }
 
 // getExportFileName returns the name of the file where the event should be exported.
-func (e Event) getExportFileName() string {
+func (e *Event) getExportFileName() string {
 	if e.ContainerID == sfgo.Zeros.String {
 		return hostFileName
 	}
 	return e.ContainerID
 }
 
-func (e Event) getExportFilePath() string {
+func (e *Event) getExportFilePath() string {
 	y, m, d := e.getTimePartitions(e.Ts)
-	return fmt.Sprintf("%s/%d/%d/%d/%s", e.NodeID, y, m, d, e.getExportFileName())
+	return fmt.Sprintf("%s/%d/%d/%d/%s.avro", e.NodeID, y, m, d, e.getExportFileName())
 }
 
 // getTimePartitions obtains time partitions from timestamp.
-func (e Event) getTimePartitions(ts int64) (year int, month int, day int) {
+func (e *Event) getTimePartitions(ts int64) (year int, month int, day int) {
 	timeStamp := time.Unix(0, ts)
 	return timeStamp.Year(), int(timeStamp.Month()), timeStamp.Day()
 }
@@ -237,7 +308,9 @@ func (oe *OccurrenceEncoder) addEvent(r *engine.Record) (e *Event, ep *EventPool
 	full := ep.ReachedCapacity(oe.config.FindingsPoolCapacity)
 	aged := ep.Aged(oe.config.FindingsPoolMaxAge)
 	if alert || full || aged {
-		ep.Flush(oe.config.FindingsPath)
+		if err := ep.Flush(oe.config.FindingsPath); err != nil {
+			logger.Error.Println(err)
+		}
 		if aged {
 			ep.Reset()
 		}
@@ -298,7 +371,8 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 	encDetStr := strings.ReplaceAll(detStr, "/", fwdSlash)
 	oc.ShortDescr = encDetStr
 	oc.LongDescr = fmt.Sprintf(detailsStrFmt, encDetStr, polStr, tagsStr)
-	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, oe.config.FindingsS3Region, oe.config.FindingsS3Bucket, e.getExportFilePath())
+	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, oe.config.FindingsS3Region, oe.config.FindingsS3Bucket,
+		e.getExportFilePath(), oe.config.FindingsS3Region, oe.config.FindingsS3Bucket)
 	return oc
 }
 
@@ -331,10 +405,12 @@ func (oe *OccurrenceEncoder) encodeEvent(r *engine.Record) *Event {
 	e.RecordType = engine.Mapper.MapStr(engine.SF_TYPE)(r)
 	e.OpFlags = engine.Mapper.MapStr(engine.SF_OPFLAGS)(r)
 	e.PProcCmd = engine.Mapper.MapStr(engine.SF_PPROC_CMDLINE)(r)
+	e.PProcPID = engine.Mapper.MapInt(engine.SF_PPROC_PID)(r)
 	e.ProcCmd = engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(r)
+	e.ProcPID = engine.Mapper.MapInt(engine.SF_PROC_PID)(r)
 	e.Resource = oe.formatResource(r)
 	e.Tags = strings.Join(tags, listSep)
-	e.Trace = ""
+	e.Trace = engine.Mapper.MapStr(engine.SF_TRACENAME)(r)
 	return e
 }
 
@@ -362,4 +438,12 @@ func (oe *OccurrenceEncoder) semanticHash(r *engine.Record) hash.Hash64 {
 	h.Write([]byte(engine.Mapper.MapStr(engine.SF_OPFLAGS)(r)))
 	h.Write([]byte(engine.Mapper.MapStr(engine.SF_PROC_TTY)(r)))
 	return h
+}
+
+// Cleanup cleans up resources.
+func (oe *OccurrenceEncoder) Cleanup() {
+	for _, v := range oe.exportCache.Items() {
+		ep := v.(*EventPool)
+		ep.epw.Cleanup()
+	}
 }

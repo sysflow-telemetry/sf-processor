@@ -611,3 +611,6 @@ func stringNoQuotes(s string, w *jwriter.Writer) {
 	}
 	w.Buffer.AppendString(s[p:])
 }
+
+// Cleanup cleans up resources.
+func (t *JSONEncoder) Cleanup() {}
