@@ -43,7 +43,7 @@ require (
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
 	github.com/stretchr/testify v1.7.0
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210611144839-23730a1c6705
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210611191016-bbdbd17a2eaf
 )
 
 //replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go
