@@ -184,7 +184,8 @@ func (p *PluginCache) getEnv(proc string) map[string]string {
 		pair := strings.SplitN(e, "=", 2)
 		key := strings.SplitN(strings.ToLower(pair[0]), "_", 2)
 		if len(key) == 2 && key[0] == proc {
-			conf[key[1]] = pair[1]
+			attr := strings.ReplaceAll(key[1], "_", ".")
+			conf[attr] = pair[1]
 		}
 	}
 	return conf
