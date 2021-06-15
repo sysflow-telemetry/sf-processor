@@ -277,7 +277,7 @@ func getExportedMappers() map[string]*FieldEntry {
 		SF_NODE_ID:              &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_EXPORTER_STR), FlatIndex: sfgo.SFHE_EXPORTER_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectNode},
 		SF_NODE_IP:              &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_IP_STR), FlatIndex: sfgo.SFHE_IP_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectNode},
 		SF_SCHEMA_VERSION:       &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.SFHE_VERSION_INT), FlatIndex: sfgo.SFHE_VERSION_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectMeta},
-		SF_TRACENAME:           &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_FILENAME_STR), FlatIndex: sfgo.SFHE_FILENAME_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectMeta},
+		SF_TRACENAME:            &FieldEntry{Map: mapName(sfgo.SYSFLOW_SRC, sfgo.SFHE_FILENAME_STR), FlatIndex: sfgo.SFHE_FILENAME_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectMeta},
 	}
 }
 
@@ -362,17 +362,17 @@ func getNonExportedMappers() map[string]*FieldEntry {
 		FALCO_EVT_TYPE:          &FieldEntry{Map: mapOpFlags(sfgo.SYSFLOW_SRC)},
 		FALCO_EVT_RAW_RES:       &FieldEntry{Map: mapRecType(sfgo.SYSFLOW_SRC)},
 		FALCO_EVT_RAW_TIME:      &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.TS_INT)},
-		FALCO_EVT_DIR:           &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT)},
+		FALCO_EVT_DIR:           &FieldEntry{Map: mapConsts(FALCO_ENTER_EVENT, FALCO_EXIT_EVENT)},
 		FALCO_EVT_IS_OPEN_READ:  &FieldEntry{Map: mapIsOpenRead(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT)},
 		FALCO_EVT_IS_OPEN_WRITE: &FieldEntry{Map: mapIsOpenWrite(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT)},
 		FALCO_EVT_UID:           &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_UID_INT)},
 		FALCO_FD_TYPECHAR:       &FieldEntry{Map: mapFileType(sfgo.SYSFLOW_SRC, sfgo.FILE_RESTYPE_INT)},
-		FALCO_FD_DIRECTORY:      &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT)},
-		FALCO_FD_NAME:           &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT)},
-		FALCO_FD_FILENAME:       &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT)},
-		FALCO_FD_PROTO:          &FieldEntry{Map: mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR)},
-		FALCO_FD_LPROTO:         &FieldEntry{Map: mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR)},
-		FALCO_FD_L4PROTO:        &FieldEntry{Map: mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR)},
+		FALCO_FD_DIRECTORY:      &FieldEntry{Map: mapDir(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR)},
+		FALCO_FD_NAME:           &FieldEntry{Map: mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR)},
+		FALCO_FD_FILENAME:       &FieldEntry{Map: mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR)},
+		FALCO_FD_PROTO:          &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT)},
+		FALCO_FD_LPROTO:         &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT)},
+		FALCO_FD_L4PROTO:        &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT)},
 		FALCO_FD_RPROTO:         &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT)},
 		FALCO_FD_SPROTO:         &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT)},
 		FALCO_FD_CPROTO:         &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT)},
@@ -578,7 +578,6 @@ func mapPort(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 		for _, attr := range attrs {
 			ports = append(ports, strconv.FormatInt(r.GetInt(attr, src), 10))
 		}
-		// logger.Info.Println(ports)
 		return strings.Join(ports, LISTSEP)
 	}
 }
@@ -589,7 +588,6 @@ func mapIP(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 		for _, attr := range attrs {
 			ips = append(ips, sfgo.GetIPStr(int32(r.GetInt(attr, src))))
 		}
-		// logger.Info.Println(ips)
 		return strings.Join(ips, LISTSEP)
 	}
 }

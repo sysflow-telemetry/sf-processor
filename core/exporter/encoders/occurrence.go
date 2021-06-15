@@ -78,10 +78,10 @@ func (ep *EventPool) ReachedCapacity(capacity int) bool {
 }
 
 // Flush writes off event slice.
-func (ep *EventPool) Flush(pathPrefix string) (err error) {
+func (ep *EventPool) Flush(pathPrefix string, clusterID string) (err error) {
 	var events []interface{}
 	for _, v := range ep.Events {
-		exportPath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath())
+		exportPath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath(clusterID))
 		if err = ep.UpdateEventPoolWriter(exportPath, v.Schema()); err != nil {
 			return
 		}
@@ -96,6 +96,7 @@ func (ep *EventPool) Flush(pathPrefix string) (err error) {
 		if err = ep.epw.Append(events); err != nil {
 			return
 		}
+		ep.epw.fw.Sync()
 	}
 	ep.Events = nil
 	ep.LastFlushTime = time.Now()
@@ -134,7 +135,6 @@ func (ep *EventPool) UpdateEventPoolWriter(exportPath string, schema string) (er
 		if err = ep.epw.UpdateOCFWriter(exportPath, schema); err != nil {
 			return
 		}
-		fmt.Println(ep.epw.ocfw)
 	}
 	// sanity check for cached OCF writer
 	if ep.epw.ocfw == nil {
@@ -165,7 +165,7 @@ func (epw *EventPoolWriter) UpdateOCFWriter(exportPath string, schema string) (e
 	if epw.codec == nil {
 		epw.codec, err = goavro.NewCodec(schema)
 		if err != nil {
-			logger.Warn.Println(err)
+			logger.Error.Println(err)
 			return
 		}
 	}
@@ -174,8 +174,6 @@ func (epw *EventPoolWriter) UpdateOCFWriter(exportPath string, schema string) (e
 		Codec:           epw.codec,
 		CompressionName: "snappy",
 	})
-	logger.Warn.Println(epw.ocfw)
-	logger.Warn.Println(err)
 	return
 }
 
@@ -204,14 +202,23 @@ func (e *Event) getExportFileName() string {
 	return e.ContainerID
 }
 
-func (e *Event) getExportFilePath() string {
-	y, m, d := e.getTimePartitions(e.Ts)
-	return fmt.Sprintf("%s/%d/%d/%d/%s.avro", e.NodeID, y, m, d, e.getExportFileName())
+func (e *Event) getExportFilePath(clusterID string) string {
+	y, m, d := e.getTimePartitions()
+	if clusterID == sfgo.Zeros.String && e.NodeID == sfgo.Zeros.String {
+		return fmt.Sprintf("%d/%d/%d/%s.avro", y, m, d, e.getExportFileName())
+	}
+	if clusterID == sfgo.Zeros.String {
+		return fmt.Sprintf("%s/%d/%d/%d/%s.avro", e.NodeID, y, m, d, e.getExportFileName())
+	}
+	if e.NodeID == sfgo.Zeros.String {
+		return fmt.Sprintf("%s/%d/%d/%d/%s.avro", clusterID, y, m, d, e.getExportFileName())
+	}
+	return fmt.Sprintf("%s/%s/%d/%d/%d/%s.avro", clusterID, e.NodeID, y, m, d, e.getExportFileName())
 }
 
 // getTimePartitions obtains time partitions from timestamp.
-func (e *Event) getTimePartitions(ts int64) (year int, month int, day int) {
-	timeStamp := time.Unix(0, ts)
+func (e *Event) getTimePartitions() (year int, month int, day int) {
+	timeStamp := time.Unix(0, e.Ts)
 	return timeStamp.Year(), int(timeStamp.Month()), timeStamp.Day()
 }
 
@@ -308,7 +315,7 @@ func (oe *OccurrenceEncoder) addEvent(r *engine.Record) (e *Event, ep *EventPool
 	full := ep.ReachedCapacity(oe.config.FindingsPoolCapacity)
 	aged := ep.Aged(oe.config.FindingsPoolMaxAge)
 	if alert || full || aged {
-		if err := ep.Flush(oe.config.FindingsPath); err != nil {
+		if err := ep.Flush(oe.config.FindingsPath, oe.config.ClusterID); err != nil {
 			logger.Error.Println(err)
 		}
 		if aged {
@@ -372,7 +379,7 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 	oc.ShortDescr = encDetStr
 	oc.LongDescr = fmt.Sprintf(detailsStrFmt, encDetStr, polStr, tagsStr)
 	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, oe.config.FindingsS3Region, oe.config.FindingsS3Bucket,
-		e.getExportFilePath(), oe.config.FindingsS3Region, oe.config.FindingsS3Bucket)
+		e.getExportFilePath(oe.config.ClusterID), oe.config.FindingsS3Region, oe.config.FindingsS3Bucket)
 	return oc
 }
 
@@ -400,7 +407,9 @@ func (oe *OccurrenceEncoder) encodeEvent(r *engine.Record) *Event {
 	e.Ts = engine.Mapper.MapInt(engine.SF_TS)(r)
 	e.Description = strings.Join(rnames, listSep)
 	e.Severity = severity.String()
+	e.ClusterID = oe.config.ClusterID
 	e.NodeID = engine.Mapper.MapStr(engine.SF_NODE_ID)(r)
+	e.NodeIP = engine.Mapper.MapStr(engine.SF_NODE_IP)(r)
 	e.ContainerID = engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(r)
 	e.RecordType = engine.Mapper.MapStr(engine.SF_TYPE)(r)
 	e.OpFlags = engine.Mapper.MapStr(engine.SF_OPFLAGS)(r)

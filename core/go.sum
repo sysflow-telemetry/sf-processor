@@ -213,6 +213,10 @@ github.com/syndtr/gocapability v0.0.0-20170704070218-db04d3cc01c8/go.mod h1:hkRG
 github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210524150929-c27c596c3781 h1:3CqAxZas++A8apj1ACUy7IsHt8A88CcRrBiaVF7lxzs=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210524150929-c27c596c3781/go.mod h1:3rICv2GmRq0ZCX9L0pYz8N0ItX/nbuALRotBWOOS4Gw=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210611144839-23730a1c6705 h1:Hwz3tNXacPCcGsQEHXabrmiEpMGseKDSH4huFwoL3yA=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210611144839-23730a1c6705/go.mod h1:3rICv2GmRq0ZCX9L0pYz8N0ItX/nbuALRotBWOOS4Gw=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210611191016-bbdbd17a2eaf h1:FD0V/q8vPyOLyFYD/jtZNrz/PVhZG121wrbAz8tmudc=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210611191016-bbdbd17a2eaf/go.mod h1:3rICv2GmRq0ZCX9L0pYz8N0ItX/nbuALRotBWOOS4Gw=
 github.com/tchap/go-patricia v2.3.0+incompatible/go.mod h1:bmLyhP68RS6kStMGxByiQ23RP/odRBOTVjwp2cDyi6I=
 github.com/tidwall/pretty v1.0.0 h1:HsD+QiTn7sK6flMKIvNmpqz1qrpP3Ps6jOKIKMooyg4=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
