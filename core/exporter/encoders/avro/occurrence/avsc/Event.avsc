@@ -12,7 +12,13 @@
     "name" : "severity",
     "type" : "string"
   }, {
+    "name" : "clusterID",
+    "type" : "string"
+  }, {
     "name" : "nodeID",
+    "type" : "string"
+  }, {
+    "name" : "nodeIP",
     "type" : "string"
   }, {
     "name" : "containerID",

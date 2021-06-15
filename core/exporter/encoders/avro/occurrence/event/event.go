@@ -19,7 +19,11 @@ type Event struct {
 
 	Severity string `json:"severity"`
 
+	ClusterID string `json:"clusterID"`
+
 	NodeID string `json:"nodeID"`
+
+	NodeIP string `json:"nodeIP"`
 
 	ContainerID string `json:"containerID"`
 
@@ -42,7 +46,7 @@ type Event struct {
 	Trace string `json:"Trace"`
 }
 
-const EventAvroCRC64Fingerprint = "zd\xc9N$\x96X\xef"
+const EventAvroCRC64Fingerprint = "\f\xa9\xfe\x11\x8aaM\xca"
 
 func NewEvent() *Event {
 	return &Event{}
@@ -91,7 +95,15 @@ func writeEvent(r *Event, w io.Writer) error {
 	if err != nil {
 		return err
 	}
+	err = vm.WriteString(r.ClusterID, w)
+	if err != nil {
+		return err
+	}
 	err = vm.WriteString(r.NodeID, w)
+	if err != nil {
+		return err
+	}
+	err = vm.WriteString(r.NodeIP, w)
 	if err != nil {
 		return err
 	}
@@ -143,7 +155,7 @@ func (r *Event) Serialize(w io.Writer) error {
 }
 
 func (r *Event) Schema() string {
-	return "{\"fields\":[{\"name\":\"ts\",\"type\":\"long\"},{\"name\":\"description\",\"type\":\"string\"},{\"name\":\"severity\",\"type\":\"string\"},{\"name\":\"nodeID\",\"type\":\"string\"},{\"name\":\"containerID\",\"type\":\"string\"},{\"name\":\"recordType\",\"type\":\"string\"},{\"name\":\"opFlags\",\"type\":\"string\"},{\"name\":\"pProcCmd\",\"type\":\"string\"},{\"name\":\"pProcPID\",\"type\":\"long\"},{\"name\":\"procCmd\",\"type\":\"string\"},{\"name\":\"procPID\",\"type\":\"long\"},{\"name\":\"Resource\",\"type\":\"string\"},{\"name\":\"Tags\",\"type\":\"string\"},{\"name\":\"Trace\",\"type\":\"string\"}],\"name\":\"event.Event\",\"type\":\"record\"}"
+	return "{\"fields\":[{\"name\":\"ts\",\"type\":\"long\"},{\"name\":\"description\",\"type\":\"string\"},{\"name\":\"severity\",\"type\":\"string\"},{\"name\":\"clusterID\",\"type\":\"string\"},{\"name\":\"nodeID\",\"type\":\"string\"},{\"name\":\"nodeIP\",\"type\":\"string\"},{\"name\":\"containerID\",\"type\":\"string\"},{\"name\":\"recordType\",\"type\":\"string\"},{\"name\":\"opFlags\",\"type\":\"string\"},{\"name\":\"pProcCmd\",\"type\":\"string\"},{\"name\":\"pProcPID\",\"type\":\"long\"},{\"name\":\"procCmd\",\"type\":\"string\"},{\"name\":\"procPID\",\"type\":\"long\"},{\"name\":\"Resource\",\"type\":\"string\"},{\"name\":\"Tags\",\"type\":\"string\"},{\"name\":\"Trace\",\"type\":\"string\"}],\"name\":\"event.Event\",\"type\":\"record\"}"
 }
 
 func (r *Event) SchemaName() string {
@@ -168,26 +180,30 @@ func (r *Event) Get(i int) types.Field {
 	case 2:
 		return &types.String{Target: &r.Severity}
 	case 3:
-		return &types.String{Target: &r.NodeID}
+		return &types.String{Target: &r.ClusterID}
 	case 4:
-		return &types.String{Target: &r.ContainerID}
+		return &types.String{Target: &r.NodeID}
 	case 5:
-		return &types.String{Target: &r.RecordType}
+		return &types.String{Target: &r.NodeIP}
 	case 6:
-		return &types.String{Target: &r.OpFlags}
+		return &types.String{Target: &r.ContainerID}
 	case 7:
-		return &types.String{Target: &r.PProcCmd}
+		return &types.String{Target: &r.RecordType}
 	case 8:
-		return &types.Long{Target: &r.PProcPID}
+		return &types.String{Target: &r.OpFlags}
 	case 9:
-		return &types.String{Target: &r.ProcCmd}
+		return &types.String{Target: &r.PProcCmd}
 	case 10:
-		return &types.Long{Target: &r.ProcPID}
+		return &types.Long{Target: &r.PProcPID}
 	case 11:
-		return &types.String{Target: &r.Resource}
+		return &types.String{Target: &r.ProcCmd}
 	case 12:
-		return &types.String{Target: &r.Tags}
+		return &types.Long{Target: &r.ProcPID}
 	case 13:
+		return &types.String{Target: &r.Resource}
+	case 14:
+		return &types.String{Target: &r.Tags}
+	case 15:
 		return &types.String{Target: &r.Trace}
 	}
 	panic("Unknown field index")
