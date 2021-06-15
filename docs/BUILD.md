@@ -32,7 +32,7 @@ Build with docker
 
 ```bash
 cd sf-processor
-make build-docker
+make docker-build
 ```
 
 ## Usage
@@ -41,7 +41,7 @@ For usage information, type:
 
 ```bash
 cd driver/
-./sf-processor -help
+./sfprocessor -help
 ```
 
 This should yield the follwowing usage statement:
