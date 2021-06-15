@@ -27,15 +27,16 @@ import (
 
 // Configuration keys.
 const (
-	TransportConfigKey    string = "export"
-	FormatConfigKey       string = "format"
-	VaultEnabledConfigKey string = "vault.secrets"
-	VaultPathConfigKey    string = "vault.path"
-	EventBufferConfigKey  string = "buffer"
-	VersionKey            string = "version"
-	JSONSchemaVersionKey  string = "jsonschemaversion"
-	BuildNumberKey        string = "buildnumber"
-	ClusterIDKey          string = "cluster.id"
+	TransportConfigKey     string = "export"
+	FormatConfigKey        string = "format"
+	VaultEnabledConfigKey  string = "vault.secrets"
+	VaultPathConfigKey     string = "vault.path"
+	VaultEncodingConfigKey string = "vault.encoding"
+	EventBufferConfigKey   string = "buffer"
+	VersionKey             string = "version"
+	JSONSchemaVersionKey   string = "jsonschemaversion"
+	BuildNumberKey         string = "buildnumber"
+	ClusterIDKey           string = "cluster.id"
 )
 
 // Config defines a configuration object for the exporter.
@@ -45,10 +46,12 @@ type Config struct {
 	EventBuffer       int
 	VaultEnabled      bool
 	VaultMountPath    string
+	VaultEncoding     VaultEncoding
 	secrets           *secrets.Secrets
 	Version           string
 	JSONSchemaVersion string
 	BuildNumber       string
+	ClusterID         string
 	FileConfig
 	SyslogConfig
 	ESConfig
@@ -62,6 +65,9 @@ func CreateConfig(conf map[string]interface{}) (c Config, err error) {
 	// wrapper for reading from secrets vault
 	if v, ok := conf[VaultEnabledConfigKey].(string); ok && v == "true" {
 		c.VaultEnabled = true
+		if e, ok := conf[VaultEncodingConfigKey].(string); ok {
+			c.VaultEncoding = parseVaultEncodingConfig(e)
+		}
 		var s *secrets.Secrets
 		if p, ok := conf[VaultPathConfigKey].(string); ok {
 			s, err = secrets.NewSecretsWithCustomPath(p)
@@ -95,6 +101,9 @@ func CreateConfig(conf map[string]interface{}) (c Config, err error) {
 	}
 	if v, ok := conf[BuildNumberKey].(string); ok {
 		c.BuildNumber = v
+	}
+	if v, ok := conf[ClusterIDKey].(string); ok {
+		c.ClusterID = v
 	}
 
 	// parse specialized configs
@@ -201,4 +210,31 @@ func parseProtoConfig(s string) Proto {
 		return UDPProto
 	}
 	return TCPProto
+}
+
+// VaultEncoding type.
+type VaultEncoding int
+
+// VaultEncoding config options.
+const (
+	NoneVaultEncoding VaultEncoding = iota
+	Base64VaultEncoding
+)
+
+func (s VaultEncoding) String() string {
+	return [...]string{"none", "base64"}[s]
+}
+
+func parseVaultEncodingConfig(s string) VaultEncoding {
+	if NoneVaultEncoding.String() == s {
+		return NoneVaultEncoding
+	}
+	if Base64VaultEncoding.String() == s {
+		return Base64VaultEncoding
+	}
+	return NoneVaultEncoding
+}
+
+func (c Config) GetSecret(key string) (string, error) {
+	return [...]func(string) (string, error){c.secrets.Get, c.secrets.GetDecoded}[c.VaultEncoding](key)
 }

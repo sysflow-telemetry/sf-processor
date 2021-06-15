@@ -65,10 +65,13 @@ func main() {
 	logLevel := flag.String("log", "info", "Log level {trace|info|warn|error}")
 	driverDir := flag.String("driverdir", pipeline.DriverDir, "Dynamic driver directory")
 	pluginDir := flag.String("plugdir", pipeline.PluginDir, "Dynamic plugins directory")
-	version := flag.Bool("version", false, "Outputs version information")
+	test := flag.Bool("test", false, "Test pipeline configuration")
+	version := flag.Bool("version", false, "Output version information")
 
 	flag.Usage = func() {
-		fmt.Println("Usage: sfprocessor [[-version]|[-driver <value>] [-log <value>] [-driverdir <value>] [-plugdir <value>] path]")
+		fmt.Println(`Usage: sfprocessor [-version
+		   |-test [-log <value>] [-config <value>] [-driverdir <value>] [-plugdir <value>]]
+		   |[-driver <value>] [-log <value>] [-config <value>] [-driverdir <value>] [-plugdir <value>] [-cpuprofile <value>] [-memprofile <value>] [-traceprofile <value>] path]`)
 		fmt.Println()
 		fmt.Println("Positional arguments:")
 		fmt.Println("  path string\n\tInput path")
@@ -80,7 +83,7 @@ func main() {
 
 	// parse args and validate positional args
 	flag.Parse()
-	if !*version && flag.NArg() < 1 {
+	if !*version && !*test && flag.NArg() < 1 {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -93,9 +96,6 @@ func main() {
 		fmt.Printf("Version: %s+%s, Avro Schema Version: %v, Export Schema Version: %v\n", manifest.Version, manifest.BuildNumber, schemaVersion, manifest.JSONSchemaVersion)
 		os.Exit(0)
 	}
-
-	// retrieve positional args
-	path := flag.Arg(0)
 
 	// initialize logger
 	logger.InitLoggers(logger.GetLogLevelFromValue(*logLevel))
@@ -139,6 +139,15 @@ func main() {
 
 	// log summary of loaded pipeline
 	pl.Print()
+
+	// Exits if testing configuration.
+	if *test {
+		logger.Info.Println("Successfully loaded pipeline configuration")
+		os.Exit(1)
+	}
+
+	// retrieve positional args
+	path := flag.Arg(0)
 
 	// initialize the pipeline
 	err = pl.Init(path)
