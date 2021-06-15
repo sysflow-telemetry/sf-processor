@@ -203,7 +203,7 @@ func (e *Event) getExportFileName() string {
 }
 
 func (e *Event) getExportFilePath(clusterID string) string {
-	y, m, d := e.getTimePartitions(e.Ts)
+	y, m, d := e.getTimePartitions()
 	if clusterID == sfgo.Zeros.String && e.NodeID == sfgo.Zeros.String {
 		return fmt.Sprintf("%d/%d/%d/%s.avro", y, m, d, e.getExportFileName())
 	}
@@ -217,8 +217,8 @@ func (e *Event) getExportFilePath(clusterID string) string {
 }
 
 // getTimePartitions obtains time partitions from timestamp.
-func (e *Event) getTimePartitions(ts int64) (year int, month int, day int) {
-	timeStamp := time.Unix(0, ts)
+func (e *Event) getTimePartitions() (year int, month int, day int) {
+	timeStamp := time.Unix(0, e.Ts)
 	return timeStamp.Year(), int(timeStamp.Month()), timeStamp.Day()
 }
 
@@ -407,7 +407,9 @@ func (oe *OccurrenceEncoder) encodeEvent(r *engine.Record) *Event {
 	e.Ts = engine.Mapper.MapInt(engine.SF_TS)(r)
 	e.Description = strings.Join(rnames, listSep)
 	e.Severity = severity.String()
+	e.ClusterID = oe.config.ClusterID
 	e.NodeID = engine.Mapper.MapStr(engine.SF_NODE_ID)(r)
+	e.NodeIP = engine.Mapper.MapStr(engine.SF_NODE_IP)(r)
 	e.ContainerID = engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(r)
 	e.RecordType = engine.Mapper.MapStr(engine.SF_TYPE)(r)
 	e.OpFlags = engine.Mapper.MapStr(engine.SF_OPFLAGS)(r)

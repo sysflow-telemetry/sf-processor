@@ -22,7 +22,9 @@ record Event {
   long ts;
   string description;
   string severity;
+  string clusterID;
   string nodeID;
+  string nodeIP;
   string containerID;
   string recordType;
   string opFlags;
