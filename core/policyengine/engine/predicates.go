@@ -163,7 +163,7 @@ func In(attr string, list []string) Criterion {
 	m := Mapper.MapStr(attr)
 	p := func(r *Record) bool {
 		for _, v := range list {
-			if eval(m(r), v, ops.eq) {
+			if eval(m(r), trimBoundingQuotes(v), ops.eq) {
 				return true
 			}
 		}
@@ -177,7 +177,7 @@ func PMatch(attr string, list []string) Criterion {
 	m := Mapper.MapStr(attr)
 	p := func(r *Record) bool {
 		for _, v := range list {
-			if eval(m(r), v, ops.contains) {
+			if eval(m(r), trimBoundingQuotes(v), ops.contains) {
 				return true
 			}
 		}
