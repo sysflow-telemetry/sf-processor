@@ -39,7 +39,7 @@ var filters = make([]Filter, 0)
 var lists = make(map[string][]string)
 var macroCtxs = make(map[string]parser.IExpressionContext)
 
-// Regular expression for pasting lists.
+// Regular expression for parsing lists.
 var itemsre = regexp.MustCompile(`(^\[)(.*)(\]$?)`)
 
 // PolicyInterpreter defines a rules engine for SysFlow data streams.
@@ -338,7 +338,7 @@ func (listener *sfplListener) reduceList(sl string) []string {
 			s = append(s, listener.reduceList(v)...)
 		}
 	} else {
-		s = append(s, sl)
+		s = append(s, trimBoundingQuotes(sl))
 	}
 	return s
 }
