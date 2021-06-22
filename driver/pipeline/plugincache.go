@@ -123,11 +123,6 @@ func (p *PluginCache) AddProcessor(name string, factory interface{}) {
 	p.procFuncMap[name] = factory
 }
 
-/*// AddHandler adds a handler factory method to the plugin cache.
-func (p *PluginCache) AddHandler(name string, factory interface{}) {
-	p.hdlFuncMap[name] = factory
-}*/
-
 // AddChannel adds a channel factory method to the plugin cache.
 func (p *PluginCache) AddChannel(name string, factory interface{}) {
 	p.chanFuncMap[name] = factory
@@ -190,15 +185,6 @@ func (p *PluginCache) getEnv(proc string) map[string]string {
 	}
 	return conf
 }
-
-/*// GetHandler retrieves a cached plugin handler by name.
-func (p *PluginCache) GetHandler(name string) (plugins.SFHandler, error) {
-	if val, ok := p.hdlFuncMap[name]; ok {
-		funct := val.(func() plugins.SFHandler)
-		return funct(), nil
-	}
-	return nil, fmt.Errorf("Handler '%s' not found in plugin cache", name)
-}*/
 
 // GetChan retrieves a cached plugin channel by name.
 func (p *PluginCache) GetChan(ch string, size int) (interface{}, error) {
