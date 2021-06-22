@@ -140,9 +140,11 @@ func main() {
 	// log summary of loaded pipeline
 	pl.Print()
 
-	// Exits if testing configuration.
+	// log success status for pipeline configuration
+	logger.Info.Println("Successfully loaded pipeline configuration")
+
+	// exit if testing configuration
 	if *test {
-		logger.Info.Println("Successfully loaded pipeline configuration")
 		os.Exit(1)
 	}
 

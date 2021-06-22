@@ -89,10 +89,6 @@ func (pl *Pipeline) Load(driverName string) error {
 		logger.Error.Println("Unable to load dynamic driver: ", err)
 		return err
 	}
-	/*if err := pl.pluginCache.LoadPlugins(pl.pluginDir, conf); err != nil {
-		logger.Error.Println("Unable to load dynamic plugins: ", err)
-		return err
-	}*/
 	if pl.driver, err = pl.pluginCache.GetDriver(driverName); err != nil {
 		logger.Error.Println("Unable to load driver: ", err)
 		return err
@@ -100,19 +96,6 @@ func (pl *Pipeline) Load(driverName string) error {
 	var in interface{}
 	var out interface{}
 	for _, p := range conf.Pipeline {
-		/*hdler := false
-		var hdl plugins.SFHandler
-		if val, ok := p[HdlConfig]; ok {
-			hdl, err = pl.pluginCache.GetHandler(val)
-			if err != nil {
-				logger.Error.Println(err)
-				return err
-			}
-			pl.handlers = append(pl.handlers, hdl)
-			xType := fmt.Sprintf("%T", hdl)
-			logger.Trace.Println(xType)
-			hdler = true
-		}*/
 		var prc plugins.SFProcessor
 		if val, ok := p[ProcConfig].(string); ok {
 			prc, err = pl.pluginCache.GetProcessor(pl.pluginDir, val)
