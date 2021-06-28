@@ -515,7 +515,7 @@
   
 - rule: Privilege escalation
   desc: Privilege escalation detected
-  condition: sf.pproc.uid != 0 and sf.proc.uid = 0 and not entrypoint       
+  condition: sf.pproc.uid != 0 and sf.proc.uid = 0 and not entrypoint
   action: [tag]
   priority: high
   tags: [mitre:T1068]
