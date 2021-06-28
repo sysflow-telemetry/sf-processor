@@ -17,7 +17,7 @@
 	[the SysFlow Community Slack](https://join.slack.com/t/sysflow-telemetry/shared_invite/enQtODA5OTA3NjE0MTAzLTlkMGJlZDQzYTc3MzhjMzUwNDExNmYyNWY0NWIwODNjYmRhYWEwNGU0ZmFkNGQ2NzVmYjYxMWFjYTM1MzA5YWQ)
 
 -	**Where to file issues**:  
-	[the github issue tracker](https://github.com/sysflow-telemetry/sf-docs/issues) (include the `sf-processor` tag)
+	[the github issue tracker](https://github.com/sysflow-telemetry/sysflow/issues) (include the `sf-processor` tag)
 
 -	**Source of this description**:  
 	[repo's readme](https://github.com/sysflow-telemetry/sf-processor/edit/master/README.md) ([history](https://github.com/sysflow-telemetry/sf-processor/commits/master))
@@ -25,6 +25,15 @@
 # What is SysFlow?
 
 The SysFlow Telemetry Pipeline is a framework for monitoring cloud workloads and for creating performance and security analytics. The goal of this project is to build all the plumbing required for system telemetry so that users can focus on writing and sharing analytics on a scalable, common open-source platform. The backbone of the telemetry pipeline is a new data format called SysFlow, which lifts raw system event information into an abstraction that describes process behaviors, and their relationships with containers, files, and network. This object-relational format is highly compact, yet it provides broad visibility into container clouds. We have also built several APIs that allow users to process SysFlow with their favorite toolkits. Learn more about SysFlow in the [SysFlow specification document](https://sysflow.readthedocs.io/en/latest/spec.html).
+
+The SysFlow framework consists of the following sub-projects that provide dedicated funtionality:
+
+- [sf-apis](https://github.com/sysflow-telemetry/sf-apis) provide the SysFlow foundation in go, python, and C++.
+- [sf-collector](https://github.com/sysflow-telemetry/sf-collector) monitors and collects system call and event information from hosts and exports them in the SysFlow format using Apache Avro object serialization.
+- [sf-processor](https://github.com/sysflow-telemetry/sf-processor) provides a performance optimized policy engine for processing, enriching, filtering SysFlow events, generating alerts and exporting the processed data to various targets.
+- [sf-exporter](https://github.com/sysflow-telemetry/sf-exporter) exports SysFlow data to S3-compliant storage systems such as IBM COS for archival purpose.
+- [sf-deployments](https://github.com/sysflow-telemetry/sf-deployments) contains SysFlow deployments for Docker, Helm, and OpenShift.
+- [sysflow](https://github.com/sysflow-telemetry/sysflow) is the documentation repository and issue tracker for the SysFlow framework.
 
 # About this image
 
