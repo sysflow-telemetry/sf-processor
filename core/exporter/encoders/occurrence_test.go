@@ -47,6 +47,7 @@ func TestEventContainerSerialization(t *testing.T) {
 	path := "/tmp/events_schema.avro"
 	count := 25
 	fw, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	assert.NoError(t, err)
 	cw, err := event.NewEventWriter(fw, container.Snappy, 512)
 	assert.NoError(t, err)
 	for i := 0; i < count; i++ {
@@ -59,6 +60,7 @@ func TestEventContainerSerialization(t *testing.T) {
 	cw.Flush()
 	fw.Close()
 	fr, err := os.OpenFile(path, os.O_RDONLY, 0644)
+	assert.NoError(t, err)
 	cr, err := event.NewEventReader(fr)
 	assert.NoError(t, err)
 	var events []*event.Event

@@ -86,10 +86,8 @@ func (ep *EventPool) Flush(pathPrefix string, clusterID string) (err error) {
 			return
 		}
 		var m map[string]interface{}
-		logger.Warn.Println(v)
 		s, _ := json.Marshal(v.Event)
 		json.Unmarshal(s, &m)
-		logger.Warn.Println(m)
 		events = append(events, m)
 	}
 	if len(events) > 0 && ep.epw != nil {
@@ -389,9 +387,9 @@ func (oe *OccurrenceEncoder) summarizePolicy(r *engine.Record) (rnames []string,
 		rnames = append(rnames, rule.Name)
 		severity = Severity(utils.Max(int(severity), int(rule.Priority)))
 		for _, tag := range rule.Tags {
-			switch tag.(type) {
+			switch tag := tag.(type) {
 			case []string:
-				tags = append(tags, tag.([]string)...)
+				tags = append(tags, tag...)
 			default:
 				tags = append(tags, tag.(string))
 			}

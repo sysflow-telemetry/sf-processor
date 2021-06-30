@@ -65,9 +65,9 @@ type Config struct {
 
 // setManifestInfo sets manifest attributes to plugins configuration items.
 func setManifestInfo(conf *Config) {
-	addGlobalConfigItem(conf, manifest.VersionKey, manifest.Version)
-	addGlobalConfigItem(conf, manifest.JSONSchemaVersionKey, manifest.JSONSchemaVersion)
-	addGlobalConfigItem(conf, manifest.BuildNumberKey, manifest.BuildNumber)
+	addGlobalConfigItem(conf, manifest.VersionKey, manifest.Version)                     //nolint:typecheck
+	addGlobalConfigItem(conf, manifest.JSONSchemaVersionKey, manifest.JSONSchemaVersion) //nolint:typecheck
+	addGlobalConfigItem(conf, manifest.BuildNumberKey, manifest.BuildNumber)             //nolint:typecheck
 	addGlobalConfigItem(conf, commons.ClusterIDKey, getEnv(ClusterIDEnvKey))
 }
 

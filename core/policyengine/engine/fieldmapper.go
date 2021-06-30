@@ -282,6 +282,7 @@ func getExportedMappers() map[string]*FieldEntry {
 }
 
 // getExtendedMappers defines all mappers for extended attributes.
+// nolint
 func getExtendedMappers() map[string]FieldMap {
 	return map[string]FieldMap{
 		//Ext processes
@@ -461,6 +462,7 @@ func mapOpFlags(src sfgo.Source) FieldMap {
 	}
 }
 
+// nolint
 func mapEvtType(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
 		opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT, src)
@@ -495,12 +497,10 @@ func mapEndTs(src sfgo.Source) FieldMap {
 	}
 }
 
+// nolint
 func mapEntry(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		if r.GetInt(attr, src) == 1 {
-			return true
-		}
-		return false
+		return r.GetInt(attr, src) == 1
 	}
 }
 
@@ -516,6 +516,7 @@ func mapDir(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	}
 }
 
+// nolint
 func mapRepo(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		return strings.Split(r.GetStr(attr, src), ":")[0]
@@ -544,19 +545,13 @@ func mapFileType(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 
 func mapIsOpenWrite(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		if sfgo.IsOpenWrite(r.GetInt(attr, src)) {
-			return true
-		}
-		return false
+		return sfgo.IsOpenWrite(r.GetInt(attr, src))
 	}
 }
 
 func mapIsOpenRead(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		if sfgo.IsOpenRead(r.GetInt(attr, src)) {
-			return true
-		}
-		return false
+		return sfgo.IsOpenRead(r.GetInt(attr, src))
 	}
 }
 
@@ -566,6 +561,7 @@ func mapOpenFlags(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	}
 }
 
+// nolint
 func mapProto(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		return sfgo.GetProto(r.GetInt(attr, src))
@@ -621,6 +617,7 @@ func mapConsts(consts ...string) FieldMap {
 	}
 }
 
+// nolint
 func mapNa(attr string) FieldMap {
 	return func(r *Record) interface{} {
 		logger.Warn.Println("Attribute not supported ", attr)

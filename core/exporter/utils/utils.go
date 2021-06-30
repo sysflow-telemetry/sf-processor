@@ -63,5 +63,5 @@ func ToIsoTimeStr(ts int64) string {
 func UnsafeBytesToString(b []byte) string {
 	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
 	sh := reflect.StringHeader{Data: bh.Data, Len: bh.Len}
-	return *(*string)(unsafe.Pointer(&sh))
+	return *(*string)(unsafe.Pointer(&sh)) //nolint:govet
 }

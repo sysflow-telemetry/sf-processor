@@ -20,13 +20,13 @@
 package transports
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/go-openapi/strfmt"
 	"github.com/ibm-cloud-security/security-advisor-sdk-go/common"
 	"github.com/ibm-cloud-security/security-advisor-sdk-go/findingsapiv1"
+	"github.com/pkg/errors"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/encoders"
@@ -116,7 +116,7 @@ func (s *FindingsApiProto) CreateOccurrence(occ *encoders.Occurrence) error {
 		if response != nil {
 			logger.Error.Println(response.Result)
 		}
-		return err
+		return errors.Wrap(err, "error while creating occurrence")
 	}
 
 	logger.Trace.Println(response.StatusCode)
@@ -144,15 +144,13 @@ func NewFindingsApi(apiKey string, url string) (service *FindingsApi, err error)
 	var baseService *core.BaseService
 	baseService, err = core.NewBaseService(serviceOptions)
 	if err != nil {
-		logger.Error.Println(err)
-		return
+		return service, errors.Wrap(err, "couldn't instantiate base service for Findings API")
 	}
 
 	if url != "" {
 		err = baseService.SetServiceURL(url)
 		if err != nil {
-			logger.Error.Println(err)
-			return
+			return service, errors.Wrap(err, "couldn't set the service URL for Findings API")
 		}
 	}
 
@@ -172,8 +170,7 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 	}
 	err = core.ValidateStruct(createOccurrenceOptions, "createOccurrenceOptions")
 	if err != nil {
-		logger.Error.Println(err)
-		return
+		return result, response, errors.Wrap(err, "invalid occurrence struct")
 	}
 
 	pathSegments := []string{"v1", "providers", "occurrences"}
@@ -182,8 +179,7 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 	builder := core.NewRequestBuilder(core.POST)
 	_, err = builder.ConstructHTTPURL(s.Service.Options.URL, pathSegments, pathParameters)
 	if err != nil {
-		logger.Error.Println(err)
-		return
+		return result, response, errors.Wrap(err, "couldn't construct HTTP URL for occurrence")
 	}
 
 	for headerName, headerValue := range createOccurrenceOptions.Headers {
@@ -240,14 +236,12 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
-		logger.Error.Println(err)
-		return
+		return result, response, errors.Wrap(err, "couldn't set occurrence message body")
 	}
 
 	request, err := builder.Build()
 	if err != nil {
-		logger.Error.Println(err)
-		return
+		return result, response, errors.Wrap(err, "couldn't build request for creating occurrence")
 	}
 
 	response, err = s.Service.Request(request, new(ApiCustomOccurrence))

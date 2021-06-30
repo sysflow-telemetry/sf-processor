@@ -62,9 +62,9 @@ type ECSRecord struct {
 
 // ECSEncoder implements an ECS encoder for telemetry records.
 type ECSEncoder struct {
-	config      commons.Config
-	jsonencoder JSONEncoder
-	batch       []commons.EncodedData
+	config commons.Config
+	//jsonencoder JSONEncoder
+	batch []commons.EncodedData
 }
 
 // NewECSEncoder instantiates an ECS encoder.
@@ -424,13 +424,11 @@ func encodeFileType(ft string) string {
 func extracTags(tags []engine.EnrichmentTag) []string {
 	s := make([]string, 0)
 	for _, v := range tags {
-		switch v.(type) {
+		switch v := v.(type) {
 		case []string:
-			s = append(s, v.([]string)...)
-			break
+			s = append(s, v...)
 		default:
 			s = append(s, string(fmt.Sprintf("%v", v)))
-			break
 		}
 	}
 	return s
