@@ -22,7 +22,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"runtime"
@@ -51,7 +50,9 @@ func initSigTerm() {
 	}()
 }
 
-func main() {
+func main() { os.Exit(run()) }
+
+func run() int {
 
 	// setup interruption handler
 	initSigTerm()
@@ -85,7 +86,7 @@ func main() {
 	flag.Parse()
 	if !*version && !*test && flag.NArg() < 1 {
 		flag.Usage()
-		os.Exit(1)
+		return 1
 	}
 
 	// prints version information and exits
@@ -93,8 +94,8 @@ func main() {
 		hdr := sfgo.NewSFHeader()
 		hdr.SetDefault(0)
 		schemaVersion := hdr.Version
-		fmt.Printf("Version: %s+%s, Avro Schema Version: %v, Export Schema Version: %v\n", manifest.Version, manifest.BuildNumber, schemaVersion, manifest.JSONSchemaVersion)
-		os.Exit(0)
+		fmt.Printf("Version: %s+%s, Avro Schema Version: %v, Export Schema Version: %v\n", manifest.Version, manifest.BuildNumber, schemaVersion, manifest.JSONSchemaVersion) //nolint:typecheck
+		return 0
 	}
 
 	// initialize logger
@@ -104,11 +105,13 @@ func main() {
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
-			log.Fatal("Could not create CPU profile: ", err)
+			logger.Error.Println("Could not create CPU profile: ", err)
+			return 1
 		}
 		defer f.Close() // error handling omitted
 		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("Could not start CPU profile: ", err)
+			logger.Error.Println("Could not start CPU profiling: ", err)
+			return 1
 		}
 		defer pprof.StopCPUProfile()
 	}
@@ -116,15 +119,14 @@ func main() {
 	if *traceprofile != "" {
 		f, err := os.Create(*traceprofile)
 		if err != nil {
-			log.Fatal("Could not create Trace profile: ", err)
-			panic(err)
+			logger.Error.Println("Could not create trace profile: ", err)
+			return 1
 		}
-		defer f.Close()
-
+		defer f.Close() // error handling omitted
 		err = trace.Start(f)
 		if err != nil {
-			log.Fatal("Could not create Trace profile: ", err)
-			panic(err)
+			logger.Error.Println("Could not start trace profiling: ", err)
+			return 1
 		}
 		defer trace.Stop()
 	}
@@ -133,8 +135,8 @@ func main() {
 	pl = pipeline.New(*driverDir, *pluginDir, *configFile)
 	err := pl.Load(*inputType)
 	if err != nil {
-		logger.Error.Println("Unable to load pipeline error: " + err.Error())
-		return
+		logger.Error.Println("Unable to load pipeline error: ", err.Error())
+		return 1
 	}
 
 	// log summary of loaded pipeline
@@ -145,7 +147,7 @@ func main() {
 
 	// exit if testing configuration
 	if *test {
-		os.Exit(1)
+		return 0
 	}
 
 	// retrieve positional args
@@ -154,20 +156,23 @@ func main() {
 	// initialize the pipeline
 	err = pl.Init(path)
 	if err != nil {
-		logger.Error.Println("Error caught while starting the pipeline: " + err.Error())
-		return
+		logger.Error.Println("Error caught while starting the pipeline: ", err.Error())
+		return 1
 	}
 
 	// memory profiling
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
 		if err != nil {
-			log.Fatal("Could not create memory profile: ", err)
+			logger.Error.Println("Could not create memory profile: ", err)
+			return 1
 		}
 		defer f.Close() // error handling omitted
 		runtime.GC()    // get up-to-date statistics
 		if err := pprof.WriteHeapProfile(f); err != nil {
-			log.Fatal("Could not write memory profile: ", err)
+			logger.Error.Println("Could not write memory profile: ", err)
+			return 1
 		}
 	}
+	return 0
 }

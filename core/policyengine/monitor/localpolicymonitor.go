@@ -107,7 +107,7 @@ func (p *LocalPolicyMonitor) calculateChecksum() (bool, []string, error) {
 			return false, nil, err
 		}
 		if val, ok := p.policies[policy]; ok {
-			if bytes.Compare(val, cs) != 0 {
+			if !bytes.Equal(val, cs) {
 				changes = true
 			}
 		} else {
@@ -157,9 +157,9 @@ func (p *LocalPolicyMonitor) StartMonitor() error {
 							logger.Error.Printf("Unable to calculate checksums on policies.. attempting to compile policies")
 						}
 					}
-					if changes == true || err != nil {
+					if changes || err != nil {
 						logger.Info.Println("Attempting to compile new policy")
-						p.CheckForPolicyUpdate()
+						p.CheckForPolicyUpdate() //nolint:errcheck
 					}
 				}
 			// watch for errors

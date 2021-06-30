@@ -270,7 +270,6 @@ func (listener *sfplListener) getPriority(ctx *parser.PruleContext) Priority {
 			return High
 		default:
 			logger.Warn.Printf("Unrecognized priority value %s. Deferring to %s\n", p, Low.String())
-			break
 		}
 	}
 	return Low
@@ -293,7 +292,6 @@ func (listener *sfplListener) getActions(ctx *parser.PruleContext) []Action {
 				actions = append(actions, Hash)
 			default:
 				logger.Warn.Println("Unrecognized action value ", v)
-				break
 			}
 		}
 	}
@@ -301,12 +299,7 @@ func (listener *sfplListener) getActions(ctx *parser.PruleContext) []Action {
 }
 
 func (listener *sfplListener) extractList(str string) []string {
-	s := []string{}
-	ls := strings.Split(itemsre.ReplaceAllString(str, "$2"), LISTSEP)
-	for _, v := range ls {
-		s = append(s, v)
-	}
-	return s
+	return strings.Split(itemsre.ReplaceAllString(str, "$2"), LISTSEP)
 }
 
 func (listener *sfplListener) extractListFromItems(ctx parser.IItemsContext) []string {

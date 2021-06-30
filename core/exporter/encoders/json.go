@@ -237,9 +237,9 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			if numTags > 0 {
 				t.writer.RawString(TAGS)
 				for _, tag := range r.Tags {
-					switch tag.(type) {
+					switch tag := tag.(type) {
 					case []string:
-						tags := tag.([]string)
+						tags := tag
 						numTags := numTags + len(tags) - 1
 						for _, s := range tags {
 							t.writer.String(s)
@@ -404,63 +404,54 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 			} else {
 				writer.String(EMPTY_STRING)
 			}
-			break
 		case engine.PProcExe:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(ptree[1].Exe))
 			} else {
 				writer.String(EMPTY_STRING)
 			}
-			break
 		case engine.PProcArgs:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(ptree[1].ExeArgs))
 			} else {
 				writer.String(EMPTY_STRING)
 			}
-			break
 		case engine.PProcUID:
 			if len(ptree) > 1 {
 				writer.Int64(int64(ptree[1].Uid))
 			} else {
 				writer.Int64(sfgo.Zeros.Int64)
 			}
-			break
 		case engine.PProcUser:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(ptree[1].UserName))
 			} else {
 				writer.String(EMPTY_STRING)
 			}
-			break
 		case engine.PProcGID:
 			if len(ptree) > 1 {
 				writer.Int64(int64(ptree[1].Gid))
 			} else {
 				writer.Int64(sfgo.Zeros.Int64)
 			}
-			break
 		case engine.PProcGroup:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(ptree[1].GroupName))
 			} else {
 				writer.String(EMPTY_STRING)
 			}
-			break
 		case engine.PProcTTY:
 			if len(ptree) > 1 {
 				writer.Bool(ptree[1].Tty)
 			} else {
 				writer.Bool(false)
 			}
-			break
 		case engine.PProcEntry:
 			if len(ptree) > 1 {
 				writer.Bool(ptree[1].Entry)
 			} else {
 				writer.Bool(false)
 			}
-			break
 		case engine.PProcCmdLine:
 			if len(ptree) > 1 {
 				exe := utils.TrimBoundingQuotes(ptree[1].Exe)
@@ -475,7 +466,6 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 			} else {
 				writer.String(EMPTY_STRING)
 			}
-			break
 		case engine.ProcAName:
 			l := len(ptree)
 			writer.RawByte(BEGIN_SQUARE)

@@ -48,11 +48,6 @@ const (
 	probCollide = 0.0000001
 )
 
-// Avro encodersettings
-const (
-	eventsBlockSize = 512
-)
-
 // Severity type for enumeration.
 type Severity int
 

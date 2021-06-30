@@ -190,47 +190,38 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 			if len(ptree) > 1 {
 				return filepath.Base(ptree[1].Exe)
 			}
-			break
 		case PProcExe:
 			if len(ptree) > 1 {
 				return ptree[1].Exe
 			}
-			break
 		case PProcArgs:
 			if len(ptree) > 1 {
 				return ptree[1].ExeArgs
 			}
-			break
 		case PProcUID:
 			if len(ptree) > 1 {
 				return ptree[1].Uid
 			}
-			break
 		case PProcUser:
 			if len(ptree) > 1 {
 				return ptree[1].UserName
 			}
-			break
 		case PProcGID:
 			if len(ptree) > 1 {
 				return ptree[1].Gid
 			}
-			break
 		case PProcGroup:
 			if len(ptree) > 1 {
 				return ptree[1].GroupName
 			}
-			break
 		case PProcTTY:
 			if len(ptree) > 1 {
 				return ptree[1].Tty
 			}
-			break
 		case PProcEntry:
 			if len(ptree) > 1 {
 				return ptree[1].Entry
 			}
-			break
 		case PProcCmdLine:
 			if len(ptree) > 1 {
 				if len(ptree[1].ExeArgs) > 0 {
@@ -238,7 +229,6 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 				}
 				return ptree[1].Exe
 			}
-			break
 		case ProcAName:
 			var s []string
 			for _, p := range ptree {

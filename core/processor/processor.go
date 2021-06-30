@@ -23,6 +23,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/pkg/errors"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
@@ -71,15 +72,16 @@ func (s *SysFlowProcessor) Register(pc plugins.SFPluginCache) {
 }
 
 // Init initializes the processor with a configuration map.
-func (s *SysFlowProcessor) Init(conf map[string]interface{}) error {
+func (s *SysFlowProcessor) Init(conf map[string]interface{}) (err error) {
 	s.tables = cache.GetInstance()
 	hdlCache := GetHandlerCacheInstance(sPluginCache)
-	hdl, err := hdlCache.GetHandler(conf)
+	s.hdl, err = hdlCache.GetHandler(conf)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't obtain the processor handler from cache")
 	}
-	hdl.Init(conf)
-	s.hdl = hdl
+	if err = s.hdl.Init(conf); err != nil {
+		return errors.Wrap(err, "couldn't initialize processor handler")
+	}
 	return nil
 }
 

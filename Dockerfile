@@ -72,7 +72,8 @@ ENV CONFIG_PATH=$configpath
 
 # Image labels
 LABEL "name"="SysFlow Processor"
-LABEL "vendor"="IBM"
+LABEL "maintainer"="The SysFlow team"
+LABEL "vendor"="SysFlow"
 LABEL "version"="${VERSION}"
 LABEL "release"="${RELEASE}"
 LABEL "summary"="SysFlow Processor implements a pluggable stream-processing pipeline and contains a built-in policy engine that evaluates rules on the ingested SysFlow stream"

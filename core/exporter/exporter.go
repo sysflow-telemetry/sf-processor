@@ -152,7 +152,7 @@ RecLoop:
 			}
 		case <-ticker.C:
 			// force flush records after 1sec idle
-			if time.Now().Sub(lastFlush) > maxIdle && s.counter > 0 {
+			if time.Since(lastFlush) > maxIdle && s.counter > 0 {
 				s.process()
 				s.recs = s.recs[:0]
 				s.counter = 0
