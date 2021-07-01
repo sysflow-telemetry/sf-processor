@@ -48,7 +48,7 @@ func (s *Example) GetName() string {
 }
 
 // Init initializes the plugin with a configuration map.
-func (s *Example) Init(conf map[string]string) error {
+func (s *Example) Init(conf map[string]interface{}) error {
 	return nil
 }
 
@@ -70,13 +70,13 @@ func (s *Example) Process(ch interface{}, wg *sync.WaitGroup) {
 			logger.Trace.Println("Channel closed. Shutting down.")
 			break
 		}
-		logger.Info.Println(fc)
+		logger.Trace.Println(fc)
 	}
 	logger.Trace.Println("Exiting Example")
 }
 
 // SetOutChan sets the output channel of the plugin.
-func (s *Example) SetOutChan(ch interface{}) {}
+func (s *Example) SetOutChan(ch []interface{}) {}
 
 // Cleanup tears down plugin resources.
 func (s *Example) Cleanup() {}
