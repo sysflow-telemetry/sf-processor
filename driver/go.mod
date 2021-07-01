@@ -28,7 +28,6 @@ require (
 	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
-	github.com/satta/gommunityid v0.0.0-20210315182841-1cdcb73ce408 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
@@ -37,7 +36,6 @@ require (
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201206060647-9992298f1357
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
-	gopkg.in/linkedin/goavro.v1 v1.0.5 // indirect
 )
 
 replace github.com/sysflow-telemetry/sf-processor/core => ../core
