@@ -70,45 +70,60 @@ func (s *Printer) Cleanup() {
 }
 
 // HandleHeader processes Header entities.
-func (s *Printer) HandleHeader(hdr *sfgo.SFHeader) error {
+func (s *Printer) HandleHeader(sf *sfgo.SysFlow, hdr *sfgo.SFHeader) error {
 	return nil
 }
 
 // HandleContainer processes Container entities.
-func (s *Printer) HandleContainer(hdr *sfgo.SFHeader, cont *sfgo.Container) error {
+func (s *Printer) HandleContainer(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container) error {
 	return nil
 }
 
 // HandleProcess processes Process entities.
-func (s *Printer) HandleProcess(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process) error {
+func (s *Printer) HandleProcess(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process) error {
 	return nil
 }
 
 // HandleFile processes File entities.
-func (s *Printer) HandleFile(hdr *sfgo.SFHeader, cont *sfgo.Container, file *sfgo.File) error {
+func (s *Printer) HandleFile(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, file *sfgo.File) error {
 	return nil
 }
 
 // HandleNetFlow processes Network Flows.
-func (s *Printer) HandleNetFlow(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, nf *sfgo.NetworkFlow) error {
+func (s *Printer) HandleNetFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, nf *sfgo.NetworkFlow) error {
 	logger.Info.Printf("NetworkFlow %s, %d", proc.Exe, nf.Dport)
 	return nil
 }
 
 // HandleFileFlow processes File Flows.
-func (s *Printer) HandleFileFlow(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file *sfgo.File, ff *sfgo.FileFlow) error {
+func (s *Printer) HandleFileFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file *sfgo.File, ff *sfgo.FileFlow) error {
 	logger.Info.Printf("FileFlow %s, %d", proc.Exe, ff.Fd)
 	return nil
 }
 
 // HandleFileEvt processes File Events.
-func (s *Printer) HandleFileEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file1 *sfgo.File, file2 *sfgo.File, fe *sfgo.FileEvent) error {
+func (s *Printer) HandleFileEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file1 *sfgo.File, file2 *sfgo.File, fe *sfgo.FileEvent) error {
 	logger.Info.Printf("FileEvt %s, %d", proc.Exe, fe.Tid)
 	return nil
 }
 
+// HandleFileEvt processes Net Events.
+func (s *Printer) HandleNetEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, ne *sfgo.NetworkEvent) error {
+	logger.Info.Printf("NetEvt %s, %d", proc.Exe, ne.Tid)
+	return nil
+}
+
 // HandleProcEvt processes Process Events.
-func (s *Printer) HandleProcEvt(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, pe *sfgo.ProcessEvent) error {
+func (s *Printer) HandleProcEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, pe *sfgo.ProcessEvent) error {
 	logger.Info.Printf("ProcEvt %s, %d", proc.Exe, pe.Tid)
 	return nil
 }
+
+// HandleProcEvt processes Process Flows.
+func (s *Printer) HandleProcFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, pf *sfgo.ProcessFlow) error {
+	logger.Info.Printf("ProcFlow %s, %v", proc.Exe, pf.ProcOID)
+	return nil
+}
+
+// This function is not run when module is used as a plugin.
+func main() {}
