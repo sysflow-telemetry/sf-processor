@@ -1,6 +1,6 @@
 GOCMD=go
 GOBUILD=$(GOCMD) build -buildmode=plugin
-OUTPUT=../../resources/plugins
+OUTPUT=../../../resources/plugins
 
 .PHONY: all
 all: 

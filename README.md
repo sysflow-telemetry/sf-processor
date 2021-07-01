@@ -1,4 +1,4 @@
-[![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/sysflowtelemetry/sf-processor)](https://hub.docker.com/r/sysflowtelemetry/sf-processor/builds)
+[![Docker Cloud Build Status](https://img.shields.io/github/workflow/status/sysflow-telemetry/sf-processor/ci)](https://github.com/sysflow-telemetry/sf-processor/actions)
 [![Docker Pulls](https://img.shields.io/docker/pulls/sysflowtelemetry/sf-processor)](https://hub.docker.com/r/sysflowtelemetry/sf-processor)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/sysflow-telemetry/sf-processor)
 [![Documentation Status](https://readthedocs.org/projects/sysflow/badge/?version=latest)](https://sysflow.readthedocs.io/en/latest/?badge=latest)
@@ -6,7 +6,7 @@
 
 # Supported tags and respective `Dockerfile` links
 
--	[`0.2.2`](https://github.com/sysflow-telemetry/sf-processor/blob/0.2.2/Dockerfile), [`latest`](https://github.com/sysflow-telemetry/sf-processor/blob/master/Dockerfile)
+-	[`0.3.0`](https://github.com/sysflow-telemetry/sf-processor/blob/0.2.2/Dockerfile), [`latest`](https://github.com/sysflow-telemetry/sf-processor/blob/master/Dockerfile)
 
 # Quick reference
 
