@@ -51,7 +51,7 @@ install: build
 	cp ./resources/policies/distribution/* /usr/local/sysflow/resources/policies/
 
 .PHONY: docker-build
-docker-build: build
+docker-build:
 	docker build -t sf-processor --target=runtime -f Dockerfile .
 
 .PHONY: pull

@@ -1,0 +1,884 @@
+###### Lists ####################
+
+- list: shell_binaries
+  items: [bash, csh, ksh, sh, tcsh, zsh, dash]
+  
+- list: shell_mgmt_binaries
+  items: [add-shell, remove-shell]
+  
+- list: script_interpreters
+  items: [ruby, python, python2.7, python2, python3, python3.5, java, perl, node, js24]
+
+- list: shell_interpreters
+  items: [awk, gawk]
+  
+- list: coreutils_binaries
+  items: [
+    truncate, sha1sum, numfmt, fmt, fold, uniq, cut, who,
+    groups, csplit, sort, expand, printf, printenv, unlink, tee, chcon, stat,
+    basename, split, nice, "yes", whoami, sha224sum, hostid, users, stdbuf,
+    base64, unexpand, cksum, od, paste, nproc, pathchk, sha256sum, wc, test,
+    comm, arch, du, factor, sha512sum, md5sum, tr, runcon, env, dirname,
+    tsort, join, shuf, install, logname, pinky, nohup, expr, pr, tty, timeout,
+    tail, "[", seq, sha384sum, nl, head, id, mkfifo, sum, dircolors, ptx, shred,
+    tac, link, chroot, vdir, chown, touch, ls, dd, uname, "true", pwd, date,
+    chgrp, chmod, mktemp, cat, mknod, sync, ln, "false", rm, mv, cp, echo,
+    readlink, sleep, stty, mkdir, df, dir, rmdir
+    ]
+    
+- list: coreutils_mod_binaries
+  items: [
+    truncate, who, groups, csplit, expand, printenv, unlink, chcon, 
+    split, whoami, users, stdbuf, unexpand, paste, runcon, env, 
+    install, logname, pinky, nohup, tty, id, mkfifo, shred,
+    link, chroot, chown, touch, dd, chgrp, chmod, mktemp, mknod, 
+    ln, rm, mv, cp, rmdir
+    ]
+    
+- list: login_binaries
+  items: [
+    login, systemd, '"(systemd)"', systemd-logind, su,
+    nologin, faillog, lastlog, newgrp, sg
+    ]
+  
+- list: repositories
+  items: [git, svn]
+
+ - list: modify_passwd_binaries
+  items: [
+    chpasswd, chgpasswd, passwd
+    ]
+ 
+- list: verify_passwd_binaries
+  items: [ unix_chkpwd ] 
+ 
+- list: create_user_binaries
+  items: [ useradd, newusers ] 
+ 
+- list: delete_user_binaries
+  items: [ userdel ] 
+ 
+- list: modify_user_binaries
+  items: [ usermod ] 
+
+- list: create_grp_binaries
+  items: [ groupadd, newusers ]  
+
+- list: delete_group_binaries
+  items: [ groupdel ] 
+  
+- list: modify_grp_binaries
+  items: [ groupmod ] 
+
+- list: user_util_binaries
+  items: [
+    shadowconfig, grpck, pwunconv, grpconv, pwck,
+    vipw, pwconv, cppw, 
+    grpunconv, chage, chsh,
+    gpasswd, chfn, expiry, vigr, cpgr
+    ]
+
+- list: k8s_binaries
+  items: [hyperkube, skydns, kube2sky, exechealthz, weave-net]
+
+- list: lxd_binaries
+  items: [lxd, lxcfs]
+
+- list: http_server_binaries
+  items: [nginx, httpd, httpd-foregroun, lighttpd, apache, apache2, node]
+
+- list: db_server_binaries
+  items: [mysqld, postgres, sqlplus]
+
+- list: mysql_mgmt_binaries
+  items: [mysql_install_d, mysql_ssl_rsa_s]
+
+- list: postgres_mgmt_binaries
+  items: [pg_dumpall, pg_ctl, pg_lsclusters, pg_ctlcluster]
+
+- list: db_mgmt_binaries
+  items: [mysql_mgmt_binaries, postgres_mgmt_binaries]
+
+- list: nosql_server_binaries
+  items: [couchdb, memcached, redis-server, rabbitmq-server, mongod]
+
+- list: gitlab_binaries
+  items: [gitlab-shell, gitlab-mon, gitlab-runner-b, git]
+
+- list: rpm_binaries
+  items: [dnf, rpm, rpmkey, yum, '"75-system-updat"', rhsmcertd-worke, subscription-ma,
+          repoquery, rpmkeys, rpmq, yum-cron, yum-config-mana, yum-debug-dump,
+          abrt-action-sav, rpmdb_stat, microdnf, rhn_check, yumdb]
+
+- list: deb_binaries
+  items: [dpkg, dpkg-preconfigu, dpkg-reconfigur, dpkg-divert, apt, apt-get, aptitude,
+    frontend, preinst, add-apt-reposit, apt-auto-remova, apt-key,
+    apt-listchanges, unattended-upgr, apt-add-reposit
+    ]
+
+- list: package_mgmt_binaries
+  items: [rpm_binaries, deb_binaries, update-alternat, gem, pip, pip3, sane-utils.post, alternatives, chef-client]
+
+- list: ssl_mgmt_binaries
+  items: [ca-certificates]
+ 
+- list: dhcp_binaries
+  items: [dhclient, dhclient-script, 11-dhclient]
+ 
+- list: mail_binaries
+  items: [
+    sendmail, sendmail-msp, postfix, procmail, exim4,
+    pickup, showq, mailq, dovecot, imap-login, imap,
+    mailmng-core, pop3-login, dovecot-lda, pop3
+    ]
+ 
+- list: vpn_binaries
+  items: [openvpn]
+
+- list: sys_password_files
+  items: [/etc/shadow, /etc/passwd]
+
+- list: sensitive_file_names
+  items: [/etc/sudoers, /etc/pam.conf]
+  
+- list: cron_binaries
+  items: [anacron, cron, crond, crontab]
+ 
+- list: system_users
+  items: [bin, daemon, games, lp, mail, nobody, sshd, sync, uucp, www-data]
+  
+- list: system_directories
+  items: [/boot, /lib, /lib64, /usr/lib, /usr/local/lib, /usr/local/sbin, /usr/local/bin, /root/.ssh, /etc]
+
+ - list: init_directories
+   items: [/etc/init.d]
+
+- list: history_files 
+  items: [".bash_history", ".ash_history"]
+  
+- list: network_config_files
+  items: [/etc/resolv.conf]
+
+- list: read_sensitive_file_binaries
+  items: [
+    iptables, ps, lsb_release, check-new-relea, dumpe2fs, accounts-daemon, sshd,
+    vsftpd, systemd, mysql_install_d, psql, screen, debconf-show, sa-update,
+    pam-auth-update, pam-config, spamd, polkit-agent-he, lsattr, file, sosreport,
+    scxcimservera, adclient, rtvscand, cockpit-session, userhelper, ossec-syscheckd
+    ]
+    
+- list: downloader_binaries
+  items: [wget, curl]
+  
+- list: remote_copy_binaries
+  items: [scp, rsync, telnet, ssh, ftp, rcp, sftp]
+
+- list: known_root_files
+  items: [/root/.monit.state, /root/.auth_tokens, /root/.bash_history, /root/.ash_history, /root/.aws/credentials,
+          /root/.viminfo.tmp, /root/.lesshst, /root/.bzr.log, /root/.gitconfig.lock, /root/.babel.json, 
+          /root/.localstack, /root/.node_repl_history, /root/.mongorc.js, /root/.dbshell, /root/.augeas/history, 
+          /root/.rnd, /root/.wget-hsts]
+
+- list: known_root_directories
+  items: [/root/.oracle_jre_usage, /root/.subversion, /root/.nami]
+
+- list: profile_files
+  items: [".bashrc", ".bash_profile", ".profile"]
+
+- list: ld_preload_files
+  items: ["/etc/ld.so.preload"]
+
+- list: scheduler_files
+  items: [/etc/crontab] 
+
+- list: scheduler_directories
+  items: ["/etc/cron.d", "/etc/cron.daily", "/etc/cron.monthly", "/etc/cron.hourly", "/etc/cron.weekly", 
+          "/usr/lib/cron/tabs", "/var/cron/tabs", "/var/spool/cron/crontabs", "/var/spool/cron"] 
+
+- list: protected_shell_spawning_binaries
+  items: [
+    http_server_binaries, db_server_binaries, nosql_server_binaries, mail_binaries,
+    fluentd, flanneld, splunkd, consul, smbd, runsv, PM2
+    ]
+    
+- list: allowed_dev_files
+  items: [
+    /dev/null, /dev/stdin, /dev/stdout, /dev/stderr,
+    /dev/random, /dev/urandom, /dev/console, /dev/kmsg
+    ]
+    
+- list: mesos_shell_binaries
+  items: [mesos-docker-ex, mesos-slave, mesos-health-ch]
+ 
+- list: misc_tools
+  items: [calico-node]
+ 
+- list: edr_tools
+  items: [/crowdstrike/cmd.sh, besclient, BESClient]
+
+- list: log_tools
+  items: [logdna, splunk, rsyslog]
+  
+- list: log_paths
+  items: [/var/, /tmp/nginx-ingress.private]
+  
+- list: known_setuid_binaries
+  items: [
+    sshd, dbus-daemon-lau, ping, ping6, critical-stack-, pmmcli,
+    filemng, PassengerAgent, bwrap, osdetect, nginxmng, sw-engine-fpm,
+    start-stop-daem
+    ]
+ 
+ - list: userexec_binaries
+  items: [sudo, su, suexec, critical-stack, dzdo]
+ 
+ - list: docker_binaries
+  items: [docker, dockerd, exe, docker-compose, docker-entrypoi, docker-runc-cur, docker-current, dockerd-current]
+ 
+ - list: nomachine_binaries
+  items: [nxexec, nxnode.bin, nxserver.bin, nxclient.bin]
+
+ - list: compilers
+  items: ["g++", gcc, clang, javac]
+
+- list: shadowutils_binaries
+  items: [
+    chage, gpasswd, lastlog, newgrp, sg, adduser, deluser, chpasswd,
+    groupadd, groupdel, addgroup, delgroup, groupmems, groupmod, grpck, grpconv, grpunconv,
+    newusers, pwck, pwconv, pwunconv, useradd, userdel, usermod, vigr, vipw, unix_chkpwd
+    ]
+    
+- list: user_mgmt_binaries
+  items: [login_binaries, passwd_binaries, shadowutils_binaries]
+
+- list: privileged_processes
+  items: [/usr/bin/sudo, /usr/local/sbin/runc]
+
+- list: auth_processes
+  items: [/opt/ibm/java/bin/keytool, /bin/chown, /bin/chmod, /bin/bash]
+
+###### Macros ###################
+
+- macro: sed_write
+  condition: (sf.proc.exe contains 'sed' and sf.proc.args contains '-i')
+
+- macro: overwrite
+  condition: sf.opflags = RENAME
+ 
+- macro: open_write
+  condition: (sf.opflags in (WRITE_SEND) or
+             (sf.opflags = OPEN and sf.file.openflags in (O_CREAT)) or
+             sed_write)
+  
+- macro: open_read
+  condition: (sf.file.is_open_read = true or sf.opflags = READ_RECV)
+  
+- macro: interactive
+  condition: >
+    ((sf.proc.aname = sshd and sf.proc.name != sshd) or
+    sf.proc.name = systemd-logind or sf.proc.name = login or sf.proc.tty = true)
+
+- macro: user_ssh_directory
+  condition: (sf.file.path startswith '/home' and sf.file.path contains '.ssh')
+
+- macro: system_dir
+  condition: >
+    (sf.file.directory in (system_directories)
+     or user_ssh_directory)
+     
+- macro: init_dir
+  condition: >
+    (fd.directory in (init_directories))
+
+- macro: scheduler_dir
+  condition: >
+    (fd.directory in (scheduler_directories))
+
+- macro: known_root_conditions
+  condition: (sf.file.path startswith /root/orcexec.
+              or sf.file.path startswith /root/.m2
+              or sf.file.path startswith /root/.npm
+              or sf.file.path startswith /root/.pki
+              or sf.file.path startswith /root/.ivy2
+              or sf.file.path startswith /root/.config/Cypress
+              or sf.file.path startswith /root/.config/pulse
+              or sf.file.path startswith /root/.config/configstore
+              or sf.file.path startswith /root/jenkins/workspace
+              or sf.file.path startswith /root/.jenkins
+              or sf.file.path startswith /root/.cache
+              or sf.file.path startswith /root/.sbt
+              or sf.file.path startswith /root/.java
+              or sf.file.path startswith /root/.glide
+              or sf.file.path startswith /root/.sonar
+              or sf.file.path startswith /root/.v8flag
+              or sf.file.path startswith /root/infaagent
+              or sf.file.path startswith /root/.local/lib/python
+              or sf.file.path startswith /root/.pm2
+              or sf.file.path startswith /root/.gnupg
+              or sf.file.path startswith /root/.pgpass
+              or sf.file.path startswith /root/.theano
+              or sf.file.path startswith /root/.gradle
+              or sf.file.path startswith /root/.android
+              or sf.file.path startswith /root/.ansible
+              or sf.file.path startswith /root/.crashlytics
+              or sf.file.path startswith /root/.dbus
+              or sf.file.path startswith /root/.composer
+              or sf.file.path startswith /root/.gconf
+              or sf.file.path startswith /root/.nv
+              or sf.file.path startswith /root/.local/share/jupyter
+              or sf.file.path startswith /root/oradiag_root
+              or sf.file.path startswith /root/workspace
+              or sf.file.path startswith /root/jvm
+              or sf.file.path startswith /root/.node-gyp)
+
+- macro: rename
+  condition: sf.opflags = RENAME
+
+- macro: mkdir
+  condition: sf.opflags = MKDIR
+
+- macro: remove
+  condition: sf.opflags in (RMDIR, UNLINK)
+
+- macro: modify
+  condition: rename or remove
+
+- macro: bin_dir
+  condition: (sf.file.directory startswith /bin or 
+             sf.file.directory startswith /sbin or
+             sf.file.directory startswith /usr/bin or
+             sf.file.directory startswith /usr/sbin or
+             sf.file.directory startswith /usr/local/bin or
+             sf.file.directory startswith /usr/local/sbin)
+
+- macro: etc_dir
+  condition: sf.file.path startswith /etc/
+
+- macro: root_dir
+  condition: (sf.file.directory=/ or sf.file.path startswith /root)
+ 
+- macro: sensitive_files
+  condition: (sf.file.path startswith /etc and
+              sf.file.path in (sys_password_files))
+
+- macro: ssh_port
+  condition: sf.net.sport=22
+ 
+- macro: running_shell_command
+  condition: sf.proc.cmdline startswith "sh -c"
+
+- macro: parent_linux_image_upgrade_script
+  condition: sf.pproc.name startswith linux-image-
+
+- macro: parent_node_running_npm
+  condition: (sf.pproc.cmdline startswith "node /usr/local/bin/npm" or
+              sf.pproc.cmdline startswith "node /usr/local/nodejs/bin/npm" or
+              sf.pproc.cmdline startswith "node /opt/rh/rh-nodejs6/root/usr/bin/npm")
+
+- macro: java_package_installer
+  condition: (sf.proc.name=java and sf.proc.cmdline contains sbt-launch.jar) or (sf.proc.name=mvn)
+
+- macro: ansible_running_python
+  condition: (sf.proc.name in (python, pypy) and sf.proc.cmdline contains ansible)
+
+- macro: python_running_chef
+  condition: (sf.proc.name=python and (sf.proc.cmdline contains yum-dump.py or sf.proc.cmdline="python /usr/bin/chef-monitor.py"))
+
+- macro: python_running_get_pip
+  condition: (sf.proc.cmdline startswith "python get-pip.py")
+
+- macro: parent_java_running_zookeeper
+  condition: (sf.pproc.name=java and sf.pproc.cmdline contains org.apache.zookeeper.server)
+
+- macro: parent_java_running_kafka
+  condition: (sf.pproc.name=java and sf.pproc.cmdline contains kafka.Kafka)
+
+- macro: parent_java_running_elasticsearch
+  condition: (sf.pproc.name=java and sf.pproc.cmdline contains org.elasticsearch.bootstrap.Elasticsearch)
+
+- macro: parent_java_running_activemq
+  condition: (sf.pproc.name=java and sf.pproc.cmdline contains activemq.jar)
+
+- macro: parent_java_running_cassandra
+  condition: (sf.pproc.name=java and (sf.proc.cmdline contains "-Dcassandra.config.loader" or sf.pproc.cmdline contains org.apache.cassandra.service.CassandraDaemon))
+
+- macro: parent_java_running_jboss_wildfly
+  condition: (sf.pproc.name=java and sf.pproc.cmdline contains org.jboss)
+
+- macro: parent_java_running_glassfish
+  condition: (sf.pproc.name=java and sf.pproc.cmdline contains com.sun.enterprise.glassfish)
+
+- macro: parent_java_running_hadoop
+  condition: (sf.pproc.name=java and sf.pproc.cmdline contains org.apache.hadoop)
+
+- macro: parent_java_running_datastax
+  condition: (sf.pproc.name=java and sf.pproc.cmdline contains com.datastax)
+
+- macro: nginx_starting_nginx
+  condition: (sf.pproc.name=nginx and sf.proc.cmdline contains "/usr/sbin/nginx -c /etc/nginx/nginx.conf")
+
+- macro: nginx_running_aws_s3_cp
+  condition: (sf.pproc.name=nginx and sf.proc.cmdline startswith "sh -c /usr/local/bin/aws s3 cp")
+
+- macro: consul_running_net_scripts
+  condition: (sf.pproc.name=consul and (sf.proc.cmdline startswith "sh -c curl" or sf.proc.cmdline startswith "sh -c nc"))
+
+- macro: consul_running_alert_checks
+  condition: (sf.pproc.name=consul and sf.proc.cmdline startswith "sh -c /bin/consul-alerts")
+
+- macro: serf_script
+  condition: (sf.proc.cmdline startswith "sh -c serf")
+
+- macro: check_process_status
+  condition: (sf.proc.cmdline startswith "sh -c kill -0 ")
+
+- macro: possibly_parent_java_running_tomcat
+  condition: (sf.pproc.name contains java and sf.pproc.cmdline contains org.apache.catalina.startup.Bootstrap)
+
+- macro: protected_shell_spawner
+  condition: >
+    (sf.proc.aname in (protected_shell_spawning_binaries)
+    or parent_java_running_zookeeper
+    or parent_java_running_kafka
+    or parent_java_running_elasticsearch
+    or parent_java_running_activemq
+    or parent_java_running_cassandra
+    or parent_java_running_jboss_wildfly
+    or parent_java_running_glassfish
+    or parent_java_running_hadoop
+    or parent_java_running_datastax
+    or possibly_parent_java_running_tomcat)
+
+- macro: nrpe_becoming_nagios
+  condition: (sf.proc.name=nrpe and sf.proc.username=nagios)
+
+- macro: container
+  condition: (sf.container.type != host)
+
+- macro: known_user_in_container
+  condition: (container and sf.proc.username != "N/A")
+
+- macro: system_procs
+  condition: sf.proc.name in (coreutils_binaries, user_mgmt_binaries)
+
+- macro: login_doing_dns_lookup
+  condition: (sf.proc.name=login and sf.net.proto=udp and sf.net.sport=53)
+
+- macro: inbound_outbound
+  condition: >
+    ((sf.opflags in (ACCEPT,CONNECT)) or
+     (sf.file.typechar = 4 or sf.file.typechar = 6) and
+     (sf.net.ip != "0.0.0.0" and sf.net.mask != "127.0.0.0/8") and
+     (sf.ret >= 0))
+ 
+- macro: possibly_webserver
+  condition: (sf.proc.name pmatch (http_server_binaries) 
+              or possibly_parent_java_running_tomcat)
+
+- macro: privileged_execution
+  condition: sf.proc.exe in (privileged_processes)
+
+- macro: allowed_launchers
+  condition: sf.pproc.exe in (/usr/local/sbin/runc)
+             or sf.proc.exe pmatch (cgi-bin)
+
+- macro: auth_execution
+  condition: sf.proc.exe in (auth_processes)
+  
+- macro: entrypoint
+  condition: not sf.pproc.pid exists
+
+- macro: wl
+  condition: sf.proc.exe in (/echo/echo)
+
+- macro: parent_sudo
+  condition: sf.pproc.exe = /usr/bin/sudo
+  
+###### Rules ####################
+ 
+- rule: Interactive shell
+  desc: Interactive shell detected
+  condition: interactive and not entrypoint      
+  action: [tag]
+  priority: low
+  tags: [mitre:T1059]
+  
+- rule: Command and Scripting Interpreter
+  desc: any network activity performed by shell interpreters that are not expected to send or receive any network traffic
+  condition: sf.proc.name in (shell_binaries)
+             and inbound_outbound
+             and not login_doing_dns_lookup
+             and not entrypoint 
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1041, mitre:T1059]
+  
+- rule: Privilege escalation
+  desc: Privilege escalation detected
+  condition: sf.pproc.uid != 0 and sf.proc.uid = 0 and not entrypoint
+  action: [tag]
+  priority: high
+  tags: [mitre:T1068]
+  
+- rule: Untrusted read sensitive file 
+  desc: an attempt to read any sensitive file (e.g. files containing user/password/authentication information)
+  condition: sensitive_files 
+             and open_read 
+             and not privileged_execution 
+             and not auth_execution 
+             and sf.proc.name in (coreutils_binaries, user_mgmt_binaries) 
+             and not entrypoint
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1087]
+
+- rule: Webserver writing unusual file
+  desc: Webserver is writing a file other than a log file
+  condition: sf.file.type = f and 
+             open_write and 
+             possibly_webserver and not sf.file.path pmatch (log_paths)
+             and not entrypoint
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1190]
+  prefilter: [FF]
+
+- rule: Suspicious process spawned
+  desc: Suspicious behavior observed in application spawning another process
+  condition: sf.opflags = EXEC 
+             and sf.proc.exe != sf.pproc.exe 
+             and not allowed_launchers 
+             and sf.proc.name in (shell_binaries, compilers, pkg_mgmt_binaries, shell_interpreters, coreutils_mod_binaries)
+             and not entrypoint
+  action: [tag]
+  priority: low
+  tags: [mitre:T1106, mitre:T1574]
+  prefilter: [PE]
+  
+- rule: Crontab file written
+  desc: Crontab file edited
+  condition: (sf.file.path in (scheduler_files) and open_write) or
+             (sf.file.newpath in (scheduler_files) and overwrite)
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1053]
+
+- rule: Unauthorized installer detected
+  desc: Use of package installer detected in container
+  condition: sf.opflags = EXEC and              
+             sf.proc.name pmatch (package_mgmt_binaries, java_package_installer) and container          
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1072]
+  prefilter: [PE]
+  
+- rule: User/group modified, added or deleted
+  desc: User/Group was modified, added or deleted
+  condition: sf.opflags = EXEC and 
+             sf.proc.name in (modify_passwd_binaries, create_user_binaries, delete_user_binaries, modify_user_binaries, create_grp_binaries, delete_group_binaries, modify_grp_binaries)
+  action: [tag]
+  priority: high
+  tags: [mitre:T1098, mitre:T1136]
+  prefilter: [PE]
+ 
+- rule: Downloader detected
+  desc: Downloader is being run inside the container. Could be downloading something malicious
+  condition: sf.opflags = EXEC and 
+             sf.proc.name pmatch (downloader_binaries)
+  action: [tag]
+  priority: high
+  tags: [mitre:T1105]
+  prefilter: [PE]
+
+- rule: Password file modified
+  desc: Password file was modified
+  condition: sf.file.path pmatch (sys_password_files) and open_write           
+  action: [tag]
+  priority: high
+  tags: [mitre:T1098]
+
+- rule: Library preload file modified
+  desc: Library preload file modified could indicate a library injection attack
+  condition: sf.file.path pmatch (ld_preload_files) and open_write           
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1547, mitre:T1554]
+
+- rule: Remote copy program detected
+  desc: Remote copy is occurring; could be data exfiltration
+  condition: sf.opflags = EXEC and 
+             sf.proc.name in (remote_copy_binaries)
+  action: [tag]
+  priority: high
+  tags: [mitre:T1020]
+  prefilter: [PE]
+  
+ - rule: Password utilities execution 
+  desc: Password utilities were run in the host system
+  condition: sf.opflags = EXEC and 
+             sf.proc.name pmatch (modify_passwd_binaries, verify_passwd_binaries, user_util_binaries)
+  action: [tag]
+  priority: high
+  tags: [mitre:T1098]
+  prefilter: [PE]
+
+- rule: History file modified
+  desc: History file modified indicating interactive session
+  condition: sf.file.path pmatch (history_files) and open_write
+  action: [tag]
+  priority: high
+  tags: [mitre:T1564]
+
+- rule: Profile file modified
+  desc: Profile file modified indicating interactive session
+  condition: sf.file.path pmatch (profile_files) and open_write
+  action: [tag]
+  priority: high
+  tags: [mitre:T1098]
+
+- rule: Write below binary dir
+  desc: an attempt to write to any file below a set of binary directories
+  condition: open_write and bin_dir
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1574]
+
+- rule: Write below system dirs
+  desc: an attempt to write to any file below a set of system directories
+  condition: open_write and system_dir and not privileged_execution
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1574]
+
+- rule: Write to init directories 
+  desc: an attempt to write to an init directory could indicate a persisted piece of malware
+  condition: open_write and init_dir
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1574]
+
+- rule: Write to scheduler directories 
+  desc: an attempt to write to a scheduler directory could indicate a persisted piece of malware
+  condition: open_write and scheduler_dir
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1053]
+
+- rule: Write below root
+  desc: an attempt to write to any file directly below / or /root
+  condition: >
+    root_dir and open_write
+    and not sf.file.path in (known_root_files)
+    and not sf.file.directory in (known_root_directories)
+    and not known_root_conditions
+  action: [tag]
+  priority: high
+  tags: [mitre:T1574]
+
+- rule: Write Below RPM/DPKG Database
+  desc: an attempt to write to the rpm/dpkg database
+  condition: (sf.file.path startswith /var/lib/rpm or 
+             sf.file.path startswith /var/lib/dpkg) and 
+             open_write
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1574]
+
+- rule: Change thread namespace
+  desc: >
+    an attempt to change a program/thread\'s namespace (commonly done
+    as a part of creating a container) by calling setns.
+  condition: >
+    sf.opflags = SETNS
+    and not sf.proc.aname in (docker_binaries, k8s_binaries, lxd_binaries)
+    and not sf.proc.aname startswith "runc:"
+    and not sf.file.path startswith /var/run/netns/cni
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1574, mitre:T1055]
+
+- rule: Non sudo setuid
+  desc: >
+    an attempt to change users by calling setuid. sudo/su are excluded. users "root" and "nobody"
+    suing to itself are also excluded, as setuid calls typically involve dropping privileges.
+  condition: >
+    sf.opflags = SETUID
+    and (known_user_in_container or not container)
+    and sf.proc.username != root 
+    and not sf.proc.name in (known_setuid_binaries, userexec_binaries, mail_binaries, docker_binaries, nomachine_binaries)
+    and not nrpe_becoming_nagios
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1068]
+
+- rule: Create files below dev
+  desc: creating any files below /dev other than known programs that manage devices. Some rootkits hide files in /dev.
+  condition: >
+    sf.file.directory = /dev
+    and open_write
+    and not sf.proc.name in (dev_creation_binaries)
+    and not sf.file.path in (allowed_dev_files)
+    and not sf.file.path startswith /dev/tty
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1574]
+
+- rule: System procs network activity
+  desc: any network activity performed by system binaries that are not expected to send or receive any network traffic
+  condition: system_procs
+    and inbound_outbound
+    and not sf.proc.name in (systemd, hostid, id)
+    and not login_doing_dns_lookup
+    and not entrypoint
+    and not wl
+  action: [tag]
+  priority: medium
+  tags: [mitre:T1543, mitre:T1041]
+
+- list: netcat_cmds
+  items: [nc, ncat]
+
+- list: netcat_shell_args
+  items: ['-e /bin/sh', '-e /bin/bash']
+
+- rule: Reverse Unix shell started
+  desc: creation of a reverse shell process via nc 
+  condition: sf.opflags = EXEC and
+             sf.proc.name in (netcat_cmds) and sf.proc.args pmatch (netcat_shell_args)
+  action: [tag]
+  priority: high
+  tags: [mitre:T1059.004]
+  prefilter: [PE]
+
+- rule: Linux and Mac File and Directory Permissions Modification
+  desc: modification of permissions or owner of a file or a directory in a linux system
+  condition: sf.opflags = EXEC and
+             sf.proc.name in (chmod, chown)
+  action: [tag]
+  priority: high
+  tags: [mitre:T1222.002]
+  prefilter: [PE]
+
+- macro: ps_discovery_args
+  condition: (sf.proc.args contains 'e' and sf-process.args contains 'f') or 
+             (sf.proc.args contains 'a' and sf-process.args contains 'u' and sf-process.args contains 'x') 
+
+- rule: Process Discovery
+  desc: gather information about running processes on a system
+  condition: sf.opflags = EXEC and
+             sf.proc.name = ps and ps_discovery_args
+  action: [tag]
+  priority: high
+  tags: [mitre:T1057]
+  prefilter: [PE]
+
+- list: discovery_cmds
+  items: [cat, strings, nl, head, tail]
+
+- rule: Account Discovery: Local Account
+  desc: attempt to get a listing of local system accounts
+  condition: sf.opflags = EXEC and
+             sf.proc.name in (discovery_cmds) and sf.proc.args in (sys_password_files)
+  action: [tag]
+  priority: high
+  tags: [mitre:T1087.001]
+  prefilter: [PE]
+
+- list: host_files
+  items: [/etc/hosts, .ssh/config]
+
+- rule: Remote System Discovery
+  desc: >
+    attempt to get a listing of other systems by IP address, hostname, or other logical
+    identifier on a network that may be used for Lateral Movement
+  condition: sf.opflags = EXEC and
+             sf.proc.name in (discovery_cmds) and sf.proc.args pmatch (host_files)
+  action: [tag]
+  priority: high
+  tags: [mitre:T1018]
+  prefilter: [PE]
+
+- list: user_discovery_cmds
+  items: [w, who, id]
+
+- rule: System Owner/User Discovery
+  desc: >
+    attempt to identify the primary user, currently logged in user, set of users 
+    that commonly uses a system, or whether a user is actively using the system
+  condition: sf.opflags = EXEC and
+             sf.proc.name in (user_discovery_cmds)
+  action: [tag]
+  priority: high
+  tags: [mitre:T1033]
+  prefilter: [PE]
+
+- rule: Permission Groups Discovery: Local Groups
+  desc: attempt to find local system groups and permission settings
+  condition: sf.opflags = EXEC and
+             (sf.proc.name = groups or
+              (sf.proc.name in (discovery_cmds) and sf.proc.args = '/etc/groups'))
+  action: [tag]
+  priority: high
+  tags: [mitre:T1033]
+  prefilter: [PE]
+
+- list: system_discovery_cmds
+  items: [uname, lsb_release]
+
+- rule: System Information Discovery
+  desc: >
+    attempt to get detailed information about the operating system and hardware,
+    including version, patches, hotfixes, service packs, and architecture
+  condition: sf.opflags = EXEC and
+             sf.proc.name in (system_discovery_cmds)
+  action: [tag]
+  priority: high
+  tags: [mitre:T1082]
+  prefilter: [PE]
+
+- list: fs_discovery_cmds
+  items: [mount, df]
+
+- macro: home_dir_arg
+  condition: sf.proc.args endswith '/home' or sf.proc.args endswith '/home/'
+
+- rule: File and Directory Discovery
+  desc: enumerate files, directories and volume information
+  condition: sf.opflags = EXEC and
+             ((sf.proc.name = ls and home_dir_arg) or
+              sf.proc.name in (fs_discovery_cmds))
+  action: [tag]
+  priority: high
+  tags: [mitre:T1083]
+  prefilter: [PE]
+
+- list: net_discovery_cmds
+  items: [netstat, ss]
+
+- rule: System Network Connections Discovery
+  desc: attempt to get a listing of network connections
+  condition: sf.opflags = EXEC and
+             sf.proc.name in (net_discovery_cmds)
+  action: [tag]
+  priority: high
+  tags: [mitre:T1049]
+  prefilter: [PE]
+
+- rule: Shell started by container entry point 
+  desc: Container entry point "node" starts shell sub-process
+  condition: sf.opflags = EXEC and
+             container and sf.pproc.name = node and sf.proc.name in (shell_binaries)
+  action: [tag]
+  priority: high
+  tags: [mitre:T1059.004]
+  prefilter: [PE]
+
+- rule: Large network data transfer with database endpoint
+  desc: Large amount of data transferred via network connection with database endpoint
+  condition: ( sf.opflags contains RECV and sf.net.dport = 3306 and sf.flow.rbytes > 1024 ) or
+             ( sf.opflags contains SEND and sf.net.sport = 3306 and sf.flow.wbytes > 1024 )
+  action: [tag]
+  priority: high
+  tags: [mitre:T1030]
+  prefilter: [NF]
+
