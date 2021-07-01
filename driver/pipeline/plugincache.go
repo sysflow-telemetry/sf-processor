@@ -44,13 +44,13 @@ type PluginCache struct {
 	procFuncMap map[string]interface{}
 	hdlFuncMap  map[string]interface{}
 	chanFuncMap map[string]interface{}
-	config      *viper.Viper
+	config      *Config
 	configFile  string
 }
 
 // NewPluginCache creates a new PluginCache instance.
 func NewPluginCache(conf string) *PluginCache {
-	plug := &PluginCache{config: viper.New(),
+	plug := &PluginCache{config: new(Config),
 		chanMap:     make(map[string]interface{}),
 		driverMap:   make(map[string]interface{}),
 		procFuncMap: make(map[string]interface{}),
@@ -70,23 +70,25 @@ func (p *PluginCache) init() {
 	(&sysflow.StreamingDriver{}).Register(p)
 }
 
-// LoadPlugins loads dynamic plugins to plugin cache from dir path.
-func (p *PluginCache) LoadPlugins(dir string) error {
-	var plug *plugin.Plugin
-	if paths, err := ioutils.ListFilePaths(dir, ".so"); err == nil {
-		for _, path := range paths {
-			if plug, err = plugin.Open(path); err != nil {
-				return err
-			}
-			sym, err := plug.Lookup(plugins.PlugSym)
-			if err != nil {
-				return err
-			}
-			if proc, ok := sym.(plugins.SFProcessor); ok {
-				// p.pluginMap[proc.GetName()] = plug
-				proc.Register(p)
-			}
+// TryToLoadPlugin loads dynamic plugins to plugin cache from dir path.
+func (p *PluginCache) TryToLoadPlugin(dir string, name string) error {
+	dynPlugin := dir + "/" + name + ".so"
+	if _, err := os.Stat(dynPlugin); err == nil {
+		var plug *plugin.Plugin
+		if plug, err = plugin.Open(dynPlugin); err != nil {
+			return err
 		}
+		sym, err := plug.Lookup(plugins.PlugSym)
+		if err != nil {
+			return err
+		}
+		if proc, ok := sym.(plugins.SFProcessor); ok {
+			// p.pluginMap[proc.GetName()] = plug
+			logger.Trace.Printf("loading plugin %s from file %s", name, dynPlugin)
+			proc.Register(p)
+		}
+	} else {
+		return errors.New("error trying load plugin at: " + dynPlugin)
 	}
 	return nil
 }
@@ -121,11 +123,6 @@ func (p *PluginCache) AddProcessor(name string, factory interface{}) {
 	p.procFuncMap[name] = factory
 }
 
-// AddHandler adds a handler factory method to the plugin cache.
-func (p *PluginCache) AddHandler(name string, factory interface{}) {
-	p.hdlFuncMap[name] = factory
-}
-
 // AddChannel adds a channel factory method to the plugin cache.
 func (p *PluginCache) AddChannel(name string, factory interface{}) {
 	p.chanFuncMap[name] = factory
@@ -141,33 +138,33 @@ func (p *PluginCache) GetConfig() (*Config, error) {
 		return nil, errors.New("Pipeline config file is not a file")
 	}
 	dir := filepath.Dir(p.configFile)
-	p.config.SetConfigName(strings.TrimSuffix(filepath.Base(p.configFile), filepath.Ext(p.configFile)))
-	p.config.SetConfigType("json")
-	p.config.AddConfigPath(dir)
 
-	conf := new(Config)
-	err = p.config.ReadInConfig()
+	configReader := viper.New()
+	configReader.SetConfigName(strings.TrimSuffix(filepath.Base(p.configFile), filepath.Ext(p.configFile)))
+	configReader.SetConfigType("json")
+	configReader.AddConfigPath(dir)
 
+	err = configReader.ReadInConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	err = p.config.Unmarshal(conf)
+	err = configReader.Unmarshal(p.config)
 	if err != nil {
 		return nil, err
 	}
+	p.updateConfigFromEnv()
 
-	p.updateConfigFromEnv(conf)
-	return conf, nil
+	return p.config, nil
 }
 
 // updateConfigFromEnv updates config object with environment variables if set.
 // It assumes the following convention:
 // - Environment variables follow the naming schema <PROCESSOR NAME>_<CONFIG ATTRIBUTE NAME>
 // - Processor name in pipeline.json is all lower case
-func (p *PluginCache) updateConfigFromEnv(config *Config) {
-	for _, c := range config.Pipeline {
-		if proc, ok := c[ProcConfig]; ok {
+func (p *PluginCache) updateConfigFromEnv() {
+	for _, c := range p.config.Pipeline {
+		if proc, ok := c[ProcConfig].(string); ok {
 			for k, v := range p.getEnv(proc) {
 				c[k] = v
 			}
@@ -175,26 +172,18 @@ func (p *PluginCache) updateConfigFromEnv(config *Config) {
 	}
 }
 
-// getEnv returns the environemnt config settings for processor proc.
+// getEnv returns the environment config settings for processor proc.
 func (p *PluginCache) getEnv(proc string) map[string]string {
 	var conf = make(map[string]string)
 	for _, e := range os.Environ() {
 		pair := strings.SplitN(e, "=", 2)
 		key := strings.SplitN(strings.ToLower(pair[0]), "_", 2)
 		if len(key) == 2 && key[0] == proc {
-			conf[key[1]] = pair[1]
+			attr := strings.ReplaceAll(key[1], "_", ".")
+			conf[attr] = pair[1]
 		}
 	}
 	return conf
-}
-
-// GetHandler retrieves a cached plugin handler by name.
-func (p *PluginCache) GetHandler(name string) (plugins.SFHandler, error) {
-	if val, ok := p.hdlFuncMap[name]; ok {
-		funct := val.(func() plugins.SFHandler)
-		return funct(), nil
-	}
-	return nil, fmt.Errorf("Handler '%s' not found in plugin cache", name)
 }
 
 // GetChan retrieves a cached plugin channel by name.
@@ -217,17 +206,25 @@ func (p *PluginCache) GetChan(ch string, size int) (interface{}, error) {
 }
 
 // GetProcessor retrieves a cached plugin processor by name.
-func (p *PluginCache) GetProcessor(name string, hdl plugins.SFHandler, hdlr bool) (plugins.SFProcessor, error) {
+func (p *PluginCache) GetProcessor(dir string, name string) (plugins.SFProcessor, error) {
+	var con interface{} = nil
 	if val, ok := p.procFuncMap[name]; ok {
-		logger.Trace.Println("Found processor in function map: ", name)
-		var prc plugins.SFProcessor
-		if hdlr {
-			funct := val.(func(plugins.SFHandler) plugins.SFProcessor)
-			prc = funct(hdl)
-		} else {
-			funct := val.(func() plugins.SFProcessor)
-			prc = funct()
+		logger.Trace.Println("Found processor in function map: " + name)
+		con = val
+	} else {
+		err := p.TryToLoadPlugin(dir, name)
+		if err != nil {
+			return nil, err
 		}
+		if val, ok := p.procFuncMap[name]; ok {
+			logger.Trace.Println("Found processor from dynamic loading: " + name)
+			con = val
+		}
+	}
+	if con != nil {
+		var prc plugins.SFProcessor
+		funct := con.(func() plugins.SFProcessor)
+		prc = funct()
 		return prc, nil
 	}
 	return nil, fmt.Errorf("Plugin '%s' not found in plugin cache", name)

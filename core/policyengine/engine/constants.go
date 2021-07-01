@@ -27,19 +27,6 @@ const (
 	SPACE   string = " "
 )
 
-// SysFlow object types.
-const (
-	TyP      string = "P"
-	TyF      string = "F"
-	TyC      string = "C"
-	TyH      string = "H"
-	TyPE     string = "PE"
-	TyFE     string = "FE"
-	TyFF     string = "FF"
-	TyNF     string = "NF"
-	TyUnknow string = ""
-)
-
 // Falco priority values.
 const (
 	FPriorityEmergency     = "emergency"
@@ -125,7 +112,8 @@ const (
 	SF_CONTAINER_PRIVILEGED string = "sf.container.privileged"
 	SF_NODE_ID              string = "sf.node.id"
 	SF_NODE_IP              string = "sf.node.ip"
-	SF_SCHEMA_VERSION       string = "sf.schema"
+	SF_SCHEMA_VERSION       string = "sf.meta.schema"
+	SF_TRACENAME            string = "sf.meta.tracename"
 )
 
 // extension proc attributes

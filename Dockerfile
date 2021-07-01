@@ -8,7 +8,7 @@
 #-----------------------
 # Stage: base
 #-----------------------
-FROM registry.access.redhat.com/ubi8/ubi:8.1-406 as base
+FROM registry.access.redhat.com/ubi8/ubi:8.4-199 AS base
 
 # Environment and build args
 ARG VERSION=dev
@@ -25,8 +25,8 @@ ENV SRC_ROOT=/go/src/github.com/sysflow-telemetry/sf-processor/
 RUN dnf update -y --disableplugin=subscription-manager && \
      dnf install -y  --disableplugin=subscription-manager wget gcc make git device-mapper-devel
 
-RUN wget https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go1.14.2.linux-amd64.tar.gz && mkdir -p $SRC_ROOT
+RUN wget https://dl.google.com/go/go1.16.3.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.16.3.linux-amd64.tar.gz && mkdir -p $SRC_ROOT
 
 # Copy sources
 COPY core ${SRC_ROOT}core
@@ -45,7 +45,7 @@ RUN cd ${SRC_ROOT} && \
 #-----------------------
 # Stage: runtime
 #-----------------------
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-267 AS runtime
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4-200 AS runtime
 
 # Environment and build args
 ARG VERSION=dev
@@ -72,7 +72,8 @@ ENV CONFIG_PATH=$configpath
 
 # Image labels
 LABEL "name"="SysFlow Processor"
-LABEL "vendor"="IBM"
+LABEL "maintainer"="The SysFlow team"
+LABEL "vendor"="SysFlow"
 LABEL "version"="${VERSION}"
 LABEL "release"="${RELEASE}"
 LABEL "summary"="SysFlow Processor implements a pluggable stream-processing pipeline and contains a built-in policy engine that evaluates rules on the ingested SysFlow stream"

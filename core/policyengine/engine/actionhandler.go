@@ -32,7 +32,7 @@ func NewActionHandler(conf Config) ActionHandler {
 // HandleActionAsync handles actions defined in rule.
 func (s ActionHandler) HandleActionAsync(rule Rule, r *Record, out func(r *Record)) {
 	s.HandleAction(rule, r)
-	out(r)
+	//out(r)
 }
 
 // HandleAction handles actions defined in rule.

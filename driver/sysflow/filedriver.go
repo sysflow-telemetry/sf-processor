@@ -133,7 +133,7 @@ func (s *FileDriver) Run(path string, running *bool) error {
 			break
 		}
 	}
-	logger.Warn.Println("Closing main channel")
+	logger.Trace.Println("Closing main channel")
 	close(records)
 	s.pipeline.Wait()
 	return nil

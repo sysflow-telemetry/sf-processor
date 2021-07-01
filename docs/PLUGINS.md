@@ -1,6 +1,6 @@
 ## Write a simple processing plugin
 
-In addition to its core plugins, the processor also supports custom plugins that can be dynamically loaded into the processor via a compiled golang shared library using the [golang plugin package](https://golang.org/pkg/plugin/). Custom plugins enables easy extension of the processor and the creation of custome pipelines tailored to specific use cases.
+In addition to its core plugins, the processor also supports custom plugins that can be dynamically loaded into the processor via a compiled golang shared library using the [golang plugin package](https://golang.org/pkg/plugin/). Custom plugins enables easy extension of the processor and the creation of custom pipelines tailored to specific use cases.
 
 A dynamic plugin example is provided in [github](https://github.com/sysflow-telemetry/sf-processor/tree/master/plugins/example). The core of the plugin is building an object that implements an [SFProcessor interface](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/processor.go). Such an implementation looks as follows:
 

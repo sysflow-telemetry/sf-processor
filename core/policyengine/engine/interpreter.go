@@ -20,12 +20,14 @@
 package engine
 
 import (
+	"errors"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/lang/errorhandler"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/lang/parser"
 )
 
@@ -37,7 +39,7 @@ var filters = make([]Filter, 0)
 var lists = make(map[string][]string)
 var macroCtxs = make(map[string]parser.IExpressionContext)
 
-// Regular expression for pasting lists.
+// Regular expression for parsing lists.
 var itemsre = regexp.MustCompile(`(^\[)(.*)(\]$?)`)
 
 // PolicyInterpreter defines a rules engine for SysFlow data streams.
@@ -46,13 +48,13 @@ type PolicyInterpreter struct {
 }
 
 // NewPolicyInterpreter constructs a new interpreter instance.
-func NewPolicyInterpreter(conf Config) PolicyInterpreter {
+func NewPolicyInterpreter(conf Config) *PolicyInterpreter {
 	ah := NewActionHandler(conf)
-	return PolicyInterpreter{ah}
+	return &PolicyInterpreter{ah}
 }
 
 // Compile parses and interprets an input policy defined in path.
-func (pi PolicyInterpreter) compile(path string) error {
+func (pi *PolicyInterpreter) compile(path string) error {
 	// Setup the input
 	is, err := antlr.NewFileStream(path)
 	if err != nil {
@@ -61,11 +63,17 @@ func (pi PolicyInterpreter) compile(path string) error {
 	}
 
 	// Create the Lexer
+	lexerErrors := &errorhandler.SfplErrorListener{}
 	lexer := parser.NewSfplLexer(is)
+	lexer.RemoveErrorListeners()
+	lexer.AddErrorListener(lexerErrors)
 	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 
 	// Create the Parser
+	parserErrors := &errorhandler.SfplErrorListener{}
 	p := parser.NewSfplParser(stream)
+	p.RemoveErrorListeners()
+	p.AddErrorListener(parserErrors)
 
 	// Pre-processing (to deal with usage before definitions of macros and lists)
 	antlr.ParseTreeWalkerDefault.Walk(&sfplListener{}, p.Defs())
@@ -74,11 +82,31 @@ func (pi PolicyInterpreter) compile(path string) error {
 	// Parse the policy
 	antlr.ParseTreeWalkerDefault.Walk(&sfplListener{}, p.Policy())
 
+	errFound := false
+	if len(lexerErrors.Errors) > 0 {
+		logger.Error.Printf("Lexer %d errors found\n", len(lexerErrors.Errors))
+		for _, e := range lexerErrors.Errors {
+			logger.Error.Println("\t", e.Error())
+		}
+		errFound = true
+	}
+	if len(parserErrors.Errors) > 0 {
+		logger.Error.Printf("Parser %d errors found\n", len(parserErrors.Errors))
+		for _, e := range parserErrors.Errors {
+			logger.Error.Println("\t", e.Error())
+		}
+		errFound = true
+	}
+
+	if errFound {
+		return errors.New("errors found during compilation of policies. check logs for detail.")
+	}
+
 	return nil
 }
 
 // Compile parses and interprets a set of input policies defined in paths.
-func (pi PolicyInterpreter) Compile(paths ...string) error {
+func (pi *PolicyInterpreter) Compile(paths ...string) error {
 	for _, path := range paths {
 		logger.Trace.Println("Parsing policy file ", path)
 		if err := pi.compile(path); err != nil {
@@ -89,23 +117,27 @@ func (pi PolicyInterpreter) Compile(paths ...string) error {
 }
 
 // ProcessAsync executes all compiled policies against record r.
-func (pi PolicyInterpreter) ProcessAsync(applyFilters bool, filterOnly bool, r *Record, out func(r *Record)) {
+func (pi *PolicyInterpreter) ProcessAsync(applyFilters bool, filterOnly bool, r *Record, out func(r *Record)) {
 	if applyFilters && pi.EvalFilters(r) {
 		return
 	}
 	if filterOnly {
 		out(r)
 	}
+	match := false
 	for _, rule := range rules {
-		//fmt.Println("Rule: ", rule.Name, rule.Enabled, rule.isApplicable(r))
 		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
 			pi.ahdl.HandleActionAsync(rule, r, out)
+			match = true
 		}
+	}
+	if match {
+		out(r)
 	}
 }
 
 // Process executes all compiled policies against record r.
-func (pi PolicyInterpreter) Process(applyFilters bool, filterOnly bool, r *Record) (bool, *Record) {
+func (pi *PolicyInterpreter) Process(applyFilters bool, filterOnly bool, r *Record) (bool, *Record) {
 	match := false
 	if applyFilters && pi.EvalFilters(r) {
 		return match, nil
@@ -123,7 +155,7 @@ func (pi PolicyInterpreter) Process(applyFilters bool, filterOnly bool, r *Recor
 }
 
 // EvalFilters executes compiled policy filters against record r.
-func (pi PolicyInterpreter) EvalFilters(r *Record) bool {
+func (pi *PolicyInterpreter) EvalFilters(r *Record) bool {
 	for _, f := range filters {
 		if f.Enabled && f.condition.Eval(r) {
 			return true
@@ -238,7 +270,6 @@ func (listener *sfplListener) getPriority(ctx *parser.PruleContext) Priority {
 			return High
 		default:
 			logger.Warn.Printf("Unrecognized priority value %s. Deferring to %s\n", p, Low.String())
-			break
 		}
 	}
 	return Low
@@ -261,7 +292,6 @@ func (listener *sfplListener) getActions(ctx *parser.PruleContext) []Action {
 				actions = append(actions, Hash)
 			default:
 				logger.Warn.Println("Unrecognized action value ", v)
-				break
 			}
 		}
 	}
@@ -269,12 +299,7 @@ func (listener *sfplListener) getActions(ctx *parser.PruleContext) []Action {
 }
 
 func (listener *sfplListener) extractList(str string) []string {
-	s := []string{}
-	ls := strings.Split(itemsre.ReplaceAllString(str, "$2"), LISTSEP)
-	for _, v := range ls {
-		s = append(s, v)
-	}
-	return s
+	return strings.Split(itemsre.ReplaceAllString(str, "$2"), LISTSEP)
 }
 
 func (listener *sfplListener) extractListFromItems(ctx parser.IItemsContext) []string {
@@ -306,7 +331,7 @@ func (listener *sfplListener) reduceList(sl string) []string {
 			s = append(s, listener.reduceList(v)...)
 		}
 	} else {
-		s = append(s, sl)
+		s = append(s, trimBoundingQuotes(sl))
 	}
 	return s
 }

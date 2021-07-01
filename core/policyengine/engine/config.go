@@ -19,7 +19,9 @@
 //
 package engine
 
-import "errors"
+import (
+	"errors"
+)
 
 // Configuration keys.
 const (
@@ -28,6 +30,7 @@ const (
 	VersionKey           string = "version"
 	JSONSchemaVersionKey string = "jsonschemaversion"
 	BuildNumberKey       string = "buildnumber"
+	MonitorKey           string = "monitor"
 )
 
 // Config defines a configuration object for the engine.
@@ -37,27 +40,39 @@ type Config struct {
 	Version           string
 	JSONSchemaVersion string
 	BuildNumber       string
+	Monitor           MonitorType
 }
 
 // CreateConfig creates a new config object from config dictionary.
-func CreateConfig(conf map[string]string) (Config, error) {
+func CreateConfig(conf map[string]interface{}) (Config, error) {
 	var c Config = Config{Mode: AlertMode} // default values
-	if v, ok := conf[PoliciesConfigKey]; ok {
+
+	if v, ok := conf[PoliciesConfigKey].(string); ok {
 		c.PoliciesPath = v
 	} else {
 		return c, errors.New("Configuration tag 'policies' missing from policy engine plugin settings")
 	}
-	if v, ok := conf[ModeConfigKey]; ok {
+	if v, ok := conf[ModeConfigKey].(string); ok {
 		c.Mode = parseModeConfig(v)
 	}
-	if v, ok := conf[VersionKey]; ok {
+	if v, ok := conf[VersionKey].(string); ok {
 		c.Version = v
 	}
-	if v, ok := conf[JSONSchemaVersionKey]; ok {
+	if v, ok := conf[JSONSchemaVersionKey].(string); ok {
 		c.JSONSchemaVersion = v
 	}
-	if v, ok := conf[BuildNumberKey]; ok {
+	if v, ok := conf[BuildNumberKey].(string); ok {
 		c.BuildNumber = v
+	}
+	c.Monitor = NoneType
+	if v, ok := conf[MonitorKey].(string); ok {
+		if v == "local" {
+			c.Monitor = LocalType
+		} else if v == "none" {
+			c.Monitor = NoneType
+		} else {
+			return c, errors.New("Configuration tag 'monitor' must be set to 'none', 'local'")
+		}
 	}
 	return c, nil
 }
@@ -87,4 +102,15 @@ func parseModeConfig(s string) Mode {
 		return BypassMode
 	}
 	return AlertMode
+}
+
+type MonitorType uint32
+
+const (
+	NoneType MonitorType = iota
+	LocalType
+)
+
+func (s MonitorType) String() string {
+	return [...]string{"none", "local"}[s]
 }
