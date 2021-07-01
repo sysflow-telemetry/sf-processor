@@ -35,8 +35,7 @@ require (
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/ibm-cloud-security/security-advisor-sdk-go v1.1.1
-	github.com/linkedin/goavro v2.1.0+incompatible // indirect
-	github.com/linkedin/goavro/v2 v2.10.0 // indirect
+	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/mailru/easyjson v0.7.6
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/pkg/errors v0.9.1
@@ -45,6 +44,7 @@ require (
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210611191016-bbdbd17a2eaf
+	gopkg.in/linkedin/goavro.v1 v1.0.5 // indirect
 )
 
 //replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go
