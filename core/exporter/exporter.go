@@ -20,16 +20,15 @@
 package exporter
 
 import (
-	"crypto/tls"
-	"fmt"
-	"os"
+	"errors"
 	"sync"
 	"time"
 
-	syslog "github.com/RackSec/srslog"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
-	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
+	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
+	"github.com/sysflow-telemetry/sf-processor/core/exporter/encoders"
+	"github.com/sysflow-telemetry/sf-processor/core/exporter/transports"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
@@ -37,17 +36,21 @@ const (
 	pluginName string = "exporter"
 )
 
-// Exporter defines a syslogger plugin.
+var codecs = make(map[commons.Format]encoders.EncoderFactory)
+var protocols = make(map[commons.Transport]transports.TransportProtocolFactory)
+
+// Exporter defines a telemetry export plugin.
 type Exporter struct {
-	recs    []*engine.Record
-	counter int
-	sysl    *syslog.Writer
-	config  Config
+	config    commons.Config
+	encoder   encoders.Encoder
+	transport transports.TransportProtocol
+	recs      []*engine.Record
+	counter   int
 }
 
 // NewExporter creates a new plugin instance.
 func NewExporter() plugins.SFProcessor {
-	return new(Exporter)
+	return &Exporter{}
 }
 
 // GetName returns the plugin name.
@@ -60,28 +63,57 @@ func (s *Exporter) Register(pc plugins.SFPluginCache) {
 	pc.AddProcessor(pluginName, NewExporter)
 }
 
+// registerCodecs register encoders for exporting processor data.
+func (s *Exporter) registerCodecs() {
+	(&encoders.JSONEncoder{}).Register(codecs)
+	(&encoders.ECSEncoder{}).Register(codecs)
+	(&encoders.OccurrenceEncoder{}).Register(codecs)
+}
+
+// registerExportProtocols register transport protocols for exporting processor data.
+func (s *Exporter) registerExportProtocols() {
+	(&transports.SyslogProto{}).Register(protocols)
+	(&transports.TerminalProto{}).Register(protocols)
+	(&transports.TextFileProto{}).Register(protocols)
+	(&transports.NullProto{}).Register(protocols)
+	(&transports.FindingsApiProto{}).Register(protocols)
+	(&transports.ElasticProto{}).Register(protocols)
+}
+
 // Init initializes the plugin with a configuration map and cache.
-func (s *Exporter) Init(conf map[string]string) error {
+func (s *Exporter) Init(conf map[string]interface{}) error {
 	var err error
-	s.config = CreateConfig(conf)
-	if s.config.Export == FileExport {
-		os.Remove(s.config.Path)
-	} else if s.config.Export == SyslogExport {
-		raddr := fmt.Sprintf("%s:%d", s.config.Host, s.config.Port)
-		if s.config.Proto == TCPTLSProto {
-			// TODO: verify connection with given trust certifications
-			nopTLSConfig := &tls.Config{InsecureSkipVerify: true}
-			s.sysl, err = syslog.DialWithTLSConfig("tcp+tls", raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag, nopTLSConfig)
-		} else {
-			s.sysl, err = syslog.Dial(s.config.Proto.String(), raddr, syslog.LOG_ALERT|syslog.LOG_DAEMON, s.config.Tag)
-		}
-		if err == nil {
-			s.sysl.SetFormatter(syslog.RFC5424Formatter)
-			if s.config.LogSource != sfgo.Zeros.String {
-				s.sysl.SetHostname(s.config.LogSource)
-			}
-		}
+
+	// register encoders
+	s.registerCodecs()
+
+	// register export protocols
+	s.registerExportProtocols()
+
+	// create and read config object
+	s.config, err = commons.CreateConfig(conf)
+	if err != nil {
+		return err
 	}
+
+	// initialize encoder
+	if createCodec, ok := codecs[s.config.Format]; ok {
+		s.encoder = createCodec(s.config)
+	} else {
+		return errors.New("Unable to find encoder for " + s.config.Format.String())
+	}
+
+	// initiliaze transport protocol
+	if createTransport, ok := protocols[s.config.Transport]; ok {
+		s.transport = createTransport(s.config)
+		err = s.transport.Init()
+		if err != nil {
+			return err
+		}
+	} else {
+		return errors.New("Unable to find transport protocol for " + s.config.Transport.String())
+	}
+
 	return err
 }
 
@@ -96,7 +128,8 @@ func (s *Exporter) Process(ch interface{}, wg *sync.WaitGroup) {
 	defer ticker.Stop()
 	lastFlush := time.Now()
 
-	logger.Trace.Printf("Starting Exporter in mode %s with channel capacity %d", s.config.Export.String(), cap(record))
+	logger.Trace.Printf("Starting exporter in mode %s with channel capacity %d", s.config.Transport.String(), cap(record))
+
 RecLoop:
 	for {
 		select {
@@ -104,20 +137,22 @@ RecLoop:
 			if ok {
 				s.counter++
 				s.recs = append(s.recs, fc)
-				if s.counter > s.config.EventBuffer {
+				if s.counter >= s.config.EventBuffer {
 					s.process()
 					s.recs = s.recs[:0]
 					s.counter = 0
 					lastFlush = time.Now()
 				}
 			} else {
-				s.process()
+				if s.counter > 0 {
+					s.process()
+				}
 				logger.Trace.Println("Channel closed. Shutting down.")
 				break RecLoop
 			}
 		case <-ticker.C:
 			// force flush records after 1sec idle
-			if time.Now().Sub(lastFlush) > maxIdle && s.counter > 0 {
+			if time.Since(lastFlush) > maxIdle && s.counter > 0 {
 				s.process()
 				s.recs = s.recs[:0]
 				s.counter = 0
@@ -127,59 +162,28 @@ RecLoop:
 	}
 }
 
-func (s *Exporter) process() {
-	s.export(s.createEvents())
-}
-
-func (s *Exporter) createEvents() []Event {
-	if s.config.ExpType == BatchType {
-		return CreateOffenses(s.recs, s.config)
+func (s *Exporter) process() error {
+	data, err := s.encoder.Encode(s.recs)
+	if err != nil {
+		logger.Error.Println(err)
+		return err
 	}
-	return CreateTelemetryRecords(s.recs, s.config)
-}
-
-func (s *Exporter) export(events []Event) {
-	if s.config.Format == JSONFormat {
-		s.exportAsJSON(events)
-	}
-}
-
-func (s *Exporter) exportAsJSON(events []Event) {
-	switch s.config.Export {
-	case StdOutExport:
-		for _, evt := range events {
-			fmt.Println(evt.ToJSONStr())
-		}
-	case SyslogExport:
-		for _, evt := range events {
-			if err := s.sysl.Alert(evt.ToJSONStr()); err != nil {
-				logger.Error.Println("Can't export to syslog:\n", err)
-				break
-			}
-		}
-	case FileExport:
-		f, err := os.OpenFile(s.config.Path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if len(data) > 0 {
+		err = s.transport.Export(data)
 		if err != nil {
-			logger.Error.Println("Can't open trace file:", err)
-			break
-		}
-		defer f.Close()
-		for _, evt := range events {
-			if _, err := fmt.Fprintln(f, evt.ToJSONStr()); nil != err {
-				logger.Error.Println("Can't write to trace file:\n", err)
-				break
-			}
+			logger.Error.Println(err)
+			return err
 		}
 	}
+	return nil
 }
 
 // SetOutChan sets the output channel of the plugin.
-func (s *Exporter) SetOutChan(ch interface{}) {}
+func (s *Exporter) SetOutChan(ch []interface{}) {}
 
 // Cleanup tears down plugin resources.
 func (s *Exporter) Cleanup() {
 	logger.Trace.Println("Exiting ", pluginName)
+	s.encoder.Cleanup()
+	s.transport.Cleanup()
 }
-
-// This function is not run when module is used as a plugin.
-func main() {}

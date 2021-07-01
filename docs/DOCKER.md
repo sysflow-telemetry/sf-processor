@@ -52,7 +52,7 @@ The key setting in the collector portion of the file is the `FILTER` variable.  
 
 ### Setting up the processor environment
 
-As mentioned in a previous section, all custom plugin attributes can be set using the the following: `<PLUGIN NAME>_<CONFIG ATTRIBUTE NAME>` format.  Note that the docker compose file sets several attributes including `EXPORTER_TYPE`, `EXPORTER_HOST` and `EXPORTER_PORT`. Note that `EXPORTER_SOURCE` is set to the bash environment variable `${HOSTNAME}`.  `HOSTNAME` must be explicitly exported before launching docker compose in order to be picked up. 
+As mentioned in a previous section, all custom plugin attributes can be set using the following: `<PLUGIN NAME>_<CONFIG ATTRIBUTE NAME>` format.  Note that the docker compose file sets several attributes including `EXPORTER_TYPE`, `EXPORTER_HOST` and `EXPORTER_PORT`. Note that `EXPORTER_SOURCE` is set to the bash environment variable `${HOSTNAME}`.  `HOSTNAME` must be explicitly exported before launching docker compose in order to be picked up. 
 
 ```bash
 export HOSTNAME

@@ -1,0 +1,366 @@
+{
+  "mappings" : {
+    "properties" : {
+      "@timestamp" : {
+        "type" : "date_nanos"
+      },
+      "agent" : {
+        "properties" : {
+          "type" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 64
+          },
+          "version" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 64
+          }
+        }
+      },
+      "container" : {
+        "properties" : {
+          "id" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 64
+          },
+          "image" : {
+            "properties" : {
+              "id" : {
+                "type" : "keyword",
+                "norms": false,
+                "ignore_above" : 64
+              },
+              "name" : {
+                "type" : "keyword",
+                "norms": false,
+                "ignore_above" : 256
+              }
+            }
+          },
+          "name" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+          "runtime" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 32
+          },
+          "sf_privileged" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "destination" : {
+        "properties" : {
+          "address" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+          "bytes" : {
+            "type" : "long"
+          },
+          "ip" : {
+            "type" : "ip"
+          },
+          "packets" : {
+            "type" : "long"
+          },
+          "port" : {
+            "type" : "long"
+          }
+        }
+      },
+      "ecs" : {
+        "properties" : {
+          "version" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 16
+          }
+        }
+      },
+      "event" : {
+        "properties" : {
+          "action" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 64
+          },
+          "category" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 32
+          },
+          "duration" : {
+            "type" : "long"
+          },
+          "end" : {
+            "type" : "date_nanos"
+          },
+          "kind" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 32
+          },
+          "original" : {
+            "type" : "text",
+            "norms": false,
+            "index": false
+          },
+	  "severity": {
+	    "type" : "short"
+	  },
+          "sf_ret" : {
+            "type" : "integer"
+          },
+          "sf_state" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 32
+          },
+          "sf_type" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 2
+          },
+          "start" : {
+            "type" : "date_nanos"
+          },
+          "type" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 32
+          },
+          "reason" : {
+            "type": "text",
+            "norms": false,
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+               }
+             }
+          }
+        }
+      },
+      "file" : {
+        "properties" : {
+          "directory" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+          "name" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+          "path" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+          "target_path" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+          "type" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 32
+          }
+        }
+      },
+      "host" : {
+        "properties" : {
+          "id" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 64
+          },
+          "ip" : {
+            "type" : "ip"
+          },
+          "name" : {
+            "type" : "keyword",
+            "ignore_above" : 256
+          }
+        }
+      },
+      "network" : {
+        "properties" : {
+          "bytes" : {
+            "type" : "long"
+          },
+          "community_id" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 64
+          },
+          "iana_number" : {
+            "type" : "short"
+          },
+          "transport" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 16
+          }
+        }
+      },
+      "process" : {
+        "properties" : {
+          "args" : {
+            "type" : "text",
+            "norms": false,
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "args_count" : {
+            "type" : "short"
+          },
+          "command_line" : {
+            "type" : "text",
+            "norms": false
+          },
+          "executable" : {
+            "type" : "text",
+            "norms": false,
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "name" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+          "parent" : {
+            "properties" : {
+              "args" : {
+                "type" : "text",
+                "norms": false,
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              },
+              "args_count" : {
+                "type" : "short"
+              },
+              "command_line" : {
+                "type" : "text",
+                "norms": false
+              },
+              "executable" : {
+                "type" : "text",
+                "norms": false,
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 512
+                  }
+                }
+              },
+              "name" : {
+                "type" : "keyword",
+                "norms": false,
+                "ignore_above" : 256
+              },
+              "pid" : {
+                "type" : "integer"
+              },
+              "start" : {
+                "type" : "date_nanos"
+              }
+            }
+          },
+          "pid" : {
+            "type" : "integer"
+          },
+          "start" : {
+            "type" : "date_nanos"
+          }
+        }
+      },
+      "sf_file_action" : {
+        "properties" : {
+          "bytes_read" : {
+            "type" : "long"
+          },
+          "bytes_written" : {
+            "type" : "long"
+          },
+          "opflags" : {
+            "type" : "integer"
+          },
+          "read_ops" : {
+            "type" : "long"
+          },
+          "write_ops" : {
+            "type" : "long"
+          }
+        }
+      },
+      "source" : {
+        "properties" : {
+          "address" : {
+            "type" : "keyword",
+            "norms" : false,
+            "ignore_above" : 256
+          },
+          "bytes" : {
+            "type" : "long"
+          },
+          "ip" : {
+            "type" : "ip"
+          },
+          "packets" : {
+            "type" : "long"
+          },
+          "port" : {
+            "type" : "long"
+          }
+        }
+      },
+      "user" : {
+        "properties" : {
+          "group" : {
+            "properties" : {
+              "id" : {
+                "type" : "integer"
+              },
+              "name" : {
+                "type" : "keyword",
+                "norms" : false,
+                "ignore_above" : 256
+              }
+           }
+         },
+         "id" : {
+            "type" : "integer"
+          },
+          "name" : {
+            "type" : "keyword",
+            "norms" : false,
+            "ignore_above" : 256
+          }
+        }
+      }
+    }
+  }
+}
