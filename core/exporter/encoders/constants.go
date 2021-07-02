@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package encoders implements codecs for exporting records and events in different data formats.
 package encoders
 
 // SysFlow record components

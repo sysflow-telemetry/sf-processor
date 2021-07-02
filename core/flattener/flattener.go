@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package flattener flattens input telemetry in a flattened representation.
 package flattener
 
 import (
@@ -190,10 +191,12 @@ func (s *Flattener) HandleFileEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sf
 	return nil
 }
 
+// HandleNetEvt processes Network Events.
 func (s *Flattener) HandleNetEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, ne *sfgo.NetworkEvent) error {
 	return nil
 }
 
+// HandleProcFlow processes Process Flows.
 func (s *Flattener) HandleProcFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, pf *sfgo.ProcessFlow) error {
 	return nil
 }

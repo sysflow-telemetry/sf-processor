@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package transports implements transports for telemetry data.
 package transports
 
 import (
@@ -33,7 +34,7 @@ type TextFileProto struct {
 	fhandle *os.File
 }
 
-//  NewTextFileProto creates a new text file protcol object.
+// NewTextFileProto creates a new text file protcol object.
 func NewTextFileProto(conf commons.Config) TransportProtocol {
 	return &TextFileProto{config: conf}
 }

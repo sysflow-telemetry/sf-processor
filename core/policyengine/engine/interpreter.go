@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package engine implements a rules engine for telemetry records.
 package engine
 
 import (
@@ -99,7 +100,7 @@ func (pi *PolicyInterpreter) compile(path string) error {
 	}
 
 	if errFound {
-		return errors.New("errors found during compilation of policies. check logs for detail.")
+		return errors.New("errors found during compilation of policies. check logs for detail")
 	}
 
 	return nil

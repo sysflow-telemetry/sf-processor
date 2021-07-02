@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package transports implements transports for telemetry data.
 package transports
 
 import (
@@ -47,7 +48,7 @@ type ElasticProto struct {
 	start  time.Time
 }
 
-//  NewElasticProto creates a new syslog protocol object.
+// NewElasticProto creates a new syslog protocol object.
 func NewElasticProto(conf commons.Config) TransportProtocol {
 	return &ElasticProto{config: conf}
 }
@@ -115,7 +116,7 @@ func (s *ElasticProto) Export(data []commons.EncodedData) (err error) {
 				return err
 			}
 		} else {
-			return errors.New("Expected ECSRecord as exported data")
+			return errors.New("expected ECSRecord as exported data")
 		}
 	}
 

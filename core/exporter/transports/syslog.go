@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package transports implements transports for telemetry data.
 package transports
 
 import (
@@ -37,7 +38,7 @@ type SyslogProto struct {
 	config commons.Config
 }
 
-//  NewSyslogProto creates a new syslog protocol object.
+// NewSyslogProto creates a new syslog protocol object.
 func NewSyslogProto(conf commons.Config) TransportProtocol {
 	return &SyslogProto{config: conf}
 }
@@ -69,12 +70,12 @@ func (s *SyslogProto) Export(data []commons.EncodedData) (err error) {
 			if err = s.sysl.Alert(utils.UnsafeBytesToString(buf)); err != nil {
 				return err
 			}
-		} else if buf, err :=  json.Marshal(d); err == nil {
+		} else if buf, err := json.Marshal(d); err == nil {
 			if err = s.sysl.Alert(utils.UnsafeBytesToString(buf)); err != nil {
 				return err
 			}
 		} else {
-			return errors.New("Expected byte array or serializable object as export data")
+			return errors.New("expected byte array or serializable object as export data")
 		}
 	}
 	return

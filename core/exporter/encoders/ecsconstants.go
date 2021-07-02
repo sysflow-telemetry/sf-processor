@@ -16,16 +16,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package encoders implements codecs for exporting records and events in different data formats.
 package encoders
 
-// ECS version
+// ECS_VERSION denotes the ECS schema version.
 const ECS_VERSION = "1.7.0"
 
-// Agent type
+// ECS_AGENT_TYPE denotes the ECS agent type.
 const ECS_AGENT_TYPE = "SysFlow"
 
-// ECS attributes used in JsonData
+// ECS attributes used in JSONData.
 const (
 	ECS_CONTAINER_ID      = "id"
 	ECS_CONTAINER_NAME    = "name"
@@ -96,10 +97,10 @@ const (
 	ECS_TAGS = "tags"
 )
 
-// ECS kind values
+// ECS_KIND_EVENT defines the ECS kind value.
 const ECS_KIND_EVENT = "event"
 
-// ECS category values
+// ECS category values.
 const (
 	ECS_CAT_DIR     = "directory"
 	ECS_CAT_FILE    = "file"
@@ -107,7 +108,7 @@ const (
 	ECS_CAT_PROCESS = "process"
 )
 
-// ECS type values
+// ECS type values.
 const (
 	ECS_TYPE_ACCESS     = "access"
 	ECS_TYPE_CHANGE     = "change"
@@ -120,7 +121,7 @@ const (
 	ECS_TYPE_TEXIT      = "thread-exit"
 )
 
-// ECS action suffixes that differ from ECS types
+// ECS action suffixes that differ from ECS types.
 // Action values are typically <catogory>-<type> or <catogory>-<action>
 const (
 	ECS_ACTION_READ    = "read"

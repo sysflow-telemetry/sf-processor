@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package processor implements a processor plugin.
 package processor
 
 import (
@@ -34,8 +35,7 @@ var sHCInstance *HandlerCache
 var sHCOnce sync.Once
 
 const (
-	// cHandlerSym variable required to load handler dynamically from shared object.
-	cHandlerSym     string = "Handler"
+	cHandlerSym     string = "Handler" // variable required to load handler dynamically from shared object.
 	cHandlerName    string = "handler"
 	cHandlerLibPath string = "handlerlibpath"
 )
@@ -107,9 +107,8 @@ func (p *HandlerCache) GetHandler(conf map[string]interface{}) (plugins.SFHandle
 		}
 		if path, o := conf[cHandlerLibPath].(string); o {
 			return p.loadHandler(name, path)
-		} else {
-			return nil, fmt.Errorf("handler '%s' not found in built-in handlers, and no attribute 'handlerlib' for dynamic library defined", name)
 		}
+		return nil, fmt.Errorf("handler '%s' not found in built-in handlers, and no attribute 'handlerlib' for dynamic library defined", name)
 	}
 	return nil, fmt.Errorf("attribute 'handler' missing from sysflow processor's configuration")
 }
