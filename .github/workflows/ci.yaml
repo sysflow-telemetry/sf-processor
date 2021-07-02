@@ -25,25 +25,31 @@ env:
   DOCKER_REGISTRY_REPOSITORY: sysflowtelemetry/sf-processor  
 
 jobs:
-  lint:
+  lint-core:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: golangci-lint-core
+      - name: Lint core module
         uses: golangci/golangci-lint-action@v2
         with:          
           version: latest          
           working-directory: core
-          args: --disable=errcheck          
-      - name: golangci-lint-driver
+          args: --disable=errcheck                     
+  lint-driver:    
+    needs: lint-core
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2      
+      - name: Lint driver module
         uses: golangci/golangci-lint-action@v2
         with:          
           version: latest          
           working-directory: driver
           args: --disable=errcheck      
   docker:
-    needs: lint
+    needs: lint-driver
     runs-on: ubuntu-latest
     permissions:
       contents: read
