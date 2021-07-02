@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package transports implements transports for telemetry data.
 package transports
 
 import (
@@ -30,12 +31,12 @@ import (
 // TerminalProto implements the TransportProtocol interface of a terminal output.
 type TerminalProto struct{}
 
-//  NewTerminalProto creates a new terminal protcol object.
+// NewTerminalProto creates a new terminal protcol object.
 func NewTerminalProto(conf commons.Config) TransportProtocol {
 	return &TerminalProto{}
 }
 
-//Init initializes the terminal output object.
+// Init initializes the terminal output object.
 func (s *TerminalProto) Init() error {
 	return nil
 }

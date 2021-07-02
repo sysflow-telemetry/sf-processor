@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package encoders implements codecs for exporting records and events in different data formats.
 package encoders
 
 import (
@@ -175,13 +176,15 @@ func (epw *EventPoolWriter) UpdateOCFWriter(exportPath string, schema string) (e
 	return
 }
 
+// Append appends an event slice to the event pool writer.
 func (epw *EventPoolWriter) Append(events []interface{}) error {
 	if epw.ocfw != nil {
 		return epw.ocfw.Append(events)
 	}
-	return errors.New("Trying to append events using a null OCF file writer reference")
+	return errors.New("trying to append events using a null OCF file writer reference")
 }
 
+// Cleanup closes the event pool writer file writer.
 func (epw *EventPoolWriter) Cleanup() error {
 	return epw.fw.Close()
 }
@@ -232,11 +235,12 @@ type Occurrence struct {
 	AlertQuery string
 }
 
+// NoteID returns the occurence note ID based on the occurrence's severity.
 func (occ *Occurrence) NoteID() string {
 	if occ.Severity < SeverityHigh {
-		return "notification"
+		return NOTIFICATION
 	}
-	return "actionable-offense"
+	return OFFENSE
 }
 
 // OccurrenceEncoder is an encoder for IBM Findings' occurrences.
@@ -246,6 +250,7 @@ type OccurrenceEncoder struct {
 	batch       []commons.EncodedData
 }
 
+// NewOccurrenceEncoder creates a new Occurrence encoder.
 func NewOccurrenceEncoder(config commons.Config) Encoder {
 	return &OccurrenceEncoder{
 		config:      config,
@@ -266,7 +271,7 @@ func (oe *OccurrenceEncoder) encode(rec *engine.Record) (data commons.EncodedDat
 	return
 }
 
-// Encodes telemetry records into an occurrence representation.
+// Encode encodes telemetry records into an occurrence representation.
 func (oe *OccurrenceEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
 	oe.batch = oe.batch[:0]
 	for _, r := range recs {

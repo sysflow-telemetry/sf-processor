@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package utils implements common helpers for the exporter.
 package utils
 
 import (
@@ -25,6 +26,7 @@ import (
 	"unsafe"
 )
 
+// TrimBoundingQuotes removes bounding quotes from string.
 func TrimBoundingQuotes(s string) string {
 	if len(s) > 0 && (s[0] == '"' || s[0] == '\'') {
 		s = s[1:]
@@ -43,7 +45,7 @@ func Max(x, y int) int {
 	return x
 }
 
-// Max returns the larger of two 64-bit integers, x or y.
+// Max64 returns the larger of two 64-bit integers, x or y.
 func Max64(x, y int64) int64 {
 	if x < y {
 		return y
@@ -51,11 +53,11 @@ func Max64(x, y int64) int64 {
 	return x
 }
 
-// converts a unix time value in ns to UTC time and returns an RFC3399 string
+// ToIsoTimeStr converts a unix time value in ns to UTC time and returns an RFC3399 string
 func ToIsoTimeStr(ts int64) string {
-	ts_sec := int64(ts / 1E+9)
-	ts_ns := int64(ts % 1E+9)
-	t := time.Unix(ts_sec, ts_ns).In(time.UTC)
+	tsSec := int64(ts / 1E+9)
+	tsNs := int64(ts % 1E+9)
+	t := time.Unix(tsSec, tsNs).In(time.UTC)
 	return t.Format(time.RFC3339Nano)
 }
 

@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package encoders implements codecs for exporting records and events in different data formats.
 package encoders
 
 import (
@@ -35,9 +36,10 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
-type JsonData map[string]interface{}
+// JSONData is a map to serialize data to JSON.
+type JSONData map[string]interface{}
 
-// struct for serializing ECS
+// ECSRecord is a struct for serializing ECS records.
 type ECSRecord struct {
 	ID    string `json:"-"`
 	Ts    string `json:"@timestamp"`
@@ -48,15 +50,15 @@ type ECSRecord struct {
 	Ecs struct {
 		Version string `json:"version,omitempty"`
 	} `json:"ecs,omitempty"`
-	Event       JsonData `json:"event"`
-	Container   JsonData `json:"container"`
-	File        JsonData `json:"file,omitempty"`
-	FileAction  JsonData `json:"file_action,omitempty"`
-	Network     JsonData `json:"network,omitempty"`
-	Source      JsonData `json:"source,omitempty"`
-	Destination JsonData `json:"destination,omitempty"`
-	Process     JsonData `json:"process"`
-	User        JsonData `json:"user"`
+	Event       JSONData `json:"event"`
+	Container   JSONData `json:"container"`
+	File        JSONData `json:"file,omitempty"`
+	FileAction  JSONData `json:"file_action,omitempty"`
+	Network     JSONData `json:"network,omitempty"`
+	Source      JSONData `json:"source,omitempty"`
+	Destination JSONData `json:"destination,omitempty"`
+	Process     JSONData `json:"process"`
+	User        JSONData `json:"user"`
 	Tags        []string `json:"tags,omitempty"`
 }
 
@@ -79,7 +81,7 @@ func (t *ECSEncoder) Register(codecs map[commons.Format]EncoderFactory) {
 	codecs[commons.ECSFormat] = NewECSEncoder
 }
 
-// Encodes telemetry records into an ECS representation.
+// Encode encodes telemetry records into an ECS representation.
 func (t *ECSEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
 	t.batch = t.batch[:0]
 	for _, rec := range recs {
@@ -172,20 +174,20 @@ func (ecs *ECSRecord) encodeNetworkFlow(rec *engine.Record) {
 	ft := gommunityid.MakeFlowTuple(net.ParseIP(sip), net.ParseIP(dip), uint16(sport), uint16(dport), uint8(proto))
 
 	// Calculate Base64-encoded value
-	ecs.Network = JsonData{
+	ecs.Network = JSONData{
 		ECS_NET_BYTES: rbytes + wbytes,
 		ECS_NET_CID:   cid.CalcBase64(ft),
 		ECS_NET_IANA:  strconv.FormatInt(proto, 10),
 		ECS_NET_PROTO: sfgo.GetProto(proto),
 	}
-	ecs.Source = JsonData{
+	ecs.Source = JSONData{
 		ECS_ENDPOINT_IP:      sip,
 		ECS_ENDPOINT_PORT:    sport,
 		ECS_ENDPOINT_ADDR:    sip,
 		ECS_ENDPOINT_BYTES:   wbytes,
 		ECS_ENDPOINT_PACKETS: wops,
 	}
-	ecs.Destination = JsonData{
+	ecs.Destination = JSONData{
 		ECS_ENDPOINT_IP:      dip,
 		ECS_ENDPOINT_PORT:    dport,
 		ECS_ENDPOINT_ADDR:    dip,
@@ -214,7 +216,7 @@ func (ecs *ECSRecord) encodeFileFlow(rec *engine.Record) {
 	}
 	ecs.Event = encodeEvent(rec, category, eventType, action)
 	ecs.File = encodeFile(rec)
-	ecs.FileAction = JsonData{
+	ecs.FileAction = JSONData{
 		ECS_SF_FA_RBYTES: rbytes,
 		ECS_SF_FA_ROPS:   rops,
 		ECS_SF_FA_WBYTES: wbytes,
@@ -225,7 +227,7 @@ func (ecs *ECSRecord) encodeFileFlow(rec *engine.Record) {
 // encodeFileEvent populates the ECS representatiom of a FE record
 func (ecs *ECSRecord) encodeFileEvent(rec *engine.Record) {
 	opFlags := rec.GetInt(sfgo.EV_PROC_OPFLAGS_INT, sfgo.SYSFLOW_SRC)
-	target_path := engine.Mapper.MapStr(engine.SF_FILE_NEWPATH)(rec)
+	targetPath := engine.Mapper.MapStr(engine.SF_FILE_NEWPATH)(rec)
 	ecs.File = encodeFile(rec)
 	category := ECS_CAT_FILE
 	eventType := ECS_TYPE_CHANGE
@@ -243,10 +245,10 @@ func (ecs *ECSRecord) encodeFileEvent(rec *engine.Record) {
 		action = category + "-" + ECS_ACTION_DELETE
 	} else if opFlags&sfgo.OP_SYMLINK == sfgo.OP_SYMLINK || opFlags&sfgo.OP_LINK == sfgo.OP_LINK {
 		action = category + "-" + ECS_ACTION_LINK
-		ecs.File[ECS_FILE_TARGET] = target_path
+		ecs.File[ECS_FILE_TARGET] = targetPath
 	} else if opFlags&sfgo.OP_RENAME == sfgo.OP_RENAME {
 		action = category + "-" + ECS_ACTION_RENAME
-		ecs.File[ECS_FILE_TARGET] = target_path
+		ecs.File[ECS_FILE_TARGET] = targetPath
 	}
 	ecs.Event = encodeEvent(rec, category, eventType, action)
 }
@@ -278,11 +280,11 @@ func (ecs *ECSRecord) encodeProcessEvent(rec *engine.Record) {
 }
 
 // encodeContainer creates an ECS container field.
-func encodeContainer(rec *engine.Record) JsonData {
-	var container JsonData
+func encodeContainer(rec *engine.Record) JSONData {
+	var container JSONData
 	cid := engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(rec)
 	if cid != sfgo.Zeros.String {
-		container = JsonData{
+		container = JSONData{
 			ECS_CONTAINER_ID:      cid,
 			ECS_CONTAINER_RUNTIME: engine.Mapper.MapStr(engine.SF_CONTAINER_TYPE)(rec),
 			ECS_CONTAINER_PRIV:    engine.Mapper.MapInt(engine.SF_CONTAINER_PRIVILEGED)(rec) != 0,
@@ -290,7 +292,7 @@ func encodeContainer(rec *engine.Record) JsonData {
 		}
 		imageid := engine.Mapper.MapStr(engine.SF_CONTAINER_IMAGEID)(rec)
 		if imageid != sfgo.Zeros.String {
-			image := JsonData{
+			image := JSONData{
 				ECS_IMAGE_ID:   imageid,
 				ECS_IMAGE_NAME: engine.Mapper.MapStr(engine.SF_CONTAINER_IMAGE)(rec),
 			}
@@ -301,12 +303,12 @@ func encodeContainer(rec *engine.Record) JsonData {
 }
 
 // encodeUser creates an ECS user field using user and group of the actual process.
-func encodeUser(rec *engine.Record) JsonData {
-	group := JsonData{
+func encodeUser(rec *engine.Record) JSONData {
+	group := JSONData{
 		ECS_GROUP_ID:   engine.Mapper.MapInt(engine.SF_PROC_GID)(rec),
 		ECS_GROUP_NAME: engine.Mapper.MapStr(engine.SF_PROC_GROUP)(rec),
 	}
-	user := JsonData{
+	user := JSONData{
 		ECS_USER_ID:   engine.Mapper.MapInt(engine.SF_PROC_UID)(rec),
 		ECS_USER_NAME: engine.Mapper.MapStr(engine.SF_PROC_USER)(rec),
 		ECS_GROUP:     group,
@@ -315,19 +317,19 @@ func encodeUser(rec *engine.Record) JsonData {
 }
 
 // encodeProcess creates an ECS process field including the nested parent process.
-func encodeProcess(rec *engine.Record) JsonData {
+func encodeProcess(rec *engine.Record) JSONData {
 	exe := engine.Mapper.MapStr(engine.SF_PROC_EXE)(rec)
-	process := JsonData{
+	process := JSONData{
 		ECS_PROC_EXE:     exe,
 		ECS_PROC_ARGS:    engine.Mapper.MapStr(engine.SF_PROC_ARGS)(rec),
 		ECS_PROC_CMDLINE: engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(rec),
 		ECS_PROC_PID:     engine.Mapper.MapInt(engine.SF_PROC_PID)(rec),
 		ECS_PROC_START:   utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_PROC_CREATETS)(rec)),
 		ECS_PROC_NAME:    path.Base(exe),
-		ECS_PROC_THREAD:  JsonData{ECS_PROC_TID: engine.Mapper.MapInt(engine.SF_PROC_TID)(rec)},
+		ECS_PROC_THREAD:  JSONData{ECS_PROC_TID: engine.Mapper.MapInt(engine.SF_PROC_TID)(rec)},
 	}
 	pexe := engine.Mapper.MapStr(engine.SF_PPROC_EXE)(rec)
-	parent := JsonData{
+	parent := JSONData{
 		ECS_PROC_EXE:     pexe,
 		ECS_PROC_ARGS:    engine.Mapper.MapStr(engine.SF_PPROC_ARGS)(rec),
 		ECS_PROC_CMDLINE: engine.Mapper.MapStr(engine.SF_PPROC_CMDLINE)(rec),
@@ -340,36 +342,36 @@ func encodeProcess(rec *engine.Record) JsonData {
 }
 
 // encodeEvent creates the central ECS event field and sets the classification attributes
-func encodeEvent(rec *engine.Record, category string, eventType string, action string) JsonData {
+func encodeEvent(rec *engine.Record, category string, eventType string, action string) JSONData {
 	start := engine.Mapper.MapInt(engine.SF_TS)(rec)
 	end := engine.Mapper.MapInt(engine.SF_ENDTS)(rec)
 	if end == sfgo.Zeros.Int64 {
 		end = start
 	}
-	sf_type := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
-	sf_ret := engine.Mapper.MapInt(engine.SF_RET)(rec)
+	sfType := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
+	sfRet := engine.Mapper.MapInt(engine.SF_RET)(rec)
 
 	// TODO: use JSONEncoder if we want the original
 	//orig, _ := json.Marshal(rec)
-	event := JsonData{
+	event := JSONData{
 		ECS_EVENT_KIND:     ECS_KIND_EVENT,
 		ECS_EVENT_CATEGORY: category,
 		ECS_EVENT_TYPE:     eventType,
 		ECS_EVENT_ACTION:   action,
 		//ECS_EVENT_ORIGINAL: string(orig),
-		ECS_EVENT_SFTYPE:   sf_type,
+		ECS_EVENT_SFTYPE:   sfType,
 		ECS_EVENT_START:    utils.ToIsoTimeStr(start),
 		ECS_EVENT_END:      utils.ToIsoTimeStr(end),
 		ECS_EVENT_DURATION: end - start,
 	}
-	if sf_type == sfgo.TyPEStr || sf_type == sfgo.TyFEStr {
-		event[ECS_EVENT_SFRET] = sf_ret
+	if sfType == sfgo.TyPEStr || sfType == sfgo.TyFEStr {
+		event[ECS_EVENT_SFRET] = sfRet
 	}
 	return event
 }
 
 // encodeFile creates an ECS file field
-func encodeFile(rec *engine.Record) JsonData {
+func encodeFile(rec *engine.Record) JSONData {
 	opFlags := rec.GetInt(sfgo.EV_PROC_OPFLAGS_INT, sfgo.SYSFLOW_SRC)
 	ft := engine.Mapper.MapStr(engine.SF_FILE_TYPE)(rec)
 	fpath := engine.Mapper.MapStr(engine.SF_FILE_PATH)(rec)
@@ -380,7 +382,7 @@ func encodeFile(rec *engine.Record) JsonData {
 	if opFlags&sfgo.OP_SYMLINK == sfgo.OP_SYMLINK {
 		fileType = "symlink"
 	}
-	file := JsonData{ECS_FILE_TYPE: fileType}
+	file := JSONData{ECS_FILE_TYPE: fileType}
 
 	var name string
 	if fpath != sfgo.Zeros.String {

@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package exporter implements a module plugin for encoding and exporting telemetry records and events.
 package exporter
 
 import (
@@ -76,7 +77,7 @@ func (s *Exporter) registerExportProtocols() {
 	(&transports.TerminalProto{}).Register(protocols)
 	(&transports.TextFileProto{}).Register(protocols)
 	(&transports.NullProto{}).Register(protocols)
-	(&transports.FindingsApiProto{}).Register(protocols)
+	(&transports.FindingsAPIProto{}).Register(protocols)
 	(&transports.ElasticProto{}).Register(protocols)
 }
 

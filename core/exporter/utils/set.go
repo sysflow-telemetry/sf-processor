@@ -16,34 +16,41 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package utils implements common helpers for the exporter.
 package utils
 
 var exists = struct{}{}
 
+// Set defines a set data structure.
 type Set struct {
 	m map[string]struct{}
 }
 
+// NewSet creates a new set.
 func NewSet() *Set {
 	s := &Set{}
 	s.m = make(map[string]struct{})
 	return s
 }
 
+// Add adds an element to the set.
 func (s *Set) Add(value string) {
 	s.m[value] = exists
 }
 
+// Remove remoces an element from the set.
 func (s *Set) Remove(value string) {
 	delete(s.m, value)
 }
 
+// Contains checks if value is in the set.
 func (s *Set) Contains(value string) bool {
 	_, c := s.m[value]
 	return c
 }
 
+// Len returns the number of elements in the set.
 func (s *Set) Len() int {
 	return len(s.m)
 }

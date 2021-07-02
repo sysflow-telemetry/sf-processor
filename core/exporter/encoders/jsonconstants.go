@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package encoders implements codecs for exporting records and events in different data formats.
 package encoders
 
 // Exporter constants
@@ -26,28 +27,24 @@ const (
 
 // JSON schema constants
 const (
-	VERSION_STR        = "{\"" + VERSION_ATTR + "\":"
-	GROUP_ID           = "{\"" + GROUP_ID_ATTR + "\":\""
-	FORWARD_SLASH      = '/'
-	QUOTE_COMMA        = "\","
-	OBSERVATIONS       = "\"" + OBSERVATIONS_ATTR + "\":["
-	COMMA              = ','
-	END_SQ_SQUIGGLE    = "]}"
-	DOUBLE_QUOTE       = '"'
-	QUOTE_COLON        = "\":"
-	QUOTE_COLON_OSUIG  = "\":{"
-	END_SQUIGGLE_COMMA = "},"
-	END_SQUIGGLE       = '}'
-	END_SQUARE         = ']'
-	BEGIN_SQUARE       = '['
-	SPACE              = ' '
-	POLICIES           = ",\"" + POLICIES_ATTR + "\":["
-	ID_TAG             = "{\"" + ID_TAG_ATTR + "\":"
-	DESC               = ",\"" + DESC_ATTR + "\":"
-	PRIORITY           = ",\"" + PRIORITY_ATTR + "\":"
-	TAGS               = ",\"" + TAGS_ATTR + "\":["
-	PERIOD             = '.'
-	EMPTY_STRING	   = "\"\""
+	VERSION_STR       = "{\"" + VERSION_ATTR + "\":"
+	GROUP_ID          = "{\"" + GROUP_ID_ATTR + "\":\""
+	COMMA             = ','
+	DOUBLE_QUOTE      = '"'
+	QUOTE_COLON       = "\":"
+	QUOTE_COLON_CURLY = "\":{"
+	END_CURLY_COMMA   = "},"
+	END_CURLY         = '}'
+	END_SQUARE        = ']'
+	BEGIN_SQUARE      = '['
+	SPACE             = ' '
+	POLICIES          = ",\"" + POLICIES_ATTR + "\":["
+	ID_TAG            = "{\"" + ID_TAG_ATTR + "\":"
+	DESC              = ",\"" + DESC_ATTR + "\":"
+	PRIORITY          = ",\"" + PRIORITY_ATTR + "\":"
+	TAGS              = ",\"" + TAGS_ATTR + "\":["
+	PERIOD            = '.'
+	EMPTY_STRING      = "\"\""
 )
 
 const chars = "0123456789abcdef"

@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package policyengine implements a plugin for a rules engine for telemetry records.
 package policyengine
 
 import (
@@ -76,7 +77,7 @@ func (s *PolicyEngine) compilePolicies(dir string) error {
 	s.pi = engine.NewPolicyInterpreter(s.config)
 	if err == nil {
 		if len(paths) == 0 {
-			return errors.New("No policy files with extension .yaml found in path: " + dir)
+			return errors.New("no policy files with extension .yaml found in path: " + dir)
 		}
 		return s.pi.Compile(paths...)
 	}
@@ -118,7 +119,7 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) error {
 			logger.Info.Printf("Loaded policy engine from policy monitor %s.", s.config.Monitor.String())
 		default:
 			logger.Error.Printf("No policy engine available for plugin.  Please check error logs for details.")
-			return errors.New("No policy engine available for plugin.  Please check error logs for details.")
+			return errors.New("no policy engine available for plugin.  Please check error logs for details")
 		}
 	}
 	return nil

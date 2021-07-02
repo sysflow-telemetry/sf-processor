@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package transports implements transports for telemetry data.
 package transports
 
 import (
@@ -35,38 +36,38 @@ import (
 const (
 	kind        = "FINDING"
 	details     = "Finding Context"
-	queryUrlFmt = "%s/?instance_crn=%s&statement=%s"
+	queryURLFmt = "%s/?instance_crn=%s&statement=%s"
 )
 
-// FindingsApiProto implements a custom client for IBM Cloud Security and Compliance Insights.
-type FindingsApiProto struct {
+// FindingsAPIProto implements a custom client for IBM Cloud Security and Compliance Insights.
+type FindingsAPIProto struct {
 	AccountID   string
 	ProviderID  string
-	ApiKey      string
-	FindingsUrl string
-	SqlQueryUrl string
-	SqlQueryCrn string
+	APIKey      string
+	FindingsURL string
+	SQLQueryURL string
+	SQLQueryCrn string
 	Region      string
 }
 
-// NewFindingsApiProto is a constructor for FindingsApiProto.
-func NewFindingsApiProto(conf commons.Config) TransportProtocol {
-	return &FindingsApiProto{AccountID: conf.FindingsAccountID,
+// NewFindingsAPIProto is a constructor for FindingsAPIProto.
+func NewFindingsAPIProto(conf commons.Config) TransportProtocol {
+	return &FindingsAPIProto{AccountID: conf.FindingsAccountID,
 		ProviderID:  conf.FindingsProviderID,
-		ApiKey:      conf.FindingsApiKey,
-		FindingsUrl: conf.FindingsUrl,
-		SqlQueryUrl: conf.FindingsSqlQueryUrl,
-		SqlQueryCrn: conf.FindingsSqlQueryCrn,
+		APIKey:      conf.FindingsAPIKey,
+		FindingsURL: conf.FindingsURL,
+		SQLQueryURL: conf.FindingsSQLQueryURL,
+		SQLQueryCrn: conf.FindingsSQLQueryCrn,
 		Region:      conf.FindingsRegion}
 }
 
 // Init intializes a new null protocol object.
-func (s *FindingsApiProto) Init() error {
+func (s *FindingsAPIProto) Init() error {
 	return nil
 }
 
 // Export does nothing.
-func (s *FindingsApiProto) Export(data []commons.EncodedData) (err error) {
+func (s *FindingsAPIProto) Export(data []commons.EncodedData) (err error) {
 	for _, d := range data {
 		if occ, ok := d.(*encoders.Occurrence); ok {
 			if err = s.CreateOccurrence(occ); err != nil {
@@ -80,16 +81,16 @@ func (s *FindingsApiProto) Export(data []commons.EncodedData) (err error) {
 }
 
 // Register registers the null protocol object with the exporter.
-func (s *FindingsApiProto) Register(eps map[commons.Transport]TransportProtocolFactory) {
-	eps[commons.FindingsTransport] = NewFindingsApiProto
+func (s *FindingsAPIProto) Register(eps map[commons.Transport]TransportProtocolFactory) {
+	eps[commons.FindingsTransport] = NewFindingsAPIProto
 }
 
 // Cleanup cleans up the null protocol object.
-func (s *FindingsApiProto) Cleanup() {}
+func (s *FindingsAPIProto) Cleanup() {}
 
-//CreateFindingOccurrence creates a new occurrence of type finding.
-func (s *FindingsApiProto) CreateOccurrence(occ *encoders.Occurrence) error {
-	service, err := NewFindingsApi(s.ApiKey, s.FindingsUrl)
+// CreateOccurrence creates a new occurrence of type finding.
+func (s *FindingsAPIProto) CreateOccurrence(occ *encoders.Occurrence) error {
+	service, err := NewFindingsAPI(s.APIKey, s.FindingsURL)
 	if err != nil {
 		return err
 	}
@@ -99,7 +100,7 @@ func (s *FindingsApiProto) CreateOccurrence(occ *encoders.Occurrence) error {
 	if occ.AlertQuery != "" {
 		nextStep = []findingsapiv1.RemediationStep{{
 			Title: core.StringPtr(details),
-			URL:   core.StringPtr(fmt.Sprintf(queryUrlFmt, s.SqlQueryUrl, s.SqlQueryCrn, occ.AlertQuery))},
+			URL:   core.StringPtr(fmt.Sprintf(queryURLFmt, s.SQLQueryURL, s.SQLQueryCrn, occ.AlertQuery))},
 		}
 	}
 	finding := findingsapiv1.Finding{Severity: core.StringPtr(occ.Severity.String()), Certainty: core.StringPtr(occ.Certainty.String()), NextSteps: nextStep}
@@ -125,13 +126,13 @@ func (s *FindingsApiProto) CreateOccurrence(occ *encoders.Occurrence) error {
 	return nil
 }
 
-// FindingsApi implements an API for IBM Findings.
-type FindingsApi struct {
+// FindingsAPI implements an API for IBM Findings.
+type FindingsAPI struct {
 	Service *core.BaseService
 }
 
-// NewFindingsApi constructs an instance of FindingsApi with passed in options.
-func NewFindingsApi(apiKey string, url string) (service *FindingsApi, err error) {
+// NewFindingsAPI constructs an instance of FindingsAPI with passed in options.
+func NewFindingsAPI(apiKey string, url string) (service *FindingsAPI, err error) {
 	authenticator := &core.IamAuthenticator{
 		ApiKey: apiKey,
 	}
@@ -154,7 +155,7 @@ func NewFindingsApi(apiKey string, url string) (service *FindingsApi, err error)
 		}
 	}
 
-	service = &FindingsApi{
+	service = &FindingsAPI{
 		Service: baseService,
 	}
 
@@ -162,7 +163,7 @@ func NewFindingsApi(apiKey string, url string) (service *FindingsApi, err error)
 }
 
 // CreateCustomOccurrence creates a new `Occurrence`. Use this method to create `Occurrences` for a resource.
-func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCustomOccurrenceOptions) (result *ApiCustomOccurrence, response *core.DetailedResponse, err error) {
+func (s *FindingsAPI) CreateCustomOccurrence(createOccurrenceOptions *CreateCustomOccurrenceOptions) (result *APICustomOccurrence, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(createOccurrenceOptions, "createOccurrenceOptions cannot be nil")
 	if err != nil {
 		logger.Error.Println(err)
@@ -244,12 +245,12 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 		return result, response, errors.Wrap(err, "couldn't build request for creating occurrence")
 	}
 
-	response, err = s.Service.Request(request, new(ApiCustomOccurrence))
+	response, err = s.Service.Request(request, new(APICustomOccurrence))
 	if err == nil {
 		var ok bool
-		result, ok = response.Result.(*ApiCustomOccurrence)
+		result, ok = response.Result.(*APICustomOccurrence)
 		if !ok {
-			err = fmt.Errorf("An error occurred while processing the operation response")
+			err = fmt.Errorf("an error occurred while processing the operation response")
 		}
 	} else {
 		logger.Error.Println(err)
@@ -259,7 +260,7 @@ func (s *FindingsApi) CreateCustomOccurrence(createOccurrenceOptions *CreateCust
 }
 
 // NewCreateCustomOccurrenceOptions instantiates CreateCustomOccurrenceOptions
-func (s *FindingsApi) NewCreateCustomOccurrenceOptions(accountID string, providerID string, noteName string, ID string) *CreateCustomOccurrenceOptions {
+func (s *FindingsAPI) NewCreateCustomOccurrenceOptions(accountID string, providerID string, noteName string, ID string) *CreateCustomOccurrenceOptions {
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
 	return &CreateCustomOccurrenceOptions{
@@ -349,8 +350,8 @@ func (options *CreateCustomOccurrenceOptions) SetLongDescription(longDescription
 	return options
 }
 
-// ApiCustomOccurrence includes information about analysis occurrences.
-type ApiCustomOccurrence struct {
+// APICustomOccurrence includes information about analysis occurrences.
+type APICustomOccurrence struct {
 
 	// The unique URL of the resource, image or the container, for which the `Occurrence` applies. For example,
 	// https://gcr.io/provider/image@sha256:foo. This field can be used as a filter in list requests.

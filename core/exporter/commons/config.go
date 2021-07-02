@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package commons defines common facilities for exporters.
 package commons
 
 import (
@@ -235,6 +236,7 @@ func parseVaultEncodingConfig(s string) VaultEncoding {
 	return NoneVaultEncoding
 }
 
+// GetSecret obtains the secret for a key.
 func (c Config) GetSecret(key string) (string, error) {
 	return [...]func(string) (string, error){c.secrets.Get, c.secrets.GetDecoded}[c.VaultEncoding](key)
 }

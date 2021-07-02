@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package commons defines common facilities for exporters.
 package commons
 
 // Configuration keys.
@@ -29,7 +30,7 @@ type FileConfig struct {
 	Path string
 }
 
-// CreateSyslogConfig creates a new config object from config dictionary.
+// CreateFileConfig creates a new config object from config dictionary.
 func CreateFileConfig(bc Config, conf map[string]interface{}) (c FileConfig, err error) {
 	// default values
 	c = FileConfig{Path: "./export.out"}

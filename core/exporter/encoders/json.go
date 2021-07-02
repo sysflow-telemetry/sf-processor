@@ -16,7 +16,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+// Package encoders implements codecs for exporting records and events in different data formats.
 package encoders
 
 import (
@@ -55,15 +56,15 @@ func (t *JSONEncoder) Register(codecs map[commons.Format]EncoderFactory) {
 	codecs[commons.JSONFormat] = NewJSONEncoder
 }
 
-// Encodes telemetry records into a JSON representation.
-func (t *JSONEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
+// Encode encodes telemetry records into a JSON representation.
+func (t *JSONEncoder) Encode(recs []*engine.Record) (data []commons.EncodedData, err error) {
 	t.batch = t.batch[:0]
 	for _, rec := range recs {
-		if j, err := t.encode(rec); err != nil {
+		var j commons.EncodedData
+		if j, err = t.encode(rec); err != nil {
 			return nil, err
-		} else {
-			t.batch = append(t.batch, j)
 		}
+		t.batch = append(t.batch, j)
 	}
 	return t.batch, nil
 }
@@ -91,7 +92,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			case engine.SectProc:
 				if state != PROC_STATE {
 					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
+						t.writer.RawString(END_CURLY_COMMA)
 					}
 					existed = true
 					t.writeSectionBegin(PROC)
@@ -104,7 +105,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			case engine.SectPProc:
 				if state != PPROC_STATE {
 					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
+						t.writer.RawString(END_CURLY_COMMA)
 					}
 					if pprocExists {
 						existed = true
@@ -121,7 +122,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			case engine.SectNet:
 				if state != NET_STATE {
 					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
+						t.writer.RawString(END_CURLY_COMMA)
 					}
 					if sftype == sfgo.TyNFStr {
 						t.writeSectionBegin(NET)
@@ -138,7 +139,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			case engine.SectFile:
 				if state != FILE_STATE {
 					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
+						t.writer.RawString(END_CURLY_COMMA)
 					}
 					if sftype == sfgo.TyFFStr || sftype == sfgo.TyFEStr {
 						t.writeSectionBegin(FILEF)
@@ -155,7 +156,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			case engine.SectFlow:
 				if state != FLOW_STATE {
 					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
+						t.writer.RawString(END_CURLY_COMMA)
 					}
 					if sftype == sfgo.TyFFStr || sftype == sfgo.TyNFStr {
 						t.writeSectionBegin(FLOW)
@@ -172,7 +173,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			case engine.SectCont:
 				if state != CONT_STATE {
 					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
+						t.writer.RawString(END_CURLY_COMMA)
 					}
 					if ctExists {
 						t.writeSectionBegin(CONTAINER)
@@ -189,7 +190,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			case engine.SectNode:
 				if state != NODE_STATE {
 					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
+						t.writer.RawString(END_CURLY_COMMA)
 					}
 					existed = true
 					t.writeSectionBegin(NODE)
@@ -202,7 +203,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			case engine.SectMeta:
 				if state != META_STATE {
 					if state != BEGIN_STATE && existed {
-						t.writer.RawString(END_SQUIGGLE_COMMA)
+						t.writer.RawString(END_CURLY_COMMA)
 					}
 					existed = true
 					t.writeSectionBegin(META)
@@ -215,7 +216,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			}
 		}
 	}
-	t.writer.RawByte(END_SQUIGGLE)
+	t.writer.RawByte(END_CURLY)
 	/* // Need to add hash support
 	hashset := rec.Ctx.GetHashes()
 	if !reflect.ValueOf(hashset.MD5).IsZero() {
@@ -246,35 +247,35 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 							if currentTag < (numTags - 1) {
 								t.writer.RawByte(COMMA)
 							}
-							currentTag += 1
+							currentTag++
 						}
 					default:
 						t.writer.String(tag.(string))
 						if currentTag < (numTags - 1) {
 							t.writer.RawByte(COMMA)
 						}
-						currentTag += 1
+						currentTag++
 					}
 				}
 				t.writer.RawByte(END_SQUARE)
 			}
-			t.writer.RawByte(END_SQUIGGLE)
+			t.writer.RawByte(END_CURLY)
 			if id < (numRules - 1) {
 				t.writer.RawByte(COMMA)
 			}
 		}
 		t.writer.RawByte(END_SQUARE)
 	}
-	t.writer.RawByte(END_SQUIGGLE)
+	t.writer.RawByte(END_CURLY)
 
 	// BuildBytes returns writer data as a single byte slice. It tries to reuse buf.
 	//return t.writer.BuildBytes(t.buf)
 	return t.writer.BuildBytes()
 }
 
-func (t *JSONEncoder) writeAttribute(fv *engine.FieldValue, fieldId int, rec *engine.Record) {
+func (t *JSONEncoder) writeAttribute(fv *engine.FieldValue, fieldID int, rec *engine.Record) {
 	t.writer.RawByte(DOUBLE_QUOTE)
-	t.writer.RawString(fv.FieldSects[fieldId])
+	t.writer.RawString(fv.FieldSects[fieldID])
 	t.writer.RawString(QUOTE_COLON)
 	MapJSON(fv, t.writer, rec)
 }
@@ -282,7 +283,7 @@ func (t *JSONEncoder) writeAttribute(fv *engine.FieldValue, fieldId int, rec *en
 func (t *JSONEncoder) writeSectionBegin(section string) {
 	t.writer.RawByte(DOUBLE_QUOTE)
 	t.writer.RawString(section)
-	t.writer.RawString(QUOTE_COLON_OSUIG)
+	t.writer.RawString(QUOTE_COLON_CURLY)
 }
 
 func mapOpFlags(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
