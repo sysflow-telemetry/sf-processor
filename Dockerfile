@@ -20,7 +20,7 @@
 #-----------------------
 # Stage: base
 #-----------------------
-ARG UBI_VER=8.4-205
+ARG UBI_VER=8.4-206
 FROM registry.access.redhat.com/ubi8/ubi:${UBI_VER} AS base
 
 # Environment and build args
