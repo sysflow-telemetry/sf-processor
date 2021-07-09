@@ -36,6 +36,7 @@ const (
 	EventBufferConfigKey   string = "buffer"
 	VersionKey             string = "version"
 	JSONSchemaVersionKey   string = "jsonschemaversion"
+	EcsVersionKey          string = "ecsversion"
 	BuildNumberKey         string = "buildnumber"
 	ClusterIDKey           string = "cluster.id"
 )
@@ -51,6 +52,7 @@ type Config struct {
 	secrets           *secrets.Secrets
 	Version           string
 	JSONSchemaVersion string
+	EcsVersion        string
 	BuildNumber       string
 	ClusterID         string
 	FileConfig
@@ -99,6 +101,9 @@ func CreateConfig(conf map[string]interface{}) (c Config, err error) {
 	}
 	if v, ok := conf[JSONSchemaVersionKey].(string); ok {
 		c.JSONSchemaVersion = v
+	}
+	if v, ok := conf[EcsVersionKey].(string); ok {
+		c.EcsVersion = v
 	}
 	if v, ok := conf[BuildNumberKey].(string); ok {
 		c.BuildNumber = v
