@@ -13,7 +13,33 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 > - **Fixed**: for any bug fixes.
 > - **Security**: in case of vulnerabilities.
 
-## [[UNRELEASED](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...HEAD)]
+## [[UNRELEASED](https://github.com/sysflow-telemetry/sf-processor/compare/0.3.0...HEAD)]
+
+## [[0.2.2](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...0.3.0)] - 2021-07-09
+
+### Added
+
+- Support for pluggable export protocols
+- Elastic Common Schema (ECS) export format and Elasticsearch integration
+- Export to IBM Findings API
+- MITRE ATT&CK ttp tagging policy
+- Support for pipeline forking (tee feature)
+
+### Changed
+
+- Optimized JSON export
+- Updated dependencies to latest `sf-apis`
+- Updated sample policies
+- Refactoring of processor and handling APIs
+
+### Fixed
+
+- Fixes bugs in policy engine related to lists containing quoted strings
+- Fixes several issues in policy engine field mapping
+
+### Removed
+
+- Support for flat JSON schema
 
 ## [[0.2.2](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.1...0.2.2)] - 2020-12-07
 
