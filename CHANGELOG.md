@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Moved away from Dockerhub CI.
 - Optimized JSON export
 - Updated dependencies to latest `sf-apis`
 - Updated sample policies
