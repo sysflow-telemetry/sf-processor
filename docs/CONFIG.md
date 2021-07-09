@@ -30,7 +30,7 @@ The pipeline configuration below shows how to configure a pipeline that will rea
 }
 ```
 
-> Note:  This configuration can be found in:  `sf-collector/resources/pipelines/pipeline.runtimeintegrity.json`
+> Note:  This configuration can be found in:  `sf-collector/resources/pipelines/pipeline.syslog.json`
 
 This pipeline specifies three built-in plugins:
 
@@ -39,7 +39,6 @@ This pipeline specifies three built-in plugins:
 - [exporter](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/exporter/exporter.go): takes records from the policy engine, and exports them to ElasticSearch, syslog, file, or terminal, in a JSON format or in Elastic Common Schema (ECS) format. Note that custom export plugins can be created to export to other serialization formats and transport protocols.
 
 Each plugin has a set of general attributes that are present in all plugins, and a set of attributes that are custom to the specific plugins. For more details on the specific attributes in this example, see the pipeline configuration [template](https://github.com/sysflow-telemetry/sf-processor/blob/master/driver/pipeline.template.json)
-
 
 The general attributes are as follows:
 
@@ -52,8 +51,7 @@ Channels are modeled as channel objects that have an `In` attribute representing
 
 A plugin has exacly one input channel but it may specify more than one output channels. This allows pipeline definitions that fan out data to more than one receiver plugin similar to a Unix `tee` command. While there must be always one SysFlow reader acting as the entry point of a pipeline, a pipeline configuration may specify policy engines passing data to different exporters or a SysFlow reader passing data to different policy engines. Generally, pipelines form a tree rather being a linear structure.
 
-
-### Policy engine confinguration
+### Policy engine configuration
 
 The policy engine (`"processor": "policyengine"`) plugin is driven by a set of rules. These rules are specified in a YAML which adopts the same syntax as the rules of the [Falco](https://falco.org/docs/rules] project. A policy engine plugin specification requires the following attributes:
 
@@ -70,12 +68,12 @@ The following table lists the cuurently supported exporter modules and the corre
 |-----------------------------|----------------------------|---------------------|
 | `terminal`                  | console                    | `json`, `ecs`       |
 | `file`                      | local file                 | `json`, `ecs`       |
-| `null`                      |                            |                     |
 | `es`                        | ElasticSearch service      | `ecs`               |
 | `syslog`                    | syslog service             | `json`, `ecs`       |
 | `findings`                  | IBM Findings API           | `occurence`         |
+| `null`                      |                            |                     |
 
-Some of these combinations require additional configuration as described in the following sections. 
+Some of these combinations require additional configuration as described in the following sections. `null` is used for debugging the processor and doesn't export any data.
 
 #### Export to file
 

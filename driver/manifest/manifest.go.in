@@ -24,6 +24,7 @@ package manifest
 const (
 	Version           = "SYSFLOW_VERSION"
 	JSONSchemaVersion = "JSON_SCHEMA_VERSION"
+	EcsVersion        = "ECS_VERSION"
 	BuildNumber       = "BUILD_NUMBER"
 )
 
@@ -31,5 +32,6 @@ const (
 const (
 	VersionKey           string = "version"
 	JSONSchemaVersionKey string = "jsonschemaversion"
+	EcsVersionKey        string = "ecsversion"
 	BuildNumberKey       string = "buildnumber"
 )

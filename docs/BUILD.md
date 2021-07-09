@@ -12,7 +12,7 @@ The endpoint of a pipeline configuration is an exporter plugin that sends the pr
 
 The processor has been tested on Ubuntu/RHEL distributions, but should work on any Linux system.
 
-- Golang version 1.14 and make (if buiding from sources)
+- Golang version 1.14+ and make (if buiding from sources)
 - Docker, docker-compose  (if building with docker)
 
 ## Build
@@ -55,21 +55,25 @@ Positional arguments:
         Input path
 Arguments:
   -config string
-        Path to pipeline configuration file (default “pipeline.json”)
+        Path to pipeline configuration file (default "pipeline.json")
   -cpuprofile file
         Write cpu profile to file
   -driver string
-        Driver name {file|socket|<custom>} (default “file”)
+        Driver name {file|socket|<custom>} (default "file")
   -driverdir string
-        Dynamic driver directory (default “../resources/drivers”)
+        Dynamic driver directory (default "../resources/drivers")
   -log string
-        Log level {trace|info|warn|error} (default “info”)
+        Log level {trace|info|warn|error} (default "info")
   -memprofile file
         Write memory profile to file
   -plugdir string
-        Dynamic plugins directory (default “../resources/plugins”)
+        Dynamic plugins directory (default "../resources/plugins")
+  -test
+        Test pipeline configuration
+  -traceprofile file
+        Write trace profile to file
   -version
-        Outputs version information
+        Output version information
 ```
 
 The four most important flags are `config`, `driverdir`, `plugdir`, and `driver`. The `config` flag points to a pipeline configuration file, which describes the entire pipeline and settings for the individual settings for the plugins. The `driverdir` and `plugdir` flags specify where any dynamic drivers and plugins shared libraries reside that should be loaded by the processor at runtime. The `driver` flag accepts a label to a pre-configured driver (either built-in or custom) that will be used as the data source to the pipeline. Currently, the pipeline only supports one driver at a time, but we anticipate handling multiple drivers in the future. There are two built-in drivers:
@@ -77,4 +81,3 @@ The four most important flags are `config`, `driverdir`, `plugdir`, and `driver`
 - _file_: loads a sysflow file reading driver that reads from `path`.  
 - _socket_: the processor loads a sysflow streaming driver. The driver creates a domain socket named `path`
   and acts as a server waiting for a SysFlow collector to attach and send sysflow data.
-

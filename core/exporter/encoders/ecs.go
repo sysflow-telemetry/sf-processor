@@ -99,9 +99,9 @@ func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 		Process:   encodeProcess(rec),
 		User:      encodeUser(rec),
 	}
-	ecs.Agent.Version = t.config.JSONSchemaVersion
+	ecs.Agent.Version = t.config.Version
 	ecs.Agent.Type = ECS_AGENT_TYPE
-	ecs.Ecs.Version = ECS_VERSION
+	ecs.Ecs.Version = t.config.EcsVersion
 	ecs.Ts = utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_TS)(rec))
 
 	// encode specific record components

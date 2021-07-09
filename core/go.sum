@@ -8,8 +8,6 @@ github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91 h1:vX+gnvBc56EbWYrmlhYbFYRaeikAke1GL84N4BEYOFE=
 github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91/go.mod h1:cDLGBht23g0XQdLjzn6xOGXDkLK182YfINAaZEQLCHQ=
-github.com/actgardner/gogen-avro v6.5.0+incompatible h1:P73NiZR/S0lBWQDkK6mbvdgBXRc6e0/AaaSTqu/AvLI=
-github.com/actgardner/gogen-avro v6.5.0+incompatible/go.mod h1:N2PzqZtS+5w9xxGp2daeykhWdTL0lBiRhbbvkVj4Yd8=
 github.com/actgardner/gogen-avro/v7 v7.1.1/go.mod h1:DALbHv5zAeoz7KJ/fPAvl+d8Ixcy6x8Fjo+PO0YM8mU=
 github.com/actgardner/gogen-avro/v7 v7.3.1 h1:6JJU3o7168lcyIB6uXYyYdflCsJT3aMFKZPSpSc4toI=
 github.com/actgardner/gogen-avro/v7 v7.3.1/go.mod h1:1d45RpDvI29sU7l9wUxlRTEglZSdQSbd6bDbWJaEMgo=
@@ -211,8 +209,8 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/syndtr/gocapability v0.0.0-20170704070218-db04d3cc01c8/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210611191016-bbdbd17a2eaf h1:FD0V/q8vPyOLyFYD/jtZNrz/PVhZG121wrbAz8tmudc=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210611191016-bbdbd17a2eaf/go.mod h1:3rICv2GmRq0ZCX9L0pYz8N0ItX/nbuALRotBWOOS4Gw=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210708155326-3a9bd47e6f6f h1:Fs8f2kfX+xrSzd5zj+HicG2AsA7ffdaN72zFM/jWfZI=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210708155326-3a9bd47e6f6f/go.mod h1:OSPDOqeD66l/sjuOG8klXtLQ8sUcx6WHvsXmwrtJoyE=
 github.com/tchap/go-patricia v2.3.0+incompatible/go.mod h1:bmLyhP68RS6kStMGxByiQ23RP/odRBOTVjwp2cDyi6I=
 github.com/tidwall/pretty v1.0.0 h1:HsD+QiTn7sK6flMKIvNmpqz1qrpP3Ps6jOKIKMooyg4=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=

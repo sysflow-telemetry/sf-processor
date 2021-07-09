@@ -94,7 +94,7 @@ func run() int {
 		hdr := sfgo.NewSFHeader()
 		hdr.SetDefault(0)
 		schemaVersion := hdr.Version
-		fmt.Printf("Version: %s+%s, Avro Schema Version: %v, Export Schema Version: %v\n", manifest.Version, manifest.BuildNumber, schemaVersion, manifest.JSONSchemaVersion) //nolint:typecheck
+		fmt.Printf("Version: %s+%s, Avro Schema Version: %v, Export Schema Version: %v (JSON), %v (ECS)\n", manifest.Version, manifest.BuildNumber, schemaVersion, manifest.JSONSchemaVersion, manifest.EcsVersion) //nolint:typecheck
 		return 0
 	}
 

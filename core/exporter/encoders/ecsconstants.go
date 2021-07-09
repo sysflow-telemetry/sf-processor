@@ -20,9 +20,6 @@
 // Package encoders implements codecs for exporting records and events in different data formats.
 package encoders
 
-// ECS_VERSION denotes the ECS schema version.
-const ECS_VERSION = "1.7.0"
-
 // ECS_AGENT_TYPE denotes the ECS agent type.
 const ECS_AGENT_TYPE = "SysFlow"
 
