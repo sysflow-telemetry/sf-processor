@@ -54,3 +54,13 @@ func (s *Set) Contains(value string) bool {
 func (s *Set) Len() int {
 	return len(s.m)
 }
+
+// IsSubset checks if set s is a subset of l.
+func (s *Set) IsSubset(l *Set) bool {
+	for k := range s.m {
+		if !l.Contains(k) {
+			return false
+		}
+	}
+	return true
+}

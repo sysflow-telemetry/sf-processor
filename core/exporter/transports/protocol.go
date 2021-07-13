@@ -30,5 +30,11 @@ type TransportProtocol interface {
 	Cleanup()
 }
 
+// TestableTransportProtocol is a testable transport protocol.
+type TestableTransportProtocol interface {
+	TransportProtocol
+	Test() (bool, error)
+}
+
 // TransportProtocolFactory defines a factory type for transport protocols.
 type TransportProtocolFactory func(commons.Config) TransportProtocol

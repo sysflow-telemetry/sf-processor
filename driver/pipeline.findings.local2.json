@@ -10,23 +10,23 @@
     "processor": "policyengine",
     "in": "flat flattenerchan",
     "out": "evt eventchan",
-    "policies": "/data/resources/policies/runtimeintegrity/runtimeintegrity.yaml"
+    "policies": "../resources/policies/runtimeintegrity/runtimeintegrity.yaml"
    },
    {
     "processor": "exporter",
     "in": "evt eventchan",
     "export": "findings",
     "format": "occurrence", 
-    "findings.apikey": "sBdD7pvDDIX7U9muci16gn81IVXa59wqLi3tloFZCcIX",
+    "findings.apikey": "sBdD7pvDDIX7U9muci16gn81IVXa59wqLi3tloFZCcIX",       
     "findings.accountid": "79b06b84fc25fe1bd84a1e81d2e73cf0",
-    "findings.provider": "system-analytics-pipeline",
-    "findings.sqlquerycrn": "crn:v1:bluemix:public:sql-query:us-south:a/49f48a067ac4433a911740653049e83d:abdf1dc1-0232-4083-9f43-67eeaddd6d08::",
-    "findings.s3bucket": "events",
-    "findings.s3region": "us-south",
-    "findings.region": "us-south",    
+    "findings.provider": "system-analytics-pipeline",       
+    "findings.sqlquerycrn": "crn:v1:bluemix:public:sql-query:us-south:a/49f48a067ac4433a911740653049e83d:abdf1dc1-0232-4083-9f43-67eeaddd6d08::", 
+    "findings.region": "us-south",       
+    "findings.s3region": "us-south",       
+    "findings.s3bucket": "events",       
     "findings.path": "/tmp/events", 
     "findings.pool.capacity": "25",
-    "findings.pool.maxage": "1440"    
+    "findings.pool.maxage": "1440"       
    }
   ]
 }
