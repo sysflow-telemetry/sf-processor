@@ -96,6 +96,7 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 	}
 
 	for *running {
+		health := false
 		buf := make([]byte, BuffSize)
 		oobuf := make([]byte, OOBuffSize)
 		reader := bytes.NewReader(buf)
@@ -104,6 +105,7 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 			logger.Error.Println("Accept error: ", err)
 			break
 		}
+		logger.Health.Println("Successfully accepted new input stream")
 		for *running {
 			sFlow = sfgo.NewSysFlow()
 			_, _, flags, _, err := s.conn.ReadMsgUnix(buf[:], oobuf[:])
@@ -116,6 +118,10 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 				err = vm.Eval(reader, deser, sFlow)
 				if err != nil {
 					logger.Error.Println("Deserialization error: ", err)
+				}
+				if !health {
+					logger.Health.Println("Successfully read first record from input stream")
+					health = true
 				}
 				records <- sFlow
 			} else {
