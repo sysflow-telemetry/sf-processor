@@ -160,6 +160,8 @@ func (pl *Pipeline) Load(driverName string) error {
 		pl.wg.Add(1)
 		go pl.process(prc, in)
 	}
+	pl.wg.Add(1)
+	go pl.test()
 	return nil
 }
 
@@ -215,4 +217,19 @@ func (pl *Pipeline) Wait() {
 func (pl *Pipeline) process(prc plugins.SFProcessor, in interface{}) {
 	prc.Process(in, pl.wg)
 	prc.Cleanup()
+}
+
+// Function for handling testable plugin checks.
+func (pl *Pipeline) test() {
+	defer pl.wg.Done()
+	for _, prc := range pl.processors {
+		if tprc, ok := prc.(plugins.SFTestableProcessor); ok {
+			if _, err := tprc.Test(); err != nil {
+				logger.Health.Println("Health checks: failed")
+				logger.Error.Printf("Health checks for plugin %s failed: %v\n", prc.GetName(), err)
+				return
+			}
+		}
+	}
+	logger.Health.Println("Health checks: passed")
 }

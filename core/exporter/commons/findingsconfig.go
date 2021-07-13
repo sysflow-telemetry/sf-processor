@@ -20,7 +20,11 @@
 // Package commons defines common facilities for exporters.
 package commons
 
-import "strconv"
+import (
+	"strconv"
+
+	"github.com/ibm-cloud-security/security-advisor-sdk-go/findingsapiv1"
+)
 
 // Configuration keys.
 const (
@@ -58,7 +62,7 @@ type FindingsConfig struct {
 func CreateFindingsConfig(bc Config, conf map[string]interface{}) (c FindingsConfig, err error) {
 	// default values
 	c = FindingsConfig{
-		FindingsURL:          "https://us-south.secadvisor.cloud.ibm.com/findings",
+		FindingsURL:          findingsapiv1.DefaultServiceURL,
 		FindingsSQLQueryURL:  "https://us.sql-query.cloud.ibm.com/sqlquery",
 		FindingsPath:         "/mnt/occurrences",
 		FindingsPoolCapacity: 250,

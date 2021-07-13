@@ -54,8 +54,6 @@ const (
 	ChanSize   = 100000
 )
 
-type inputType int
-
 // PluginConfig defines a map for plugin configuration
 type PluginConfig map[string]interface{}
 

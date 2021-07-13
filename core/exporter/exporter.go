@@ -118,6 +118,14 @@ func (s *Exporter) Init(conf map[string]interface{}) error {
 	return err
 }
 
+// Test implements health checks for the plugin.
+func (s *Exporter) Test() (bool, error) {
+	if t, ok := s.transport.(transports.TestableTransportProtocol); ok {
+		return t.Test()
+	}
+	return true, nil
+}
+
 // Process implements the main interface of the plugin.
 func (s *Exporter) Process(ch interface{}, wg *sync.WaitGroup) {
 	cha := ch.(*engine.RecordChannel)

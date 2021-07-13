@@ -21,6 +21,7 @@
 package transports
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/IBM/go-sdk-core/v3/core"
@@ -31,6 +32,7 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/encoders"
+	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
 )
 
 const (
@@ -61,9 +63,18 @@ func NewFindingsAPIProto(conf commons.Config) TransportProtocol {
 		Region:      conf.FindingsRegion}
 }
 
-// Init intializes a new null protocol object.
+// Init intializes a new protocol object.
 func (s *FindingsAPIProto) Init() error {
 	return nil
+}
+
+// Test tests the transport protocol.
+func (s *FindingsAPIProto) Test() (bool, error) {
+	service, err := NewFindingsAPI(s.APIKey, s.FindingsURL)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to instantiate Findings API")
+	}
+	return service.CheckAPIConfiguration(s.AccountID, s.ProviderID)
 }
 
 // Export does nothing.
@@ -80,12 +91,12 @@ func (s *FindingsAPIProto) Export(data []commons.EncodedData) (err error) {
 	return
 }
 
-// Register registers the null protocol object with the exporter.
+// Register registers the protocol object with the exporter.
 func (s *FindingsAPIProto) Register(eps map[commons.Transport]TransportProtocolFactory) {
 	eps[commons.FindingsTransport] = NewFindingsAPIProto
 }
 
-// Cleanup cleans up the null protocol object.
+// Cleanup cleans up the protocol object.
 func (s *FindingsAPIProto) Cleanup() {}
 
 // CreateOccurrence creates a new occurrence of type finding.
@@ -160,6 +171,34 @@ func NewFindingsAPI(apiKey string, url string) (service *FindingsAPI, err error)
 	}
 
 	return
+}
+
+// CheckAPIConfiguration checks Findings API connectivity and access.
+func (s *FindingsAPI) CheckAPIConfiguration(accountID string, providerID string) (pass bool, err error) {
+	service := &findingsapiv1.FindingsApiV1{Service: s.Service}
+	listNotesOptions := service.NewListNotesOptions(accountID, providerID)
+	listNotesResult, listNotesResponse, err := service.ListNotes(listNotesOptions)
+	if err != nil {
+		return false, errors.Wrap(err, "couldn't list notes using Findings API")
+	}
+
+	if listNotesResponse.StatusCode != 200 {
+		return false, errors.Wrapf(err, "bad response code while checking Findings API: %d", listNotesResponse.StatusCode)
+	}
+
+	ids := utils.NewSet()
+	for _, n := range listNotesResult.Notes {
+		id, err := json.Marshal(n.ID)
+		if err != nil {
+			return false, errors.Wrap(err, "can't decode note ID")
+		}
+		ids.Add(string(id[1 : len(id)-1]))
+	}
+	req := encoders.NoteIDs()
+	if !req.IsSubset(ids) {
+		return false, errors.Errorf("Provider doesn't contain required note IDs: %v", req)
+	}
+	return true, nil
 }
 
 // CreateCustomOccurrence creates a new `Occurrence`. Use this method to create `Occurrences` for a resource.

@@ -39,7 +39,7 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/encoders"
 )
 
-// ElasticProto implements the TransportProtocol interface for syslog.
+// ElasticProto implements the TransportProtocol interface for Elastic.
 type ElasticProto struct {
 	es     *elasticsearch.Client
 	config commons.Config
@@ -48,12 +48,12 @@ type ElasticProto struct {
 	start  time.Time
 }
 
-// NewElasticProto creates a new syslog protocol object.
+// NewElasticProto creates a new Elastic protocol object.
 func NewElasticProto(conf commons.Config) TransportProtocol {
 	return &ElasticProto{config: conf}
 }
 
-// Init initializes the syslog daemon connection.
+// Init initializes the Elastic client.
 func (s *ElasticProto) Init() (err error) {
 	cfg := elasticsearch.Config{
 		Addresses: s.config.ESAddresses,
@@ -135,10 +135,10 @@ func (s *ElasticProto) Export(data []commons.EncodedData) (err error) {
 	return
 }
 
-// Register registers the syslog proto object with the exporter.
+// Register registers the Elastic proto object with the exporter.
 func (s *ElasticProto) Register(eps map[commons.Transport]TransportProtocolFactory) {
 	eps[commons.ESTransport] = NewElasticProto
 }
 
-// Cleanup  closes the syslog connection.
+// Cleanup  closes the Elastic connection.
 func (s *ElasticProto) Cleanup() {}

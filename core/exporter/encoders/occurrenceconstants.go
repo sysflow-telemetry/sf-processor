@@ -20,6 +20,8 @@
 // Package encoders implements codecs for exporting records and events in different data formats.
 package encoders
 
+import "github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
+
 // Formatted string constants.
 const (
 	rightArrow = "\u2192"
@@ -48,6 +50,14 @@ const (
 	NOTIFICATION = "notification"
 	OFFENSE      = "actionable-offense"
 )
+
+// NoteIDs returns the set of note IDs.
+func NoteIDs() *utils.Set {
+	s := utils.NewSet()
+	s.Add(NOTIFICATION)
+	s.Add(OFFENSE)
+	return s
+}
 
 // Bloom filter settings.
 const (
