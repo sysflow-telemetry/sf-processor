@@ -34,7 +34,6 @@ require (
 	github.com/spf13/viper v1.6.3
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210713130650-c57558d63305
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20210709164444-484da05c2a85
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
 )
 
