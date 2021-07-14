@@ -21,9 +21,11 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
@@ -160,8 +162,7 @@ func (pl *Pipeline) Load(driverName string) error {
 		pl.wg.Add(1)
 		go pl.process(prc, in)
 	}
-	pl.wg.Add(1)
-	go pl.test()
+	pl.test()
 	return nil
 }
 
@@ -221,15 +222,34 @@ func (pl *Pipeline) process(prc plugins.SFProcessor, in interface{}) {
 
 // Function for handling testable plugin checks.
 func (pl *Pipeline) test() {
-	defer pl.wg.Done()
-	for _, prc := range pl.processors {
-		if tprc, ok := prc.(plugins.SFTestableProcessor); ok {
-			if _, err := tprc.Test(); err != nil {
-				logger.Health.Println("Health checks: failed")
-				logger.Error.Printf("Health checks for plugin %s failed: %v\n", prc.GetName(), err)
-				return
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	c := make(chan error, 1)
+	go func() {
+		for _, prc := range pl.processors {
+			if tprc, ok := prc.(plugins.SFTestableProcessor); ok {
+				if _, err := tprc.Test(); err != nil {
+					logger.Error.Printf("Health checks for plugin %s failed: %v\n", prc.GetName(), err)
+					c <- err
+					return
+				}
 			}
 		}
+		c <- nil
+	}()
+
+	select {
+	case err := <-c:
+		if err != nil {
+			logger.Health.Println("Health checks: failed")
+		} else {
+			logger.Health.Println("Health checks: passed")
+		}
+		return
+	case <-ctx.Done():
+		logger.Error.Println("Health checks timed out: ", ctx.Err())
+		logger.Health.Println("Health checks: failed")
+		return
 	}
-	logger.Health.Println("Health checks: passed")
 }
