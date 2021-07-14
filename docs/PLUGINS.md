@@ -97,7 +97,7 @@ make
 
 This will build the plugin and copy it into `resources/plugins/`.
 
-To use the new plugin, the use the configuration provided in [github](https://github.com/sysflow-telemetry/sf-processor/tree/master/plugins/example), which defines the following pipeline:
+To use the new plugin, use the configuration provided in [github](https://github.com/sysflow-telemetry/sf-processor/tree/master/plugins/example), which defines the following pipeline:
 
 ```bash
 {
@@ -116,11 +116,12 @@ To use the new plugin, the use the configuration provided in [github](https://gi
 }
 ```
 
-- The builtin sysflowReader plugin with flattener handler, which takes raw sysflow objects, and flattens them
+This pipeline contains two plugins:
+- The builtin `sysflowReader` plugin with flattener handler, which takes raw sysflow objects, and flattens them
    into arrays of integers and strings for easier processing in certain plugins like the policy engine.
-- The example plugin, which takes the flattened output from the sysflowreader plugin, and prints it the screen.
+- The `example` plugin, which takes the flattened output from the sysflowreader plugin, and prints it the screen.
 
-The key item to note is that the output (i.e., `out`) channel of the sysflowreader matches the input (i.e., `in`) channel of the example plugin. This ensures that the plugins will be properly stitched together.
+The key item to note is that the output channel (i.e., `out`) of `sysflowreader` matches the input channel (i.e., `in`) of the example plugin. This ensures that the plugins will be properly stitched together.
 
 To run the example pipeline:
 
