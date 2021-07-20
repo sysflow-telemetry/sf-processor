@@ -49,14 +49,18 @@ jobs:
           working-directory: driver
           args: --disable=errcheck      
   docker:
-    needs: lint-driver
+    #needs: lint-driver
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:      
       - name: Checkout
-        uses: actions/checkout@v2      
+        uses: actions/checkout@v2 
+      - name: Read manifest        
+        shell: bash        
+        run: |             
+          echo "UBI_VERSION=$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)" >> $GITHUB_ENV      
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
@@ -93,6 +97,7 @@ jobs:
         id: args
         shell: bash
         run: |
+          echo "##[set-output name=ubi_version;]$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)"
           echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/*/})"
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"    
       - name: Build and push
@@ -102,10 +107,11 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: "${{ steps.meta.outputs.tags }}"
           labels: "${{ steps.meta.outputs.labels }}"
-          build-args: |
+          build-args: |            
             BUILD_NUMBER=${{ steps.args.outputs.sha_short }}
             VERSION=${{ steps.args.outputs.branch }}
             RELEASE=${{ steps.args.outputs.sha_short }}
+            UBI_VER=${{ steps.args.outputs.ubi_version }}
       - name: push README to Dockerhub
         uses: christian-korneck/update-container-description-action@v1
         if: ${{ github.ref == 'refs/heads/master' && github.event_name != 'pull_request' }}
