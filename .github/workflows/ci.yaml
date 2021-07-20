@@ -49,7 +49,7 @@ jobs:
           working-directory: driver
           args: --disable=errcheck      
   docker:
-    #needs: lint-driver
+    needs: lint-driver
     runs-on: ubuntu-latest
     permissions:
       contents: read
