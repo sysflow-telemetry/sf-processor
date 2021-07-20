@@ -66,10 +66,9 @@ jobs:
             ghcr.io/${{ github.repository }}
           tags: |            
             type=edge,branch=master
-            type=match,pattern=dev
+            type=ref,event=branch
             type=ref,event=tag            
             type=ref,event=pr         
-            type=semver,pattern={{version}}
           labels: |
             org.opencontainers.image.documentation=https://sysflow.readthedocs.io/
             org.opencontainers.image.vendor=SysFlow
