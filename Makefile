@@ -52,7 +52,7 @@ install: build
 
 .PHONY: docker-build
 docker-build:
-	docker build -t sf-processor --target=runtime -f Dockerfile .
+	docker build -t sf-processor --build-arg UBI_VER=$(UBI_VERSION) --target=runtime -f Dockerfile .
 
 .PHONY: pull
 pull:

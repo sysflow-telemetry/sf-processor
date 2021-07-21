@@ -24,6 +24,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
@@ -46,12 +47,13 @@ const (
 
 // Driver constants/defaults
 const (
-	SockFile   = "/var/run/sysflow.sock"
-	BuffSize   = 16384
-	OOBuffSize = 1024
-	DriverDir  = "../resources/drivers"
-	PluginDir  = "../resources/plugins"
-	ChanSize   = 100000
+	SockFile            = "/var/run/sysflow.sock"
+	BuffSize            = 16384
+	OOBuffSize          = 1024
+	DriverDir           = "../resources/drivers"
+	PluginDir           = "../resources/plugins"
+	ChanSize            = 100000
+	HealthChecksTimeout = 10 * time.Second
 )
 
 // PluginConfig defines a map for plugin configuration

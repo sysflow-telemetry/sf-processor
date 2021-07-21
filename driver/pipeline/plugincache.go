@@ -191,7 +191,7 @@ func (p *PluginCache) getEnv(proc string) map[string]string {
 func (p *PluginCache) GetChan(ch string, size int) (interface{}, error) {
 	fields := strings.Fields(ch)
 	if len(fields) != 2 {
-		return nil, errors.New("Channel must be of the form <identifier> <type>")
+		return nil, errors.New("channel must be of the form <identifier> <type>")
 	}
 	if val, ok := p.chanMap[fields[0]]; ok {
 		logger.Trace.Println("Found existing channel ", fields[0])
@@ -203,7 +203,7 @@ func (p *PluginCache) GetChan(ch string, size int) (interface{}, error) {
 		p.chanMap[fields[0]] = c
 		return c, nil
 	}
-	return nil, fmt.Errorf("Channel '%s' not found in plugin cache", fields[0])
+	return nil, fmt.Errorf("channel '%s' not found in plugin cache", fields[0])
 }
 
 // GetProcessor retrieves a cached plugin processor by name.
@@ -228,7 +228,7 @@ func (p *PluginCache) GetProcessor(dir string, name string) (plugins.SFProcessor
 		prc = funct()
 		return prc, nil
 	}
-	return nil, fmt.Errorf("Plugin '%s' not found in plugin cache", name)
+	return nil, fmt.Errorf("plugin '%s' not found in plugin cache", name)
 }
 
 // GetDriver retrieves a cached plugin driver by name.
@@ -239,5 +239,5 @@ func (p *PluginCache) GetDriver(name string) (plugins.SFDriver, error) {
 		drv := funct()
 		return drv, nil
 	}
-	return nil, fmt.Errorf("Driver '%s' not found in plugin cache", name)
+	return nil, fmt.Errorf("driver '%s' not found in plugin cache", name)
 }
