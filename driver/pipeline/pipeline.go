@@ -25,7 +25,6 @@ import (
 	"errors"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
@@ -222,7 +221,7 @@ func (pl *Pipeline) process(prc plugins.SFProcessor, in interface{}) {
 
 // Function for handling testable plugin checks.
 func (pl *Pipeline) test() {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), HealthChecksTimeout)
 	defer cancel()
 
 	c := make(chan error, 1)
