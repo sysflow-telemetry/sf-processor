@@ -32,26 +32,33 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/lang/parser"
 )
 
-// Parsed rule and filter object maps.
-var rules = make([]Rule, 0)
-var filters = make([]Filter, 0)
-
-// Accessory parsing maps.
-var lists = make(map[string][]string)
-var macroCtxs = make(map[string]parser.IExpressionContext)
-
 // Regular expression for parsing lists.
 var itemsre = regexp.MustCompile(`(^\[)(.*)(\]$?)`)
 
 // PolicyInterpreter defines a rules engine for SysFlow data streams.
 type PolicyInterpreter struct {
+	*parser.BaseSfplListener
+
 	ahdl ActionHandler
+
+	// Parsed rule and filter object maps.
+	rules []Rule
+	filters []Filter
+
+	// Accessory parsing maps.
+	lists map[string][]string
+	macroCtxs map[string]parser.IExpressionContext
 }
 
 // NewPolicyInterpreter constructs a new interpreter instance.
 func NewPolicyInterpreter(conf Config) *PolicyInterpreter {
-	ah := NewActionHandler(conf)
-	return &PolicyInterpreter{ah}
+	pi := new(PolicyInterpreter)
+	pi.ahdl = NewActionHandler(conf)
+	pi.rules = make([]Rule, 0)
+	pi.filters = make([]Filter, 0)
+	pi.lists = make(map[string][]string)
+	pi.macroCtxs = make(map[string]parser.IExpressionContext)
+	return pi
 }
 
 // Compile parses and interprets an input policy defined in path.
@@ -77,11 +84,11 @@ func (pi *PolicyInterpreter) compile(path string) error {
 	p.AddErrorListener(parserErrors)
 
 	// Pre-processing (to deal with usage before definitions of macros and lists)
-	antlr.ParseTreeWalkerDefault.Walk(&sfplListener{}, p.Defs())
+	antlr.ParseTreeWalkerDefault.Walk(pi, p.Defs())
 	p.GetInputStream().Seek(0)
 
 	// Parse the policy
-	antlr.ParseTreeWalkerDefault.Walk(&sfplListener{}, p.Policy())
+	antlr.ParseTreeWalkerDefault.Walk(pi, p.Policy())
 
 	errFound := false
 	if len(lexerErrors.Errors) > 0 {
@@ -122,11 +129,8 @@ func (pi *PolicyInterpreter) ProcessAsync(applyFilters bool, filterOnly bool, r 
 	if applyFilters && pi.EvalFilters(r) {
 		return
 	}
-	if filterOnly {
-		out(r)
-	}
-	match := false
-	for _, rule := range rules {
+	match := filterOnly
+	for _, rule := range pi.rules {
 		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
 			pi.ahdl.HandleActionAsync(rule, r, out)
 			match = true
@@ -146,7 +150,7 @@ func (pi *PolicyInterpreter) Process(applyFilters bool, filterOnly bool, r *Reco
 	if filterOnly {
 		return true, r
 	}
-	for _, rule := range rules {
+	for _, rule := range pi.rules {
 		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
 			pi.ahdl.HandleAction(rule, r)
 			match = true
@@ -157,7 +161,7 @@ func (pi *PolicyInterpreter) Process(applyFilters bool, filterOnly bool, r *Reco
 
 // EvalFilters executes compiled policy filters against record r.
 func (pi *PolicyInterpreter) EvalFilters(r *Record) bool {
-	for _, f := range filters {
+	for _, f := range pi.filters {
 		if f.Enabled && f.condition.Eval(r) {
 			return true
 		}
@@ -165,50 +169,46 @@ func (pi *PolicyInterpreter) EvalFilters(r *Record) bool {
 	return false
 }
 
-type sfplListener struct {
-	*parser.BaseSfplListener
-}
-
 // ExitList is called when production list is exited.
-func (listener *sfplListener) ExitPlist(ctx *parser.PlistContext) {
+func (pi *PolicyInterpreter) ExitPlist(ctx *parser.PlistContext) {
 	logger.Trace.Println("Parsing list ", ctx.GetText())
-	lists[ctx.ID().GetText()] = listener.extractListFromItems(ctx.Items())
+	pi.lists[ctx.ID().GetText()] = pi.extractListFromItems(ctx.Items())
 }
 
 // ExitMacro is called when production macro is exited.
-func (listener *sfplListener) ExitPmacro(ctx *parser.PmacroContext) {
+func (pi *PolicyInterpreter) ExitPmacro(ctx *parser.PmacroContext) {
 	logger.Trace.Println("Parsing macro ", ctx.GetText())
-	macroCtxs[ctx.ID().GetText()] = ctx.Expression()
+	pi.macroCtxs[ctx.ID().GetText()] = ctx.Expression()
 }
 
 // ExitFilter is called when production filter is exited.
-func (listener *sfplListener) ExitPfilter(ctx *parser.PfilterContext) {
+func (pi *PolicyInterpreter) ExitPfilter(ctx *parser.PfilterContext) {
 	logger.Trace.Println("Parsing filter ", ctx.GetText())
 	f := Filter{
 		Name:      ctx.ID().GetText(),
-		condition: listener.visitExpression(ctx.Expression()),
-		Enabled:   ctx.ENABLED() == nil || listener.getEnabledFlag(ctx.Enabled()),
+		condition: pi.visitExpression(ctx.Expression()),
+		Enabled:   ctx.ENABLED() == nil || pi.getEnabledFlag(ctx.Enabled()),
 	}
-	filters = append(filters, f)
+	pi.filters = append(pi.filters, f)
 }
 
 // ExitFilter is called when production filter is exited.
-func (listener *sfplListener) ExitPrule(ctx *parser.PruleContext) {
+func (pi *PolicyInterpreter) ExitPrule(ctx *parser.PruleContext) {
 	logger.Trace.Println("Parsing rule ", ctx.GetText())
 	r := Rule{
-		Name:      listener.getOffChannelText(ctx.Text(0)),
-		Desc:      listener.getOffChannelText(ctx.Text(1)),
-		condition: listener.visitExpression(ctx.Expression()),
-		Actions:   listener.getActions(ctx),
-		Tags:      listener.getTags(ctx),
-		Priority:  listener.getPriority(ctx),
-		Prefilter: listener.getPrefilter(ctx),
-		Enabled:   ctx.ENABLED(0) == nil || listener.getEnabledFlag(ctx.Enabled(0)),
+		Name:      pi.getOffChannelText(ctx.Text(0)),
+		Desc:      pi.getOffChannelText(ctx.Text(1)),
+		condition: pi.visitExpression(ctx.Expression()),
+		Actions:   pi.getActions(ctx),
+		Tags:      pi.getTags(ctx),
+		Priority:  pi.getPriority(ctx),
+		Prefilter: pi.getPrefilter(ctx),
+		Enabled:   ctx.ENABLED(0) == nil || pi.getEnabledFlag(ctx.Enabled(0)),
 	}
-	rules = append(rules, r)
+	pi.rules = append(pi.rules, r)
 }
 
-func (listener *sfplListener) getEnabledFlag(ctx parser.IEnabledContext) bool {
+func (pi *PolicyInterpreter) getEnabledFlag(ctx parser.IEnabledContext) bool {
 	flag := trimBoundingQuotes(ctx.GetText())
 	if b, err := strconv.ParseBool(flag); err == nil {
 		return b
@@ -217,32 +217,32 @@ func (listener *sfplListener) getEnabledFlag(ctx parser.IEnabledContext) bool {
 	return true
 }
 
-func (listener *sfplListener) getOffChannelText(ctx parser.ITextContext) string {
+func (pi *PolicyInterpreter) getOffChannelText(ctx parser.ITextContext) string {
 	a := ctx.GetStart().GetStart()
 	b := ctx.GetStop().GetStop()
 	interval := antlr.Interval{Start: a, Stop: b}
 	return ctx.GetStart().GetInputStream().GetTextFromInterval(&interval)
 }
 
-func (listener *sfplListener) getTags(ctx *parser.PruleContext) []EnrichmentTag {
+func (pi *PolicyInterpreter) getTags(ctx *parser.PruleContext) []EnrichmentTag {
 	var tags = make([]EnrichmentTag, 0)
 	ictx := ctx.Tags(0)
 	if ictx != nil {
-		return append(tags, listener.extractTags(ictx))
+		return append(tags, pi.extractTags(ictx))
 	}
 	return tags
 }
 
-func (listener *sfplListener) getPrefilter(ctx *parser.PruleContext) []string {
+func (pi *PolicyInterpreter) getPrefilter(ctx *parser.PruleContext) []string {
 	var pfs = make([]string, 0)
 	ictx := ctx.Prefilter(0)
 	if ictx != nil {
-		return append(pfs, listener.extractList(ictx.GetText())...)
+		return append(pfs, pi.extractList(ictx.GetText())...)
 	}
 	return pfs
 }
 
-func (listener *sfplListener) getPriority(ctx *parser.PruleContext) Priority {
+func (pi *PolicyInterpreter) getPriority(ctx *parser.PruleContext) Priority {
 	ictx := ctx.Severity(0)
 	if ictx != nil {
 		p := ictx.GetText()
@@ -276,13 +276,13 @@ func (listener *sfplListener) getPriority(ctx *parser.PruleContext) Priority {
 	return Low
 }
 
-func (listener *sfplListener) getActions(ctx *parser.PruleContext) []Action {
+func (pi *PolicyInterpreter) getActions(ctx *parser.PruleContext) []Action {
 	var actions []Action
 	if ctx.OUTPUT(0) != nil {
 		actions = append(actions, Alert)
 	} else if ctx.ACTION(0) != nil {
 		astr := ctx.Text(2).GetText()
-		l := listener.extractList(astr)
+		l := pi.extractList(astr)
 		for _, v := range l {
 			switch strings.ToLower(v) {
 			case Alert.String():
@@ -299,37 +299,37 @@ func (listener *sfplListener) getActions(ctx *parser.PruleContext) []Action {
 	return actions
 }
 
-func (listener *sfplListener) extractList(str string) []string {
+func (pi *PolicyInterpreter) extractList(str string) []string {
 	return strings.Split(itemsre.ReplaceAllString(str, "$2"), LISTSEP)
 }
 
-func (listener *sfplListener) extractListFromItems(ctx parser.IItemsContext) []string {
+func (pi *PolicyInterpreter) extractListFromItems(ctx parser.IItemsContext) []string {
 	if ctx != nil {
-		return listener.extractList(ctx.GetText())
+		return pi.extractList(ctx.GetText())
 	}
 	return []string{}
 }
 
-func (listener *sfplListener) extractTags(ctx parser.ITagsContext) []string {
+func (pi *PolicyInterpreter) extractTags(ctx parser.ITagsContext) []string {
 	if ctx != nil {
-		return listener.extractList(ctx.GetText())
+		return pi.extractList(ctx.GetText())
 	}
 	return []string{}
 }
 
-func (listener *sfplListener) extractListFromAtoms(ctxs []parser.IAtomContext) []string {
+func (pi *PolicyInterpreter) extractListFromAtoms(ctxs []parser.IAtomContext) []string {
 	s := []string{}
 	for _, v := range ctxs {
-		s = append(s, listener.reduceList(v.GetText())...)
+		s = append(s, pi.reduceList(v.GetText())...)
 	}
 	return s
 }
 
-func (listener *sfplListener) reduceList(sl string) []string {
+func (pi *PolicyInterpreter) reduceList(sl string) []string {
 	s := []string{}
-	if l, ok := lists[sl]; ok {
+	if l, ok := pi.lists[sl]; ok {
 		for _, v := range l {
-			s = append(s, listener.reduceList(v)...)
+			s = append(s, pi.reduceList(v)...)
 		}
 	} else {
 		s = append(s, trimBoundingQuotes(sl))
@@ -337,7 +337,7 @@ func (listener *sfplListener) reduceList(sl string) []string {
 	return s
 }
 
-func (listener *sfplListener) visitExpression(ctx parser.IExpressionContext) Criterion {
+func (pi *PolicyInterpreter) visitExpression(ctx parser.IExpressionContext) Criterion {
 	orCtx := ctx.GetChild(0).(parser.IOr_expressionContext)
 	orPreds := make([]Criterion, 0)
 	for _, andCtx := range orCtx.GetChildren() {
@@ -346,7 +346,7 @@ func (listener *sfplListener) visitExpression(ctx parser.IExpressionContext) Cri
 			for _, termCtx := range andCtx.GetChildren() {
 				t, isTermCtx := termCtx.(parser.ITermContext)
 				if isTermCtx {
-					c := listener.visitTerm(t)
+					c := pi.visitTerm(t)
 					andPreds = append(andPreds, c)
 				}
 			}
@@ -356,15 +356,15 @@ func (listener *sfplListener) visitExpression(ctx parser.IExpressionContext) Cri
 	return Any(orPreds)
 }
 
-func (listener *sfplListener) visitTerm(ctx parser.ITermContext) Criterion {
+func (pi *PolicyInterpreter) visitTerm(ctx parser.ITermContext) Criterion {
 	termCtx := ctx.(*parser.TermContext)
 	if termCtx.Variable() != nil {
-		if m, ok := macroCtxs[termCtx.GetText()]; ok {
-			return listener.visitExpression(m)
+		if m, ok := pi.macroCtxs[termCtx.GetText()]; ok {
+			return pi.visitExpression(m)
 		}
 		logger.Error.Println("Unrecognized reference ", termCtx.GetText())
 	} else if termCtx.NOT() != nil {
-		return listener.visitTerm(termCtx.GetChild(1).(parser.ITermContext)).Not()
+		return pi.visitTerm(termCtx.GetChild(1).(parser.ITermContext)).Not()
 	} else if opCtx, ok := termCtx.Unary_operator().(*parser.Unary_operatorContext); ok {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		if opCtx.EXISTS() != nil {
@@ -397,15 +397,15 @@ func (listener *sfplListener) visitTerm(ctx parser.ITermContext) Criterion {
 		}
 		logger.Error.Println("Unrecognized binary operator ", opCtx.GetText())
 	} else if termCtx.Expression() != nil {
-		return listener.visitExpression(termCtx.Expression())
+		return pi.visitExpression(termCtx.Expression())
 	} else if termCtx.IN() != nil {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		rop := termCtx.AllAtom()[1:]
-		return In(lop, listener.extractListFromAtoms(rop))
+		return In(lop, pi.extractListFromAtoms(rop))
 	} else if termCtx.PMATCH() != nil {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		rop := termCtx.AllAtom()[1:]
-		return PMatch(lop, listener.extractListFromAtoms(rop))
+		return PMatch(lop, pi.extractListFromAtoms(rop))
 	} else {
 		logger.Warn.Println("Unrecognized term ", termCtx.GetText())
 	}
