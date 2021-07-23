@@ -98,7 +98,7 @@ jobs:
         shell: bash
         run: |
           echo "##[set-output name=ubi_version;]$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)"
-          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/*/})"
+          echo "##[set-output name=branch;]$(echo ${GITHUB_REF##refs/*/})"
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"    
       - name: Build and push
         id: docker_build        

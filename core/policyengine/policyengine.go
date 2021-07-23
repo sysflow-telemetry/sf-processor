@@ -28,6 +28,7 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/cache"
 	"github.com/sysflow-telemetry/sf-processor/core/flattener"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
@@ -92,14 +93,23 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) error {
 	}
 	s.config = config
 	s.tables = cache.GetInstance()
-	if s.config.Mode == engine.FilterMode {
-		logger.Trace.Println("Setting policy engine in filter mode")
-		s.filterOnly = true
-	} else if s.config.Mode == engine.BypassMode {
+
+	if s.config.Mode == engine.BypassMode {
 		logger.Trace.Println("Setting policy engine in bypass mode")
 		s.bypass = true
 		return nil
 	}
+
+	if s.config.PoliciesPath == sfgo.Zeros.String {
+		return errors.New("Configuration tag 'policies' missing from policy engine plugin settings") 
+	}
+	if s.config.Mode == engine.FilterMode {
+		logger.Trace.Println("Setting policy engine in filter mode")
+		s.filterOnly = true
+	} else {
+		logger.Trace.Println("Setting policy engine in alert mode")
+	}
+
 	if s.config.Monitor == engine.NoneType {
 		err = s.compilePolicies(s.config.PoliciesPath)
 		if err != nil {
