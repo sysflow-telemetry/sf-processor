@@ -50,8 +50,6 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 
 	if v, ok := conf[PoliciesConfigKey].(string); ok {
 		c.PoliciesPath = v
-	} else {
-		return c, errors.New("Configuration tag 'policies' missing from policy engine plugin settings")
 	}
 	if v, ok := conf[ModeConfigKey].(string); ok {
 		c.Mode = parseModeConfig(v)
