@@ -53,7 +53,7 @@ type ECSRecord struct {
 	Event       JSONData `json:"event"`
 	Container   JSONData `json:"container"`
 	File        JSONData `json:"file,omitempty"`
-	FileAction  JSONData `json:"file_action,omitempty"`
+	FileAction  JSONData `json:"sf_file_action,omitempty"`
 	Network     JSONData `json:"network,omitempty"`
 	Source      JSONData `json:"source,omitempty"`
 	Destination JSONData `json:"destination,omitempty"`
@@ -207,20 +207,22 @@ func (ecs *ECSRecord) encodeFileFlow(rec *engine.Record) {
 	category := ECS_CAT_FILE
 	eventType := ECS_TYPE_ACCESS
 	action := category + "-" + eventType
-	if opFlags&sfgo.OP_READ_RECV == sfgo.OP_READ_RECV && rbytes > 0 {
+	if opFlags&sfgo.OP_READ_RECV == sfgo.OP_READ_RECV && (rbytes > 0 || rops > 0 ) {
 		action = action + "-" + ECS_ACTION_READ
 	}
-	if opFlags&sfgo.OP_WRITE_SEND == sfgo.OP_WRITE_SEND && wbytes > 0 {
+	if opFlags&sfgo.OP_WRITE_SEND == sfgo.OP_WRITE_SEND && ( wbytes > 0 || wops > 0 ) {
 		eventType = ECS_TYPE_CHANGE
 		action = action + "-" + ECS_ACTION_WRITE
 	}
 	ecs.Event = encodeEvent(rec, category, eventType, action)
 	ecs.File = encodeFile(rec)
-	ecs.FileAction = JSONData{
-		ECS_SF_FA_RBYTES: rbytes,
-		ECS_SF_FA_ROPS:   rops,
-		ECS_SF_FA_WBYTES: wbytes,
-		ECS_SF_FA_WOPS:   wops,
+	if rbytes > 0 || rops > 0 || wbytes > 0 || wops > 0 {
+		ecs.FileAction = JSONData{
+			ECS_SF_FA_RBYTES: rbytes,
+			ECS_SF_FA_ROPS:   rops,
+			ECS_SF_FA_WBYTES: wbytes,
+			ECS_SF_FA_WOPS:   wops,
+		}
 	}
 }
 
