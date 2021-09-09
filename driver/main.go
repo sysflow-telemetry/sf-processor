@@ -116,6 +116,7 @@ func run() int {
 		defer pprof.StopCPUProfile()
 	}
 
+	// Trace profiling
 	if *traceprofile != "" {
 		f, err := os.Create(*traceprofile)
 		if err != nil {

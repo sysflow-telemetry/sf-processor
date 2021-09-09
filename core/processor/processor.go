@@ -32,15 +32,16 @@ import (
 )
 
 const (
-	pluginName  string = "sysflowreader"
+	pluginName  string = "sysflowprocessor"
 	channelName string = "sysflowchan"
 )
 
 // SysFlowProcessor defines the main processor class.
 type SysFlowProcessor struct {
-	hdr    *sfgo.SFHeader
-	hdl    plugins.SFHandler
-	tables *cache.SFTables
+	hdr         *sfgo.SFHeader
+	hdl         plugins.SFHandler
+	tables      *cache.SFTables
+	buildTables bool
 }
 
 var sPluginCache plugins.SFPluginCache
@@ -108,13 +109,17 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 		case sfgo.SF_HEADER:
 			hdr := sf.Rec.SFHeader
 			s.hdr = hdr
-			s.tables.Reset()
+			if s.buildTables {
+				s.tables.Reset()
+			}
 			if entEnabled {
 				s.hdl.HandleHeader(sf, s.hdr)
 			}
 		case sfgo.SF_CONT:
 			cont := sf.Rec.Container
-			s.tables.SetCont(cont.Id, cont)
+			if s.buildTables {
+				s.tables.SetCont(cont.Id, cont)
+			}
 			if entEnabled {
 				s.hdl.HandleContainer(sf, s.hdr, cont)
 			}
@@ -122,14 +127,18 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 			proc := sf.Rec.Process
 			proc.Exe = strings.TrimSpace(proc.Exe)
 			proc.ExeArgs = strings.TrimSpace(proc.ExeArgs)
-			s.tables.SetProc(*proc.Oid, proc)
+			if s.buildTables {
+				s.tables.SetProc(*proc.Oid, proc)
+			}
 			if entEnabled {
 				cont := s.getContFromProc(proc)
 				s.hdl.HandleProcess(sf, s.hdr, cont, proc)
 			}
 		case sfgo.SF_FILE:
 			file := sf.Rec.File
-			s.tables.SetFile(file.Oid, file)
+			if s.buildTables {
+				s.tables.SetFile(file.Oid, file)
+			}
 			if entEnabled {
 				cont := s.getContFromFile(file)
 				s.hdl.HandleFile(sf, s.hdr, cont, file)
