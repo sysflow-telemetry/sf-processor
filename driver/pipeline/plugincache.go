@@ -64,6 +64,7 @@ func NewPluginCache(conf string) *PluginCache {
 
 // initializes plugin cache.
 func (p *PluginCache) init() {
+	(&processor.SysFlowReader{}).Register(p)
 	(&processor.SysFlowProcessor{}).Register(p)
 	(&policyengine.PolicyEngine{}).Register(p)
 	(&exporter.Exporter{}).Register(p)
