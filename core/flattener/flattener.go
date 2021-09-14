@@ -92,30 +92,30 @@ func (s *Flattener) Cleanup() {
 }
 
 // HandleHeader processes Header entities.
-func (s *Flattener) HandleHeader(sf *sfgo.SysFlow, hdr *sfgo.SFHeader) error {
+func (s *Flattener) HandleHeader(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader) error {
 	return nil
 }
 
 // HandleContainer processes Container entities.
-func (s *Flattener) HandleContainer(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container) error {
+func (s *Flattener) HandleContainer(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader) error {
 	return nil
 }
 
 // HandleProcess processes Process entities.
-func (s *Flattener) HandleProcess(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process) error {
+func (s *Flattener) HandleProcess(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader) error {
 	return nil
 }
 
 // HandleFile processes File entities.
-func (s *Flattener) HandleFile(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, file *sfgo.File) error {
+func (s *Flattener) HandleFile(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader) error {
 	return nil
 }
 
 // HandleNetFlow processes Network Flows.
-func (s *Flattener) HandleNetFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, nf *sfgo.NetworkFlow) error {
+func (s *Flattener) HandleNetFlow(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, nf *sfgo.NetworkFlow) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.NET_FLOW
-	s.fillEntities(hdr, cont, proc, nil, fr)
+	s.fillEntities(hdr, sf.Container, sf.Process, nil, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_TS_INT] = nf.Ts
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_TID_INT] = nf.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_OPFLAGS_INT] = int64(nf.OpFlags)
@@ -130,6 +130,7 @@ func (s *Flattener) HandleNetFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sf
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_NUMWSENDOPS_INT] = nf.NumWSendOps
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_NUMRRECVBYTES_INT] = nf.NumRRecvBytes
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_NUMWSENDBYTES_INT] = nf.NumWSendBytes
+	fr.Ptree = sf.PTree
 	for _, ch := range s.outCh {
 		ch <- fr
 	}
@@ -137,10 +138,10 @@ func (s *Flattener) HandleNetFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sf
 }
 
 // HandleFileFlow processes File Flows.
-func (s *Flattener) HandleFileFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file *sfgo.File, ff *sfgo.FileFlow) error {
+func (s *Flattener) HandleFileFlow(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, ff *sfgo.FileFlow) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.FILE_FLOW
-	s.fillEntities(hdr, cont, proc, file, fr)
+	s.fillEntities(hdr, sf.Container, sf.Process, sf.File, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_TS_INT] = ff.Ts
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_TID_INT] = ff.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_OPFLAGS_INT] = int64(ff.OpFlags)
@@ -151,6 +152,7 @@ func (s *Flattener) HandleFileFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *s
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_NUMWSENDOPS_INT] = ff.NumWSendOps
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_NUMRRECVBYTES_INT] = ff.NumRRecvBytes
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_NUMWSENDBYTES_INT] = ff.NumWSendBytes
+	fr.Ptree = sf.PTree
 	for _, ch := range s.outCh {
 		ch <- fr
 	}
@@ -158,16 +160,16 @@ func (s *Flattener) HandleFileFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *s
 }
 
 // HandleFileEvt processes File Events.
-func (s *Flattener) HandleFileEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file1 *sfgo.File, file2 *sfgo.File, fe *sfgo.FileEvent) error {
+func (s *Flattener) HandleFileEvt(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, fe *sfgo.FileEvent) error {
 	fr := newFlatRecord()
-	if file2 != nil {
-		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_STATE_INT] = int64(file2.State)
-		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_TS_INT] = file2.Ts
-		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_RESTYPE_INT] = int64(file2.Restype)
-		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_OID_STR] = getOIDStr(file2.Oid[:])
-		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_PATH_STR] = strings.TrimSpace(file2.Path)
-		if file2.ContainerId != nil && file2.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
-			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_CONTAINERID_STRING_STR] = file2.ContainerId.String
+	if sf.NewFile != nil {
+		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_STATE_INT] = int64(sf.NewFile.State)
+		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_TS_INT] = sf.NewFile.Ts
+		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_RESTYPE_INT] = int64(sf.NewFile.Restype)
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_OID_STR] = getOIDStr(sf.NewFile.Oid[:])
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_PATH_STR] = strings.TrimSpace(sf.NewFile.Path)
+		if sf.NewFile.ContainerId != nil && sf.NewFile.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_CONTAINERID_STRING_STR] = sf.NewFile.ContainerId.String
 		} else {
 			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
 		}
@@ -180,11 +182,12 @@ func (s *Flattener) HandleFileEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sf
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_OID_STR] = sfgo.Zeros.String
 	}
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.FILE_EVT
-	s.fillEntities(hdr, cont, proc, file1, fr)
+	s.fillEntities(hdr, sf.Container, sf.Process, sf.File, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_TS_INT] = fe.Ts
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_TID_INT] = fe.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_OPFLAGS_INT] = int64(fe.OpFlags)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_RET_INT] = int64(fe.Ret)
+	fr.Ptree = sf.PTree
 	for _, ch := range s.outCh {
 		ch <- fr
 	}
@@ -192,24 +195,25 @@ func (s *Flattener) HandleFileEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sf
 }
 
 // HandleNetEvt processes Network Events.
-func (s *Flattener) HandleNetEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, ne *sfgo.NetworkEvent) error {
+func (s *Flattener) HandleNetEvt(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, ne *sfgo.NetworkEvent) error {
 	return nil
 }
 
 // HandleProcFlow processes Process Flows.
-func (s *Flattener) HandleProcFlow(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, pf *sfgo.ProcessFlow) error {
+func (s *Flattener) HandleProcFlow(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, pf *sfgo.ProcessFlow) error {
 	return nil
 }
 
 // HandleProcEvt processes Process Events.
-func (s *Flattener) HandleProcEvt(sf *sfgo.SysFlow, hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, pe *sfgo.ProcessEvent) error {
+func (s *Flattener) HandleProcEvt(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, pe *sfgo.ProcessEvent) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.PROC_EVT
-	s.fillEntities(hdr, cont, proc, nil, fr)
+	s.fillEntities(hdr, sf.Container, sf.Process, nil, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_TS_INT] = pe.Ts
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_TID_INT] = pe.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_OPFLAGS_INT] = int64(pe.OpFlags)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_RET_INT] = int64(pe.Ret)
+	fr.Ptree = sf.PTree
 	for _, ch := range s.outCh {
 		ch <- fr
 	}
@@ -330,7 +334,6 @@ func newFlatRecord() *sfgo.FlatRecord {
 	fr.Ints = make([][]int64, 1)
 	fr.Strs = make([][]string, 1)
 	fr.Sources[sfgo.SYSFLOW_IDX] = sfgo.SYSFLOW_SRC
-
 	fr.Ints[sfgo.SYSFLOW_IDX] = make([]int64, sfgo.INT_ARRAY_SIZE)
 	fr.Strs[sfgo.SYSFLOW_IDX] = make([]string, sfgo.STR_ARRAY_SIZE)
 	return fr
