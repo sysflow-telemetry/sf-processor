@@ -31,7 +31,7 @@ import (
 
 const (
 	pluginName  string = "sysflowprocessor"
-	channelName string = "provchan"
+	channelName string = "ctxchan"
 )
 
 // SysFlowProcessor defines the main processor class.
@@ -103,32 +103,32 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 		switch sf.Rec.UnionType {
 		case sfgo.SF_HEADER:
 			if entEnabled {
-				s.hdl.HandleHeader(sf, s.hdr)
+				s.hdl.HandleHeader(sf, sf.Header)
 			}
 		case sfgo.SF_CONT:
 			if entEnabled {
-				s.hdl.HandleContainer(sf, s.hdr)
+				s.hdl.HandleContainer(sf, sf.Container)
 			}
 		case sfgo.SF_PROCESS:
 			if entEnabled {
-				s.hdl.HandleProcess(sf, s.hdr)
+				s.hdl.HandleProcess(sf, sf.Process)
 			}
 		case sfgo.SF_FILE:
 			if entEnabled {
-				s.hdl.HandleFile(sf, s.hdr)
+				s.hdl.HandleFile(sf, sf.File)
 			}
 		case sfgo.SF_PROC_EVT:
 			pe := sf.Rec.ProcessEvent
-			s.hdl.HandleProcEvt(sf, s.hdr, pe)
+			s.hdl.HandleProcEvt(sf, pe)
 		case sfgo.SF_NET_FLOW:
 			nf := sf.Rec.NetworkFlow
-			s.hdl.HandleNetFlow(sf, s.hdr, nf)
+			s.hdl.HandleNetFlow(sf, nf)
 		case sfgo.SF_FILE_FLOW:
 			ff := sf.Rec.FileFlow
-			s.hdl.HandleFileFlow(sf, s.hdr, ff)
+			s.hdl.HandleFileFlow(sf, ff)
 		case sfgo.SF_FILE_EVT:
 			fe := sf.Rec.FileEvent
-			s.hdl.HandleFileEvt(sf, s.hdr, fe)
+			s.hdl.HandleFileEvt(sf, fe)
 		case sfgo.SF_PROC_FLOW:
 		case sfgo.SF_NET_EVT:
 		default:

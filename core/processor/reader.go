@@ -89,10 +89,10 @@ func (s *SysFlowReader) Process(ch interface{}, wg *sync.WaitGroup) {
 		}
 		sf := new(plugins.CtxSysFlow)
 		sf.SysFlow = r
+		sf.Header = s.hdr
 		switch sf.Rec.UnionType {
 		case sfgo.SF_HEADER:
-			hdr := sf.Rec.SFHeader
-			s.hdr = hdr
+			s.hdr = sf.Rec.SFHeader
 			s.tables.Reset()
 			if entEnabled {
 				s.hdl.HandleHeader(sf, s.hdr)
@@ -101,7 +101,7 @@ func (s *SysFlowReader) Process(ch interface{}, wg *sync.WaitGroup) {
 			cont := sf.Rec.Container
 			s.tables.SetCont(cont.Id, cont)
 			if entEnabled {
-				s.hdl.HandleContainer(sf, s.hdr)
+				s.hdl.HandleContainer(sf, cont)
 			}
 		case sfgo.SF_PROCESS:
 			proc := sf.Rec.Process
@@ -112,34 +112,34 @@ func (s *SysFlowReader) Process(ch interface{}, wg *sync.WaitGroup) {
 				sf.Process = proc
 				sf.PTree = s.tables.GetPtree(*proc.Oid)
 				sf.Container = s.getContFromProc(proc)
-				s.hdl.HandleProcess(sf, s.hdr)
+				s.hdl.HandleProcess(sf, proc)
 			}
 		case sfgo.SF_FILE:
 			sf.File = sf.Rec.File
 			s.tables.SetFile(sf.File.Oid, sf.File)
 			if entEnabled {
 				sf.Container = s.getContFromFile(sf.File)
-				s.hdl.HandleFile(sf, s.hdr)
+				s.hdl.HandleFile(sf, sf.File)
 			}
 		case sfgo.SF_PROC_EVT:
 			pe := sf.Rec.ProcessEvent
 			sf.Container, sf.Process, sf.PTree = s.getContAndProc(pe.ProcOID)
-			s.hdl.HandleProcEvt(sf, s.hdr, pe)
+			s.hdl.HandleProcEvt(sf, pe)
 		case sfgo.SF_NET_FLOW:
 			nf := sf.Rec.NetworkFlow
 			sf.Container, sf.Process, sf.PTree = s.getContAndProc(nf.ProcOID)
-			s.hdl.HandleNetFlow(sf, s.hdr, nf)
+			s.hdl.HandleNetFlow(sf, nf)
 		case sfgo.SF_FILE_FLOW:
 			ff := sf.Rec.FileFlow
 			sf.Container, sf.Process, sf.PTree = s.getContAndProc(ff.ProcOID)
 			sf.File = s.getFile(ff.FileOID)
-			s.hdl.HandleFileFlow(sf, s.hdr, ff)
+			s.hdl.HandleFileFlow(sf, ff)
 		case sfgo.SF_FILE_EVT:
 			fe := sf.Rec.FileEvent
 			sf.Container, sf.Process, sf.PTree = s.getContAndProc(fe.ProcOID)
 			sf.File = s.getFile(fe.FileOID)
 			sf.NewFile = s.getOptFile(fe.NewFileOID)
-			s.hdl.HandleFileEvt(sf, s.hdr, fe)
+			s.hdl.HandleFileEvt(sf, fe)
 		case sfgo.SF_PROC_FLOW:
 		case sfgo.SF_NET_EVT:
 		default:
