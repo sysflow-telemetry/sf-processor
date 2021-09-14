@@ -204,7 +204,7 @@ func (p *PluginCache) GetChan(ch string, size int) (interface{}, error) {
 		p.chanMap[fields[0]] = c
 		return c, nil
 	}
-	return nil, fmt.Errorf("channel '%s' not found in plugin cache", fields[0])
+	return nil, fmt.Errorf("channel '%s':'%s' not found in plugin cache", fields[0], fields[1])
 }
 
 // GetProcessor retrieves a cached plugin processor by name.

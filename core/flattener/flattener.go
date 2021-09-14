@@ -97,25 +97,25 @@ func (s *Flattener) HandleHeader(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader) err
 }
 
 // HandleContainer processes Container entities.
-func (s *Flattener) HandleContainer(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader) error {
+func (s *Flattener) HandleContainer(sf *plugins.CtxSysFlow, cont *sfgo.Container) error {
 	return nil
 }
 
 // HandleProcess processes Process entities.
-func (s *Flattener) HandleProcess(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader) error {
+func (s *Flattener) HandleProcess(sf *plugins.CtxSysFlow, proc *sfgo.Process) error {
 	return nil
 }
 
 // HandleFile processes File entities.
-func (s *Flattener) HandleFile(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader) error {
+func (s *Flattener) HandleFile(sf *plugins.CtxSysFlow, file *sfgo.File) error {
 	return nil
 }
 
 // HandleNetFlow processes Network Flows.
-func (s *Flattener) HandleNetFlow(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, nf *sfgo.NetworkFlow) error {
+func (s *Flattener) HandleNetFlow(sf *plugins.CtxSysFlow, nf *sfgo.NetworkFlow) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.NET_FLOW
-	s.fillEntities(hdr, sf.Container, sf.Process, nil, fr)
+	s.fillEntities(sf.Header, sf.Container, sf.Process, nil, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_TS_INT] = nf.Ts
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_TID_INT] = nf.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_OPFLAGS_INT] = int64(nf.OpFlags)
@@ -138,10 +138,10 @@ func (s *Flattener) HandleNetFlow(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, nf
 }
 
 // HandleFileFlow processes File Flows.
-func (s *Flattener) HandleFileFlow(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, ff *sfgo.FileFlow) error {
+func (s *Flattener) HandleFileFlow(sf *plugins.CtxSysFlow, ff *sfgo.FileFlow) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.FILE_FLOW
-	s.fillEntities(hdr, sf.Container, sf.Process, sf.File, fr)
+	s.fillEntities(sf.Header, sf.Container, sf.Process, sf.File, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_TS_INT] = ff.Ts
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_TID_INT] = ff.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_OPFLAGS_INT] = int64(ff.OpFlags)
@@ -160,7 +160,7 @@ func (s *Flattener) HandleFileFlow(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, f
 }
 
 // HandleFileEvt processes File Events.
-func (s *Flattener) HandleFileEvt(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, fe *sfgo.FileEvent) error {
+func (s *Flattener) HandleFileEvt(sf *plugins.CtxSysFlow, fe *sfgo.FileEvent) error {
 	fr := newFlatRecord()
 	if sf.NewFile != nil {
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_STATE_INT] = int64(sf.NewFile.State)
@@ -182,7 +182,7 @@ func (s *Flattener) HandleFileEvt(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, fe
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_OID_STR] = sfgo.Zeros.String
 	}
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.FILE_EVT
-	s.fillEntities(hdr, sf.Container, sf.Process, sf.File, fr)
+	s.fillEntities(sf.Header, sf.Container, sf.Process, sf.File, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_TS_INT] = fe.Ts
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_TID_INT] = fe.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_OPFLAGS_INT] = int64(fe.OpFlags)
@@ -195,20 +195,20 @@ func (s *Flattener) HandleFileEvt(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, fe
 }
 
 // HandleNetEvt processes Network Events.
-func (s *Flattener) HandleNetEvt(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, ne *sfgo.NetworkEvent) error {
+func (s *Flattener) HandleNetEvt(sf *plugins.CtxSysFlow, ne *sfgo.NetworkEvent) error {
 	return nil
 }
 
 // HandleProcFlow processes Process Flows.
-func (s *Flattener) HandleProcFlow(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, pf *sfgo.ProcessFlow) error {
+func (s *Flattener) HandleProcFlow(sf *plugins.CtxSysFlow, pf *sfgo.ProcessFlow) error {
 	return nil
 }
 
 // HandleProcEvt processes Process Events.
-func (s *Flattener) HandleProcEvt(sf *plugins.CtxSysFlow, hdr *sfgo.SFHeader, pe *sfgo.ProcessEvent) error {
+func (s *Flattener) HandleProcEvt(sf *plugins.CtxSysFlow, pe *sfgo.ProcessEvent) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.PROC_EVT
-	s.fillEntities(hdr, sf.Container, sf.Process, nil, fr)
+	s.fillEntities(sf.Header, sf.Container, sf.Process, nil, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_TS_INT] = pe.Ts
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_TID_INT] = pe.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_OPFLAGS_INT] = int64(pe.OpFlags)
