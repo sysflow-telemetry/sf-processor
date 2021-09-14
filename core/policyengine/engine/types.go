@@ -26,7 +26,6 @@ import (
 	"strings"
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.com/sysflow-telemetry/sf-processor/core/cache"
 )
 
 // Action type for enumeration.
@@ -96,18 +95,14 @@ type Filter struct {
 
 // Record type
 type Record struct {
-	Fr    sfgo.FlatRecord
-	Cr    *cache.SFTables
-	Ptree map[sfgo.OID][]*sfgo.Process
-	Ctx   Context
+	Fr  sfgo.FlatRecord
+	Ctx Context
 }
 
 // NewRecord creates a new Record isntance.
-func NewRecord(fr sfgo.FlatRecord, cr *cache.SFTables) *Record {
+func NewRecord(fr sfgo.FlatRecord) *Record {
 	var r = new(Record)
 	r.Fr = fr
-	r.Cr = cr
-	r.Ptree = make(map[sfgo.OID][]*sfgo.Process)
 	r.Ctx = make(Context, 3)
 	return r
 }
@@ -158,34 +153,9 @@ func (r Record) GetStr(attr sfgo.Attribute, src sfgo.Source) string {
 	return sfgo.Zeros.String
 }
 
-// GetProc returns a process object by ID.
-func (r Record) GetProc(ID sfgo.OID) *sfgo.Process {
-	return r.Cr.GetProc(ID)
-}
-
-func (r Record) getProcProv(ID sfgo.OID) []*sfgo.Process {
-	var ptree = make([]*sfgo.Process, 0)
-	if p := r.Cr.GetProc(ID); p != nil {
-		if p.Poid != nil && p.Poid.UnionType == sfgo.UnionNullOIDTypeEnumOID {
-			return append(append(ptree, p), r.getProcProv(*p.Poid.OID)...)
-		}
-		return append(ptree, p)
-	}
-	return ptree
-}
-
-// MemoizePtree caches the processes hierachy given the ID.
-func (r Record) MemoizePtree(ID sfgo.OID) []*sfgo.Process {
-	if ptree, ok := r.Ptree[ID]; ok {
-		return ptree
-	}
-	r.Ptree[ID] = r.getProcProv(ID)
-	return r.Ptree[ID]
-}
-
 // GetCachedValue returns the value of attr from cache for process ID.
 func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
-	if ptree := r.MemoizePtree(ID); ptree != nil {
+	if ptree := r.Fr.Ptree; ptree != nil {
 		switch attr {
 		case PProcName:
 			if len(ptree) > 1 {

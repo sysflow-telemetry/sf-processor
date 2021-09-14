@@ -17,94 +17,68 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package cache implements a singleton cache for telemetry objects.
+// Package cache implements a local cache for telemetry objects.
 package cache
 
 import (
-	"sync"
-
 	"github.com/sysflow-telemetry/sf-apis/go/hash"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
 
-var instance *SFTables
-var once sync.Once
-
 // SFTables defines thread-safe shared cache for plugins for storing SysFlow entities.
 type SFTables struct {
-	contTable map[string]*sfgo.Container
-	procTable map[uint64][]*sfgo.Process
-	fileTable map[uint64]*sfgo.File
-	rwmutex   sync.RWMutex
+	contTable  map[string]*sfgo.Container
+	procTable  map[uint64][]*sfgo.Process
+	fileTable  map[uint64]*sfgo.File
+	ptreeTable map[uint64][]*sfgo.Process
 }
 
-// GetInstance returns SFTables singleton instance
-func GetInstance() *SFTables {
-	once.Do(func() {
-		instance = newSFTables()
-	})
-	return instance
-}
-
-// newSFTables creates a new SFTables instance.
-func newSFTables() *SFTables {
+// NewSFTables creates a new SFTables instance.
+func NewSFTables() *SFTables {
 	t := new(SFTables)
 	t.new()
 	return t
-}
-
-// Reset pushes a new set of empty maps into the cache.
-func (t *SFTables) Reset() {
-	t.rwmutex.Lock()
-	defer t.rwmutex.Unlock()
-	t.new()
 }
 
 func (t *SFTables) new() {
 	t.contTable = make(map[string]*sfgo.Container)
 	t.procTable = make(map[uint64][]*sfgo.Process)
 	t.fileTable = make(map[uint64]*sfgo.File)
+	t.ptreeTable = make(map[uint64][]*sfgo.Process)
+}
+
+// Reset pushes a new set of empty maps into the cache.
+func (t *SFTables) Reset() {
+	t.new()
 }
 
 // GetCont retrieves a cached container object by ID.
-func (t *SFTables) GetCont(ID string) *sfgo.Container {
-	t.rwmutex.RLock()
-	defer t.rwmutex.RUnlock()
-	if v, ok := t.contTable[ID]; ok {
-		return v
-	}
-	return nil
+func (t *SFTables) GetCont(ID string) (co *sfgo.Container) {
+	co = t.contTable[ID]
+	return
 }
 
 // SetCont stores a container object in the cache.
 func (t *SFTables) SetCont(ID string, o *sfgo.Container) {
-	t.rwmutex.Lock()
-	defer t.rwmutex.Unlock()
 	t.contTable[ID] = o
 }
 
 // GetProc retrieves a cached process object by ID.
-func (t *SFTables) GetProc(ID sfgo.OID) *sfgo.Process {
-	t.rwmutex.RLock()
-	defer t.rwmutex.RUnlock()
+func (t *SFTables) GetProc(ID sfgo.OID) (po *sfgo.Process) {
 	if p, ok := t.procTable[hash.GetHash(ID)]; ok {
-		if po := p[sfgo.SFObjectStateMODIFIED]; po != nil {
-			return po
-		}
-		if po := p[sfgo.SFObjectStateCREATED]; po != nil {
-			return po
-		}
-		if po := p[sfgo.SFObjectStateREUP]; po != nil {
-			return po
+		if v := p[sfgo.SFObjectStateMODIFIED]; v != nil {
+			po = v
+		} else if v := p[sfgo.SFObjectStateCREATED]; v != nil {
+			po = v
+		} else if v := p[sfgo.SFObjectStateREUP]; v != nil {
+			po = v
 		}
 	}
-	return nil
+	return
 }
 
 // SetProc stores a process object in the cache.
 func (t *SFTables) SetProc(ID sfgo.OID, o *sfgo.Process) {
-	t.rwmutex.Lock()
-	defer t.rwmutex.Unlock()
 	oid := hash.GetHash(ID)
 	if p, ok := t.procTable[oid]; ok {
 		p[o.State] = o
@@ -117,8 +91,6 @@ func (t *SFTables) SetProc(ID sfgo.OID, o *sfgo.Process) {
 
 // GetFile retrieves a cached file object by ID.
 func (t *SFTables) GetFile(ID sfgo.FOID) *sfgo.File {
-	t.rwmutex.RLock()
-	defer t.rwmutex.RUnlock()
 	if v, ok := t.fileTable[hash.GetHash(ID)]; ok {
 		return v
 	}
@@ -127,7 +99,28 @@ func (t *SFTables) GetFile(ID sfgo.FOID) *sfgo.File {
 
 // SetFile stores a file object in the cache.
 func (t *SFTables) SetFile(ID sfgo.FOID, o *sfgo.File) {
-	t.rwmutex.Lock()
-	defer t.rwmutex.Unlock()
 	t.fileTable[hash.GetHash(ID)] = o
+}
+
+// GetPtree retrieves and caches the processes hierachy given a process ID.
+func (t *SFTables) GetPtree(ID sfgo.OID) []*sfgo.Process {
+	oID := hash.GetHash(ID)
+	if ptree, ok := t.ptreeTable[oID]; ok {
+		return ptree
+	}
+	ptree := t.getProcProv(ID)
+	t.ptreeTable[oID] = ptree
+	return ptree
+}
+
+// getProcProv builds the provenance tree of a process recursevely.
+func (t *SFTables) getProcProv(ID sfgo.OID) []*sfgo.Process {
+	var ptree = make([]*sfgo.Process, 0)
+	if p := t.GetProc(ID); p != nil {
+		if p.Poid != nil && p.Poid.UnionType == sfgo.UnionNullOIDTypeEnumOID {
+			return append(append(ptree, p), t.getProcProv(*p.Poid.OID)...)
+		}
+		return append(ptree, p)
+	}
+	return ptree
 }
