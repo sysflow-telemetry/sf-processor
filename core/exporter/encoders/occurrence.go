@@ -318,7 +318,11 @@ func (oe *OccurrenceEncoder) addEvent(r *engine.Record) (e *Event, ep *EventPool
 	full := ep.ReachedCapacity(oe.config.FindingsPoolCapacity)
 	aged := ep.Aged(oe.config.FindingsPoolMaxAge)
 	if alert || full || aged {
-		if err := ep.Flush(oe.config.FindingsPath, oe.config.ClusterID); err != nil {
+		path := oe.config.FindingsPath
+		if oe.config.FindingsS3Prefix != sfgo.Zeros.String {
+			path = fmt.Sprintf("%s/%s", path, oe.config.FindingsS3Prefix)
+		}
+		if err := ep.Flush(path, oe.config.ClusterID); err != nil {
 			logger.Error.Println(err)
 		}
 		if aged {
