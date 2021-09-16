@@ -21,16 +21,18 @@
 package cache
 
 import (
-	"github.com/sysflow-telemetry/sf-apis/go/hash"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
 
 // SFTables defines thread-safe shared cache for plugins for storing SysFlow entities.
 type SFTables struct {
-	contTable  map[string]*sfgo.Container
-	procTable  map[uint64][]*sfgo.Process
-	fileTable  map[uint64]*sfgo.File
-	ptreeTable map[uint64][]*sfgo.Process
+	contTable map[string]*sfgo.Container
+	// procTable  map[uint64][]*sfgo.Process
+	// fileTable  map[uint64]*sfgo.File
+	// ptreeTable map[uint64][]*sfgo.Process
+	procTable  map[sfgo.OID][]*sfgo.Process
+	fileTable  map[sfgo.FOID]*sfgo.File
+	ptreeTable map[sfgo.OID][]*sfgo.Process
 }
 
 // NewSFTables creates a new SFTables instance.
@@ -42,9 +44,12 @@ func NewSFTables() *SFTables {
 
 func (t *SFTables) new() {
 	t.contTable = make(map[string]*sfgo.Container)
-	t.procTable = make(map[uint64][]*sfgo.Process)
-	t.fileTable = make(map[uint64]*sfgo.File)
-	t.ptreeTable = make(map[uint64][]*sfgo.Process)
+	t.procTable = make(map[sfgo.OID][]*sfgo.Process)
+	t.fileTable = make(map[sfgo.FOID]*sfgo.File)
+	t.ptreeTable = make(map[sfgo.OID][]*sfgo.Process)
+	// t.procTable = make(map[uint64][]*sfgo.Process)
+	// t.fileTable = make(map[uint64]*sfgo.File)
+	// t.ptreeTable = make(map[uint64][]*sfgo.Process)
 }
 
 // Reset pushes a new set of empty maps into the cache.
@@ -65,7 +70,8 @@ func (t *SFTables) SetCont(ID string, o *sfgo.Container) {
 
 // GetProc retrieves a cached process object by ID.
 func (t *SFTables) GetProc(ID sfgo.OID) (po *sfgo.Process) {
-	if p, ok := t.procTable[hash.GetHash(ID)]; ok {
+	// if p, ok := t.procTable[hash.GetHash(ID)]; ok {
+	if p, ok := t.procTable[ID]; ok {
 		if v := p[sfgo.SFObjectStateMODIFIED]; v != nil {
 			po = v
 		} else if v := p[sfgo.SFObjectStateCREATED]; v != nil {
@@ -79,19 +85,21 @@ func (t *SFTables) GetProc(ID sfgo.OID) (po *sfgo.Process) {
 
 // SetProc stores a process object in the cache.
 func (t *SFTables) SetProc(ID sfgo.OID, o *sfgo.Process) {
-	oid := hash.GetHash(ID)
-	if p, ok := t.procTable[oid]; ok {
+	// oID := hash.GetHash(ID)
+	oID := ID
+	if p, ok := t.procTable[oID]; ok {
 		p[o.State] = o
 	} else {
 		p = make([]*sfgo.Process, sfgo.SFObjectStateREUP+1)
 		p[o.State] = o
-		t.procTable[oid] = p
+		t.procTable[oID] = p
 	}
 }
 
 // GetFile retrieves a cached file object by ID.
 func (t *SFTables) GetFile(ID sfgo.FOID) *sfgo.File {
-	if v, ok := t.fileTable[hash.GetHash(ID)]; ok {
+	// if v, ok := t.fileTable[hash.GetHash(ID)]; ok {
+	if v, ok := t.fileTable[ID]; ok {
 		return v
 	}
 	return nil
@@ -99,12 +107,14 @@ func (t *SFTables) GetFile(ID sfgo.FOID) *sfgo.File {
 
 // SetFile stores a file object in the cache.
 func (t *SFTables) SetFile(ID sfgo.FOID, o *sfgo.File) {
-	t.fileTable[hash.GetHash(ID)] = o
+	t.fileTable[ID] = o
+	// t.fileTable[hash.GetHash(ID)] = o
 }
 
 // GetPtree retrieves and caches the processes hierachy given a process ID.
 func (t *SFTables) GetPtree(ID sfgo.OID) []*sfgo.Process {
-	oID := hash.GetHash(ID)
+	// oID := hash.GetHash(ID)
+	oID := ID
 	if ptree, ok := t.ptreeTable[oID]; ok {
 		return ptree
 	}
