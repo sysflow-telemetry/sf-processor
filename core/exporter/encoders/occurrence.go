@@ -207,10 +207,10 @@ func (e *Event) getExportFileName() string {
 func (e *Event) getExportFilePath(prefix string, clusterID string) string {
 	y, m, d := e.getTimePartitions()
 	path := fmt.Sprintf("%d/%d/%d/%s.avro", y, m, d, e.getExportFileName())
-	if e.NodeIP != sfgo.Zeros.String {
+	if e.NodeIP != sfgo.Zeros.String && e.NodeIP != NA {
 		path = filepath.Join(e.NodeIP, path)
 	}
-	if e.NodeID != sfgo.Zeros.String {
+	if e.NodeID != sfgo.Zeros.String && e.NodeID != NA {
 		path = filepath.Join(e.NodeID, path)
 	}
 	if clusterID != sfgo.Zeros.String {
