@@ -26,6 +26,7 @@ import "github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
 const (
 	rightArrow = "\u2192"
 	fwdSlash   = "\u2215"
+	vLine      = "\u007c"
 
 	peStrFmt = "Process execution %s " + rightArrow + " %s"
 	feStrFmt = "Filesystem manipulation %s " + rightArrow + " %s"
@@ -43,6 +44,7 @@ const (
 	listSep = ","
 
 	hostFileName = "host"
+	hostType     = "host"
 
 	NA = "NA"
 )

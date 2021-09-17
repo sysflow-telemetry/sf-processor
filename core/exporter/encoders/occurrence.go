@@ -207,6 +207,17 @@ func (e *Event) getExportFileName() string {
 func (e *Event) getExportFilePath(prefix string, clusterID string) string {
 	y, m, d := e.getTimePartitions()
 	path := fmt.Sprintf("%d/%d/%d/%s.avro", y, m, d, e.getExportFileName())
+	return e.prependEnvPath(prefix, clusterID, path)
+}
+
+// getEnvDescription builds the environment meta description for the event.
+func (e *Event) getEnvDescription(prefix string, clusterID string) (path string) {
+	path = e.prependEnvPath(prefix, clusterID, path)
+	return strings.ReplaceAll(path, "/", vLine)
+}
+
+// prependEnvPath prepends environment meta path to path.
+func (e *Event) prependEnvPath(prefix string, clusterID string, path string) string {
 	if e.NodeIP != sfgo.Zeros.String && e.NodeIP != NA {
 		path = filepath.Join(e.NodeIP, path)
 	}
@@ -352,12 +363,13 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 	oc := new(Occurrence)
 	oc.Certainty = CertaintyMedium
 	oc.ID = fmt.Sprintf(noteIDStrFmt, ep.CID, time.Now().UTC().UnixNano()/1000)
+	envStr := e.getEnvDescription(oe.config.FindingsS3Prefix, oe.config.ClusterID)
 	if ep.CID != sfgo.Zeros.String {
-		oc.ResName = fmt.Sprintf("%s:%s [%s]", ep.CID, engine.Mapper.MapStr(engine.SF_CONTAINER_NAME)(e.Record), e.NodeID)
+		oc.ResName = fmt.Sprintf("%s:%s [%s]", ep.CID, engine.Mapper.MapStr(engine.SF_CONTAINER_NAME)(e.Record), envStr)
 		oc.ResType = engine.Mapper.MapStr(engine.SF_CONTAINER_TYPE)(e.Record)
 	} else {
-		oc.ResName = e.NodeID
-		oc.ResType = sfgo.Zeros.String
+		oc.ResName = fmt.Sprintf("%s [%s]", hostType, envStr)
+		oc.ResType = hostType
 	}
 	rnames, tags, severity := oe.summarizePolicy(e.Record)
 	oc.Severity = severity
