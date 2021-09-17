@@ -27,15 +27,15 @@ import (
 	"hash"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/sysflow-telemetry/sf-apis/go/logger"
 
 	"github.com/cespare/xxhash"
 	"github.com/linkedin/goavro"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/steakknife/bloomfilter"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/encoders/avro/occurrence/event"
@@ -79,10 +79,10 @@ func (ep *EventPool) ReachedCapacity(capacity int) bool {
 }
 
 // Flush writes off event slice.
-func (ep *EventPool) Flush(pathPrefix string, clusterID string) (err error) {
+func (ep *EventPool) Flush(pathPrefix string, s3Prefix string, clusterID string) (err error) {
 	var events []interface{}
 	for _, v := range ep.Events {
-		exportPath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath(clusterID))
+		exportPath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath(s3Prefix, clusterID))
 		if err = ep.UpdateEventPoolWriter(exportPath, v.Schema()); err != nil {
 			return
 		}
@@ -203,18 +203,23 @@ func (e *Event) getExportFileName() string {
 	return e.ContainerID
 }
 
-func (e *Event) getExportFilePath(clusterID string) string {
+// getExportFilePath builds the export file path for the event.
+func (e *Event) getExportFilePath(prefix string, clusterID string) string {
 	y, m, d := e.getTimePartitions()
-	if clusterID == sfgo.Zeros.String && e.NodeID == sfgo.Zeros.String {
-		return fmt.Sprintf("%d/%d/%d/%s.avro", y, m, d, e.getExportFileName())
+	path := fmt.Sprintf("%d/%d/%d/%s.avro", y, m, d, e.getExportFileName())
+	if e.NodeIP != sfgo.Zeros.String {
+		path = filepath.Join(e.NodeIP, path)
 	}
-	if clusterID == sfgo.Zeros.String {
-		return fmt.Sprintf("%s/%d/%d/%d/%s.avro", e.NodeID, y, m, d, e.getExportFileName())
+	if e.NodeID != sfgo.Zeros.String {
+		path = filepath.Join(e.NodeID, path)
 	}
-	if e.NodeID == sfgo.Zeros.String {
-		return fmt.Sprintf("%s/%d/%d/%d/%s.avro", clusterID, y, m, d, e.getExportFileName())
+	if clusterID != sfgo.Zeros.String {
+		path = filepath.Join(clusterID, path)
 	}
-	return fmt.Sprintf("%s/%s/%d/%d/%d/%s.avro", clusterID, e.NodeID, y, m, d, e.getExportFileName())
+	if prefix != sfgo.Zeros.String {
+		path = filepath.Join(prefix, path)
+	}
+	return path
 }
 
 // getTimePartitions obtains time partitions from timestamp.
@@ -318,7 +323,7 @@ func (oe *OccurrenceEncoder) addEvent(r *engine.Record) (e *Event, ep *EventPool
 	full := ep.ReachedCapacity(oe.config.FindingsPoolCapacity)
 	aged := ep.Aged(oe.config.FindingsPoolMaxAge)
 	if alert || full || aged {
-		if err := ep.Flush(oe.config.FindingsPath, oe.config.ClusterID); err != nil {
+		if err := ep.Flush(oe.config.FindingsPath, oe.config.FindingsS3Prefix, oe.config.ClusterID); err != nil {
 			logger.Error.Println(err)
 		}
 		if aged {
@@ -382,7 +387,7 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 	oc.ShortDescr = encDetStr
 	oc.LongDescr = fmt.Sprintf(detailsStrFmt, encDetStr, polStr, tagsStr)
 	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, oe.config.FindingsS3Region, oe.config.FindingsS3Bucket,
-		e.getExportFilePath(oe.config.ClusterID), oe.config.FindingsS3Region, oe.config.FindingsS3Bucket)
+		e.getExportFilePath(oe.config.FindingsS3Prefix, oe.config.ClusterID), oe.config.FindingsS3Region, oe.config.FindingsS3Bucket)
 	return oc
 }
 
