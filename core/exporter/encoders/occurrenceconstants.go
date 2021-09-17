@@ -43,6 +43,8 @@ const (
 	listSep = ","
 
 	hostFileName = "host"
+
+	NA = "NA"
 )
 
 // Occurence NoteIDs.
