@@ -210,7 +210,7 @@ func (e *Event) getExportFilePath(prefix string, clusterID string) string {
 	if e.NodeIP != sfgo.Zeros.String && e.NodeIP != NA {
 		path = filepath.Join(e.NodeIP, path)
 	}
-	if e.NodeID != sfgo.Zeros.String && e.NodeID != NA {
+	if e.NodeID != sfgo.Zeros.String && e.NodeID != NA && e.NodeID != e.NodeIP {
 		path = filepath.Join(e.NodeID, path)
 	}
 	if clusterID != sfgo.Zeros.String {
