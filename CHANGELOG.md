@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Export to IBM Findings API
 - MITRE ATT&CK ttp tagging policy
 - Support for pipeline forking (tee feature)
+- Custom S3 prefix to Findings exporter
 
 ### Changed
 
