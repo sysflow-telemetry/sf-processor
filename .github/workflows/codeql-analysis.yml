@@ -31,10 +31,7 @@ jobs:
       with:
         languages: ${{ matrix.language }}
  
-    - run: |
-       wget https://dl.google.com/go/go1.16.3.linux-amd64.tar.gz
-       tar -C /usr/local -xzf go1.16.3.linux-amd64.tar.gz
-       EXPORT PATH=$PATH:/usr/local/go/bin/
+    - run: |       
        make SYSFLOW_VERSION=codeql SYSFLOW_BUILD_NUMBER=codeql build
     
     - name: Perform CodeQL Analysis
