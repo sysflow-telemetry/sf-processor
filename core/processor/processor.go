@@ -21,26 +21,23 @@
 package processor
 
 import (
-	"strings"
 	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.com/sysflow-telemetry/sf-processor/core/cache"
 )
 
 const (
-	pluginName  string = "sysflowreader"
-	channelName string = "sysflowchan"
+	pluginName  string = "sysflowprocessor"
+	channelName string = "ctxchan"
 )
 
 // SysFlowProcessor defines the main processor class.
 type SysFlowProcessor struct {
-	hdr    *sfgo.SFHeader
-	hdl    plugins.SFHandler
-	tables *cache.SFTables
+	hdr *sfgo.SFHeader
+	hdl plugins.SFHandler
 }
 
 var sPluginCache plugins.SFPluginCache
@@ -58,15 +55,15 @@ func (s *SysFlowProcessor) GetName() string {
 	return pluginName
 }
 
-// NewSysFlowChan creates a new processor channel instance.
-func NewSysFlowChan(size int) interface{} {
-	return &plugins.SFChannel{In: make(chan *sfgo.SysFlow, size)}
+// NewCtxSysFlowChan creates a new processor channel instance.
+func NewCtxSysFlowChan(size int) interface{} {
+	return &plugins.CtxSFChannel{In: make(chan *plugins.CtxSysFlow, size)}
 }
 
 // Register registers plugin to plugin cache.
 func (s *SysFlowProcessor) Register(pc plugins.SFPluginCache) {
 	pc.AddProcessor(pluginName, NewSysFlowProcessor)
-	pc.AddChannel(channelName, NewSysFlowChan)
+	pc.AddChannel(channelName, NewCtxSysFlowChan)
 	sPCOnce.Do(func() {
 		sPluginCache = pc
 	})
@@ -74,7 +71,6 @@ func (s *SysFlowProcessor) Register(pc plugins.SFPluginCache) {
 
 // Init initializes the processor with a configuration map.
 func (s *SysFlowProcessor) Init(conf map[string]interface{}) (err error) {
-	s.tables = cache.GetInstance()
 	hdlCache := GetHandlerCacheInstance(sPluginCache)
 	s.hdl, err = hdlCache.GetHandler(conf)
 	if err != nil {
@@ -94,10 +90,10 @@ func (s *SysFlowProcessor) SetOutChan(ch []interface{}) {
 // Process implements the main processor method of the plugin.
 func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 	entEnabled := s.hdl.IsEntityEnabled()
-	cha := ch.(*plugins.SFChannel)
+	cha := ch.(*plugins.CtxSFChannel)
 	record := cha.In
 	defer wg.Done()
-	logger.Trace.Println("Starting SysFlow processing...")
+	logger.Trace.Println("Starting SysFlow Processor...")
 	for {
 		sf, ok := <-record
 		if !ok {
@@ -106,53 +102,33 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 		}
 		switch sf.Rec.UnionType {
 		case sfgo.SF_HEADER:
-			hdr := sf.Rec.SFHeader
-			s.hdr = hdr
-			s.tables.Reset()
 			if entEnabled {
-				s.hdl.HandleHeader(sf, s.hdr)
+				s.hdl.HandleHeader(sf, sf.Header)
 			}
 		case sfgo.SF_CONT:
-			cont := sf.Rec.Container
-			s.tables.SetCont(cont.Id, cont)
 			if entEnabled {
-				s.hdl.HandleContainer(sf, s.hdr, cont)
+				s.hdl.HandleContainer(sf, sf.Container)
 			}
 		case sfgo.SF_PROCESS:
-			proc := sf.Rec.Process
-			proc.Exe = strings.TrimSpace(proc.Exe)
-			proc.ExeArgs = strings.TrimSpace(proc.ExeArgs)
-			s.tables.SetProc(*proc.Oid, proc)
 			if entEnabled {
-				cont := s.getContFromProc(proc)
-				s.hdl.HandleProcess(sf, s.hdr, cont, proc)
+				s.hdl.HandleProcess(sf, sf.Process)
 			}
 		case sfgo.SF_FILE:
-			file := sf.Rec.File
-			s.tables.SetFile(file.Oid, file)
 			if entEnabled {
-				cont := s.getContFromFile(file)
-				s.hdl.HandleFile(sf, s.hdr, cont, file)
+				s.hdl.HandleFile(sf, sf.File)
 			}
 		case sfgo.SF_PROC_EVT:
 			pe := sf.Rec.ProcessEvent
-			cont, proc := s.getContAndProc(pe.ProcOID)
-			s.hdl.HandleProcEvt(sf, s.hdr, cont, proc, pe)
+			s.hdl.HandleProcEvt(sf, pe)
 		case sfgo.SF_NET_FLOW:
 			nf := sf.Rec.NetworkFlow
-			cont, proc := s.getContAndProc(nf.ProcOID)
-			s.hdl.HandleNetFlow(sf, s.hdr, cont, proc, nf)
+			s.hdl.HandleNetFlow(sf, nf)
 		case sfgo.SF_FILE_FLOW:
 			ff := sf.Rec.FileFlow
-			cont, proc := s.getContAndProc(ff.ProcOID)
-			file := s.getFile(ff.FileOID)
-			s.hdl.HandleFileFlow(sf, s.hdr, cont, proc, file, ff)
+			s.hdl.HandleFileFlow(sf, ff)
 		case sfgo.SF_FILE_EVT:
 			fe := sf.Rec.FileEvent
-			cont, proc := s.getContAndProc(fe.ProcOID)
-			file := s.getFile(fe.FileOID)
-			file2 := s.getOptFile(fe.NewFileOID)
-			s.hdl.HandleFileEvt(sf, s.hdr, cont, proc, file, file2, fe)
+			s.hdl.HandleFileEvt(sf, fe)
 		case sfgo.SF_PROC_FLOW:
 		case sfgo.SF_NET_EVT:
 		default:
@@ -165,53 +141,4 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 func (s *SysFlowProcessor) Cleanup() {
 	logger.Trace.Println("Exiting ", pluginName)
 	s.hdl.Cleanup()
-}
-
-func (s *SysFlowProcessor) getContFromProc(proc *sfgo.Process) *sfgo.Container {
-	if proc.ContainerId != nil && proc.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
-		if c := s.tables.GetCont(proc.ContainerId.String); c != nil {
-			return c
-		}
-		logger.Warn.Println("No container object for ID: ", proc.ContainerId.String)
-	}
-	return nil
-}
-
-func (s *SysFlowProcessor) getContAndProc(oid *sfgo.OID) (*sfgo.Container, *sfgo.Process) {
-	if p := s.tables.GetProc(*oid); p != nil {
-		if p.ContainerId != nil && p.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
-			if c := s.tables.GetCont(p.ContainerId.String); c != nil {
-				return c, p
-			}
-			logger.Warn.Println("No container object for ID: ", p.ContainerId.String)
-		}
-		return nil, p
-	}
-	logger.Error.Println("No process object for ID: ", *oid)
-	return nil, nil
-}
-
-func (s *SysFlowProcessor) getFile(foid sfgo.FOID) *sfgo.File {
-	if f := s.tables.GetFile(foid); f != nil {
-		return f
-	}
-	logger.Error.Println("No file object for FOID: ", foid)
-	return nil
-}
-
-func (s *SysFlowProcessor) getOptFile(unf *sfgo.UnionNullFOID) *sfgo.File {
-	if unf != nil && unf.UnionType == sfgo.UnionNullFOIDTypeEnumFOID {
-		return s.getFile(unf.FOID)
-	}
-	return nil
-}
-
-func (s *SysFlowProcessor) getContFromFile(file *sfgo.File) *sfgo.Container {
-	if file != nil && file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
-		if c := s.tables.GetCont(file.ContainerId.String); c != nil {
-			return c
-		}
-		logger.Warn.Println("Not container object for ID: ", file.ContainerId.String)
-	}
-	return nil
 }
