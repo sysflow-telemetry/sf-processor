@@ -17,148 +17,120 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package cache implements a singleton cache for telemetry objects.
+// Package cache implements a local cache for telemetry objects.
 package cache
 
 import (
-	"fmt"
-	"sync"
-
-	"github.com/cespare/xxhash"
-	cqueue "github.com/enriquebris/goconcurrentqueue"
-	cmap "github.com/orcaman/concurrent-map"
-	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
 
-const (
-	cacheSize = 2
-)
-
-var instance *SFTables
-var once sync.Once
-
 // SFTables defines thread-safe shared cache for plugins for storing SysFlow entities.
 type SFTables struct {
-	contTable *cqueue.FIFO
-	procTable *cqueue.FIFO
-	fileTable *cqueue.FIFO
-	rwmutex   sync.RWMutex
-	capacity  int
+	contTable map[string]*sfgo.Container
+	// procTable  map[uint64][]*sfgo.Process
+	// fileTable  map[uint64]*sfgo.File
+	// ptreeTable map[uint64][]*sfgo.Process
+	procTable  map[sfgo.OID][]*sfgo.Process
+	fileTable  map[sfgo.FOID]*sfgo.File
+	ptreeTable map[sfgo.OID][]*sfgo.Process
 }
 
-// GetInstance returns SFTables singleton instance
-func GetInstance() *SFTables {
-	once.Do(func() {
-		instance = newSFTables(cacheSize)
-	})
-	return instance
-}
-
-// newSFTables creates a new SFTables instance.
-func newSFTables(capacity int) *SFTables {
+// NewSFTables creates a new SFTables instance.
+func NewSFTables() *SFTables {
 	t := new(SFTables)
-	if capacity < 1 {
-		logger.Error.Println("Cache capacity must be greater than 1")
-		return nil
-	}
-	t.capacity = capacity
-	t.contTable = cqueue.NewFIFO()
-	t.procTable = cqueue.NewFIFO()
-	t.fileTable = cqueue.NewFIFO()
-	t.contTable.Enqueue(cmap.New())
-	t.procTable.Enqueue(cmap.New())
-	t.fileTable.Enqueue(cmap.New())
+	t.new()
 	return t
+}
+
+func (t *SFTables) new() {
+	t.contTable = make(map[string]*sfgo.Container)
+	t.procTable = make(map[sfgo.OID][]*sfgo.Process)
+	t.fileTable = make(map[sfgo.FOID]*sfgo.File)
+	t.ptreeTable = make(map[sfgo.OID][]*sfgo.Process)
+	// t.procTable = make(map[uint64][]*sfgo.Process)
+	// t.fileTable = make(map[uint64]*sfgo.File)
+	// t.ptreeTable = make(map[uint64][]*sfgo.Process)
 }
 
 // Reset pushes a new set of empty maps into the cache.
 func (t *SFTables) Reset() {
-	t.rwmutex.Lock()
-	defer t.rwmutex.Unlock()
-	t.reset(t.contTable)
-	t.reset(t.procTable)
-	t.reset(t.fileTable)
-}
-
-func (t *SFTables) reset(queue *cqueue.FIFO) {
-	queue.Enqueue(cmap.New())
-	if queue.GetLen() > t.capacity {
-		queue.Remove(0)
-	}
+	t.new()
 }
 
 // GetCont retrieves a cached container object by ID.
-func (t *SFTables) GetCont(ID string) *sfgo.Container {
-	t.rwmutex.RLock()
-	defer t.rwmutex.RUnlock()
-	for i := 0; i < t.contTable.GetLen(); i++ {
-		m, _ := t.contTable.Get(i)
-		table := m.(cmap.ConcurrentMap)
-		if v, ok := table.Get(ID); ok {
-			return v.(*sfgo.Container)
-		}
-	}
-	return nil
+func (t *SFTables) GetCont(ID string) (co *sfgo.Container) {
+	co = t.contTable[ID]
+	return
 }
 
 // SetCont stores a container object in the cache.
 func (t *SFTables) SetCont(ID string, o *sfgo.Container) {
-	t.rwmutex.RLock()
-	m, _ := t.contTable.Get(t.contTable.GetLen() - 1)
-	t.rwmutex.RUnlock()
-	table := m.(cmap.ConcurrentMap)
-	table.Set(ID, o)
+	t.contTable[ID] = o
 }
 
 // GetProc retrieves a cached process object by ID.
-func (t *SFTables) GetProc(ID sfgo.OID) *sfgo.Process {
-	t.rwmutex.RLock()
-	defer t.rwmutex.RUnlock()
-	for i := 0; i < t.procTable.GetLen(); i++ {
-		m, _ := t.procTable.Get(i)
-		table := m.(cmap.ConcurrentMap)
-		if v, ok := table.Get(t.getHash(ID)); ok {
-			return v.(*sfgo.Process)
+func (t *SFTables) GetProc(ID sfgo.OID) (po *sfgo.Process) {
+	// if p, ok := t.procTable[hash.GetHash(ID)]; ok {
+	if p, ok := t.procTable[ID]; ok {
+		if v := p[sfgo.SFObjectStateMODIFIED]; v != nil {
+			po = v
+		} else if v := p[sfgo.SFObjectStateCREATED]; v != nil {
+			po = v
+		} else if v := p[sfgo.SFObjectStateREUP]; v != nil {
+			po = v
 		}
 	}
-	return nil
+	return
 }
 
 // SetProc stores a process object in the cache.
 func (t *SFTables) SetProc(ID sfgo.OID, o *sfgo.Process) {
-	t.rwmutex.RLock()
-	m, _ := t.procTable.Get(t.procTable.GetLen() - 1)
-	t.rwmutex.RUnlock()
-	table := m.(cmap.ConcurrentMap)
-	table.Set(t.getHash(ID), o)
+	// oID := hash.GetHash(ID)
+	oID := ID
+	if p, ok := t.procTable[oID]; ok {
+		p[o.State] = o
+	} else {
+		p = make([]*sfgo.Process, sfgo.SFObjectStateREUP+1)
+		p[o.State] = o
+		t.procTable[oID] = p
+	}
 }
 
 // GetFile retrieves a cached file object by ID.
 func (t *SFTables) GetFile(ID sfgo.FOID) *sfgo.File {
-	t.rwmutex.RLock()
-	defer t.rwmutex.RUnlock()
-	for i := 0; i < t.fileTable.GetLen(); i++ {
-		m, _ := t.fileTable.Get(i)
-		table := m.(cmap.ConcurrentMap)
-		if v, ok := table.Get(t.getHash(ID)); ok {
-			return v.(*sfgo.File)
-		}
+	// if v, ok := t.fileTable[hash.GetHash(ID)]; ok {
+	if v, ok := t.fileTable[ID]; ok {
+		return v
 	}
 	return nil
 }
 
 // SetFile stores a file object in the cache.
 func (t *SFTables) SetFile(ID sfgo.FOID, o *sfgo.File) {
-	t.rwmutex.RLock()
-	m, _ := t.fileTable.Get(t.fileTable.GetLen() - 1)
-	t.rwmutex.RUnlock()
-	table := m.(cmap.ConcurrentMap)
-	table.Set(t.getHash(ID), o)
+	t.fileTable[ID] = o
+	// t.fileTable[hash.GetHash(ID)] = o
 }
 
-func (t *SFTables) getHash(o interface{}) string {
-	h := xxhash.New()
-	h.Write([]byte(fmt.Sprintf("%v", o)))
-	return fmt.Sprintf("%x", h.Sum(nil))
+// GetPtree retrieves and caches the processes hierachy given a process ID.
+func (t *SFTables) GetPtree(ID sfgo.OID) []*sfgo.Process {
+	// oID := hash.GetHash(ID)
+	oID := ID
+	if ptree, ok := t.ptreeTable[oID]; ok {
+		return ptree
+	}
+	ptree := t.getProcProv(ID)
+	t.ptreeTable[oID] = ptree
+	return ptree
+}
+
+// getProcProv builds the provenance tree of a process recursevely.
+func (t *SFTables) getProcProv(ID sfgo.OID) []*sfgo.Process {
+	var ptree = make([]*sfgo.Process, 0)
+	if p := t.GetProc(ID); p != nil {
+		if p.Poid != nil && p.Poid.UnionType == sfgo.UnionNullOIDTypeEnumOID {
+			return append(append(ptree, p), t.getProcProv(*p.Poid.OID)...)
+		}
+		return append(ptree, p)
+	}
+	return ptree
 }

@@ -397,7 +397,7 @@ func MapJSON(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 
 // setCachedValueToJSON sets the value of attr from cache for process ID to a JSON writer.
 func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribute, writer *jwriter.Writer) {
-	if ptree := r.MemoizePtree(ID); ptree != nil {
+	if ptree := r.Fr.Ptree; ptree != nil {
 		switch attr {
 		case engine.PProcName:
 			if len(ptree) > 1 {
