@@ -39,6 +39,7 @@ const (
 // This plugin should typically be first in the pipeline.
 type SysFlowReader struct {
 	SysFlowProcessor
+	hdr    *sfgo.SFHeader
 	tables *cache.SFTables
 }
 
