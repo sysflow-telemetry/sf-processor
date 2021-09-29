@@ -36,7 +36,6 @@ const (
 
 // SysFlowProcessor defines the main processor class.
 type SysFlowProcessor struct {
-	hdr *sfgo.SFHeader
 	hdl plugins.SFHandler
 }
 
