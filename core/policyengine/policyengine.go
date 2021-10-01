@@ -29,7 +29,6 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.com/sysflow-telemetry/sf-processor/core/cache"
 	"github.com/sysflow-telemetry/sf-processor/core/flattener"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/monitor"
@@ -43,7 +42,6 @@ const (
 // PolicyEngine defines a driver for the Policy Engine plugin.
 type PolicyEngine struct {
 	pi            *engine.PolicyInterpreter
-	tables        *cache.SFTables
 	outCh         []chan *engine.Record
 	filterOnly    bool
 	bypass        bool
@@ -92,7 +90,6 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) error {
 		return err
 	}
 	s.config = config
-	s.tables = cache.GetInstance()
 
 	if s.config.Mode == engine.BypassMode {
 		logger.Trace.Println("Setting policy engine in bypass mode")
@@ -101,7 +98,7 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) error {
 	}
 
 	if s.config.PoliciesPath == sfgo.Zeros.String {
-		return errors.New("Configuration tag 'policies' missing from policy engine plugin settings") 
+		return errors.New("Configuration tag 'policies' missing from policy engine plugin settings")
 	}
 	if s.config.Mode == engine.FilterMode {
 		logger.Trace.Println("Setting policy engine in filter mode")
@@ -154,7 +151,7 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 	for {
 		if fc, ok := <-in; ok {
 			if s.bypass {
-				out(engine.NewRecord(*fc, s.tables))
+				out(engine.NewRecord(*fc))
 			} else if s.policyMonitor != nil {
 				now := time.Now()
 				if now.After(expiration) {
@@ -165,9 +162,9 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 					}
 					expiration = now.Add(20 * time.Second)
 				}
-				s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc, s.tables), out)
+				s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc), out)
 			} else {
-				s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc, s.tables), out)
+				s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc), out)
 			}
 		} else {
 			logger.Trace.Println("Input channel closed. Shutting down.")

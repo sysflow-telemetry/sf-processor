@@ -58,7 +58,7 @@ RUN cd ${SRC_ROOT} && \
 #-----------------------
 # Stage: runtime
 #-----------------------
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4-200 AS runtime
+FROM registry.access.redhat.com/ubi8/ubi:${UBI_VER} AS runtime
 
 # Environment and build args
 ARG VERSION=dev
@@ -99,8 +99,8 @@ COPY ./LICENSE.md /licenses/
 
 # Copy files from previous stage
 COPY --from=base --chown=1001:1001 /usr/local/sysflow/ /usr/local/sysflow/
-RUN microdnf -y update && \
-    ( microdnf -y clean all ; rm -rf /var/cache/{dnf,yum} ; true ) && \
+RUN dnf -y update && \
+    ( dnf -y clean all ; rm -rf /var/cache/{dnf,yum} ; true ) && \
     mkdir -p /sock && chown -R 1001:1001 /sock
 VOLUME /sock
 USER 1001

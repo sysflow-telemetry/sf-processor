@@ -15,7 +15,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [[UNRELEASED](https://github.com/sysflow-telemetry/sf-processor/compare/0.3.0...HEAD)]
 
-## [[0.2.2](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...0.3.0)] - 2021-07-09
+### Changed
+
+- Update(ubi): Bumped UBI version to 8.4-211.
+
+## [[0.3.0](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...0.3.0)] - 2021-09-20
 
 ### Added
 
@@ -24,6 +28,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Export to IBM Findings API
 - MITRE ATT&CK ttp tagging policy
 - Support for pipeline forking (tee feature)
+- Custom S3 prefix to Findings exporter
 
 ### Changed
 
