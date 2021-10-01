@@ -37,6 +37,7 @@ const (
 	FindingsSQLQueryCrnConfigKey  string = "findings.sqlquerycrn"
 	FindingsS3RegionConfigKey     string = "findings.s3region"
 	FindingsS3BucketConfigKey     string = "findings.s3bucket"
+	FindingsS3PrefixConfigKey     string = "findings.s3prefix"
 	FindingsPathConfigKey         string = "findings.path"
 	FindingsPoolCapacityConfigKey string = "findings.pool.capacity"
 	FindingsPoolMaxAgeConfigKey   string = "findings.pool.maxage"
@@ -53,6 +54,7 @@ type FindingsConfig struct {
 	FindingsRegion       string
 	FindingsS3Region     string
 	FindingsS3Bucket     string
+	FindingsS3Prefix     string
 	FindingsPath         string
 	FindingsPoolCapacity int
 	FindingsPoolMaxAge   int
@@ -98,6 +100,9 @@ func CreateFindingsConfig(bc Config, conf map[string]interface{}) (c FindingsCon
 	}
 	if v, ok := conf[FindingsS3RegionConfigKey].(string); ok {
 		c.FindingsS3Region = v
+	}
+	if v, ok := conf[FindingsS3PrefixConfigKey].(string); ok {
+		c.FindingsS3Prefix = v
 	}
 	if v, ok := conf[FindingsS3BucketConfigKey].(string); ok {
 		c.FindingsS3Bucket = v
