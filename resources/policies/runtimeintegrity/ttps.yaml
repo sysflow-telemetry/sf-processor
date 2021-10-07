@@ -257,6 +257,60 @@
 - list: auth_processes
   items: [/opt/ibm/java/bin/keytool, /bin/chown, /bin/chmod, /bin/bash]
 
+- list: netcat_cmds
+  items: [nc, ncat]
+
+- list: netcat_shell_args
+  items: ['-e /bin/sh', '-e /bin/bash']
+
+- list: discovery_cmds
+  items: [cat, strings, nl, head, tail]
+
+- list: host_files
+  items: [/etc/hosts, .ssh/config]
+
+- list: user_discovery_cmds
+  items: [w, who, whoami, id, last]
+
+- list: system_discovery_cmds
+  items: [uname, lsb_release, lscpu, lshw, lsmod, lspci, lsscsi, lsblk, hwinfo, hostname, inxi, uptime, dmidecode]
+
+- list: fs_discovery_cmds
+  items: [mount, df, tree, find]
+
+- list: net_discovery_cmds
+  items: [netstat, ss, lsof] 
+
+- list: keylogger_cmds
+  items: [logkeys, lkl]
+
+- list: netconfig_discovery_cmds
+  items: [firewall-cmd, ufw, iptables, netstat, ss, ip, ifconfig, systemd-resolve, route]
+
+- list: at_cmds
+  items: [at, atd]
+
+- list: remote_copy_cmds
+  items: [scp, rsync, sftp]
+
+- list: remote_copy_inds
+  items: ['@', ':']
+
+- list: cert_cmds
+  items: [update-ca-certificates, update-ca-trust]
+
+- list: security_procs
+  items: [nessusd, td-agent, packetbeat, filebeat, auditbeat, osqueryd, cbagentd, falcond]
+
+- list: service_cmds
+  items: [service, chkconfig, systemctl]
+
+- list: security_services
+  items: [iptables, ip6tables, firewalld, cbdaemon, falcon-sensor]
+
+- list: stop_cmds
+  items: [stop, disable, off]
+
 ###### Macros ###################
 
 - macro: sed_write
@@ -493,7 +547,20 @@
 
 - macro: parent_sudo
   condition: sf.pproc.exe = /usr/bin/sudo
-  
+
+- macro: ps_discovery_args
+  condition: (sf.proc.args contains 'e' and sf-process.args contains 'f') or 
+             (sf.proc.args contains 'a' and sf-process.args contains 'u' and sf-process.args contains 'x') 
+
+- macro: home_dir_arg
+  condition: sf.proc.args endswith '/home' or sf.proc.args endswith '/home/'
+
+- macro: clear_cmds
+  condition: ( sf.proc.name = rm or
+               sf.proc.name = shred or
+               (sf.proc.name = truncate and sf.prog.args contains '-s0') or
+               (sf.proc.name = ln and sf.proc.args contains '-sf /dev/null'))
+
 ###### Rules ####################
 
 - rule: Interactive shell
@@ -735,12 +802,6 @@
   priority: medium
   tags: [mitre:T1543, mitre:T1041]
 
-- list: netcat_cmds
-  items: [nc, ncat]
-
-- list: netcat_shell_args
-  items: ['-e /bin/sh', '-e /bin/bash']
-
 - rule: Reverse Unix shell started
   desc: creation of a reverse shell process via nc 
   condition: sf.opflags = EXEC and
@@ -759,10 +820,6 @@
   tags: [mitre:T1222.002]
   prefilter: [PE]
 
-- macro: ps_discovery_args
-  condition: (sf.proc.args contains 'e' and sf-process.args contains 'f') or 
-             (sf.proc.args contains 'a' and sf-process.args contains 'u' and sf-process.args contains 'x') 
-
 - rule: Process Discovery
   desc: gather information about running processes on a system
   condition: sf.opflags = EXEC and
@@ -772,9 +829,6 @@
   tags: [mitre:T1057]
   prefilter: [PE]
 
-- list: discovery_cmds
-  items: [cat, strings, nl, head, tail]
-
 - rule: Account Discovery: Local Account
   desc: attempt to get a listing of local system accounts
   condition: sf.opflags = EXEC and
@@ -783,9 +837,6 @@
   priority: high
   tags: [mitre:T1087.001]
   prefilter: [PE]
-
-- list: host_files
-  items: [/etc/hosts, .ssh/config]
 
 - rule: Remote System Discovery
   desc: >
@@ -797,9 +848,6 @@
   priority: high
   tags: [mitre:T1018]
   prefilter: [PE]
-
-- list: user_discovery_cmds
-  items: [w, who, whoami, id]
 
 - rule: System Owner/User Discovery
   desc: >
@@ -822,9 +870,6 @@
   tags: [mitre:T1069.001]
   prefilter: [PE]
 
-- list: system_discovery_cmds
-  items: [uname, lsb_release, lscpu, lshw, lsmod, lspci, lsscsi, lsblk, hwinfo, hostname, inxi, uptime, dmidecode]
-
 - rule: System Information Discovery
   desc: >
     attempt to get detailed information about the operating system and hardware,
@@ -836,12 +881,6 @@
   tags: [mitre:T1082]
   prefilter: [PE]
 
-- list: fs_discovery_cmds
-  items: [mount, df, tree, find]
-
-- macro: home_dir_arg
-  condition: sf.proc.args endswith '/home' or sf.proc.args endswith '/home/'
-
 # partially from https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_file_and_directory_discovery.yml
 - rule: File and Directory Discovery
   desc: enumerate files, directories and volume information
@@ -852,9 +891,6 @@
   priority: high
   tags: [mitre:T1083]
   prefilter: [PE]
-
-- list: net_discovery_cmds
-  items: [netstat, ss, lsof, last, w, who]
 
 - rule: System Network Connections Discovery
   desc: attempt to get a listing of network connections
@@ -890,9 +926,6 @@
   tags: [mitre:T1595.001]
   prefilter: [PE]
 
-- list: keylogger_cmds
-  items: [logkeys, lkl]
-
 - rule: Input Capture: Keylogging
   desc: Use of keylogger to log user keystrokes
   condition: sf.proc.name in (keylogger_cmds)
@@ -915,9 +948,6 @@
   prefilter: [FF]
 
 # from https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_system_network_discovery.yml
-- list: netconfig_discovery_cmds
-  items: [firewall-cmd, ufw, iptables, netstat, ss, ip, ifconfig, systemd-resolve, route]
-
 - rule: System Network Configuration Discovery
   desc: Attempt to get details about the network configuration
   condition: sf.opflags = EXEC and
@@ -936,12 +966,6 @@
   prefilter: [PE]
 
 # partially from Sigma https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_shell_clear_cmd_history.yml
-- macro: clear_cmds
-  condition: ( sf.proc.name = rm or
-               sf.proc.name = shred or
-               (sf.proc.name = truncate and sf.prog.args contains '-s0') or
-               (sf.proc.name = ln and sf.proc.args contains '-sf /dev/null'))
-
 - rule: Indicator Removal on Host: Clear Linux or Mac System Logs
   desc: Attempts to clear system logs to hide evidence of an intrusion
   condition: sf.opflags = EXEC and (
@@ -952,9 +976,6 @@
   prefilter: [PE]
 
 # from Sigma https://github.com/SigmaHQ/sigma/blob/master/rules/linux/at_command.yml
-- list: at_cmds
-  items: [at, atd]
-
 - rule: Scheduled Task/Job At
   desc: Detects the use of at/atd
   condition: sf.opflags = EXEC and sf.poc.name in (at_cmds)
@@ -971,12 +992,6 @@
   prefilter: [PE]
 
 # from Sigma https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_file_copy.yml
-- list: remote_copy_cmds
-  items: [scp, rsync, sftp]
-
-- list: remote_copy_inds
-  items: ['@', ':']
-
 - rule: Remote File Copy
   desc: Detects the use of tools that copy files from or to remote systems
   condition: sf.opflags = EXEC and sf.proc.name in (remote_copy_cmds) and sf.prog.args pmatch (remote_copy_inds)
@@ -985,9 +1000,6 @@
   prefilter: [PE]
 
 # from Sigma https://github.com/SigmaHAQ/sigma/blob/master/rules/linux/lnx_install_root_certificate.yml
-- list: cert_cmds
-  items: [update-ca-certificates, update-ca-trust]
-
 - rule: Install Root Certificate
   desc: Detects installation of new root certificates
   condition: sf.opflags = EXEC and sf.proc.name in (cert_cmds)
@@ -1004,9 +1016,6 @@
   prefilter: [PE]
 
 # from Sigma https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_security_software_discovery.yml
-- list: security_procs
-  items: [nessusd, td-agent, packetbeat, filebeat, auditbeat, osqueryd, cbagentd, falcond]
-
 - rule: Security Software Discovery
   desc: Detects usage of system utilities (only grep for now) to discover security software discovery
   condition: sf.opflags = EXEC and sf.proc.name = grep and sf.proc.args pmatch (security_procs)
@@ -1015,15 +1024,6 @@
   prefilter: [PE]
 
 # from Sigma https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_security_tools_disabling.yml
-- list: service_cmds
-  items: [service, chkconfig, systemctl]
-
-- list: security_services
-  items: [iptables, ip6tables, firewalld, cbdaemon, falcon-sensor]
-
-- list: stop_cmds
-  items: [stop, disable, off]
-
 - rule: Impair Defenses: Disable or Modify System Firewall
   desc: Detects disabling security tools
   condition: sf.opflags = EXEC and
