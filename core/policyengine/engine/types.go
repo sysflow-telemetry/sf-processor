@@ -4,6 +4,7 @@
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,27 +22,13 @@
 package engine
 
 import (
+	"crypto"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
-
-// Action type for enumeration.
-type Action int
-
-// Action enumeration.
-const (
-	Alert Action = iota
-	Tag
-	Hash
-)
-
-// String returns the string representation of an action instance.
-func (a Action) String() string {
-	return [...]string{"alert", "tag", "hash"}[a]
-}
 
 // EnrichmentTag denotes the type for enrichment tags.
 type EnrichmentTag interface{}
@@ -66,7 +53,7 @@ type Rule struct {
 	Name      string
 	Desc      string
 	condition Criterion
-	Actions   []Action
+	Actions   []string
 	Tags      []EnrichmentTag
 	Priority  Priority
 	Prefilter []string
@@ -267,6 +254,14 @@ func (s Context) SetTags(tags []string) {
 	s[tagCtxKey] = tags
 }
 
+// Adds tags to context object.
+func (s Context) AddTag(tag string) {
+	if s[tagCtxKey] == nil {
+		s[tagCtxKey] = make([]string, 0)
+	}
+	s[tagCtxKey] = append(s[tagCtxKey].([]string), tag)
+}
+
 // GetTags retrieves hashes from context object.
 func (s Context) GetTags() []string {
 	if s[tagCtxKey] != nil {
@@ -276,23 +271,29 @@ func (s Context) GetTags() []string {
 }
 
 // SetHashes stores hashes into context object.
-func (s Context) SetHashes(h HashSet) {
+func (s Context) SetHashes(h []*HashSet) {
 	s[hashCtxKey] = h
 }
 
-// GetHashes retrieves hashes from context object.
-func (s Context) GetHashes() HashSet {
-	if s[hashCtxKey] != nil {
-		return s[hashCtxKey].(HashSet)
+// Adds a hash value to context object.
+func (s Context) AddHash(h *HashSet) {
+	if s[hashCtxKey] == nil {
+		s[hashCtxKey] = make([]*HashSet, 0)
 	}
-	return HashSet{}
+	s[hashCtxKey] = append(s[hashCtxKey].([]*HashSet), h)
+}
+
+// GetHashes retrieves hashes from context object.
+func (s Context) GetHashes() []*HashSet {
+	if s[hashCtxKey] != nil {
+		return s[hashCtxKey].([]*HashSet)
+	}
+	return nil
 }
 
 // HashSet type
 type HashSet struct {
-	MD5      string
-	SHA1     string
-	SHA256   string
-	Size     int
-	UpdateTs int64
+	Source    sfgo.Source
+	Algorithm crypto.Hash
+	Value     string
 }

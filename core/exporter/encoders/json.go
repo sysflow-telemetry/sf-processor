@@ -1,9 +1,10 @@
 //
-// Copyright (C) 2020 IBM Corporation.
+// Copyright (C) 2021 IBM Corporation.
 //
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +22,7 @@
 package encoders
 
 import (
+	"crypto"
 	"path/filepath"
 	"reflect"
 	"unicode/utf8"
@@ -69,6 +71,33 @@ func (t *JSONEncoder) Encode(recs []*engine.Record) (data []commons.EncodedData,
 	return t.batch, nil
 }
 
+// Encodes hashes to a JSON representation
+func (t *JSONEncoder) encodeHashes(rec *engine.Record, source sfgo.Source) {
+	for _, hs := range rec.Ctx.GetHashes() {
+		if hs.Source == source { 
+			switch hs.Algorithm {
+			case crypto.MD5:
+				t.writer.RawByte(DOUBLE_QUOTE)
+				t.writer.RawString("md5_hash")
+				t.writer.RawString(QUOTE_COLON)
+				t.writer.String(hs.Value)
+				t.writer.RawByte(COMMA)
+			case crypto.SHA1:
+				t.writer.RawByte(DOUBLE_QUOTE)
+				t.writer.RawString("sha1_hash")
+				t.writer.RawString(QUOTE_COLON)
+				t.writer.String(hs.Value)
+				t.writer.RawByte(COMMA)
+			case crypto.SHA256:
+				t.writer.RawByte(DOUBLE_QUOTE)
+				t.writer.RawString("sha256_hash")
+				t.writer.RawString(QUOTE_COLON)
+				t.writer.String(hs.Value)
+				t.writer.RawByte(COMMA)
+			}
+		}
+	}
+}
 // Encodes a telemetry record into a JSON representation.
 func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 	t.writer.RawString(VERSION_STR)
@@ -96,6 +125,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 					}
 					existed = true
 					t.writeSectionBegin(PROC)
+					t.encodeHashes(rec, sfgo.PROCESS_SRC)
 					t.writeAttribute(fv, 2, rec)
 					state = PROC_STATE
 				} else {
@@ -143,6 +173,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 					}
 					if sftype == sfgo.TyFFStr || sftype == sfgo.TyFEStr {
 						t.writeSectionBegin(FILEF)
+						t.encodeHashes(rec, sfgo.FILE_SRC)
 						t.writeAttribute(fv, 2, rec)
 						existed = true
 					} else {
@@ -233,7 +264,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			t.writer.String(r.Desc)
 			t.writer.RawString(PRIORITY)
 			t.writer.Int64(int64(r.Priority))
-			numTags := len(r.Tags)
+			numTags := len(r.Tags) + len(rec.Ctx.GetTags())
 			currentTag := 0
 			if numTags > 0 {
 				t.writer.RawString(TAGS)
@@ -256,6 +287,13 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 						}
 						currentTag++
 					}
+				}
+				for _, tag := range rec.Ctx.GetTags() {
+					t.writer.String(tag)
+					if currentTag < (numTags - 1) {
+						t.writer.RawByte(COMMA)
+					}
+					currentTag++
 				}
 				t.writer.RawByte(END_SQUARE)
 			}

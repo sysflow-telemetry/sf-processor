@@ -21,6 +21,7 @@
 package encoders
 
 import (
+	"crypto"
 	"fmt"
 	"net"
 	"path"
@@ -127,6 +128,9 @@ func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 			reasons = append(reasons, r.Name)
 			tags = append(tags, extracTags(r.Tags)...)
 			priority = utils.Max(priority, int(r.Priority))
+		}
+		for _, tag := range rec.Ctx.GetTags() {
+			tags = append(tags, tag)
 		}
 		ecs.Event[ECS_EVENT_REASON] = strings.Join(reasons, ", ")
 		ecs.Event[ECS_EVENT_SEVERITY] = priority
@@ -306,16 +310,40 @@ func encodeContainer(rec *engine.Record) JSONData {
 
 // encodeUser creates an ECS user field using user and group of the actual process.
 func encodeUser(rec *engine.Record) JSONData {
+	gname := engine.Mapper.MapStr(engine.SF_PROC_GROUP)(rec)
 	group := JSONData{
 		ECS_GROUP_ID:   engine.Mapper.MapInt(engine.SF_PROC_GID)(rec),
-		ECS_GROUP_NAME: engine.Mapper.MapStr(engine.SF_PROC_GROUP)(rec),
 	}
+	if gname != sfgo.Zeros.String {
+		group[ECS_GROUP_NAME] = gname
+	}
+	uname := engine.Mapper.MapStr(engine.SF_PROC_USER)(rec)
 	user := JSONData{
-		ECS_USER_ID:   engine.Mapper.MapInt(engine.SF_PROC_UID)(rec),
-		ECS_USER_NAME: engine.Mapper.MapStr(engine.SF_PROC_USER)(rec),
 		ECS_GROUP:     group,
+		ECS_USER_ID:   engine.Mapper.MapInt(engine.SF_PROC_UID)(rec),
+	}
+	if uname != sfgo.Zeros.String {
+		user[ECS_USER_NAME] = uname
 	}
 	return user
+}
+
+// encodeHashes creates an ECS hash field containing all computed hash values within a process or a file
+func encodeHashes(rec *engine.Record, source sfgo.Source) JSONData {
+	hash := JSONData{}
+        for _, hs := range rec.Ctx.GetHashes() {
+		if hs.Source == source {
+			switch hs.Algorithm {
+			case crypto.MD5:
+				hash[ECS_HASH_MD5] = hs.Value
+			case crypto.SHA1:
+				hash[ECS_HASH_SHA1] = hs.Value
+			case crypto.SHA256:
+				hash[ECS_HASH_SHA256] = hs.Value
+			}
+		}
+        }
+	return hash
 }
 
 // encodeProcess creates an ECS process field including the nested parent process.
@@ -329,6 +357,10 @@ func encodeProcess(rec *engine.Record) JSONData {
 		ECS_PROC_START:   utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_PROC_CREATETS)(rec)),
 		ECS_PROC_NAME:    path.Base(exe),
 		ECS_PROC_THREAD:  JSONData{ECS_PROC_TID: engine.Mapper.MapInt(engine.SF_PROC_TID)(rec)},
+	}
+	hash := encodeHashes(rec, sfgo.PROCESS_SRC)
+	if len(hash) > 0 {
+		process[ECS_HASH] = hash
 	}
 	pexe := engine.Mapper.MapStr(engine.SF_PPROC_EXE)(rec)
 	parent := JSONData{
@@ -403,6 +435,12 @@ func encodeFile(rec *engine.Record) JSONData {
 			file[ECS_FILE_PATH] = fpath
 		}
 	}
+
+	hash := encodeHashes(rec, sfgo.FILE_SRC)
+	if len(hash) > 0 {
+		file[ECS_HASH] = hash
+	}
+
 	return file
 }
 

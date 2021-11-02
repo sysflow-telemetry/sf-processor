@@ -4,6 +4,7 @@
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,7 +45,6 @@ type PolicyEngine struct {
 	pi            *engine.PolicyInterpreter
 	outCh         []chan *engine.Record
 	filterOnly    bool
-	bypass        bool
 	config        engine.Config
 	policyMonitor monitor.PolicyMonitor
 }
@@ -91,20 +91,21 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) error {
 	}
 	s.config = config
 
-	if s.config.Mode == engine.BypassMode {
-		logger.Trace.Println("Setting policy engine in bypass mode")
-		s.bypass = true
-		return nil
-	}
-
-	if s.config.PoliciesPath == sfgo.Zeros.String {
-		return errors.New("Configuration tag 'policies' missing from policy engine plugin settings")
-	}
-	if s.config.Mode == engine.FilterMode {
-		logger.Trace.Println("Setting policy engine in filter mode")
-		s.filterOnly = true
+	if s.config.Mode == engine.EnrichMode {
+		logger.Trace.Println("Setting policy engine in 'enrich' mode")
+		if s.config.PoliciesPath == sfgo.Zeros.String {
+		        return nil
+		}
 	} else {
-		logger.Trace.Println("Setting policy engine in alert mode")
+		if s.config.PoliciesPath == sfgo.Zeros.String {
+			return errors.New("Configuration tag 'policies' missing from policy engine plugin settings")
+		}
+		if s.config.Mode == engine.FilterMode {
+			logger.Trace.Println("Setting policy engine in 'filter' mode")
+			s.filterOnly = true
+		} else {
+			logger.Trace.Println("Setting policy engine in 'alert' mode")
+		}
 	}
 
 	if s.config.Monitor == engine.NoneType {
@@ -150,7 +151,7 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 
 	for {
 		if fc, ok := <-in; ok {
-			if s.bypass {
+			if s.pi == nil {
 				out(engine.NewRecord(*fc))
 			} else if s.policyMonitor != nil {
 				now := time.Now()
@@ -162,9 +163,9 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 					}
 					expiration = now.Add(20 * time.Second)
 				}
-				s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc), out)
+				s.pi.ProcessAsync(s.config.Mode, engine.NewRecord(*fc), out)
 			} else {
-				s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc), out)
+				s.pi.ProcessAsync(s.config.Mode, engine.NewRecord(*fc), out)
 			}
 		} else {
 			logger.Trace.Println("Input channel closed. Shutting down.")

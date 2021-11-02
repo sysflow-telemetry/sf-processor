@@ -4,6 +4,7 @@
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +26,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
@@ -39,11 +41,13 @@ var itemsre = regexp.MustCompile(`(^\[)(.*)(\]$?)`)
 type PolicyInterpreter struct {
 	*parser.BaseSfplListener
 
-	ahdl ActionHandler
-
 	// Parsed rule and filter object maps.
 	rules []Rule
 	filters []Filter
+
+	// Map of registered actions
+	builtInActions ActionMap
+	userDefinedActions ActionMap
 
 	// Accessory parsing maps.
 	lists map[string][]string
@@ -53,11 +57,16 @@ type PolicyInterpreter struct {
 // NewPolicyInterpreter constructs a new interpreter instance.
 func NewPolicyInterpreter(conf Config) *PolicyInterpreter {
 	pi := new(PolicyInterpreter)
-	pi.ahdl = NewActionHandler(conf)
 	pi.rules = make([]Rule, 0)
 	pi.filters = make([]Filter, 0)
 	pi.lists = make(map[string][]string)
 	pi.macroCtxs = make(map[string]parser.IExpressionContext)
+
+	// Register built-in actions
+	pi.registerBuiltIns()
+
+	// Load user-defined actions
+	pi.loadUserActions(conf.ActionDir)
 	return pi
 }
 
@@ -125,42 +134,108 @@ func (pi *PolicyInterpreter) Compile(paths ...string) error {
 }
 
 // ProcessAsync executes all compiled policies against record r.
-func (pi *PolicyInterpreter) ProcessAsync(applyFilters bool, filterOnly bool, r *Record, out func(r *Record)) {
-	if applyFilters && pi.EvalFilters(r) {
+func (pi *PolicyInterpreter) ProcessAsync(mode Mode, r *Record, out func(r *Record)) {
+	// Use filters as guards to rules. Evaluate rules if
+	// - no filters exist or
+	// - there is a matching filter 
+	if !pi.EvalFilters(r)  {
 		return
 	}
-	match := filterOnly
+
+	// Assume match if we are in FilterMode, a filter matched and there are no rules
+	match := (mode == FilterMode && len(pi.rules) == 0)
 	for _, rule := range pi.rules {
 		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
-			pi.ahdl.HandleActionAsync(rule, r, out)
+			if mode != FilterMode {
+				pi.HandleActionAsync(rule, r)
+			}
 			match = true
 		}
 	}
-	if match {
+	// Push record in enrich mode (non-blocking) or if a rule matched
+	if mode == EnrichMode || match {
 		out(r)
 	}
 }
 
 // Process executes all compiled policies against record r.
-func (pi *PolicyInterpreter) Process(applyFilters bool, filterOnly bool, r *Record) (bool, *Record) {
-	match := false
-	if applyFilters && pi.EvalFilters(r) {
-		return match, nil
+func (pi *PolicyInterpreter) Process(mode Mode, r *Record) *Record {
+	// Use filters as guards to rules. Evaluate rules if
+	// - no filters exist or
+	// - there is a matching filter 
+	if !pi.EvalFilters(r)  {
+		return nil
 	}
-	if filterOnly {
-		return true, r
-	}
+
+	// Assume match if we are in FilterMode, a filter matched and there are no rules
+	match := (mode == FilterMode && len(pi.rules) == 0)
 	for _, rule := range pi.rules {
 		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
-			pi.ahdl.HandleAction(rule, r)
+			if mode != FilterMode {
+				pi.HandleAction(rule, r)
+			}
 			match = true
 		}
 	}
-	return match, r
+	// Push record in enrich mode (non-blocking) or if a rule matched
+	if mode == EnrichMode || match {
+		return r
+	}
+	return nil
+}
+
+// HandleActionAsync handles actions defined in rule.
+func (pi *PolicyInterpreter) HandleActionAsync(rule Rule, r *Record) {
+	var wg sync.WaitGroup
+
+        r.Ctx.AddRule(rule)
+        for _, a := range rule.Actions {
+		action, ok := pi.builtInActions[a]
+                if !ok {
+			action, ok = pi.userDefinedActions[a]
+		}
+                if !ok {
+                        logger.Error.Println("Unknown action: '" + a + "'")
+			continue
+                }
+
+		wg.Add(1)
+
+		go func(f ActionFunc) {
+			defer wg.Done()
+			if err := f(r); err != nil {
+				logger.Error.Println("Error in action: " + err.Error())
+			}
+		}(action)
+        }
+
+	wg.Wait()
+}
+
+// HandleAction handles actions defined in rule.
+func (pi *PolicyInterpreter) HandleAction(rule Rule, r *Record) {
+        r.Ctx.AddRule(rule)
+        for _, a := range rule.Actions {
+		action, ok := pi.builtInActions[a]
+                if !ok {
+			action, ok = pi.userDefinedActions[a]
+		}
+                if !ok {
+                        logger.Error.Println("Unknown action: '" + a + "'")
+			continue
+                }
+
+		if err := action(r); err != nil {
+			logger.Error.Println("Error in action: " + err.Error())
+		}
+        }
 }
 
 // EvalFilters executes compiled policy filters against record r.
 func (pi *PolicyInterpreter) EvalFilters(r *Record) bool {
+	if len(pi.filters) == 0 {
+		return true
+	}
 	for _, f := range pi.filters {
 		if f.Enabled && f.condition.Eval(r) {
 			return true
@@ -276,25 +351,32 @@ func (pi *PolicyInterpreter) getPriority(ctx *parser.PruleContext) Priority {
 	return Low
 }
 
-func (pi *PolicyInterpreter) getActions(ctx *parser.PruleContext) []Action {
-	var actions []Action
-	if ctx.OUTPUT(0) != nil {
-		actions = append(actions, Alert)
-	} else if ctx.ACTION(0) != nil {
-		astr := ctx.Text(2).GetText()
-		l := pi.extractList(astr)
-		for _, v := range l {
-			switch strings.ToLower(v) {
-			case Alert.String():
-				actions = append(actions, Alert)
-			case Tag.String():
-				actions = append(actions, Tag)
-			case Hash.String():
-				actions = append(actions, Hash)
-			default:
-				logger.Warn.Println("Unrecognized action value ", v)
-			}
-		}
+func (pi *PolicyInterpreter) getActions(ctx *parser.PruleContext) []string {
+	var actions []string
+//	if ctx.OUTPUT(0) != nil {
+//		actions = append(actions, Alert)
+//	} else if ctx.ACTION(0) != nil {
+//		astr := ctx.Text(2).GetText()
+//		l := pi.extractList(astr)
+//		for _, v := range l {
+//			switch strings.ToLower(v) {
+//			case Alert.String():
+//				actions = append(actions, Alert)
+//			case Tag.String():
+//				actions = append(actions, Tag)
+//			case Hash.String():
+//				actions = append(actions, Hash)
+//			default:
+//				logger.Warn.Println("Unrecognized action value ", v)
+//			}
+//		}
+//	}
+	if ctx.ACTION(0) != nil {
+              astr := ctx.Text(2).GetText()
+              l := pi.extractList(astr)
+              for _, v := range l {
+                      actions = append(actions, strings.ToLower(v))
+              }
 	}
 	return actions
 }

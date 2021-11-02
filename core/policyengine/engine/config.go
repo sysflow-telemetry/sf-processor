@@ -4,6 +4,7 @@
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,6 +33,7 @@ const (
 	JSONSchemaVersionKey string = "jsonschemaversion"
 	BuildNumberKey       string = "buildnumber"
 	MonitorKey           string = "monitor"
+	ActionDirKey	     string = "actiondir"
 )
 
 // Config defines a configuration object for the engine.
@@ -42,6 +44,7 @@ type Config struct {
 	JSONSchemaVersion string
 	BuildNumber       string
 	Monitor           MonitorType
+	ActionDir         string
 }
 
 // CreateConfig creates a new config object from config dictionary.
@@ -63,6 +66,9 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 	if v, ok := conf[BuildNumberKey].(string); ok {
 		c.BuildNumber = v
 	}
+	if v, ok := conf[ActionDirKey].(string); ok {
+                c.ActionDir = v
+        }
 	c.Monitor = NoneType
 	if v, ok := conf[MonitorKey].(string); ok {
 		if v == "local" {
@@ -81,26 +87,26 @@ type Mode int
 
 // Mode config options.
 const (
-	AlertMode Mode = iota
+	EnrichMode Mode = iota
+	AlertMode
 	FilterMode
-	BypassMode
 )
 
 func (s Mode) String() string {
-	return [...]string{"alert", "filter", "bypass"}[s]
+	return [...]string{"enrich", "alert", "filter"}[s]
 }
 
 func parseModeConfig(s string) Mode {
+	if EnrichMode.String() == s {
+		return EnrichMode
+	}
 	if AlertMode.String() == s {
 		return AlertMode
 	}
 	if FilterMode.String() == s {
 		return FilterMode
 	}
-	if BypassMode.String() == s {
-		return BypassMode
-	}
-	return AlertMode
+	return EnrichMode
 }
 
 // MonitorType defines a policy monitor type.
