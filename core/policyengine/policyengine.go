@@ -44,7 +44,6 @@ const (
 type PolicyEngine struct {
 	pi            *engine.PolicyInterpreter
 	outCh         []chan *engine.Record
-	filterOnly    bool
 	config        engine.Config
 	policyMonitor monitor.PolicyMonitor
 }
@@ -100,12 +99,7 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) error {
 		if s.config.PoliciesPath == sfgo.Zeros.String {
 			return errors.New("Configuration tag 'policies' missing from policy engine plugin settings")
 		}
-		if s.config.Mode == engine.FilterMode {
-			logger.Trace.Println("Setting policy engine in 'filter' mode")
-			s.filterOnly = true
-		} else {
-			logger.Trace.Println("Setting policy engine in 'alert' mode")
-		}
+		logger.Trace.Println("Setting policy engine in 'alert' mode")
 	}
 
 	if s.config.Monitor == engine.NoneType {
