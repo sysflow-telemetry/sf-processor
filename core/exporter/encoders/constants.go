@@ -52,4 +52,8 @@ const (
 	DESC_ATTR         = "desc"
 	PRIORITY_ATTR     = "priority"
 	TAGS_ATTR         = "tags"
+	EXTENSIONS_ATTR   = "ext"
+	MD5_ATTR          = "md5"
+	SHA1_ATTR         = "sha1"
+	SHA256_ATTR       = "sha256"
 )
