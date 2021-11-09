@@ -86,6 +86,7 @@ type Record struct {
 	Ctx Context
 }
 
+
 // NewRecord creates a new Record isntance.
 func NewRecord(fr sfgo.FlatRecord) *Record {
 	var r = new(Record)
@@ -233,7 +234,7 @@ const (
 	hashCtxKey
 )
 
-// AddRule stores add a rule instance to the set of rules matching a record.
+// AddRule adds a rule instance to the set of rules matching a record.
 func (s Context) AddRule(r Rule) {
 	if s[ruleCtxKey] == nil {
 		s[ruleCtxKey] = make([]Rule, 0)
@@ -270,30 +271,40 @@ func (s Context) GetTags() []string {
 	return nil
 }
 
-// SetHashes stores hashes into context object.
-func (s Context) SetHashes(h []*HashSet) {
-	s[hashCtxKey] = h
-}
-
-// Adds a hash value to context object.
-func (s Context) AddHash(h *HashSet) {
+func (s Context) GetHash(hs HashSrc) *HashSet {
 	if s[hashCtxKey] == nil {
-		s[hashCtxKey] = make([]*HashSet, 0)
+		return nil
 	}
-	s[hashCtxKey] = append(s[hashCtxKey].([]*HashSet), h)
+	hpa := s[hashCtxKey].([]*HashSet)
+	return hpa[hs]
 }
 
-// GetHashes retrieves hashes from context object.
-func (s Context) GetHashes() []*HashSet {
-	if s[hashCtxKey] != nil {
-		return s[hashCtxKey].([]*HashSet)
+// Adds a new hash value to context object.
+func (s Context) AddHash(hs HashSrc, hash crypto.Hash, value string) {
+	if s[hashCtxKey] == nil {
+		s[hashCtxKey] = make([]*HashSet, 2)
 	}
-	return nil
+	hpa := s[hashCtxKey].([]*HashSet)
+	if  hpa[hs] == nil {
+		hpa[hs] = new(HashSet)
+	}
+	switch hash {
+	case crypto.MD5: hpa[hs].Md5 = value
+	case crypto.SHA1: hpa[hs].Sha1 = value
+	case crypto.SHA256: hpa[hs].Sha256 = value
+	}
 }
 
-// HashSet type
+type HashSrc uint
+
+const (
+	HASH_PROC HashSrc = iota
+	HASH_FILE
+)
+
 type HashSet struct {
-	Source    sfgo.Source
-	Algorithm crypto.Hash
-	Value     string
+	Md5    string  `json:"md5,omitempty"`
+	Sha1   string  `json:"sha1,omitempty"`
+	Sha256 string  `json:"sha256,omitempty"`
 }
+
