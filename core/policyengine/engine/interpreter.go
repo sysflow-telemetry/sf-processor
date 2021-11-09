@@ -134,61 +134,102 @@ func (pi *PolicyInterpreter) Compile(paths ...string) error {
 }
 
 // ProcessAsync executes all compiled policies against record r.
+// Actions are excuted in go routines. The result is pushed async. when all actions terminate.
 func (pi *PolicyInterpreter) ProcessAsync(mode Mode, r *Record, out func(r *Record)) {
-	// Use filters as guards to rules. Evaluate rules if
-	// - no filters exist or
-	// - there is a matching filter 
-	if !pi.EvalFilters(r)  {
+	// Drop record if amy drop rule applied.
+	if pi.EvalFilters(r)  {
 		return
 	}
 
-	// Assume match if we are in FilterMode, a filter matched and there are no rules
-	match := (mode == FilterMode && len(pi.rules) == 0)
+	// Enrich mode is non-blocking: Push record even if no rule matches 
+	match := (mode == EnrichMode)
+
+	var wg sync.WaitGroup
+	actionsRunning := false
 	for _, rule := range pi.rules {
 		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
-			if mode != FilterMode {
-				pi.HandleActionAsync(rule, r)
-			}
+			pi.HandleAction(rule, r)
+			//actionsRunning = pi.HandleActionAsync(rule, r, wg)
 			match = true
 		}
 	}
-	// Push record in enrich mode (non-blocking) or if a rule matched
-	if mode == EnrichMode || match {
-		out(r)
+
+	// Push record if a rule matched (or if we are in enrich mode)
+	if match {
+		if actionsRunning {
+			logger.Info.Println("Actions running")
+
+			// The watch function pushes the record when all actions have terminated.
+			go func(r *Record) {
+				wg.Wait()
+				logger.Info.Println("Actions complete - pushing record")
+				out(r)
+			}(r)
+		} else {
+			out(r)
+		}
 	}
 }
 
 // Process executes all compiled policies against record r.
 func (pi *PolicyInterpreter) Process(mode Mode, r *Record) *Record {
-	// Use filters as guards to rules. Evaluate rules if
-	// - no filters exist or
-	// - there is a matching filter 
-	if !pi.EvalFilters(r)  {
+	// Drop record if amy drop rule applied.
+	if pi.EvalFilters(r)  {
 		return nil
 	}
 
-	// Assume match if we are in FilterMode, a filter matched and there are no rules
-	match := (mode == FilterMode && len(pi.rules) == 0)
+	// Enrich mode is non-blocking: Push record even if no rule matches 
+	match := (mode == EnrichMode)
+
 	for _, rule := range pi.rules {
 		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
-			if mode != FilterMode {
-				pi.HandleAction(rule, r)
-			}
+			pi.HandleAction(rule, r)
 			match = true
 		}
 	}
-	// Push record in enrich mode (non-blocking) or if a rule matched
-	if mode == EnrichMode || match {
+
+	// Push record if a rule matched (or if we are in enrich mode)
+	if match {
 		return r
 	}
 	return nil
 }
 
 // HandleActionAsync handles actions defined in rule.
-func (pi *PolicyInterpreter) HandleActionAsync(rule Rule, r *Record) {
+func (pi *PolicyInterpreter) HandleActionAsync(rule Rule, r *Record, wg sync.WaitGroup) bool {
+	// Indicates if actions have been started
+	started := false
+
+	r.Ctx.AddRule(rule)
+        for _, a := range rule.Actions {
+		action, ok := pi.builtInActions[a]
+                if !ok {
+			action, ok = pi.userDefinedActions[a]
+		}
+                if !ok {
+                        logger.Error.Println("Unknown action: '" + a + "'")
+			continue
+                }
+
+		wg.Add(1)
+		started = true
+
+		go func(f ActionFunc) {
+			defer wg.Done()
+			if err := f(r); err != nil {
+				logger.Error.Println("Error in action: " + err.Error())
+			}
+		}(action)
+        }
+
+	return started
+}
+
+// HandleAction handles actions defined in rule.
+func (pi *PolicyInterpreter) HandleAction(rule Rule, r *Record) {
 	var wg sync.WaitGroup
 
-        r.Ctx.AddRule(rule)
+	r.Ctx.AddRule(rule)
         for _, a := range rule.Actions {
 		action, ok := pi.builtInActions[a]
                 if !ok {
@@ -212,30 +253,8 @@ func (pi *PolicyInterpreter) HandleActionAsync(rule Rule, r *Record) {
 	wg.Wait()
 }
 
-// HandleAction handles actions defined in rule.
-func (pi *PolicyInterpreter) HandleAction(rule Rule, r *Record) {
-        r.Ctx.AddRule(rule)
-        for _, a := range rule.Actions {
-		action, ok := pi.builtInActions[a]
-                if !ok {
-			action, ok = pi.userDefinedActions[a]
-		}
-                if !ok {
-                        logger.Error.Println("Unknown action: '" + a + "'")
-			continue
-                }
-
-		if err := action(r); err != nil {
-			logger.Error.Println("Error in action: " + err.Error())
-		}
-        }
-}
-
 // EvalFilters executes compiled policy filters against record r.
 func (pi *PolicyInterpreter) EvalFilters(r *Record) bool {
-	if len(pi.filters) == 0 {
-		return true
-	}
 	for _, f := range pi.filters {
 		if f.Enabled && f.condition.Eval(r) {
 			return true
@@ -371,7 +390,7 @@ func (pi *PolicyInterpreter) getActions(ctx *parser.PruleContext) []string {
 //			}
 //		}
 //	}
-	if ctx.ACTION(0) != nil {
+	if ctx.ACTION(0) != nil || ctx.OUTPUT(0) != nil {
               astr := ctx.Text(2).GetText()
               l := pi.extractList(astr)
               for _, v := range l {
