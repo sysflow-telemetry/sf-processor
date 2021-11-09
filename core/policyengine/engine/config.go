@@ -89,7 +89,6 @@ type Mode int
 const (
 	EnrichMode Mode = iota
 	AlertMode
-	FilterMode
 )
 
 func (s Mode) String() string {
@@ -102,9 +101,6 @@ func parseModeConfig(s string) Mode {
 	}
 	if AlertMode.String() == s {
 		return AlertMode
-	}
-	if FilterMode.String() == s {
-		return FilterMode
 	}
 	return EnrichMode
 }
