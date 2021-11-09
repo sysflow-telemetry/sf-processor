@@ -21,6 +21,7 @@ package engine
 
 import (
 	"encoding/hex"
+	"errors"
 	"crypto"
 	"io"
 	"os"
@@ -30,6 +31,7 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
+
 
 // Prototype of an action function
 type ActionFunc func(r *Record) error
@@ -105,75 +107,114 @@ func (pi *PolicyInterpreter) registerBuiltIns() {
 // Built-in hash actions 
 
 func HashMd5ProcFunc(r *Record) error {
-	hs, err := computeHash(crypto.MD5, sfgo.PROCESS_SRC, Mapper.MapStr(SF_PROC_EXE)(r))
+	h, err := computeHash(crypto.MD5, Mapper.MapStr(SF_PROC_EXE)(r))
 	if err != nil {
 		return err
 	}
-	r.Ctx.AddHash(hs)
+	r.Ctx.AddHash(HASH_PROC, crypto.MD5, h)
 	return nil
 }
 
 func HashMd5FileFunc(r *Record) error {
-	hs, err := computeHash(crypto.MD5, sfgo.FILE_SRC, Mapper.MapStr(SF_FILE_PATH)(r))
+	if err := checkFileHash(r); err != nil {
+		return err
+	}
+	h, err := computeHash(crypto.MD5, Mapper.MapStr(SF_FILE_PATH)(r))
 	if err != nil {
 		return err
 	}
-	r.Ctx.AddHash(hs)
+	r.Ctx.AddHash(HASH_FILE, crypto.MD5, h)
 	return nil
 }
 
 func HashSha1ProcFunc(r *Record) error {
-	hs, err := computeHash(crypto.SHA1, sfgo.PROCESS_SRC, Mapper.MapStr(SF_PROC_EXE)(r))
+	h, err := computeHash(crypto.SHA1, Mapper.MapStr(SF_PROC_EXE)(r))
 	if err != nil {
 		return err
 	}
-	r.Ctx.AddHash(hs)
+	r.Ctx.AddHash(HASH_PROC, crypto.SHA1, h)
 	return nil
 }
 
 func HashSha1FileFunc(r *Record) error {
-	hs, err := computeHash(crypto.SHA1, sfgo.FILE_SRC, Mapper.MapStr(SF_FILE_PATH)(r))
+	if err := checkFileHash(r); err != nil {
+		return err
+	}
+	h, err := computeHash(crypto.SHA1, Mapper.MapStr(SF_FILE_PATH)(r))
 	if err != nil {
 		return err
 	}
-	r.Ctx.AddHash(hs)
+	r.Ctx.AddHash(HASH_FILE, crypto.SHA1, h)
 	return nil
 }
 
 func HashSha256ProcFunc(r *Record) error {
-	hs, err := computeHash(crypto.SHA256, sfgo.PROCESS_SRC, Mapper.MapStr(SF_PROC_EXE)(r))
+	h, err := computeHash(crypto.SHA256, Mapper.MapStr(SF_PROC_EXE)(r))
 	if err != nil {
 		return err
 	}
-	r.Ctx.AddHash(hs)
+	r.Ctx.AddHash(HASH_PROC, crypto.SHA256, h)
 	return nil
 }
 
 func HashSha256FileFunc(r *Record) error {
-	hs, err := computeHash(crypto.SHA256, sfgo.FILE_SRC, Mapper.MapStr(SF_FILE_PATH)(r))
+	if err := checkFileHash(r); err != nil {
+		return err
+	}
+	h, err := computeHash(crypto.SHA256, Mapper.MapStr(SF_FILE_PATH)(r))
 	if err != nil {
 		return err
 	}
-	r.Ctx.AddHash(hs)
+	r.Ctx.AddHash(HASH_FILE, crypto.SHA256, h)
 	return nil
 }
 
-// Utility function for all hash actions
-func computeHash(hash crypto.Hash, source sfgo.Source, filePath string) (*HashSet, error) {
-	file, err := os.Open(filePath)
+// Size limit for hashing 256MiB
+const SIZE_LIMIT int64 = 1 << 28
+
+// Utility function for hash actions
+func computeHash(hash crypto.Hash, path string) (string, error) {
+	size, err := getFileSize(path)
 	if err != nil {
-		return nil, err
+		return sfgo.Zeros.String, err
+	}
+	if size > SIZE_LIMIT {
+                return sfgo.Zeros.String, errors.New("File size for hashing exceeds limit")
+        }
+
+	file, err := os.Open(path)
+	if err != nil {
+		return sfgo.Zeros.String, err
 	}
 	defer file.Close()
 
 	h := hash.New()
 	if _, err := io.Copy(h, file); err != nil {
-		return nil, err
+		return sfgo.Zeros.String, err
 	}
 
-	hs := new(HashSet)
-	hs.Source = source
-	hs.Algorithm = hash
-	hs.Value = hex.EncodeToString(h.Sum(nil))
-	return hs, nil
+	hv := hex.EncodeToString(h.Sum(nil))
+	return hv, nil
 }
+
+func getFileSize(path string) (int64, error) {
+	stat, err := os.Stat(path)
+	if err != nil {
+		return -1, err
+	}
+	return stat.Size(), nil
+}
+
+func checkFileHash(r *Record) error {
+	if Mapper.MapStr(SF_TYPE)(r) != sfgo.TyFFStr {
+		return errors.New("File hashing only permitted for file flow events")
+	}
+
+        if Mapper.MapInt(SF_FLOW_WBYTES)(r) > 0 || Mapper.MapInt(SF_FLOW_WOPS)(r) > 0 {
+		return errors.New("File hashing only permitted for non-write events")
+	}
+
+	return nil
+}
+
+
