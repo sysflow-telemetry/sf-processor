@@ -148,8 +148,7 @@ func (pi *PolicyInterpreter) ProcessAsync(mode Mode, r *Record, out func(r *Reco
 	actionsRunning := false
 	for _, rule := range pi.rules {
 		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
-			pi.HandleAction(rule, r)
-			//actionsRunning = pi.HandleActionAsync(rule, r, wg)
+			actionsRunning = pi.HandleActionAsync(rule, r, &wg)
 			match = true
 		}
 	}
@@ -196,7 +195,7 @@ func (pi *PolicyInterpreter) Process(mode Mode, r *Record) *Record {
 }
 
 // HandleActionAsync handles actions defined in rule.
-func (pi *PolicyInterpreter) HandleActionAsync(rule Rule, r *Record, wg sync.WaitGroup) bool {
+func (pi *PolicyInterpreter) HandleActionAsync(rule Rule, r *Record, wg *sync.WaitGroup) bool {
 	// Indicates if actions have been started
 	started := false
 
