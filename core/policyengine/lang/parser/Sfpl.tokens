@@ -1,5 +1,5 @@
 RULE=1
-FILTER=2
+DROP=2
 MACRO=3
 LIST=4
 NAME=5
@@ -52,7 +52,7 @@ NL=51
 COMMENT=52
 ANY=53
 'rule'=1
-'filter'=2
+'drop'=2
 'macro'=3
 'list'=4
 'name'=5

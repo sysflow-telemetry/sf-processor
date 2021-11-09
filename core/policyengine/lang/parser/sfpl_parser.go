@@ -155,7 +155,7 @@ var deserializer = antlr.NewATNDeserializer(nil)
 var deserializedATN = deserializer.DeserializeFromUInt16(parserATN)
 
 var literalNames = []string{
-	"", "'rule'", "'filter'", "'macro'", "'list'", "'name'", "'items'", "'condition'",
+	"", "'rule'", "'drop'", "'macro'", "'list'", "'name'", "'items'", "'condition'",
 	"'desc'", "'action'", "'output'", "'priority'", "'tags'", "'prefilter'",
 	"'enabled'", "'warn_evttypes'", "'skip-if-unknown-filter'", "'append'",
 	"'required_engine_version'", "'and'", "'or'", "'not'", "'<'", "'<='", "'>'",
@@ -164,13 +164,13 @@ var literalNames = []string{
 	"'-'",
 }
 var symbolicNames = []string{
-	"", "RULE", "FILTER", "MACRO", "LIST", "NAME", "ITEMS", "COND", "DESC",
-	"ACTION", "OUTPUT", "PRIORITY", "TAGS", "PREFILTER", "ENABLED", "WARNEVTTYPE",
-	"SKIPUNKNOWN", "FAPPEND", "REQ", "AND", "OR", "NOT", "LT", "LE", "GT",
-	"GE", "EQ", "NEQ", "IN", "CONTAINS", "ICONTAINS", "STARTSWITH", "ENDSWITH",
-	"PMATCH", "EXISTS", "LBRACK", "RBRACK", "LPAREN", "RPAREN", "LISTSEP",
-	"DECL", "DEF", "SEVERITY", "SFSEVERITY", "FSEVERITY", "ID", "NUMBER", "PATH",
-	"STRING", "TAG", "WS", "NL", "COMMENT", "ANY",
+	"", "RULE", "DROP", "MACRO", "LIST", "NAME", "ITEMS", "COND", "DESC", "ACTION",
+	"OUTPUT", "PRIORITY", "TAGS", "PREFILTER", "ENABLED", "WARNEVTTYPE", "SKIPUNKNOWN",
+	"FAPPEND", "REQ", "AND", "OR", "NOT", "LT", "LE", "GT", "GE", "EQ", "NEQ",
+	"IN", "CONTAINS", "ICONTAINS", "STARTSWITH", "ENDSWITH", "PMATCH", "EXISTS",
+	"LBRACK", "RBRACK", "LPAREN", "RPAREN", "LISTSEP", "DECL", "DEF", "SEVERITY",
+	"SFSEVERITY", "FSEVERITY", "ID", "NUMBER", "PATH", "STRING", "TAG", "WS",
+	"NL", "COMMENT", "ANY",
 }
 
 var ruleNames = []string{
@@ -209,7 +209,7 @@ func NewSfplParser(input antlr.TokenStream) *SfplParser {
 const (
 	SfplParserEOF         = antlr.TokenEOF
 	SfplParserRULE        = 1
-	SfplParserFILTER      = 2
+	SfplParserDROP        = 2
 	SfplParserMACRO       = 3
 	SfplParserLIST        = 4
 	SfplParserNAME        = 5
@@ -1887,8 +1887,8 @@ func (s *PfilterContext) DECL() antlr.TerminalNode {
 	return s.GetToken(SfplParserDECL, 0)
 }
 
-func (s *PfilterContext) FILTER() antlr.TerminalNode {
-	return s.GetToken(SfplParserFILTER, 0)
+func (s *PfilterContext) DROP() antlr.TerminalNode {
+	return s.GetToken(SfplParserDROP, 0)
 }
 
 func (s *PfilterContext) AllDEF() []antlr.TerminalNode {
@@ -1989,7 +1989,7 @@ func (p *SfplParser) Pfilter() (localctx IPfilterContext) {
 	}
 	{
 		p.SetState(148)
-		p.Match(SfplParserFILTER)
+		p.Match(SfplParserDROP)
 	}
 	{
 		p.SetState(149)
@@ -2076,8 +2076,8 @@ func (s *SfilterContext) DECL() antlr.TerminalNode {
 	return s.GetToken(SfplParserDECL, 0)
 }
 
-func (s *SfilterContext) FILTER() antlr.TerminalNode {
-	return s.GetToken(SfplParserFILTER, 0)
+func (s *SfilterContext) DROP() antlr.TerminalNode {
+	return s.GetToken(SfplParserDROP, 0)
 }
 
 func (s *SfilterContext) AllDEF() []antlr.TerminalNode {
@@ -2178,7 +2178,7 @@ func (p *SfplParser) Sfilter() (localctx ISfilterContext) {
 	}
 	{
 		p.SetState(160)
-		p.Match(SfplParserFILTER)
+		p.Match(SfplParserDROP)
 	}
 	{
 		p.SetState(161)
