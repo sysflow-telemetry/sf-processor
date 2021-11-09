@@ -43,6 +43,10 @@ const (
 	DESC              = ",\"" + DESC_ATTR + "\":"
 	PRIORITY          = ",\"" + PRIORITY_ATTR + "\":"
 	TAGS              = ",\"" + TAGS_ATTR + "\":["
+	EXTENSIONS        = ",\"" + EXTENSIONS_ATTR 
+	MD5               = MD5_ATTR + "\":"
+	SHA1              = SHA1_ATTR + "\":"
+	SHA256            = SHA256_ATTR + "\":"
 	PERIOD            = '.'
 	EMPTY_STRING      = "\"\""
 )
