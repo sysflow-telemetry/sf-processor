@@ -226,14 +226,16 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 		t.writeSectionBegin(EXTENSIONS)
 		if hp != nil {
 			t.writeSectionBegin(PROC)
-			t.writeHash(hp)
+			t.writeHashSet(hp)
+			t.writer.RawByte(END_CURLY)
 			if hf != nil {
 				t.writer.RawByte(COMMA)
 			}
 		}
 		if hf != nil {
 			t.writeSectionBegin(FILEF)
-			t.writeHash(hf)
+			t.writeHashSet(hf)
+			t.writer.RawByte(END_CURLY)
 		}
 		t.writer.RawByte(END_CURLY)
 	}
@@ -309,7 +311,7 @@ func (t *JSONEncoder) writeSectionBegin(section string) {
 	t.writer.RawString(QUOTE_COLON_CURLY)
 }
 
-func (t *JSONEncoder) writeHash(h *engine.HashSet) {
+func (t *JSONEncoder) writeHashSet(h *engine.HashSet) {
 	existed := false
 	if h.Md5 != sfgo.Zeros.String {
 		t.writer.RawString(MD5)
