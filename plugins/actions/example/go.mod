@@ -20,6 +20,12 @@ module github.com/sysflow-telemetry/sf-processor/plugins/actions/example
 
 go 1.14
 
-require github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201209134442-13e2a6e66430
+require (
+	github.com/docker/distribution v2.7.1+incompatible // indirect
+	github.com/docker/docker v20.10.11+incompatible // indirect
+	github.com/docker/go-connections v0.4.0 // indirect
+	github.com/opencontainers/image-spec v1.0.2 // indirect
+	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201209134442-13e2a6e66430
+)
 
 replace github.com/sysflow-telemetry/sf-processor/core => ../../../core
