@@ -28,7 +28,6 @@ require (
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0
 	github.com/cespare/xxhash v1.1.0
 	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae
-	github.com/enriquebris/goconcurrentqueue v0.6.0
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-openapi/strfmt v0.19.4
 	github.com/golang/protobuf v1.3.3 // indirect
@@ -48,4 +47,4 @@ require (
 	gopkg.in/linkedin/goavro.v1 v1.0.5 // indirect
 )
 
-// replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go
+//replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go
