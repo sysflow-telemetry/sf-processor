@@ -98,12 +98,14 @@ LABEL "io.k8s.description"="SysFlow Processor implements a pluggable stream-proc
 COPY ./LICENSE.md /licenses/
 
 # Copy files from previous stage
-COPY --from=base --chown=1001:1001 /usr/local/sysflow/ /usr/local/sysflow/
+COPY --from=base /usr/local/sysflow/ /usr/local/sysflow/
+#COPY --from=base --chown=1001:1001 /usr/local/sysflow/ /usr/local/sysflow/
 RUN dnf -y update && \
-    ( dnf -y clean all ; rm -rf /var/cache/{dnf,yum} ; true ) && \
-    mkdir -p /sock && chown -R 1001:1001 /sock
+    ( dnf -y clean all ; rm -rf /var/cache/{dnf,yum} ; true )
+#    ( dnf -y clean all ; rm -rf /var/cache/{dnf,yum} ; true ) && \
+#    mkdir -p /sock && chown -R 1001:1001 /sock
 VOLUME /sock
-USER 1001
+#USER 1001
 
 # Entrypoint
 CMD /usr/local/sysflow/bin/sfprocessor \
