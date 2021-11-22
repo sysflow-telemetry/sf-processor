@@ -156,12 +156,12 @@ func (pi *PolicyInterpreter) ProcessAsync(mode Mode, r *Record, out func(r *Reco
 	// Push record if a rule matched (or if we are in enrich mode)
 	if match {
 		if actionsRunning {
-			logger.Info.Println("Actions running")
+			logger.Trace.Println("Actions running")
 
 			// The watch function pushes the record when all actions have terminated.
 			go func(r *Record) {
 				wg.Wait()
-				logger.Info.Println("Actions complete - pushing record")
+				logger.Trace.Println("Actions complete - pushing record")
 				out(r)
 			}(r)
 		} else {
