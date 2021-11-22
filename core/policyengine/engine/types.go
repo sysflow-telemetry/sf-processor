@@ -22,7 +22,6 @@
 package engine
 
 import (
-	"crypto"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -271,35 +270,34 @@ func (s Context) GetTags() []string {
 	return nil
 }
 
-func (s Context) GetHash(hs HashSrc) *HashSet {
+func (s Context) GetHash(ht HashType) *HashSet {
 	if s[hashCtxKey] == nil {
 		return nil
 	}
 	hpa := s[hashCtxKey].([]*HashSet)
-	return hpa[hs]
+	return hpa[ht]
 }
 
-// Adds a new hash value to context object.
-func (s Context) AddHash(hs HashSrc, hash crypto.Hash, value string) {
+// Adds a hash set to context object.
+func (s Context) SetHashes(ht HashType, m5s string, s1s string, s256s string) {
 	if s[hashCtxKey] == nil {
 		s[hashCtxKey] = make([]*HashSet, 2)
 	}
 	hpa := s[hashCtxKey].([]*HashSet)
-	if  hpa[hs] == nil {
-		hpa[hs] = new(HashSet)
+
+	if hpa[ht] == nil {
+		hpa[ht] = &HashSet{}
 	}
-	switch hash {
-	case crypto.MD5: hpa[hs].Md5 = value
-	case crypto.SHA1: hpa[hs].Sha1 = value
-	case crypto.SHA256: hpa[hs].Sha256 = value
-	}
+	hpa[ht].Md5 = m5s
+	hpa[ht].Sha1 = s1s
+	hpa[ht].Sha256 = s256s
 }
 
-type HashSrc uint
+type HashType uint
 
 const (
-	HASH_PROC HashSrc = iota
-	HASH_FILE
+	HASH_TYPE_PROC HashType = iota
+	HASH_TYPE_FILE
 )
 
 type HashSet struct {

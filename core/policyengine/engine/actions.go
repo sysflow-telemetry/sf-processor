@@ -20,18 +20,52 @@
 package engine
 
 import (
+	"archive/tar"
+	"crypto/md5"
+	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"crypto"
+	"fmt"
 	"io"
 	"os"
 	"plugin"
 
+	"golang.org/x/net/context"
+	"github.com/docker/docker/client"
+
+	"github.com/sysflow-telemetry/sf-apis/go/config"
+	"github.com/sysflow-telemetry/sf-apis/go/container/agents"
 	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
 
+const CONTAINER_CONFIG = "CONTAINER_CONFIG"
+
+var hashAgent *agents.HashAgent
+var dockerCli *client.Client
+
+func init() {
+	confPath := os.Getenv(CONTAINER_CONFIG)
+	if confPath != sfgo.Zeros.String {
+		vconf, err := config.GetConfig(confPath)
+		if err != nil {
+			fmt.Printf("FATAL: Failed to load container config file: %s\n", err.Error())
+		} else {
+			hashAgent, err = agents.NewHashAgent(vconf)
+			if err != nil {
+				fmt.Printf("FATAL: Failed to initialize hash agent: %s\n", err.Error())
+			}
+		}
+	}
+
+	var err error
+	dockerCli, err = client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		fmt.Printf("FATAL: Failed to initialize docker client %s\n", err.Error())
+	}
+}
 
 // Prototype of an action function
 type ActionFunc func(r *Record) error
@@ -85,136 +119,116 @@ func (pi *PolicyInterpreter) loadUserActions(dir string) {
 
 // Names of built-in actions
 const (
-	HASH_MD5_PROC = "hash_md5_proc"
-	HASH_MD5_FILE = "hash_md5_file"
-	HASH_SHA1_PROC = "hash_sha1_proc"
-	HASH_SHA1_FILE = "hash_sha1_file"
-	HASH_SHA256_PROC = "hash_sha256_proc"
-	HASH_SHA256_FILE = "hash_sha256_file"
+	ACTION_HASH_PROC = "hash_proc"
+	ACTION_HASH_FILE = "hash_file"
 )
 
 // Registers built-in actions
 func (pi *PolicyInterpreter) registerBuiltIns() {
 	pi.builtInActions = make(ActionMap)
-	registerAction(pi.builtInActions, HASH_MD5_PROC, HashMd5ProcFunc)
-	registerAction(pi.builtInActions, HASH_MD5_FILE, HashMd5FileFunc)
-	registerAction(pi.builtInActions, HASH_SHA1_PROC, HashSha1ProcFunc)
-	registerAction(pi.builtInActions, HASH_SHA1_FILE, HashSha1FileFunc)
-	registerAction(pi.builtInActions, HASH_SHA256_PROC, HashSha256ProcFunc)
-	registerAction(pi.builtInActions, HASH_SHA256_FILE, HashSha256FileFunc)
+	registerAction(pi.builtInActions, ACTION_HASH_PROC, HashProcFunc)
+	registerAction(pi.builtInActions, ACTION_HASH_FILE, HashFileFunc)
 }
 
 // Built-in hash actions 
 
-func HashMd5ProcFunc(r *Record) error {
-	h, err := computeHash(crypto.MD5, Mapper.MapStr(SF_PROC_EXE)(r))
-	if err != nil {
-		return err
+func HashProcFunc(r *Record) error {
+	m1s, s1s, s256s, err := getHashes(r, SF_PROC_EXE)
+	if err == nil {
+		r.Ctx.SetHashes(HASH_TYPE_PROC, m1s, s1s, s256s)
 	}
-	r.Ctx.AddHash(HASH_PROC, crypto.MD5, h)
-	return nil
+	return err
 }
 
-func HashMd5FileFunc(r *Record) error {
-	if err := checkFileHash(r); err != nil {
-		return err
+func HashFileFunc(r *Record) error {
+	if Mapper.MapStr(SF_FILE_TYPE)(r) != "f" || Mapper.MapStr(SF_FILE_PATH)(r) == sfgo.Zeros.String {
+		return nil
 	}
-	h, err := computeHash(crypto.MD5, Mapper.MapStr(SF_FILE_PATH)(r))
-	if err != nil {
-		return err
+
+	m1s, s1s, s256s, err := getHashes(r, SF_FILE_PATH)
+	if err == nil {
+		r.Ctx.SetHashes(HASH_TYPE_FILE, m1s, s1s, s256s) 
 	}
-	r.Ctx.AddHash(HASH_FILE, crypto.MD5, h)
-	return nil
+	return err
 }
 
-func HashSha1ProcFunc(r *Record) error {
-	h, err := computeHash(crypto.SHA1, Mapper.MapStr(SF_PROC_EXE)(r))
-	if err != nil {
-		return err
+// Utility functions for hash actions
+
+func getHashes(r *Record, srcFd string) (m5s string, s1s string, s256s string, err error) {
+	contId := Mapper.MapStr(SF_CONTAINER_ID)(r)
+	filePath := Mapper.MapStr(srcFd)(r)
+
+	if contId == sfgo.Zeros.String {
+		m5s, s1s, s256s, err = getHashesFromLocal(filePath)
+	} else {
+		if Mapper.MapStr(SF_CONTAINER_TYPE)(r) == "DOCKER" {
+			m5s, s1s, s256s, err = getHashesFromDocker(contId, filePath)
+		} else {
+			if hashAgent == nil {
+				err = errors.New("hash agent not initialized")
+				return
+			}
+			m5s, s1s, s256s, _, _, err = hashAgent.GetHashes(contId, filePath)
+		}
 	}
-	r.Ctx.AddHash(HASH_PROC, crypto.SHA1, h)
-	return nil
+	return
 }
 
-func HashSha1FileFunc(r *Record) error {
-	if err := checkFileHash(r); err != nil {
-		return err
-	}
-	h, err := computeHash(crypto.SHA1, Mapper.MapStr(SF_FILE_PATH)(r))
+func getHashesFromLocal(path string) (m5s string, s1s string, s256s string, err error) {
+	var file *os.File
+	file, err = os.Open(path)
 	if err != nil {
-		return err
-	}
-	r.Ctx.AddHash(HASH_FILE, crypto.SHA1, h)
-	return nil
-}
-
-func HashSha256ProcFunc(r *Record) error {
-	h, err := computeHash(crypto.SHA256, Mapper.MapStr(SF_PROC_EXE)(r))
-	if err != nil {
-		return err
-	}
-	r.Ctx.AddHash(HASH_PROC, crypto.SHA256, h)
-	return nil
-}
-
-func HashSha256FileFunc(r *Record) error {
-	if err := checkFileHash(r); err != nil {
-		return err
-	}
-	h, err := computeHash(crypto.SHA256, Mapper.MapStr(SF_FILE_PATH)(r))
-	if err != nil {
-		return err
-	}
-	r.Ctx.AddHash(HASH_FILE, crypto.SHA256, h)
-	return nil
-}
-
-// Size limit for hashing 256MiB
-const SIZE_LIMIT int64 = 1 << 28
-
-// Utility function for hash actions
-func computeHash(hash crypto.Hash, path string) (string, error) {
-	size, err := getFileSize(path)
-	if err != nil {
-		return sfgo.Zeros.String, err
-	}
-	if size > SIZE_LIMIT {
-                return sfgo.Zeros.String, errors.New("File size for hashing exceeds limit")
-        }
-
-	file, err := os.Open(path)
-	if err != nil {
-		return sfgo.Zeros.String, err
+		return
 	}
 	defer file.Close()
 
-	h := hash.New()
-	if _, err := io.Copy(h, file); err != nil {
-		return sfgo.Zeros.String, err
-	}
-
-	hv := hex.EncodeToString(h.Sum(nil))
-	return hv, nil
+	return computeHashes(file)
 }
 
-func getFileSize(path string) (int64, error) {
-	stat, err := os.Stat(path)
+const BUFFER_SIZE = 1024
+
+func getHashesFromDocker(contId string, filePath string) (m5s string, s1s string, s256s string, err error) {
+	if dockerCli == nil {
+		err = errors.New("docker client not initialized")
+		return
+	}
+	tarStream, _, err := dockerCli.CopyFromContainer(context.Background(), contId, filePath)
 	if err != nil {
-		return -1, err
+		return
 	}
-	return stat.Size(), nil
+	defer tarStream.Close()
+	tr := tar.NewReader(tarStream)
+	if _, err = tr.Next(); err != nil {
+		return
+        }
+
+	return computeHashes(tr)
 }
 
-func checkFileHash(r *Record) error {
-	if Mapper.MapStr(SF_TYPE)(r) != sfgo.TyFFStr {
-		return errors.New("File hashing only permitted for file flow events")
-	}
+func computeHashes(rd io.Reader) (m5s string, s1s string, s256s string, err error) {
+	m5 := md5.New()
+	s1 := sha1.New()
+	s256 := sha256.New()
 
-        if Mapper.MapInt(SF_FLOW_WBYTES)(r) > 0 || Mapper.MapInt(SF_FLOW_WOPS)(r) > 0 {
-		return errors.New("File hashing only permitted for non-write events")
-	}
-
-	return nil
+	bytesread := 0
+	buffer := make([]byte, BUFFER_SIZE)
+        for {
+                bytesread, err = rd.Read(buffer)
+                if err != nil && err != io.EOF {
+			return
+                }
+                if bytesread > 0 {
+                        m5.Write(buffer[:bytesread])
+                        s1.Write(buffer[:bytesread])
+                        s256.Write(buffer[:bytesread])
+                }
+                if err == io.EOF {
+                        break
+                }
+        }
+        m5s = hex.EncodeToString(m5.Sum(nil))
+	s1s = hex.EncodeToString(s1.Sum(nil))
+	s256s = hex.EncodeToString(s256.Sum(nil))
+	err = nil
+	return 
 }
-
-
