@@ -23,12 +23,8 @@ go 1.14
 
 require (
 	github.com/actgardner/gogen-avro/v7 v7.3.1
-	github.com/docker/distribution v2.7.1+incompatible // indirect
-	github.com/docker/docker v20.10.11+incompatible // indirect
-	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/linkedin/goavro v2.1.0+incompatible
-	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/spf13/viper v1.6.3
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210929184451-1b092dc0cfc7
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20210709164444-484da05c2a85
