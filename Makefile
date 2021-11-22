@@ -13,7 +13,7 @@ include ./makefile.manifest.inc
 GOCMD=go
 GOBUILD=$(GOCMD) build -tags exclude_graphdriver_btrfs
 GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test
+GOTEST=$(GOCMD) test -tags exclude_graphdriver_btrfs
 GOGET=$(GOCMD) get -tags exclude_graphdriver_btrfs
 BIN=sfprocessor
 OUTPUT=$(BIN)
@@ -25,7 +25,7 @@ build: version deps
 
 .PHONY: deps
 deps:
-	cd $(SRC) && $(GOGET) ./...
+	cd $(SRC) && $(GOGET)  ./...
 
 .PHONY: version
 version:
@@ -35,7 +35,7 @@ version:
 
 .PHONY: test
 test:
-	cd $(SRC) && $(GOTEST) -v ./...
+	cd $(SRC) && $(GOTEST) ./...
 
 .PHONY: clean
 clean:
