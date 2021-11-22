@@ -220,8 +220,8 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 	t.writer.RawByte(END_CURLY)
 
 	// Encode hash values
-	hp := rec.Ctx.GetHash(engine.HASH_PROC)
-	hf := rec.Ctx.GetHash(engine.HASH_FILE)
+	hp := rec.Ctx.GetHash(engine.HASH_TYPE_PROC)
+	hf := rec.Ctx.GetHash(engine.HASH_TYPE_FILE)
 	if hp != nil || hf != nil {
 		t.writeSectionBegin(EXTENSIONS)
 		if hp != nil {

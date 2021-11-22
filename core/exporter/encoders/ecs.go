@@ -339,7 +339,7 @@ func encodeProcess(rec *engine.Record) JSONData {
 		ECS_PROC_NAME:    path.Base(exe),
 		ECS_PROC_THREAD:  JSONData{ECS_PROC_TID: engine.Mapper.MapInt(engine.SF_PROC_TID)(rec)},
 	}
-	if hash := rec.Ctx.GetHash(engine.HASH_PROC); hash != nil {
+	if hash := rec.Ctx.GetHash(engine.HASH_TYPE_PROC); hash != nil {
 		process[ECS_HASH] = hash
 	}
 	pexe := engine.Mapper.MapStr(engine.SF_PPROC_EXE)(rec)
@@ -416,7 +416,7 @@ func encodeFile(rec *engine.Record) JSONData {
 		}
 	}
 
-	if hash := rec.Ctx.GetHash(engine.HASH_FILE); hash != nil {
+	if hash := rec.Ctx.GetHash(engine.HASH_TYPE_FILE); hash != nil {
 		file[ECS_HASH] = hash
 	}
 
