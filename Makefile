@@ -21,7 +21,7 @@ SRC=./driver
 
 .PHONY: build
 build: version deps
-	cd $(SRC) && $(GOBUILD) -o $(OUTPUT) -v
+	cd $(SRC) && $(GOBUILD) -o $(OUTPUT)
 
 .PHONY: deps
 deps:
@@ -52,7 +52,7 @@ install: build
 
 .PHONY: docker-build
 docker-build:
-	docker build -t sf-processor --build-arg UBI_VER=$(UBI_VERSION) --target=runtime -f Dockerfile .
+	docker build -t sf-processor --build-arg UBI_VER=$(UBI_VERSION) --build-arg DOCKER_GID=$(DOCKER_GID) --target=runtime -f Dockerfile .
 
 .PHONY: pull
 pull:
