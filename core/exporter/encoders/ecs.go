@@ -368,7 +368,6 @@ func encodeEvent(rec *engine.Record, category string, eventType string, action s
 	// TODO: use JSONEncoder if we want the original
 	//orig, _ := json.Marshal(rec)
 	event := JSONData{
-		ECS_EVENT_KIND:     ECS_KIND_EVENT,
 		ECS_EVENT_CATEGORY: category,
 		ECS_EVENT_TYPE:     eventType,
 		ECS_EVENT_ACTION:   action,
@@ -378,9 +377,17 @@ func encodeEvent(rec *engine.Record, category string, eventType string, action s
 		ECS_EVENT_END:      utils.ToIsoTimeStr(end),
 		ECS_EVENT_DURATION: end - start,
 	}
+
+	if rec.Ctx.IsAlert() {
+		event[ECS_EVENT_KIND] = ECS_KIND_ALERT
+	} else {
+		event[ECS_EVENT_KIND] = ECS_KIND_EVENT
+	}
+
 	if sfType == sfgo.TyPEStr || sfType == sfgo.TyFEStr {
 		event[ECS_EVENT_SFRET] = sfRet
 	}
+
 	return event
 }
 

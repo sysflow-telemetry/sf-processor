@@ -100,8 +100,11 @@ const (
 	ECS_TAGS = "tags"
 )
 
-// ECS_KIND_EVENT defines the ECS kind value.
-const ECS_KIND_EVENT = "event"
+// ECS kind values.
+const (
+	ECS_KIND_ALERT = "alert"
+	ECS_KIND_EVENT = "event"
+)
 
 // ECS category values.
 const (
