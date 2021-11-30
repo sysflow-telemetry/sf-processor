@@ -46,6 +46,7 @@ type PolicyEngine struct {
 	outCh         []chan *engine.Record
 	config        engine.Config
 	policyMonitor monitor.PolicyMonitor
+	slots         chan bool
 }
 
 // NewPolicyEngine constructs a new Policy Engine plugin.
@@ -84,11 +85,7 @@ func (s *PolicyEngine) compilePolicies(dir string) error {
 
 // Init initializes the plugin.
 func (s *PolicyEngine) Init(conf map[string]interface{}) error {
-	config, err := engine.CreateConfig(conf)
-	if err != nil {
-		return err
-	}
-	s.config = config
+	s.config, _ = engine.CreateConfig(conf)  // no err check, assuming defaults
 
 	if s.config.Mode == engine.EnrichMode {
 		logger.Trace.Println("Setting policy engine in 'enrich' mode")
@@ -103,7 +100,7 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) error {
 	}
 
 	if s.config.Monitor == engine.NoneType {
-		err = s.compilePolicies(s.config.PoliciesPath)
+		err := s.compilePolicies(s.config.PoliciesPath)
 		if err != nil {
 			logger.Error.Printf("Unable to compile local policies from directory %s, %v", s.config.PoliciesPath, err)
 			return err
@@ -111,7 +108,7 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) error {
 	} else {
 		pm, err := monitor.NewPolicyMonitor(s.config)
 		if err != nil {
-			logger.Error.Printf("Unable to load policy monitor %s, %v", config.Monitor.String(), err)
+			logger.Error.Printf("Unable to load policy monitor %s, %v", s.config.Monitor.String(), err)
 			return err
 		}
 		s.policyMonitor = pm
@@ -124,10 +121,15 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) error {
 			return errors.New("no policy engine available for plugin.  Please check error logs for details")
 		}
 	}
+
+	// Create free slots
+	s.slots = make(chan bool, s.config.Concurrency)
+
 	return nil
 }
 
 // Process implements the main loop of the plugin.
+// Records are processed concurrently. The number of concurrent threads is controlled by s.config.Concurrency.
 func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 	in := ch.(*flattener.FlatChannel).In
 	defer wg.Done()
@@ -147,7 +149,10 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 		if fc, ok := <-in; ok {
 			if s.pi == nil {
 				out(engine.NewRecord(*fc))
-			} else if s.policyMonitor != nil {
+				continue
+			}
+
+			if s.policyMonitor != nil {
 				now := time.Now()
 				if now.After(expiration) {
 					select {
@@ -157,14 +162,22 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 					}
 					expiration = now.Add(20 * time.Second)
 				}
-				s.pi.ProcessAsync(s.config.Mode, engine.NewRecord(*fc), out)
-			} else {
-				s.pi.ProcessAsync(s.config.Mode, engine.NewRecord(*fc), out)
 			}
+
+			// Use a free slot or block
+			s.slots <- true
+
+			// Process record in concurrent thread
+			go s.pi.ProcessAsync(s.config.Mode, engine.NewRecord(*fc), out, s.slots)
 		} else {
 			logger.Trace.Println("Input channel closed. Shutting down.")
 			break
 		}
+	}
+
+	// Wait for used slots to finish
+	for i := 0; i < cap(s.slots); i++ {
+		s.slots <- true
 	}
 }
 
@@ -185,5 +198,8 @@ func (s *PolicyEngine) Cleanup() {
 	}
 	if s.policyMonitor != nil {
 		s.policyMonitor.StopMonitor()
+	}
+	if s.slots != nil {
+		close(s.slots)
 	}
 }

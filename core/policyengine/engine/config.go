@@ -23,33 +23,60 @@ package engine
 
 import (
 	"errors"
+	"strconv"
 )
 
 // Configuration keys.
 const (
 	PoliciesConfigKey    string = "policies"
-	ModeConfigKey        string = "mode"
-	VersionKey           string = "version"
+	ModeConfigKey	string = "mode"
+	VersionKey	   string = "version"
 	JSONSchemaVersionKey string = "jsonschemaversion"
 	BuildNumberKey       string = "buildnumber"
-	MonitorKey           string = "monitor"
-	ActionDirKey	     string = "actiondir"
+	MonitorKey	   string = "monitor"
+	ConcurrencyKey       string = "concurrency"
+	ActionDirKey	     string = "action_dir"
+	ContainerConfigKey   string = "container_config"
+	MaxFileSizeKey       string = "max_file_size"
+	HashCacheExpKey      string = "hash_cache_expiration"
+	HashCachePurgeKey    string = "hash_cache_purge"
 )
 
 // Config defines a configuration object for the engine.
 type Config struct {
 	PoliciesPath      string
-	Mode              Mode
-	Version           string
+	Mode	      Mode
+	Version	   string
 	JSONSchemaVersion string
 	BuildNumber       string
-	Monitor           MonitorType
-	ActionDir         string
+	Monitor	   MonitorType
+	Concurrency       int
+	ActionDir	 string
+	ContainerConfig   string
+	MaxFileSize       int64
+	HashCacheExp      int
+	HashCachePurge    int
 }
+
+// Defaults
+const (
+	// Concurrency of policy engine
+	CONCURRENCY   = 5
+
+	// Max hashing file size default is 256 MiB
+	MAX_FILE_SIZE = 1 << 28
+
+	// Hash cache entry expiration
+	EXPIRATION    = 5
+
+	// Hash cache purge of expired entries
+	PURGE	 = 7
+)
 
 // CreateConfig creates a new config object from config dictionary.
 func CreateConfig(conf map[string]interface{}) (Config, error) {
 	var c Config = Config{Mode: AlertMode} // default values
+	var err error
 
 	if v, ok := conf[PoliciesConfigKey].(string); ok {
 		c.PoliciesPath = v
@@ -67,8 +94,27 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 		c.BuildNumber = v
 	}
 	if v, ok := conf[ActionDirKey].(string); ok {
-                c.ActionDir = v
-        }
+		c.ActionDir = v
+	}
+	if v, ok := conf[ContainerConfigKey].(string); ok {
+		c.ContainerConfig = v
+	}
+	c.Concurrency = CONCURRENCY
+	if v, ok := conf[ConcurrencyKey].(string); ok {
+		c.Concurrency, err = strconv.Atoi(v)
+	}
+	c.MaxFileSize = MAX_FILE_SIZE
+	if v, ok := conf[MaxFileSizeKey].(string); ok {
+		c.MaxFileSize, err = strconv.ParseInt(v, 10, 64)
+	}
+	c.HashCacheExp = EXPIRATION
+	if v, ok := conf[HashCacheExpKey].(string); ok {
+		c.HashCacheExp, err = strconv.Atoi(v)
+	}
+	c.HashCachePurge = PURGE
+	if v, ok := conf[HashCachePurgeKey].(string); ok {
+		c.HashCachePurge, err = strconv.Atoi(v)
+	}
 	c.Monitor = NoneType
 	if v, ok := conf[MonitorKey].(string); ok {
 		if v == "local" {
@@ -76,10 +122,11 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 		} else if v == "none" {
 			c.Monitor = NoneType
 		} else {
-			return c, errors.New("Configuration tag 'monitor' must be set to 'none', 'local'")
+			err = errors.New("Configuration tag 'monitor' must be set to 'none', 'local'")
 		}
 	}
-	return c, nil
+
+	return c, err
 }
 
 // Mode type.

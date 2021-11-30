@@ -26,7 +26,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
@@ -45,13 +44,12 @@ type PolicyInterpreter struct {
 	rules []Rule
 	filters []Filter
 
-	// Map of registered actions
-	builtInActions ActionMap
-	userDefinedActions ActionMap
-
 	// Accessory parsing maps.
 	lists map[string][]string
 	macroCtxs map[string]parser.IExpressionContext
+
+	// Action Handler
+	ah *ActionHandler
 }
 
 // NewPolicyInterpreter constructs a new interpreter instance.
@@ -62,11 +60,8 @@ func NewPolicyInterpreter(conf Config) *PolicyInterpreter {
 	pi.lists = make(map[string][]string)
 	pi.macroCtxs = make(map[string]parser.IExpressionContext)
 
-	// Register built-in actions
-	pi.registerBuiltIns()
+	pi.ah = NewActionHandler(conf)
 
-	// Load user-defined actions
-	pi.loadUserActions(conf.ActionDir)
 	return pi
 }
 
@@ -134,8 +129,12 @@ func (pi *PolicyInterpreter) Compile(paths ...string) error {
 }
 
 // ProcessAsync executes all compiled policies against record r.
-// Actions are excuted in go routines. The result is pushed async. when all actions terminate.
-func (pi *PolicyInterpreter) ProcessAsync(mode Mode, r *Record, out func(r *Record)) {
+func (pi *PolicyInterpreter) ProcessAsync(mode Mode, r *Record, out func(r *Record), slots <-chan bool) {
+	// Release the execution slot when the record has been processed
+	defer func() {
+		<-slots
+	}()
+
 	// Drop record if amy drop rule applied.
 	if pi.EvalFilters(r)  {
 		return
@@ -144,29 +143,18 @@ func (pi *PolicyInterpreter) ProcessAsync(mode Mode, r *Record, out func(r *Reco
 	// Enrich mode is non-blocking: Push record even if no rule matches 
 	match := (mode == EnrichMode)
 
-	var wg sync.WaitGroup
-	actionsRunning := false
 	for _, rule := range pi.rules {
 		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
-			actionsRunning = pi.HandleActionAsync(rule, r, &wg)
+			r.Ctx.SetAlert(mode == AlertMode)
+			r.Ctx.AddRule(rule)
+			pi.ah.HandleActions(rule, r)
 			match = true
 		}
 	}
 
 	// Push record if a rule matched (or if we are in enrich mode)
 	if match {
-		if actionsRunning {
-			logger.Trace.Println("Actions running")
-
-			// The watch function pushes the record when all actions have terminated.
-			go func(r *Record) {
-				wg.Wait()
-				logger.Trace.Println("Actions complete - pushing record")
-				out(r)
-			}(r)
-		} else {
-			out(r)
-		}
+		out(r)
 	}
 }
 
@@ -182,7 +170,9 @@ func (pi *PolicyInterpreter) Process(mode Mode, r *Record) *Record {
 
 	for _, rule := range pi.rules {
 		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
-			pi.HandleAction(rule, r)
+			r.Ctx.SetAlert(mode == AlertMode)
+			r.Ctx.AddRule(rule)
+			pi.ah.HandleActions(rule, r)
 			match = true
 		}
 	}
@@ -192,64 +182,6 @@ func (pi *PolicyInterpreter) Process(mode Mode, r *Record) *Record {
 		return r
 	}
 	return nil
-}
-
-// HandleActionAsync handles actions defined in rule.
-func (pi *PolicyInterpreter) HandleActionAsync(rule Rule, r *Record, wg *sync.WaitGroup) bool {
-	// Indicates if actions have been started
-	started := false
-
-	r.Ctx.AddRule(rule)
-        for _, a := range rule.Actions {
-		action, ok := pi.builtInActions[a]
-                if !ok {
-			action, ok = pi.userDefinedActions[a]
-		}
-                if !ok {
-                        logger.Error.Println("Unknown action: '" + a + "'")
-			continue
-                }
-
-		wg.Add(1)
-		started = true
-
-		go func(f ActionFunc) {
-			defer wg.Done()
-			if err := f(r); err != nil {
-				logger.Error.Println("Error in action: " + err.Error())
-			}
-		}(action)
-        }
-
-	return started
-}
-
-// HandleAction handles actions defined in rule.
-func (pi *PolicyInterpreter) HandleAction(rule Rule, r *Record) {
-	var wg sync.WaitGroup
-
-	r.Ctx.AddRule(rule)
-        for _, a := range rule.Actions {
-		action, ok := pi.builtInActions[a]
-                if !ok {
-			action, ok = pi.userDefinedActions[a]
-		}
-                if !ok {
-                        logger.Error.Println("Unknown action: '" + a + "'")
-			continue
-                }
-
-		wg.Add(1)
-
-		go func(f ActionFunc) {
-			defer wg.Done()
-			if err := f(r); err != nil {
-				logger.Error.Println("Error in action: " + err.Error())
-			}
-		}(action)
-        }
-
-	wg.Wait()
 }
 
 // EvalFilters executes compiled policy filters against record r.

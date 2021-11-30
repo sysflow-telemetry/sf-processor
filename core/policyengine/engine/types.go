@@ -90,7 +90,7 @@ type Record struct {
 func NewRecord(fr sfgo.FlatRecord) *Record {
 	var r = new(Record)
 	r.Fr = fr
-	r.Ctx = make(Context, 3)
+	r.Ctx = make(Context, 4)
 	return r
 }
 
@@ -228,10 +228,22 @@ type contextKey int
 
 // ContextKey enum
 const (
-	ruleCtxKey contextKey = iota
+	alertCtxKey contextKey = iota
+	ruleCtxKey
 	tagCtxKey
 	hashCtxKey
 )
+
+func (s Context) IsAlert() bool {
+	if s[alertCtxKey] != nil {
+		return s[alertCtxKey].(bool)
+	}
+	return false
+}
+
+func (s Context) SetAlert(isAlert bool) {
+	s[alertCtxKey] = isAlert
+}
 
 // AddRule adds a rule instance to the set of rules matching a record.
 func (s Context) AddRule(r Rule) {
@@ -279,18 +291,15 @@ func (s Context) GetHash(ht HashType) *HashSet {
 }
 
 // Adds a hash set to context object.
-func (s Context) SetHashes(ht HashType, m5s string, s1s string, s256s string) {
+func (s Context) SetHashes(ht HashType, hs *HashSet) {
 	if s[hashCtxKey] == nil {
 		s[hashCtxKey] = make([]*HashSet, 2)
 	}
 	hpa := s[hashCtxKey].([]*HashSet)
 
 	if hpa[ht] == nil {
-		hpa[ht] = &HashSet{}
+		hpa[ht] = hs
 	}
-	hpa[ht].Md5 = m5s
-	hpa[ht].Sha1 = s1s
-	hpa[ht].Sha256 = s256s
 }
 
 type HashType uint
