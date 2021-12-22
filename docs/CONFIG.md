@@ -53,16 +53,20 @@ A plugin has exacly one input channel but it may specify more than one output ch
 
 ### Policy engine configuration
 
-The policy engine (`"processor": "policyengine"`) plugin is driven by a set of rules. These rules are specified in a YAML which adopts the same syntax as the rules of the [Falco](https://falco.org/docs/rules] project. A policy engine plugin specification requires the following attributes:
+The policy engine (`"processor": "policyengine"`) plugin is driven by a set of rules. These rules are specified in a YAML which adopts the same syntax as the rules of the [Falco](https://falco.org/docs/rules) project. A policy engine plugin specification may have the following attributes:
 
-- _policies_ (required): The path to the YAML rules specification file. More information on rules can be found in the [Rules](Rules.md) section.
-- _mode_ (optional): The mode of the polcy engine. Allowed values are `alert` for generating rule-based alerts, `filter` for rule-based filtering of SysFlow events, and `bypasss` for unchnanged pass-on of raw syflow events. Default value ist `alert`. If _mode_ is `bypass` the _policyengine_ attribute can be omitted.
+- _policies_ (required): The path to the YAML rules specification file. More information on rules can be found in the [Policies](POLICIES.md) section.
+- _mode_ (optional): The mode of the policy engine. Allowed values are:
+  - `enrich` for enriching records with additional context from the rule. This is a non-blocking mode which applies policy, tag and action enrichments to matching records as defined in the policy file. Non-matching records are passed on "as is". If no mode was specified, the policy engine runs in `enrich` mode by default.
+  - `alert` for generating rule-based alerts. In contrast to `enrich`, `alert` is a blocking mode that drops all records that do not match any given rule.
+- _concurrency_ (optional); The number of concurrent threads for record processing. Default is 5. 
+- *action_dir* (optional): The path of the directory containing the shared object files for user-defined action plugins. See the section on [User-defined Actions](POLICIES.md#user-defined-actions) for more information.
 
 ### Exporter configuration
 
-An exporter (`"processor": "exporter"`) plugin consists of two modules, an encoder for converting the data to a suitable format, and a transport module for sending the data to the target. Encoders target specific, i.e. for a particular export target a particular set of encoders may be used. In the exporter configuration the transport module is specified via the _export_ paramater (required). The encoder is selected via the _format_ parameter (optional). The default format is `json`.
+An exporter (`"processor": "exporter"`) plugin consists of two modules, an encoder for converting the data to a suitable format, and a transport module for sending the data to the target. Encoders target specific, i.e. for a particular export target a particular set of encoders may be used. In the exporter configuration the transport module is specified via the _export_ parameter (required). The encoder is selected via the _format_ parameter (optional). The default format is `json`.
 
-The following table lists the cuurently supported exporter modules and the corresponding encoders. Additional encoders and transport modules can be implemented if need arises. If you plan to [contribute](../CONTIRBUTING.md) or want to get involved in the discussion please join the SysFlow community.
+The following table lists the currently supported exporter modules and the corresponding encoders. Additional encoders and transport modules can be implemented if need arises. If you plan to [contribute](../CONTIRBUTING.md) or want to get involved in the discussion please join the SysFlow community.
 
 | Transport module (_export_) | Target                     | Encoders (_format_) |
 |-----------------------------|----------------------------|---------------------|
