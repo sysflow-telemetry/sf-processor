@@ -2,16 +2,16 @@
 
 - list: shell_binaries
   items: [bash, csh, ksh, sh, tcsh, zsh, dash]
-  
+
 - list: shell_mgmt_binaries
   items: [add-shell, remove-shell]
-  
+
 - list: script_interpreters
   items: [ruby, python, python2.7, python2, python3, python3.5, java, perl, node, js24]
 
 - list: shell_interpreters
   items: [awk, gawk]
-  
+
 - list: coreutils_binaries
   items: [
     truncate, sha1sum, numfmt, fmt, fold, uniq, cut, who,
@@ -25,7 +25,7 @@
     chgrp, chmod, mktemp, cat, mknod, sync, ln, "false", rm, mv, cp, echo,
     readlink, sleep, stty, mkdir, df, dir, rmdir
     ]
-    
+
 - list: coreutils_mod_binaries
   items: [
     truncate, who, groups, csplit, expand, printenv, unlink, chcon, 
@@ -34,13 +34,13 @@
     link, chroot, chown, touch, dd, chgrp, chmod, mktemp, mknod, 
     ln, rm, mv, cp, rmdir
     ]
-    
+
 - list: login_binaries
   items: [
     login, systemd, '"(systemd)"', systemd-logind, su,
     nologin, faillog, lastlog, newgrp, sg
     ]
-  
+
 - list: repositories
   items: [git, svn]
 
@@ -48,16 +48,16 @@
   items: [
     chpasswd, chgpasswd, passwd
     ]
- 
+
 - list: verify_passwd_binaries
   items: [ unix_chkpwd ] 
- 
+
 - list: create_user_binaries
   items: [ useradd, newusers ] 
- 
+
 - list: delete_user_binaries
   items: [ userdel ] 
- 
+
 - list: modify_user_binaries
   items: [ usermod ] 
 
@@ -66,7 +66,7 @@
 
 - list: delete_group_binaries
   items: [ groupdel ] 
-  
+
 - list: modify_grp_binaries
   items: [ groupmod ] 
 
@@ -121,17 +121,17 @@
 
 - list: ssl_mgmt_binaries
   items: [ca-certificates]
- 
+
 - list: dhcp_binaries
   items: [dhclient, dhclient-script, 11-dhclient]
- 
+
 - list: mail_binaries
   items: [
     sendmail, sendmail-msp, postfix, procmail, exim4,
     pickup, showq, mailq, dovecot, imap-login, imap,
     mailmng-core, pop3-login, dovecot-lda, pop3
     ]
- 
+
 - list: vpn_binaries
   items: [openvpn]
 
@@ -140,13 +140,13 @@
 
 - list: sensitive_file_names
   items: [/etc/sudoers, /etc/pam.conf]
-  
+
 - list: cron_binaries
   items: [anacron, cron, crond, crontab]
- 
+
 - list: system_users
   items: [bin, daemon, games, lp, mail, nobody, sshd, sync, uucp, www-data]
-  
+
 - list: system_directories
   items: [/boot, /lib, /lib64, /usr/lib, /usr/local/lib, /usr/local/sbin, /usr/local/bin, /root/.ssh, /etc]
 
@@ -157,7 +157,7 @@
   items: [".bash_history", ".ash_history"]
   
 - list: network_config_files
-  items: [/etc/resolv.conf]
+  items: ['/etc/resolv.conf', '/etc/hosts']
 
 - list: read_sensitive_file_binaries
   items: [
@@ -209,10 +209,10 @@
     
 - list: mesos_shell_binaries
   items: [mesos-docker-ex, mesos-slave, mesos-health-ch]
- 
+
 - list: misc_tools
   items: [calico-node]
- 
+
 - list: edr_tools
   items: [/crowdstrike/cmd.sh, besclient, BESClient]
 
@@ -228,13 +228,13 @@
     filemng, PassengerAgent, bwrap, osdetect, nginxmng, sw-engine-fpm,
     start-stop-daem
     ]
- 
+
  - list: userexec_binaries
   items: [sudo, su, suexec, critical-stack, dzdo]
- 
+
  - list: docker_binaries
   items: [docker, dockerd, exe, docker-compose, docker-entrypoi, docker-runc-cur, docker-current, dockerd-current]
- 
+
  - list: nomachine_binaries
   items: [nxexec, nxnode.bin, nxserver.bin, nxclient.bin]
 
@@ -257,6 +257,60 @@
 - list: auth_processes
   items: [/opt/ibm/java/bin/keytool, /bin/chown, /bin/chmod, /bin/bash]
 
+- list: netcat_cmds
+  items: [nc, ncat]
+
+- list: netcat_shell_args
+  items: ['-e /bin/sh', '-e /bin/bash']
+
+- list: discovery_cmds
+  items: [cat, strings, nl, head, tail]
+
+- list: host_files
+  items: [/etc/hosts, .ssh/config]
+
+- list: user_discovery_cmds
+  items: [w, who, whoami, id, last]
+
+- list: system_discovery_cmds
+  items: [uname, lsb_release, lscpu, lshw, lsmod, lspci, lsscsi, lsblk, hwinfo, hostname, inxi, uptime, dmidecode]
+
+- list: fs_discovery_cmds
+  items: [mount, df, tree, find]
+
+- list: net_discovery_cmds
+  items: [netstat, ss, lsof] 
+
+- list: keylogger_cmds
+  items: [logkeys, lkl]
+
+- list: netconfig_discovery_cmds
+  items: [firewall-cmd, ufw, iptables, netstat, ss, ip, ifconfig, systemd-resolve, route]
+
+- list: at_cmds
+  items: [at, atd]
+
+- list: remote_copy_cmds
+  items: [scp, rsync, sftp]
+
+- list: remote_copy_inds
+  items: ['@', ':']
+
+- list: cert_cmds
+  items: [update-ca-certificates, update-ca-trust]
+
+- list: security_procs
+  items: [nessusd, td-agent, packetbeat, filebeat, auditbeat, osqueryd, cbagentd, falcond]
+
+- list: service_cmds
+  items: [service, chkconfig, systemctl]
+
+- list: security_services
+  items: [iptables, ip6tables, firewalld, cbdaemon, falcon-sensor]
+
+- list: stop_cmds
+  items: [stop, disable, off]
+
 ###### Macros ###################
 
 - macro: sed_write
@@ -264,7 +318,7 @@
 
 - macro: overwrite
   condition: sf.opflags = RENAME
- 
+
 - macro: open_write
   condition: (sf.opflags in (WRITE_SEND) or
              (sf.opflags = OPEN and sf.file.openflags in (O_CREAT)) or
@@ -356,14 +410,14 @@
 
 - macro: root_dir
   condition: (sf.file.directory=/ or sf.file.path startswith /root)
- 
+
 - macro: sensitive_files
   condition: (sf.file.path startswith /etc and
               sf.file.path in (sys_password_files))
 
 - macro: ssh_port
   condition: sf.net.sport=22
- 
+
 - macro: running_shell_command
   condition: sf.proc.cmdline startswith "sh -c"
 
@@ -470,7 +524,7 @@
      (sf.file.typechar = 4 or sf.file.typechar = 6) and
      (sf.net.ip != "0.0.0.0" and sf.net.mask != "127.0.0.0/8") and
      (sf.ret >= 0))
- 
+
 - macro: possibly_webserver
   condition: (sf.proc.name pmatch (http_server_binaries) 
               or possibly_parent_java_running_tomcat)
@@ -493,9 +547,22 @@
 
 - macro: parent_sudo
   condition: sf.pproc.exe = /usr/bin/sudo
-  
+
+- macro: ps_discovery_args
+  condition: (sf.proc.args contains 'e' and sf-process.args contains 'f') or 
+             (sf.proc.args contains 'a' and sf-process.args contains 'u' and sf-process.args contains 'x') 
+
+- macro: home_dir_arg
+  condition: sf.proc.args endswith '/home' or sf.proc.args endswith '/home/'
+
+- macro: clear_cmds
+  condition: ( sf.proc.name = rm or
+               sf.proc.name = shred or
+               (sf.proc.name = truncate and sf.prog.args contains '-s0') or
+               (sf.proc.name = ln and sf.proc.args contains '-sf /dev/null'))
+
 ###### Rules ####################
- 
+
 - rule: Interactive shell
   desc: Interactive shell detected
   condition: interactive and not entrypoint      
@@ -580,7 +647,7 @@
   priority: high
   tags: [mitre:T1098, mitre:T1136]
   prefilter: [PE]
- 
+
 - rule: Downloader detected
   desc: Downloader is being run inside the container. Could be downloading something malicious
   condition: sf.opflags = EXEC and 
@@ -735,12 +802,6 @@
   priority: medium
   tags: [mitre:T1543, mitre:T1041]
 
-- list: netcat_cmds
-  items: [nc, ncat]
-
-- list: netcat_shell_args
-  items: ['-e /bin/sh', '-e /bin/bash']
-
 - rule: Reverse Unix shell started
   desc: creation of a reverse shell process via nc 
   condition: sf.opflags = EXEC and
@@ -759,21 +820,14 @@
   tags: [mitre:T1222.002]
   prefilter: [PE]
 
-- macro: ps_discovery_args
-  condition: (sf.proc.args contains 'e' and sf-process.args contains 'f') or 
-             (sf.proc.args contains 'a' and sf-process.args contains 'u' and sf-process.args contains 'x') 
-
 - rule: Process Discovery
   desc: gather information about running processes on a system
   condition: sf.opflags = EXEC and
-             sf.proc.name = ps and ps_discovery_args
+             ((sf.proc.name = ps and ps_discovery_args) or sf.proc.name = top)
   action: [tag]
   priority: high
   tags: [mitre:T1057]
   prefilter: [PE]
-
-- list: discovery_cmds
-  items: [cat, strings, nl, head, tail]
 
 - rule: Account Discovery: Local Account
   desc: attempt to get a listing of local system accounts
@@ -783,9 +837,6 @@
   priority: high
   tags: [mitre:T1087.001]
   prefilter: [PE]
-
-- list: host_files
-  items: [/etc/hosts, .ssh/config]
 
 - rule: Remote System Discovery
   desc: >
@@ -797,9 +848,6 @@
   priority: high
   tags: [mitre:T1018]
   prefilter: [PE]
-
-- list: user_discovery_cmds
-  items: [w, who, id]
 
 - rule: System Owner/User Discovery
   desc: >
@@ -819,11 +867,8 @@
               (sf.proc.name in (discovery_cmds) and sf.proc.args = '/etc/groups'))
   action: [tag]
   priority: high
-  tags: [mitre:T1033]
+  tags: [mitre:T1069.001]
   prefilter: [PE]
-
-- list: system_discovery_cmds
-  items: [uname, lsb_release]
 
 - rule: System Information Discovery
   desc: >
@@ -836,24 +881,16 @@
   tags: [mitre:T1082]
   prefilter: [PE]
 
-- list: fs_discovery_cmds
-  items: [mount, df]
-
-- macro: home_dir_arg
-  condition: sf.proc.args endswith '/home' or sf.proc.args endswith '/home/'
-
+# partially from https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_file_and_directory_discovery.yml
 - rule: File and Directory Discovery
   desc: enumerate files, directories and volume information
   condition: sf.opflags = EXEC and
-             ((sf.proc.name = ls and home_dir_arg) or
-              sf.proc.name in (fs_discovery_cmds))
+             ((sf.proc.name = ls and (home_dir_arg or sf.proc.args contains '-R')) or
+               sf.proc.name in (fs_discovery_cmds))
   action: [tag]
   priority: high
   tags: [mitre:T1083]
   prefilter: [PE]
-
-- list: net_discovery_cmds
-  items: [netstat, ss]
 
 - rule: System Network Connections Discovery
   desc: attempt to get a listing of network connections
@@ -881,4 +918,120 @@
   priority: high
   tags: [mitre:T1030]
   prefilter: [NF]
+
+- rule: Active Scanning: Scanning IP Blocks
+  desc: Use of nmap to scan for ports on a remote machine
+  condition: sf.proc.name = nmap
+  priority: medium
+  tags: [mitre:T1595.001]
+  prefilter: [PE]
+
+- rule: Input Capture: Keylogging
+  desc: Use of keylogger to log user keystrokes
+  condition: sf.proc.name in (keylogger_cmds)
+  priority: high
+  tags: [mitre:T1056.001]
+  prefilter: [PE]
+
+- rule: Account Manipulation: SSH Authorized Keys
+  desc: Attempt to modify the SSH authorized_keys file
+  condition: user_ssh_directory and (sf.file.path endswith 'authorized_keys') and open_write
+  priority: high
+  tags: [mitre:T1098.004]
+  prefilter: [FF]
+
+- rule: System Network Configuration Modification
+  desc: Attempt to modify the system network configuration file
+  condition: sf.file.path in (network_config_files) and open_write
+  priority: high
+  tags: [mitre:T1565.001]
+  prefilter: [FF]
+
+# from https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_system_network_discovery.yml
+- rule: System Network Configuration Discovery
+  desc: Attempt to get details about the network configuration
+  condition: sf.opflags = EXEC and
+             ((sf.proc.name in (discovery_cmds) and sf.proc.args pmatch (network_config_files)) or
+               sf.proc.name in (netconfig_discovery_cmds))
+  priority: high
+  tags: [mitre:T1016]
+  prefilter: [PE]
+
+- rule: Unsecured Credentials: Bash History
+  desc: Searching the command history for unprotected credentials
+  condition: sf.opflags = EXEC and
+             sf.proc.name in (discovery_cmds) and sf.proc.args pmatch (history_files)
+  priority: high
+  tags: [mitre:T1552.003]
+  prefilter: [PE]
+
+# partially from Sigma https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_shell_clear_cmd_history.yml
+- rule: Indicator Removal on Host: Clear Linux or Mac System Logs
+  desc: Attempts to clear system logs to hide evidence of an intrusion
+  condition: sf.opflags = EXEC and (
+             ( sf.proc.args pmatch (history_files) and clear_cmds) or
+             ( srf.proc.name = history and sf.proc.args = '-c'))
+  priority: medium
+  tags: [mitre:T1070.003]
+  prefilter: [PE]
+
+# from Sigma https://github.com/SigmaHQ/sigma/blob/master/rules/linux/at_command.yml
+- rule: Scheduled Task/Job At
+  desc: Detects the use of at/atd
+  condition: sf.opflags = EXEC and sf.poc.name in (at_cmds)
+  priority: low
+  tags: [mitre:T1053.001]
+  prefilter: [PE]
+
+# from Sigma https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_base64_decode.yml
+- rule: Decode Base64 Encoded Text
+  desc: Detects usage of base64 utility to decode arbitrary base64-encoded text
+  condition: sf.opflags = EXEC and sf.proc.name = base64 and sf.proc.args contains '-d'
+  priority: low
+  tags: [mitre:T1027]
+  prefilter: [PE]
+
+# from Sigma https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_file_copy.yml
+- rule: Remote File Copy
+  desc: Detects the use of tools that copy files from or to remote systems
+  condition: sf.opflags = EXEC and sf.proc.name in (remote_copy_cmds) and sf.prog.args pmatch (remote_copy_inds)
+  priority: low
+  tags: [mitre:T1105]
+  prefilter: [PE]
+
+# from Sigma https://github.com/SigmaHAQ/sigma/blob/master/rules/linux/lnx_install_root_certificate.yml
+- rule: Install Root Certificate
+  desc: Detects installation of new root certificates
+  condition: sf.opflags = EXEC and sf.proc.name in (cert_cmds)
+  priority: low
+  tags: [mitre:T1553.004]
+  prefilter: [PE]
+
+# from Sigma https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_schedule_task_job_cron.yml
+- rule: Scheduled Task/Job: Cron
+  desc: Detects abuse of the cron utility to perform task scheduling for initial or recurring execution
+  condition: sf.opflags = EXEC and sf.proc.name = cron
+  priority: low
+  tags: [mitre:T1053.003]
+  prefilter: [PE]
+
+# from Sigma https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_security_software_discovery.yml
+- rule: Security Software Discovery
+  desc: Detects usage of system utilities (only grep for now) to discover security software discovery
+  condition: sf.opflags = EXEC and sf.proc.name = grep and sf.proc.args pmatch (security_procs)
+  priority: low
+  tags: [mitre:T1518.001]
+  prefilter: [PE]
+
+# from Sigma https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_security_tools_disabling.yml
+- rule: Impair Defenses: Disable or Modify System Firewall
+  desc: Detects disabling security tools
+  condition: sf.opflags = EXEC and
+             ( sf.proc.name in (service_cmds) and
+               sf.proc.args pmatch (security_services) and
+               sf.proc.args pmatch (stop_cmds)) or
+             ( sf.proc.name = setenforce and sf.proc.args = '0')
+  priority: medium
+  tags: [mitre:T1562.004]
+  prefilter: [PE]
 
