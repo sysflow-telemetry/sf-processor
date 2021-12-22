@@ -12,7 +12,6 @@
   			  in_macro and
   			  sf.proc.args startswith cos-write.py and
   			 (in_macro and (sf.proc.exe=/usr/bin/python or sf.proc.args startswith cos-write.py))
-  action: [alert]
   priority: low
   tags: [test]
   
@@ -24,6 +23,5 @@
   			 ((((((in_macro)))))) and
   			 (sf.proc.args startswith cos-write.py and
   			 (in_macro and (sf.proc.exe=/usr/bin/python or sf.proc.args startswith cos-write.py)))
-  action: [alert]
   priority: low
   tags: [test]
