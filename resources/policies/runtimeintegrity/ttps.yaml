@@ -566,7 +566,6 @@
 - rule: Interactive shell
   desc: Interactive shell detected
   condition: interactive and not entrypoint      
-  action: [tag]
   priority: low
   tags: [mitre:T1059]
   
@@ -576,14 +575,12 @@
              and inbound_outbound
              and not login_doing_dns_lookup
              and not entrypoint 
-  action: [tag]
   priority: medium
   tags: [mitre:T1041, mitre:T1059]
   
 - rule: Privilege escalation
   desc: Privilege escalation detected
   condition: sf.pproc.uid != 0 and sf.proc.uid = 0 and not entrypoint
-  action: [tag]
   priority: high
   tags: [mitre:T1068]
   
@@ -595,7 +592,6 @@
              and not auth_execution 
              and sf.proc.name in (coreutils_binaries, user_mgmt_binaries) 
              and not entrypoint
-  action: [tag]
   priority: medium
   tags: [mitre:T1087]
 
@@ -605,7 +601,6 @@
              open_write and 
              possibly_webserver and not sf.file.path pmatch (log_paths)
              and not entrypoint
-  action: [tag]
   priority: medium
   tags: [mitre:T1190]
   prefilter: [FF]
@@ -617,7 +612,6 @@
              and not allowed_launchers 
              and sf.proc.name in (shell_binaries, compilers, pkg_mgmt_binaries, shell_interpreters, coreutils_mod_binaries)
              and not entrypoint
-  action: [tag]
   priority: low
   tags: [mitre:T1106, mitre:T1574]
   prefilter: [PE]
@@ -626,7 +620,6 @@
   desc: Crontab file edited
   condition: (sf.file.path in (scheduler_files) and open_write) or
              (sf.file.newpath in (scheduler_files) and overwrite)
-  action: [tag]
   priority: medium
   tags: [mitre:T1053]
 
@@ -634,7 +627,6 @@
   desc: Use of package installer detected in container
   condition: sf.opflags = EXEC and              
              sf.proc.name pmatch (package_mgmt_binaries, java_package_installer) and container          
-  action: [tag]
   priority: medium
   tags: [mitre:T1072]
   prefilter: [PE]
@@ -643,7 +635,6 @@
   desc: User/Group was modified, added or deleted
   condition: sf.opflags = EXEC and 
              sf.proc.name in (modify_passwd_binaries, create_user_binaries, delete_user_binaries, modify_user_binaries, create_grp_binaries, delete_group_binaries, modify_grp_binaries)
-  action: [tag]
   priority: high
   tags: [mitre:T1098, mitre:T1136]
   prefilter: [PE]
@@ -652,7 +643,6 @@
   desc: Downloader is being run inside the container. Could be downloading something malicious
   condition: sf.opflags = EXEC and 
              sf.proc.name pmatch (downloader_binaries)
-  action: [tag]
   priority: high
   tags: [mitre:T1105]
   prefilter: [PE]
@@ -660,14 +650,12 @@
 - rule: Password file modified
   desc: Password file was modified
   condition: sf.file.path pmatch (sys_password_files) and open_write           
-  action: [tag]
   priority: high
   tags: [mitre:T1098]
 
 - rule: Library preload file modified
   desc: Library preload file modified could indicate a library injection attack
   condition: sf.file.path pmatch (ld_preload_files) and open_write           
-  action: [tag]
   priority: medium
   tags: [mitre:T1547, mitre:T1554]
 
@@ -675,7 +663,6 @@
   desc: Remote copy is occurring; could be data exfiltration
   condition: sf.opflags = EXEC and 
              sf.proc.name in (remote_copy_binaries)
-  action: [tag]
   priority: high
   tags: [mitre:T1020]
   prefilter: [PE]
@@ -684,7 +671,6 @@
   desc: Password utilities were run in the host system
   condition: sf.opflags = EXEC and 
              sf.proc.name pmatch (modify_passwd_binaries, verify_passwd_binaries, user_util_binaries)
-  action: [tag]
   priority: high
   tags: [mitre:T1098]
   prefilter: [PE]
@@ -692,42 +678,36 @@
 - rule: History file modified
   desc: History file modified indicating interactive session
   condition: sf.file.path pmatch (history_files) and open_write
-  action: [tag]
   priority: high
   tags: [mitre:T1564]
 
 - rule: Profile file modified
   desc: Profile file modified indicating interactive session
   condition: sf.file.path pmatch (profile_files) and open_write
-  action: [tag]
   priority: high
   tags: [mitre:T1098]
 
 - rule: Write below binary dir
   desc: an attempt to write to any file below a set of binary directories
   condition: open_write and bin_dir
-  action: [tag]
   priority: medium
   tags: [mitre:T1574]
 
 - rule: Write below system dirs
   desc: an attempt to write to any file below a set of system directories
   condition: open_write and system_dir and not privileged_execution
-  action: [tag]
   priority: medium
   tags: [mitre:T1574]
 
 - rule: Write to init directories 
   desc: an attempt to write to an init directory could indicate a persisted piece of malware
   condition: open_write and init_dir
-  action: [tag]
   priority: medium
   tags: [mitre:T1574]
 
 - rule: Write to scheduler directories 
   desc: an attempt to write to a scheduler directory could indicate a persisted piece of malware
   condition: open_write and scheduler_dir
-  action: [tag]
   priority: medium
   tags: [mitre:T1053]
 
@@ -738,7 +718,6 @@
     and not sf.file.path in (known_root_files)
     and not sf.file.directory in (known_root_directories)
     and not known_root_conditions
-  action: [tag]
   priority: high
   tags: [mitre:T1574]
 
@@ -747,7 +726,6 @@
   condition: (sf.file.path startswith /var/lib/rpm or 
              sf.file.path startswith /var/lib/dpkg) and 
              open_write
-  action: [tag]
   priority: medium
   tags: [mitre:T1574]
 
@@ -760,7 +738,6 @@
     and not sf.proc.aname in (docker_binaries, k8s_binaries, lxd_binaries)
     and not sf.proc.aname startswith "runc:"
     and not sf.file.path startswith /var/run/netns/cni
-  action: [tag]
   priority: medium
   tags: [mitre:T1574, mitre:T1055]
 
@@ -774,7 +751,6 @@
     and sf.proc.username != root 
     and not sf.proc.name in (known_setuid_binaries, userexec_binaries, mail_binaries, docker_binaries, nomachine_binaries)
     and not nrpe_becoming_nagios
-  action: [tag]
   priority: medium
   tags: [mitre:T1068]
 
@@ -786,7 +762,6 @@
     and not sf.proc.name in (dev_creation_binaries)
     and not sf.file.path in (allowed_dev_files)
     and not sf.file.path startswith /dev/tty
-  action: [tag]
   priority: medium
   tags: [mitre:T1574]
 
@@ -798,7 +773,6 @@
     and not login_doing_dns_lookup
     and not entrypoint
     and not wl
-  action: [tag]
   priority: medium
   tags: [mitre:T1543, mitre:T1041]
 
@@ -806,7 +780,6 @@
   desc: creation of a reverse shell process via nc 
   condition: sf.opflags = EXEC and
              sf.proc.name in (netcat_cmds) and sf.proc.args pmatch (netcat_shell_args)
-  action: [tag]
   priority: high
   tags: [mitre:T1059.004]
   prefilter: [PE]
@@ -815,7 +788,6 @@
   desc: modification of permissions or owner of a file or a directory in a linux system
   condition: sf.opflags = EXEC and
              sf.proc.name in (chmod, chown)
-  action: [tag]
   priority: high
   tags: [mitre:T1222.002]
   prefilter: [PE]
@@ -824,7 +796,6 @@
   desc: gather information about running processes on a system
   condition: sf.opflags = EXEC and
              ((sf.proc.name = ps and ps_discovery_args) or sf.proc.name = top)
-  action: [tag]
   priority: high
   tags: [mitre:T1057]
   prefilter: [PE]
@@ -833,7 +804,6 @@
   desc: attempt to get a listing of local system accounts
   condition: sf.opflags = EXEC and
              sf.proc.name in (discovery_cmds) and sf.proc.args in (sys_password_files)
-  action: [tag]
   priority: high
   tags: [mitre:T1087.001]
   prefilter: [PE]
@@ -844,7 +814,6 @@
     identifier on a network that may be used for Lateral Movement
   condition: sf.opflags = EXEC and
              sf.proc.name in (discovery_cmds) and sf.proc.args pmatch (host_files)
-  action: [tag]
   priority: high
   tags: [mitre:T1018]
   prefilter: [PE]
@@ -855,7 +824,6 @@
     that commonly uses a system, or whether a user is actively using the system
   condition: sf.opflags = EXEC and
              sf.proc.name in (user_discovery_cmds)
-  action: [tag]
   priority: high
   tags: [mitre:T1033]
   prefilter: [PE]
@@ -865,7 +833,6 @@
   condition: sf.opflags = EXEC and
              (sf.proc.name = groups or
               (sf.proc.name in (discovery_cmds) and sf.proc.args = '/etc/groups'))
-  action: [tag]
   priority: high
   tags: [mitre:T1069.001]
   prefilter: [PE]
@@ -876,7 +843,6 @@
     including version, patches, hotfixes, service packs, and architecture
   condition: sf.opflags = EXEC and
              sf.proc.name in (system_discovery_cmds)
-  action: [tag]
   priority: high
   tags: [mitre:T1082]
   prefilter: [PE]
@@ -887,7 +853,6 @@
   condition: sf.opflags = EXEC and
              ((sf.proc.name = ls and (home_dir_arg or sf.proc.args contains '-R')) or
                sf.proc.name in (fs_discovery_cmds))
-  action: [tag]
   priority: high
   tags: [mitre:T1083]
   prefilter: [PE]
@@ -896,7 +861,6 @@
   desc: attempt to get a listing of network connections
   condition: sf.opflags = EXEC and
              sf.proc.name in (net_discovery_cmds)
-  action: [tag]
   priority: high
   tags: [mitre:T1049]
   prefilter: [PE]
@@ -905,7 +869,6 @@
   desc: Container entry point "node" starts shell sub-process
   condition: sf.opflags = EXEC and
              container and sf.pproc.name = node and sf.proc.name in (shell_binaries)
-  action: [tag]
   priority: high
   tags: [mitre:T1059.004]
   prefilter: [PE]
@@ -914,7 +877,6 @@
   desc: Large amount of data transferred via network connection with database endpoint
   condition: ( sf.opflags contains RECV and sf.net.dport = 3306 and sf.flow.rbytes > 1024 ) or
              ( sf.opflags contains SEND and sf.net.sport = 3306 and sf.flow.wbytes > 1024 )
-  action: [tag]
   priority: high
   tags: [mitre:T1030]
   prefilter: [NF]
@@ -1027,10 +989,10 @@
 - rule: Impair Defenses: Disable or Modify System Firewall
   desc: Detects disabling security tools
   condition: sf.opflags = EXEC and
-             ( sf.proc.name in (service_cmds) and
+             (( sf.proc.name in (service_cmds) and
                sf.proc.args pmatch (security_services) and
                sf.proc.args pmatch (stop_cmds)) or
-             ( sf.proc.name = setenforce and sf.proc.args = '0')
+             ( sf.proc.name = setenforce and sf.proc.args = '0'))
   priority: medium
   tags: [mitre:T1562.004]
   prefilter: [PE]
