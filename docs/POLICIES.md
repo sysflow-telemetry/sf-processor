@@ -6,10 +6,8 @@ The policy engine adopts and extends the Falco rules definition syntax. Before r
 
 - _rule_: the name of the rule
 - _description_: a textual description of the rule
-- _condition_: a set of logical operations that can reference lists and macros, which when evaluating to _true_, can trigger an alert (when processor is in alert mode), or filter a sysflow record (when processor is in filter mode)
-- _action_: a list of actions to take place when the rule evaluates to _true_. Actions can be any of the following (note: new actions will be added in the future):
-  - alert: processor outputs an alert
-  - tag: enriches or tags the sysflow record with the labels in the `tags` field. This can be useful for semantically labeling of records with TTPs for example.
+- _condition_: a set of logical operations that can reference lists and macros, which when evaluating to _true_, can trigger record enrichment or alert creation (depending on the policy engine mode)
+- _action_: a comma-separated list of actions to take place when the rule evaluates to _true_. For a particular rule, actions are evaluated in the order they are specified, i.e., an action can make use of the results provided by earlier actions. An action is just the name of an action function without any parameters. The current version only supports plugable user-defined actions. See [here](#user-defined-actions) for a detailed description of the plugin interface and a sample action plugin.
 - _priority_: label representing the severity of the alert can be: (1) low, medium, or high, or (2) emergency, alert, critical, error, warning, notice, informational, debug.
 - _tags_ (optional): set of labels appended to alert (default: empty).
 - _prefilter_ (optional): list of record types (`sf.type`) to whitelist before applying rule condition (default: empty).
@@ -25,12 +23,12 @@ The policy engine adopts and extends the Falco rules definition syntax. Before r
 - _list_: the name of the list
 - _items_: a collection of values or lists
 
-*Filters* blacklist records matching a condition:
+*Drop* rules block records matching a condition and can be used for reducing the amount of records processed by the policy engine:
 
-- _filter_: the name of the filter
+- _drop_: the name of the filter
 - _condition_: a set of logical operations that can reference lists and macros, which evaluate to _true_ or _false_
 
-For example, the rule below specifies that matching records are process events (`sf.type = PE`), denoting `EXEC` operations (`sf.opflags = EXEC`) for which the process matches macro `package_installers`. Additionally, the gloabl filter `containers` preempitively removes from the processing stream any records for processes not running in a container environment.
+For example, the rule below specifies that matching records are process events (`sf.type = PE`), denoting `EXEC` operations (`sf.opflags = EXEC`) for which the process matches macro `package_installers`. Additionally, the global filter `containers` preemptively removes from the processing stream any records for processes not running in a container environment.
 
 ```yaml
 # lists
@@ -59,12 +57,13 @@ For example, the rule below specifies that matching records are process events (
 - rule: Package installer detected
   desc: Use of package installer detected
   condition:  sf.opflags = EXEC and package_installers
-  action: [alert]
   priority: medium
   tags: [actionable-offense, suspicious-process]
   prefilter: [PE] # record types for which this rule should be applied (whitelisting)
   enabled: true
 ```
+
+### Attribute names
 
 The following table shows a detailed list of attribute names supported by the policy engine, as well as their
 type, and comparative Falco attribute name. Our policy engine supports both SysFlow and Falco attribute naming convention to enable reuse of policies across the two frameworks.
@@ -135,6 +134,8 @@ type, and comparative Falco attribute name. Our policy engine supports both SysF
 | sf.schema.version | SysFlow schema version | string | N/A |
 | sf.version        | SysFlow JSON schema version  | int | N/A |
 
+### Operations
+
 The policy language supports the following operations:
 
 | Operation | Description | Example |
@@ -157,3 +158,55 @@ The policy language supports the following operations:
 | exists A | Checks if A is not a zero value (i.e. 0 for int, "" for string)|  exists sf.file.path |
 
 See the resources policies directory in [github](https://github.com/sysflow-telemetry/sf-processor/tree/master/resources/policies) for examples. Feel free to contribute new and interesting rules through a github pull request.
+
+### User-defined Actions
+
+User-defined actions are implemented via the golang plugin mechanism. They have to implement the following interface defined in the `core/policyengine/engine` package.
+
+```go
+// Prototype of an action function
+type ActionFunc func(r *Record) error
+
+// Action interface for user-defined actions
+type Action interface {
+        GetName() string
+        GetFunc() ActionFunc
+}
+```
+
+Actions have a name and an action function. Within a single policy engine instance, action names must be unique. User-defined actions cannot re-declare built-in actions. Reusing names of user-defined actions overwrites previously registered actions.
+
+The action function receives the current record as an argument and thus has access to all record attributes. The action result can be stored in the record context via the context modifier methods. Below is a sample implementation of a user-defined action that creates a tag containing the current time in nanosecond precision.
+
+```go
+package main
+
+import (
+        "strconv"
+        "time"
+
+        "github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
+)
+
+type MyAction struct{}
+
+func (a *MyAction) GetName() string {
+        return "now"
+}
+
+func (a *MyAction) GetFunc() engine.ActionFunc {
+        return addMyTag
+}
+
+func addMyTag(r *engine.Record) error {
+        r.Ctx.AddTag("now_in_nanos:" + strconv.FormatInt(time.Now().UnixNano(), 10))
+        return nil
+}
+
+var Action MyAction
+```
+
+For matching records above action can be executed by specifying `action: [now]` as part of the rule.
+
+Using the Golang compiler switch `-buildmode=plugin`, the action code is compiled into a shared object file (`.so`). There is no limit to the number of user-defined actions. The policy engine loads all `.so` files found in the action directory specified via the `action_dir` parameter of the pipeline configuration.
+
