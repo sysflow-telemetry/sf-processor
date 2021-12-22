@@ -4,6 +4,7 @@
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,8 +44,6 @@ const (
 type PolicyEngine struct {
 	pi            *engine.PolicyInterpreter
 	outCh         []chan *engine.Record
-	filterOnly    bool
-	bypass        bool
 	config        engine.Config
 	policyMonitor monitor.PolicyMonitor
 }
@@ -85,30 +84,22 @@ func (s *PolicyEngine) compilePolicies(dir string) error {
 
 // Init initializes the plugin.
 func (s *PolicyEngine) Init(conf map[string]interface{}) error {
-	config, err := engine.CreateConfig(conf)
-	if err != nil {
-		return err
-	}
-	s.config = config
+	s.config, _ = engine.CreateConfig(conf)  // no err check, assuming defaults
 
-	if s.config.Mode == engine.BypassMode {
-		logger.Trace.Println("Setting policy engine in bypass mode")
-		s.bypass = true
-		return nil
-	}
-
-	if s.config.PoliciesPath == sfgo.Zeros.String {
-		return errors.New("Configuration tag 'policies' missing from policy engine plugin settings")
-	}
-	if s.config.Mode == engine.FilterMode {
-		logger.Trace.Println("Setting policy engine in filter mode")
-		s.filterOnly = true
+	if s.config.Mode == engine.EnrichMode {
+		logger.Trace.Println("Setting policy engine in 'enrich' mode")
+		if s.config.PoliciesPath == sfgo.Zeros.String {
+		        return nil
+		}
 	} else {
-		logger.Trace.Println("Setting policy engine in alert mode")
+		if s.config.PoliciesPath == sfgo.Zeros.String {
+			return errors.New("Configuration tag 'policies' missing from policy engine plugin settings")
+		}
+		logger.Trace.Println("Setting policy engine in 'alert' mode")
 	}
 
 	if s.config.Monitor == engine.NoneType {
-		err = s.compilePolicies(s.config.PoliciesPath)
+		err := s.compilePolicies(s.config.PoliciesPath)
 		if err != nil {
 			logger.Error.Printf("Unable to compile local policies from directory %s, %v", s.config.PoliciesPath, err)
 			return err
@@ -116,7 +107,7 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) error {
 	} else {
 		pm, err := monitor.NewPolicyMonitor(s.config)
 		if err != nil {
-			logger.Error.Printf("Unable to load policy monitor %s, %v", config.Monitor.String(), err)
+			logger.Error.Printf("Unable to load policy monitor %s, %v", s.config.Monitor.String(), err)
 			return err
 		}
 		s.policyMonitor = pm
@@ -129,10 +120,12 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) error {
 			return errors.New("no policy engine available for plugin.  Please check error logs for details")
 		}
 	}
+
 	return nil
 }
 
 // Process implements the main loop of the plugin.
+// Records are processed concurrently. The number of concurrent threads is controlled by s.config.Concurrency.
 func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 	in := ch.(*flattener.FlatChannel).In
 	defer wg.Done()
@@ -142,6 +135,10 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 			c <- r
 		}
 	}
+	if s.pi != nil {
+		s.pi.SetCallback(out)
+	}
+
 	start := time.Now()
 	expiration := start.Add(20 * time.Second)
 	if s.policyMonitor != nil {
@@ -150,9 +147,12 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 
 	for {
 		if fc, ok := <-in; ok {
-			if s.bypass {
+			if s.pi == nil {
 				out(engine.NewRecord(*fc))
-			} else if s.policyMonitor != nil {
+				continue
+			}
+
+			if s.policyMonitor != nil {
 				now := time.Now()
 				if now.After(expiration) {
 					select {
@@ -162,10 +162,10 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 					}
 					expiration = now.Add(20 * time.Second)
 				}
-				s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc), out)
-			} else {
-				s.pi.ProcessAsync(true, s.filterOnly, engine.NewRecord(*fc), out)
 			}
+
+			// Process record in interpreter worker pool 
+			s.pi.ProcessAsync(engine.NewRecord(*fc))
 		} else {
 			logger.Trace.Println("Input channel closed. Shutting down.")
 			break
@@ -183,6 +183,9 @@ func (s *PolicyEngine) SetOutChan(ch []interface{}) {
 // Cleanup clean up the plugin resources.
 func (s *PolicyEngine) Cleanup() {
 	logger.Trace.Println("Exiting ", pluginName)
+	if s.pi != nil {
+		s.pi.Close()
+	}
 	if s.outCh != nil {
 		for _, c := range s.outCh {
 			close(c)
