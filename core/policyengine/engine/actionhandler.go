@@ -87,7 +87,7 @@ func NewActionHandler(conf Config) *ActionHandler{
 	ah := new(ActionHandler)
 
 	// Register built-in actions
-	// ah.registerBuiltIns()
+	ah.registerBuiltIns()
 
 	// Load user-defined actions
 	ah.loadUserActions(conf.ActionDir)
