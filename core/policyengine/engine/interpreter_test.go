@@ -17,7 +17,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package engine_test
+package engine
 
 import (
 	"os"
@@ -26,13 +26,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
-	. "github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
-var pi PolicyInterpreter
+var pi *PolicyInterpreter
 
 func SetupInterpreter(m *testing.M) {
-	pi = PolicyInterpreter{}
+	pi = NewPolicyInterpreter(Config{})
 	os.Exit(m.Run())
 }
 

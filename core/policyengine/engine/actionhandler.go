@@ -1,9 +1,8 @@
 //
-// Copyright (C) 2020 IBM Corporation.
+// Copyright (C) 2021 IBM Corporation.
 //
 // Authors:
-// Frederico Araujo <frederico.araujo@ibm.com>
-// Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,32 +19,102 @@
 // Package engine implements a rules engine for telemetry records.
 package engine
 
-// ActionHandler type
-type ActionHandler struct {
-	conf Config
+import (
+	"plugin"
+
+	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
+)
+
+
+// Prototype of an action function
+type ActionFunc func(r *Record) error
+
+type ActionMap map[string]ActionFunc
+
+// Action interface for user-defined actions
+type Action interface {
+	GetName() string
+	GetFunc() ActionFunc
 }
 
-// NewActionHandler creates a new handler.
-func NewActionHandler(conf Config) ActionHandler {
-	return ActionHandler{conf}
+const ActionSym = "Action"
+
+// Registers an action function
+func registerAction(reg ActionMap, name string, f ActionFunc) {
+	if  _, ok := reg[name]; ok {
+		logger.Warn.Println("Re-declaration of action '" + name + "'")
+	}
+	reg[name] = f
 }
 
-// HandleActionAsync handles actions defined in rule.
-func (s ActionHandler) HandleActionAsync(rule Rule, r *Record, out func(r *Record)) {
-	s.HandleAction(rule, r)
-	//out(r)
-}
+// LoadActions loads user-defined actions from path
+func (ah *ActionHandler) loadUserActions(dir string) {
+	ah.UserDefinedActions = make(ActionMap)
+	if paths, err := ioutils.ListFilePaths(dir, ".so"); err == nil {
+		var plug *plugin.Plugin
+		for _, path := range paths {
+			logger.Info.Println("Loading user-defined actions from file " + path)
+			if plug, err = plugin.Open(path); err != nil {
+				logger.Error.Println(err.Error())
+				continue
+			}
+			sym, err := plug.Lookup(ActionSym)
+			if err != nil {
+				logger.Error.Println(err.Error())
+				continue
+			}
+			action, ok := sym.(Action)
+			if !ok {
+				logger.Error.Println("Action symbol loaded from " + path + " must implement Action interface")
+				continue
+			}
 
-// HandleAction handles actions defined in rule.
-func (s ActionHandler) HandleAction(rule Rule, r *Record) {
-	for _, a := range rule.Actions {
-		switch a {
-		case Tag:
-			fallthrough
-		case Alert:
-			fallthrough
-		default:
-			r.Ctx.AddRule(rule)
+			name := action.GetName()
+			logger.Info.Println("Registering user-defined action '" + name + "'")
+			registerAction(ah.UserDefinedActions, name, action.GetFunc())
 		}
 	}
 }
+
+type ActionHandler struct {
+	// Map of registered actions
+	BuiltInActions ActionMap
+	UserDefinedActions ActionMap
+}
+
+func NewActionHandler(conf Config) *ActionHandler{
+	ah := new(ActionHandler)
+
+	// Register built-in actions
+	// ah.registerBuiltIns()
+
+	// Load user-defined actions
+	ah.loadUserActions(conf.ActionDir)
+
+	return ah
+}
+
+// HandleAction handles actions defined in rule.
+func (ah *ActionHandler) HandleActions(rule Rule, r *Record) {
+	for _, a := range rule.Actions {
+		action, ok := ah.BuiltInActions[a]
+		if !ok {
+			action, ok = ah.UserDefinedActions[a]
+		}
+		if !ok {
+			logger.Error.Println("Unknown action: '" + a + "'")
+			continue
+		}
+
+		if err := action(r); err != nil {
+			logger.Error.Println("Error in action: " + err.Error())
+		}
+	}
+}
+
+// Registers built-in actions
+func (ah *ActionHandler) registerBuiltIns() {
+	ah.BuiltInActions = make(ActionMap)
+}
+

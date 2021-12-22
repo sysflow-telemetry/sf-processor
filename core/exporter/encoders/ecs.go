@@ -118,10 +118,10 @@ func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 	}
 
 	// encode tags and policy information
+	tags := rec.Ctx.GetTags()
 	rules := rec.Ctx.GetRules()
 	if len(rules) > 0 {
 		reasons := make([]string, 0)
-		tags := make([]string, 0)
 		priority := int(engine.Low)
 		for _, r := range rules {
 			reasons = append(reasons, r.Name)
@@ -130,8 +130,11 @@ func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 		}
 		ecs.Event[ECS_EVENT_REASON] = strings.Join(reasons, ", ")
 		ecs.Event[ECS_EVENT_SEVERITY] = priority
+	}
+	if len(tags) > 0 {
 		ecs.Tags = tags
 	}
+
 	return ecs
 }
 
@@ -306,14 +309,20 @@ func encodeContainer(rec *engine.Record) JSONData {
 
 // encodeUser creates an ECS user field using user and group of the actual process.
 func encodeUser(rec *engine.Record) JSONData {
+	gname := engine.Mapper.MapStr(engine.SF_PROC_GROUP)(rec)
 	group := JSONData{
 		ECS_GROUP_ID:   engine.Mapper.MapInt(engine.SF_PROC_GID)(rec),
-		ECS_GROUP_NAME: engine.Mapper.MapStr(engine.SF_PROC_GROUP)(rec),
 	}
+	if gname != sfgo.Zeros.String {
+		group[ECS_GROUP_NAME] = gname
+	}
+	uname := engine.Mapper.MapStr(engine.SF_PROC_USER)(rec)
 	user := JSONData{
-		ECS_USER_ID:   engine.Mapper.MapInt(engine.SF_PROC_UID)(rec),
-		ECS_USER_NAME: engine.Mapper.MapStr(engine.SF_PROC_USER)(rec),
 		ECS_GROUP:     group,
+		ECS_USER_ID:   engine.Mapper.MapInt(engine.SF_PROC_UID)(rec),
+	}
+	if uname != sfgo.Zeros.String {
+		user[ECS_USER_NAME] = uname
 	}
 	return user
 }
@@ -356,7 +365,6 @@ func encodeEvent(rec *engine.Record, category string, eventType string, action s
 	// TODO: use JSONEncoder if we want the original
 	//orig, _ := json.Marshal(rec)
 	event := JSONData{
-		ECS_EVENT_KIND:     ECS_KIND_EVENT,
 		ECS_EVENT_CATEGORY: category,
 		ECS_EVENT_TYPE:     eventType,
 		ECS_EVENT_ACTION:   action,
@@ -366,9 +374,17 @@ func encodeEvent(rec *engine.Record, category string, eventType string, action s
 		ECS_EVENT_END:      utils.ToIsoTimeStr(end),
 		ECS_EVENT_DURATION: end - start,
 	}
+
+	if rec.Ctx.IsAlert() {
+		event[ECS_EVENT_KIND] = ECS_KIND_ALERT
+	} else {
+		event[ECS_EVENT_KIND] = ECS_KIND_EVENT
+	}
+
 	if sfType == sfgo.TyPEStr || sfType == sfgo.TyFEStr {
 		event[ECS_EVENT_SFRET] = sfRet
 	}
+
 	return event
 }
 
@@ -403,6 +419,7 @@ func encodeFile(rec *engine.Record) JSONData {
 			file[ECS_FILE_PATH] = fpath
 		}
 	}
+
 	return file
 }
 

@@ -25,6 +25,9 @@ type SfplListener interface {
 	// EnterSfilter is called when entering the sfilter production.
 	EnterSfilter(c *SfilterContext)
 
+	// EnterDrop_keyword is called when entering the drop_keyword production.
+	EnterDrop_keyword(c *Drop_keywordContext)
+
 	// EnterPmacro is called when entering the pmacro production.
 	EnterPmacro(c *PmacroContext)
 
@@ -102,6 +105,9 @@ type SfplListener interface {
 
 	// ExitSfilter is called when exiting the sfilter production.
 	ExitSfilter(c *SfilterContext)
+
+	// ExitDrop_keyword is called when exiting the drop_keyword production.
+	ExitDrop_keyword(c *Drop_keywordContext)
 
 	// ExitPmacro is called when exiting the pmacro production.
 	ExitPmacro(c *PmacroContext)
