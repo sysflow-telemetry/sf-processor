@@ -127,7 +127,7 @@ func (t *SFTables) GetPtree(ID sfgo.OID) []*sfgo.Process {
 func (t *SFTables) getProcProv(ID sfgo.OID) []*sfgo.Process {
 	var ptree = make([]*sfgo.Process, 0)
 	if p := t.GetProc(ID); p != nil {
-		if p.Poid != nil && p.Poid.UnionType == sfgo.UnionNullOIDTypeEnumOID {
+		if p.Poid != nil && p.Poid.UnionType == sfgo.PoidUnionTypeEnumOID {
 			return append(append(ptree, p), t.getProcProv(*p.Poid.OID)...)
 		}
 		return append(ptree, p)
