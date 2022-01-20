@@ -208,5 +208,5 @@ var Action MyAction
 
 For matching records above action can be executed by specifying `action: [now]` as part of the rule.
 
-Using the Golang compiler switch `-buildmode=plugin`, the action code is compiled into a shared object file (`.so`). There is no limit to the number of user-defined actions. The policy engine loads all `.so` files found in the action directory specified via the `action_dir` parameter of the pipeline configuration.
+Using the Golang compiler switch `-buildmode=plugin`, the action code is compiled into a shared object file (`.so`). There is no limit to the number of user-defined actions. The policy engine loads all `.so` files found in the action directory specified via the `actiondir` parameter of the pipeline configuration.
 

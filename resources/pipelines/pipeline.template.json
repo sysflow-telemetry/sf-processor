@@ -13,8 +13,10 @@
       "out": "evt eventchan",
       "policies": "file|dir path (default: /usr/local/sf-processor/conf/)",
       "mode": "alert|enrich (default: enrich)",
+      "monitor": "none|local (default: none)",
+      "monitor.interval": "policy monitoring interval (default is 30 seconds)",
       "concurrency": "number of engine threads (default is 5)" ,
-      "action_dir": "dir path to action .so files"
+      "actiondir": "dir path to action .so files"
      },
      {
       "processor": "exporter",
