@@ -12,7 +12,11 @@
       "in": "flat flattenerchan",
       "out": "evt eventchan",
       "policies": "file|dir path (default: /usr/local/sf-processor/conf/)",
-      "mode": "alert|filter (default: alert)"
+      "mode": "alert|enrich (default: enrich)",
+      "monitor": "none|local (default: none)",
+      "monitor.interval": "policy monitoring interval (default is 30 seconds)",
+      "concurrency": "number of engine threads (default is 5)" ,
+      "actiondir": "dir path to action .so files"
      },
      {
       "processor": "exporter",

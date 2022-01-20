@@ -1,6 +1,5 @@
 - rule: Sf map rule 
   desc: unit test Sf map rule
   condition: sf.proc.name=python
-  action: [alert]
   priority: low
   tags: [test]
