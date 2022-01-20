@@ -59,8 +59,12 @@ The policy engine (`"processor": "policyengine"`) plugin is driven by a set of r
 - _mode_ (optional): The mode of the policy engine. Allowed values are:
   - `enrich` for enriching records with additional context from the rule. This is a non-blocking mode which applies policy, tag and action enrichments to matching records as defined in the policy file. Non-matching records are passed on "as is". If no mode was specified, the policy engine runs in `enrich` mode by default.
   - `alert` for generating rule-based alerts. In contrast to `enrich`, `alert` is a blocking mode that drops all records that do not match any given rule.
-- _concurrency_ (optional); The number of concurrent threads for record processing. Default is 5. 
-- *action_dir* (optional): The path of the directory containing the shared object files for user-defined action plugins. See the section on [User-defined Actions](POLICIES.md#user-defined-actions) for more information.
+- _monitor_ (optional): Specifies if changes to the policy file(s) should be monitored and updated in the policy engine.
+  - `none` (default): no monitor is used.
+  - `local`: the processor will monitor for changes in the policies path and update its rule set if changes are detected.
+- _monitor.interval_ (optional): The interval in seconds for updating policies, if a monitor is used. (default: 30 seconds).
+- _concurrency_ (optional); The number of concurrent threads for record processing. (default: 5).
+- _actiondir_ (optional): The path of the directory containing the shared object files for user-defined action plugins. See the section on [User-defined Actions](POLICIES.md#user-defined-actions) for more information.
 
 ### Exporter configuration
 

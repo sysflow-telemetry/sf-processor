@@ -34,9 +34,9 @@ const (
 	JSONSchemaVersionKey string = "jsonschemaversion"
 	BuildNumberKey       string = "buildnumber"
 	MonitorKey           string = "monitor"
-	MonitorIntervalKey   string = "monitorinterval"
+	MonitorIntervalKey   string = "monitor.interval"
 	ConcurrencyKey       string = "concurrency"
-	ActionDirKey         string = "action_dir"
+	ActionDirKey         string = "actiondir"
 )
 
 // Config defines a configuration object for the engine.
