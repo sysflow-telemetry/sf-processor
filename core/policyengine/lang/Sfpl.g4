@@ -2,6 +2,7 @@ grammar Sfpl;
 
 RULE: 'rule';
 FILTER: 'filter';
+DROP: 'drop';
 MACRO: 'macro';
 LIST: 'list';
 NAME: 'name';
@@ -36,11 +37,15 @@ srule
 	;
 
 pfilter
-	: DECL FILTER DEF ID COND DEF expression (ENABLED DEF enabled)?
+	: DECL drop_keyword DEF ID COND DEF expression (ENABLED DEF enabled)?
 	;
 
 sfilter
-	: DECL FILTER DEF ID COND DEF expression (ENABLED DEF enabled)?
+	: DECL drop_keyword DEF ID COND DEF expression (ENABLED DEF enabled)?
+	;
+
+drop_keyword
+	: DROP | FILTER
 	;
 
 pmacro

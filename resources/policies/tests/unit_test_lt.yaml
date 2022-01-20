@@ -1,6 +1,5 @@
 - rule: Lt rule
   desc: unit test Lt rule
   condition: sf.container.name contains node and sf.type=FF and sf.proc.exe=/usr/bin/python and sf.ts<1548965940603299403
-  action: [alert]
   priority: low
   tags: [test]

@@ -44,18 +44,23 @@ type LocalPolicyMonitor struct {
 	started   bool
 	done      chan bool
 	policies  map[string][]byte
+	out       func(*engine.Record)
 }
 
 // NewLocalPolicyMonitor returns a new policy monitor object given an engine configuration.
-func NewLocalPolicyMonitor(config engine.Config) (PolicyMonitor, error) {
+func NewLocalPolicyMonitor(config engine.Config, out func(*engine.Record)) (PolicyMonitor, error) {
 	lpm := &LocalPolicyMonitor{config: config, interChan: make(chan *engine.PolicyInterpreter, 10), started: false,
-		done: make(chan bool), policies: make(map[string][]byte)}
+		done: make(chan bool), policies: make(map[string][]byte), out: out}
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		logger.Error.Printf("unable to create policy watcher object %v", err)
+		logger.Error.Printf("Unable to create policy watcher object %v", err)
 		return nil, err
 	}
 	lpm.watcher = watcher
+	err = lpm.CheckForPolicyUpdate()
+	if err != nil {
+		return nil, err
+	}
 	return lpm, err
 }
 
@@ -96,14 +101,14 @@ func hasModifiedYaml(event fsnotify.Event) bool {
 func checksum(path string) ([]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		logger.Error.Printf("unable to open file %s for checksum, %v", path, err)
+		logger.Error.Printf("Unable to open file %s for checksum, %v", path, err)
 		return nil, err
 	}
 	defer f.Close()
 
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
-		logger.Error.Printf("unable to calculate sha256 for file %s, %v", path, err)
+		logger.Error.Printf("Unable to calculate sha256 for file %s, %v", path, err)
 		return nil, err
 	}
 	return h.Sum(nil), nil
@@ -116,7 +121,7 @@ func (p *LocalPolicyMonitor) calculateChecksum() (bool, []string, error) {
 	}
 	if len(paths) == 0 {
 		p.policies = make(map[string][]byte)
-		return false, make([]string, 0), errors.New("No policy files with extension .yaml found in policy directory: " + p.config.PoliciesPath)
+		return false, make([]string, 0), errors.New("no policy files with extension .yaml found in policy directory: " + p.config.PoliciesPath)
 	}
 	newPolicies := make(map[string][]byte)
 	changes := false
@@ -153,19 +158,15 @@ func (p *LocalPolicyMonitor) StartMonitor() error {
 			yamlCount := 0
 			select {
 			case <-p.done:
-				logger.Trace.Printf("Policy monitor received done event.. exiting..")
+				logger.Trace.Printf("Policy monitor received done event... exiting...")
 				return
 			// watch for events
 			case event := <-p.watcher.Events:
-				logger.Trace.Printf("EVENT! %#v, Operation: %s\n", event, event.Op.String())
+				logger.Trace.Printf("Event: %#v, Operation: %s\n", event, event.Op.String())
 				if hasModifiedYaml(event) {
 					yamlCount++
 				}
-
-				//time.Sleep(10 * time.Second)
 				yamlCount += p.dequeueFileEvents()
-				//breakout := false
-
 				logger.Trace.Printf("Received %d more file events.\n", yamlCount)
 				if yamlCount > 0 {
 					changes, policyFiles, err := p.calculateChecksum()
@@ -178,7 +179,7 @@ func (p *LocalPolicyMonitor) StartMonitor() error {
 						}
 					}
 					if changes || err != nil {
-						logger.Info.Println("Attempting to compile new policy")
+						logger.Info.Println("Checking for policy update")
 						p.CheckForPolicyUpdate() //nolint:errcheck
 					}
 				}
@@ -205,24 +206,26 @@ func (p *LocalPolicyMonitor) StopMonitor() error {
 
 // CheckForPolicyUpdate creates a new policy engine based on updated policies.
 func (p *LocalPolicyMonitor) CheckForPolicyUpdate() error {
-	pi := engine.NewPolicyInterpreter(p.config)
 	paths, err := ioutils.ListFilePaths(p.config.PoliciesPath, ".yaml")
 	if err != nil {
 		return err
 	}
 	if len(paths) == 0 {
-		return errors.New("No policy files with extension .yaml found in policy directory: " + p.config.PoliciesPath)
+		return errors.New("no policy files with extension .yaml found in policy directory: " + p.config.PoliciesPath)
 	}
+	logger.Info.Println("Creating new policy interpreter")
+	pi := engine.NewPolicyInterpreter(p.config, p.out)
+	logger.Info.Println("Attempting to compile new policy")
 	err = pi.Compile(paths...)
 	if err != nil {
-		logger.Error.Printf("unable to compile policy files in directory %s. Not using new policy files. %v", p.config.PoliciesPath, err)
+		logger.Error.Printf("Unable to compile policy files in directory %s. Not using new policy files. %v", p.config.PoliciesPath, err)
 		return err
 	}
 	select {
 	case p.interChan <- pi:
-		logger.Info.Printf("pushed new policy interpreter on channel")
+		logger.Info.Printf("Pushed new policy interpreter on channel")
 	default:
-		logger.Error.Printf("unable to push new policy interpreter to policy thread.")
+		logger.Error.Printf("Unable to push new policy interpreter to policy thread.")
 	}
 
 	return nil

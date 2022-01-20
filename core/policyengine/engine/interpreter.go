@@ -4,6 +4,7 @@
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +26,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
@@ -39,26 +41,61 @@ var itemsre = regexp.MustCompile(`(^\[)(.*)(\]$?)`)
 type PolicyInterpreter struct {
 	*parser.BaseSfplListener
 
-	ahdl ActionHandler
+	// Mode of the policy interpreter
+	mode Mode
 
-	// Parsed rule and filter object maps.
-	rules []Rule
+	// Parsed rule and filter object maps
+	rules   []Rule
 	filters []Filter
 
-	// Accessory parsing maps.
-	lists map[string][]string
+	// Accessory parsing maps
+	lists     map[string][]string
 	macroCtxs map[string]parser.IExpressionContext
+
+	// Worker channel and waitgroup
+	workerCh chan *Record
+	wg       *sync.WaitGroup
+
+	// Callback for sending records downstream
+	out func(*Record)
+
+	// Worker pool size
+	concurrency int
+
+	// Action Handler
+	ah *ActionHandler
 }
 
 // NewPolicyInterpreter constructs a new interpreter instance.
-func NewPolicyInterpreter(conf Config) *PolicyInterpreter {
+func NewPolicyInterpreter(conf Config, out func(*Record)) *PolicyInterpreter {
 	pi := new(PolicyInterpreter)
-	pi.ahdl = NewActionHandler(conf)
+	pi.mode = conf.Mode
+	pi.concurrency = conf.Concurrency
 	pi.rules = make([]Rule, 0)
 	pi.filters = make([]Filter, 0)
 	pi.lists = make(map[string][]string)
 	pi.macroCtxs = make(map[string]parser.IExpressionContext)
+	pi.out = out
+	pi.ah = NewActionHandler(conf)
 	return pi
+}
+
+// StartWorkers creates the worker pool.
+func (pi *PolicyInterpreter) StartWorkers() {
+	logger.Trace.Printf("Starting policy engine's thread pool with %d workers", pi.concurrency)
+	pi.workerCh = make(chan *Record, pi.concurrency)
+	pi.wg = new(sync.WaitGroup)
+	pi.wg.Add(pi.concurrency)
+	for i := 0; i < pi.concurrency; i++ {
+		go pi.worker()
+	}
+}
+
+// StopWorkers stops the worker pool and waits for all tasks to finish.
+func (pi *PolicyInterpreter) StopWorkers() {
+	logger.Trace.Println("Stopping policy engine's thread pool")
+	close(pi.workerCh)
+	pi.wg.Wait()
 }
 
 // Compile parses and interprets an input policy defined in path.
@@ -124,39 +161,71 @@ func (pi *PolicyInterpreter) Compile(paths ...string) error {
 	return nil
 }
 
-// ProcessAsync executes all compiled policies against record r.
-func (pi *PolicyInterpreter) ProcessAsync(applyFilters bool, filterOnly bool, r *Record, out func(r *Record)) {
-	if applyFilters && pi.EvalFilters(r) {
-		return
-	}
-	match := filterOnly
-	for _, rule := range pi.rules {
-		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
-			pi.ahdl.HandleActionAsync(rule, r, out)
-			match = true
+// ProcessAsync queues the record for processing in the worker pool.
+func (pi *PolicyInterpreter) ProcessAsync(r *Record) {
+	pi.workerCh <- r
+}
+
+// Asynchronous worker thread: apply all compiled policies, enrich matching records, and send records downstream.
+func (pi *PolicyInterpreter) worker() {
+	for {
+		// Fetch record
+		r, ok := <-pi.workerCh
+		if !ok {
+			logger.Trace.Println("Worker channel closed. Shutting down.")
+			break
+		}
+
+		// Drop record if any drop rule applied.
+		if pi.EvalFilters(r) {
+			continue
+		}
+
+		// Enrich mode is non-blocking: Push record even if no rule matches
+		match := (pi.mode == EnrichMode)
+
+		// Apply rules
+		for _, rule := range pi.rules {
+			if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
+				r.Ctx.SetAlert(pi.mode == AlertMode)
+				r.Ctx.AddRule(rule)
+				pi.ah.HandleActions(rule, r)
+				match = true
+			}
+		}
+
+		// Push record if a rule matches (or if mode is enrich)
+		if match && pi.out != nil {
+			pi.out(r)
 		}
 	}
-	if match {
-		out(r)
-	}
+	pi.wg.Done()
 }
 
 // Process executes all compiled policies against record r.
-func (pi *PolicyInterpreter) Process(applyFilters bool, filterOnly bool, r *Record) (bool, *Record) {
-	match := false
-	if applyFilters && pi.EvalFilters(r) {
-		return match, nil
+func (pi *PolicyInterpreter) Process(r *Record) *Record {
+	// Drop record if amy drop rule applied.
+	if pi.EvalFilters(r) {
+		return nil
 	}
-	if filterOnly {
-		return true, r
-	}
+
+	// Enrich mode is non-blocking: Push record even if no rule matches
+	match := (pi.mode == EnrichMode)
+
 	for _, rule := range pi.rules {
 		if rule.Enabled && rule.isApplicable(r) && rule.condition.Eval(r) {
-			pi.ahdl.HandleAction(rule, r)
+			r.Ctx.SetAlert(pi.mode == AlertMode)
+			r.Ctx.AddRule(rule)
+			pi.ah.HandleActions(rule, r)
 			match = true
 		}
 	}
-	return match, r
+
+	// Push record if a rule matched (or if we are in enrich mode)
+	if match {
+		return r
+	}
+	return nil
 }
 
 // EvalFilters executes compiled policy filters against record r.
@@ -276,24 +345,13 @@ func (pi *PolicyInterpreter) getPriority(ctx *parser.PruleContext) Priority {
 	return Low
 }
 
-func (pi *PolicyInterpreter) getActions(ctx *parser.PruleContext) []Action {
-	var actions []Action
-	if ctx.OUTPUT(0) != nil {
-		actions = append(actions, Alert)
-	} else if ctx.ACTION(0) != nil {
+func (pi *PolicyInterpreter) getActions(ctx *parser.PruleContext) []string {
+	var actions []string
+	if ctx.ACTION(0) != nil || ctx.OUTPUT(0) != nil {
 		astr := ctx.Text(2).GetText()
 		l := pi.extractList(astr)
 		for _, v := range l {
-			switch strings.ToLower(v) {
-			case Alert.String():
-				actions = append(actions, Alert)
-			case Tag.String():
-				actions = append(actions, Tag)
-			case Hash.String():
-				actions = append(actions, Hash)
-			default:
-				logger.Warn.Println("Unrecognized action value ", v)
-			}
+			actions = append(actions, strings.ToLower(v))
 		}
 	}
 	return actions
