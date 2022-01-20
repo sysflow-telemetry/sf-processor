@@ -31,7 +31,7 @@ import (
 var pi *PolicyInterpreter
 
 func SetupInterpreter(m *testing.M) {
-	pi = NewPolicyInterpreter(Config{})
+	pi = NewPolicyInterpreter(Config{}, nil)
 	os.Exit(m.Run())
 }
 
