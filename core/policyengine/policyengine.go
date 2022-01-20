@@ -69,59 +69,45 @@ func (s *PolicyEngine) Register(pc plugins.SFPluginCache) {
 	pc.AddChannel(channelName, NewEventChan)
 }
 
-func (s *PolicyEngine) compilePolicies(dir string) error {
-	logger.Info.Println("Loading policies from: ", dir)
-	paths, err := ioutils.ListFilePaths(dir, ".yaml")
-	s.pi = engine.NewPolicyInterpreter(s.config)
-	if err == nil {
-		if len(paths) == 0 {
-			return errors.New("no policy files with extension .yaml found in path: " + dir)
-		}
-		return s.pi.Compile(paths...)
-	}
-	return err
-}
-
 // Init initializes the plugin.
-func (s *PolicyEngine) Init(conf map[string]interface{}) error {
-	s.config, _ = engine.CreateConfig(conf)  // no err check, assuming defaults
+func (s *PolicyEngine) Init(conf map[string]interface{}) (err error) {
+	s.config, _ = engine.CreateConfig(conf) // no err check, assuming defaults
 
 	if s.config.Mode == engine.EnrichMode {
 		logger.Trace.Println("Setting policy engine in 'enrich' mode")
 		if s.config.PoliciesPath == sfgo.Zeros.String {
-		        return nil
+			return
 		}
 	} else {
-		if s.config.PoliciesPath == sfgo.Zeros.String {
-			return errors.New("Configuration tag 'policies' missing from policy engine plugin settings")
-		}
 		logger.Trace.Println("Setting policy engine in 'alert' mode")
+		if s.config.PoliciesPath == sfgo.Zeros.String {
+			return errors.New("configuration attribute 'policies' missing from policy engine plugin settings")
+		}
 	}
 
 	if s.config.Monitor == engine.NoneType {
-		err := s.compilePolicies(s.config.PoliciesPath)
+		s.pi, err = s.createPolicyInterpreter()
 		if err != nil {
 			logger.Error.Printf("Unable to compile local policies from directory %s, %v", s.config.PoliciesPath, err)
-			return err
+			return
 		}
 	} else {
-		pm, err := monitor.NewPolicyMonitor(s.config)
+		s.policyMonitor, err = monitor.NewPolicyMonitor(s.config, s.out)
 		if err != nil {
 			logger.Error.Printf("Unable to load policy monitor %s, %v", s.config.Monitor.String(), err)
-			return err
+			return
 		}
-		s.policyMonitor = pm
-		s.policyMonitor.CheckForPolicyUpdate()
 		select {
 		case s.pi = <-s.policyMonitor.GetInterpreterChan():
 			logger.Info.Printf("Loaded policy engine from policy monitor %s.", s.config.Monitor.String())
+			s.pi.StartWorkers()
 		default:
-			logger.Error.Printf("No policy engine available for plugin.  Please check error logs for details.")
-			return errors.New("no policy engine available for plugin.  Please check error logs for details")
+			logger.Error.Printf("No policy engine available for plugin. Please check error logs for details.")
+			return errors.New("no policy engine available for plugin")
 		}
+		s.policyMonitor.StartMonitor()
 	}
-
-	return nil
+	return
 }
 
 // Process implements the main loop of the plugin.
@@ -130,46 +116,67 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 	in := ch.(*flattener.FlatChannel).In
 	defer wg.Done()
 	logger.Trace.Println("Starting policy engine with capacity: ", cap(in))
-	out := func(r *engine.Record) {
-		for _, c := range s.outCh {
-			c <- r
-		}
-	}
-	if s.pi != nil {
-		s.pi.SetCallback(out)
-	}
 
+	// set start and expiration time for checking for new policy interpreter
 	start := time.Now()
-	expiration := start.Add(20 * time.Second)
-	if s.policyMonitor != nil {
-		s.policyMonitor.StartMonitor()
-	}
+	expiration := start.Add(s.config.MonitorInterval)
 
 	for {
 		if fc, ok := <-in; ok {
 			if s.pi == nil {
-				out(engine.NewRecord(*fc))
+				s.out(engine.NewRecord(*fc))
 				continue
 			}
-
 			if s.policyMonitor != nil {
 				now := time.Now()
+				// check if another policy interpreter has been compiled (only happens when there are changes to the policy directory)
 				if now.After(expiration) {
 					select {
-					case s.pi = <-s.policyMonitor.GetInterpreterChan():
-						logger.Info.Println("Updated policy engine in main policy engine thread.")
+					case pi := <-s.policyMonitor.GetInterpreterChan():
+						logger.Info.Println("Updated policy interpreter in main policy engine thread.")
+						// stop workers from old policy interpreter before assigning new one
+						s.pi.StartWorkers()
+						pi.StartWorkers()
+						s.pi = pi
 					default:
 					}
-					expiration = now.Add(20 * time.Second)
+					expiration = now.Add(s.config.MonitorInterval)
 				}
 			}
-
-			// Process record in interpreter worker pool 
+			// Process record in interpreter's worker pool
 			s.pi.ProcessAsync(engine.NewRecord(*fc))
 		} else {
 			logger.Trace.Println("Input channel closed. Shutting down.")
 			break
 		}
+	}
+}
+
+// Creates a policy interpreter from configuration.
+func (s *PolicyEngine) createPolicyInterpreter() (*engine.PolicyInterpreter, error) {
+	dir := s.config.PoliciesPath
+	logger.Info.Println("Loading policies from: ", dir)
+	paths, err := ioutils.ListFilePaths(dir, ".yaml")
+	if err != nil {
+		return nil, err
+	}
+	if len(paths) == 0 {
+		return nil, errors.New("no policy files with extension .yaml found in path: " + dir)
+	}
+	logger.Info.Println("Creating policy interpreter")
+	pi := engine.NewPolicyInterpreter(s.config, s.out)
+	err = pi.Compile(paths...)
+	if err != nil {
+		return nil, err
+	}
+	pi.StartWorkers()
+	return pi, nil
+}
+
+// out sends a record to every output channel in the plugin.
+func (s *PolicyEngine) out(r *engine.Record) {
+	for _, c := range s.outCh {
+		c <- r
 	}
 }
 
@@ -184,7 +191,7 @@ func (s *PolicyEngine) SetOutChan(ch []interface{}) {
 func (s *PolicyEngine) Cleanup() {
 	logger.Trace.Println("Exiting ", pluginName)
 	if s.pi != nil {
-		s.pi.Close()
+		s.pi.StopWorkers()
 	}
 	if s.outCh != nil {
 		for _, c := range s.outCh {

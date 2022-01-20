@@ -22,43 +22,39 @@
 package engine
 
 import (
-	"errors"
 	"strconv"
+	"time"
 )
 
 // Configuration keys.
 const (
 	PoliciesConfigKey    string = "policies"
 	ModeConfigKey        string = "mode"
-	VersionKey	     string = "version"
+	VersionKey           string = "version"
 	JSONSchemaVersionKey string = "jsonschemaversion"
 	BuildNumberKey       string = "buildnumber"
-	MonitorKey	     string = "monitor"
+	MonitorKey           string = "monitor"
+	MonitorIntervalKey   string = "monitorinterval"
 	ConcurrencyKey       string = "concurrency"
-	ActionDirKey	     string = "action_dir"
+	ActionDirKey         string = "action_dir"
 )
 
 // Config defines a configuration object for the engine.
 type Config struct {
 	PoliciesPath      string
-	Mode	          Mode
-	Version	          string
+	Mode              Mode
+	Version           string
 	JSONSchemaVersion string
 	BuildNumber       string
-	Monitor	          MonitorType
+	Monitor           MonitorType
+	MonitorInterval   time.Duration
 	Concurrency       int
-	ActionDir	  string
+	ActionDir         string
 }
-
-// Defaults
-const (
-	// Concurrency of policy engine
-	CONCURRENCY   = 5
-)
 
 // CreateConfig creates a new config object from config dictionary.
 func CreateConfig(conf map[string]interface{}) (Config, error) {
-	var c Config = Config{Mode: EnrichMode} // default values
+	var c Config = Config{Mode: EnrichMode, Concurrency: 5, Monitor: NoneType, MonitorInterval: 30 * time.Second} // default values
 	var err error
 
 	if v, ok := conf[PoliciesConfigKey].(string); ok {
@@ -76,24 +72,22 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 	if v, ok := conf[BuildNumberKey].(string); ok {
 		c.BuildNumber = v
 	}
-	c.Concurrency = CONCURRENCY
+	if v, ok := conf[MonitorKey].(string); ok {
+		c.Monitor = parseMonitorType(v)
+	}
+	if v, ok := conf[MonitorIntervalKey].(string); ok {
+		var duration int
+		duration, err = strconv.Atoi(v)
+		if err == nil {
+			c.MonitorInterval = time.Duration(duration) * time.Second
+		}
+	}
 	if v, ok := conf[ConcurrencyKey].(string); ok {
 		c.Concurrency, err = strconv.Atoi(v)
 	}
 	if v, ok := conf[ActionDirKey].(string); ok {
 		c.ActionDir = v
 	}
-	c.Monitor = NoneType
-	if v, ok := conf[MonitorKey].(string); ok {
-		if v == "local" {
-			c.Monitor = LocalType
-		} else if v == "none" {
-			c.Monitor = NoneType
-		} else {
-			err = errors.New("Configuration tag 'monitor' must be set to 'none', 'local'")
-		}
-	}
-
 	return c, err
 }
 
@@ -131,4 +125,14 @@ const (
 
 func (s MonitorType) String() string {
 	return [...]string{"none", "local"}[s]
+}
+
+func parseMonitorType(s string) MonitorType {
+	if NoneType.String() == s {
+		return NoneType
+	}
+	if LocalType.String() == s {
+		return LocalType
+	}
+	return NoneType
 }
