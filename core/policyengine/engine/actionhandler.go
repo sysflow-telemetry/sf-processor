@@ -26,7 +26,6 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 )
 
-
 // Prototype of an action function
 type ActionFunc func(r *Record) error
 
@@ -42,7 +41,7 @@ const ActionSym = "Action"
 
 // Registers an action function
 func registerAction(reg ActionMap, name string, f ActionFunc) {
-	if  _, ok := reg[name]; ok {
+	if _, ok := reg[name]; ok {
 		logger.Warn.Println("Re-declaration of action '" + name + "'")
 	}
 	reg[name] = f
@@ -79,11 +78,11 @@ func (ah *ActionHandler) loadUserActions(dir string) {
 
 type ActionHandler struct {
 	// Map of registered actions
-	BuiltInActions ActionMap
+	BuiltInActions     ActionMap
 	UserDefinedActions ActionMap
 }
 
-func NewActionHandler(conf Config) *ActionHandler{
+func NewActionHandler(conf Config) *ActionHandler {
 	ah := new(ActionHandler)
 
 	// Register built-in actions
@@ -117,4 +116,3 @@ func (ah *ActionHandler) HandleActions(rule Rule, r *Record) {
 func (ah *ActionHandler) registerBuiltIns() {
 	ah.BuiltInActions = make(ActionMap)
 }
-

@@ -44,46 +44,58 @@ type PolicyInterpreter struct {
 	// Mode of the policy interpreter
 	mode Mode
 
-	// Parsed rule and filter object maps.
-	rules []Rule
+	// Parsed rule and filter object maps
+	rules   []Rule
 	filters []Filter
 
-	// Accessory parsing maps.
-	lists map[string][]string
+	// Accessory parsing maps
+	lists     map[string][]string
 	macroCtxs map[string]parser.IExpressionContext
 
 	// Worker channel and waitgroup
 	workerCh chan *Record
-	wg *sync.WaitGroup
+	wg       *sync.WaitGroup
 
-	// Upstream push set via Init
+	// Callback for sending records downstream
 	out func(*Record)
+
+	// Worker pool size
+	concurrency int
 
 	// Action Handler
 	ah *ActionHandler
 }
 
 // NewPolicyInterpreter constructs a new interpreter instance.
-func NewPolicyInterpreter(conf Config) *PolicyInterpreter {
+func NewPolicyInterpreter(conf Config, out func(*Record)) *PolicyInterpreter {
 	pi := new(PolicyInterpreter)
 	pi.mode = conf.Mode
+	pi.concurrency = conf.Concurrency
 	pi.rules = make([]Rule, 0)
 	pi.filters = make([]Filter, 0)
 	pi.lists = make(map[string][]string)
 	pi.macroCtxs = make(map[string]parser.IExpressionContext)
-	pi.initWorkerPool(conf.Concurrency)
+	pi.out = out
 	pi.ah = NewActionHandler(conf)
 	return pi
 }
 
-func (pi *PolicyInterpreter) initWorkerPool(concurrency int) {
-	logger.Trace.Printf("Starting thread pool of %d workers", concurrency)
-	pi.workerCh = make(chan *Record, concurrency)
+// StartWorkers creates the worker pool.
+func (pi *PolicyInterpreter) StartWorkers() {
+	logger.Trace.Printf("Starting policy engine's thread pool with %d workers", pi.concurrency)
+	pi.workerCh = make(chan *Record, pi.concurrency)
 	pi.wg = new(sync.WaitGroup)
-	pi.wg.Add(concurrency)
-	for i := 0; i < concurrency; i++ {
+	pi.wg.Add(pi.concurrency)
+	for i := 0; i < pi.concurrency; i++ {
 		go pi.worker()
 	}
+}
+
+// StopWorkers stops the worker pool and waits for all tasks to finish.
+func (pi *PolicyInterpreter) StopWorkers() {
+	logger.Trace.Println("Stopping policy engine's thread pool")
+	close(pi.workerCh)
+	pi.wg.Wait()
 }
 
 // Compile parses and interprets an input policy defined in path.
@@ -149,23 +161,12 @@ func (pi *PolicyInterpreter) Compile(paths ...string) error {
 	return nil
 }
 
-// Sets the callback function (upstream push)
-func (pi *PolicyInterpreter) SetCallback(out func(*Record)) {
-	pi.out = out
-}
-
-// CLose stops the worker pool and waits for all tasks to finish
-func (pi *PolicyInterpreter) Close() {
-	close(pi.workerCh)
-	pi.wg.Wait()
-}
-
-// ProcessAysnc queues the record for processing in the worker pool.
+// ProcessAsync queues the record for processing in the worker pool.
 func (pi *PolicyInterpreter) ProcessAsync(r *Record) {
 	pi.workerCh <- r
 }
 
-// Aysnc. worker thread: Apply all compiled policies, enrich matching records, and push upstream
+// Asynchronous worker thread: apply all compiled policies, enrich matching records, and send records downstream.
 func (pi *PolicyInterpreter) worker() {
 	for {
 		// Fetch record
@@ -175,12 +176,12 @@ func (pi *PolicyInterpreter) worker() {
 			break
 		}
 
-		// Drop record if amy drop rule applied.
-		if pi.EvalFilters(r)  {
+		// Drop record if any drop rule applied.
+		if pi.EvalFilters(r) {
 			continue
 		}
 
-		// Enrich mode is non-blocking: Push record even if no rule matches 
+		// Enrich mode is non-blocking: Push record even if no rule matches
 		match := (pi.mode == EnrichMode)
 
 		// Apply rules
@@ -193,7 +194,7 @@ func (pi *PolicyInterpreter) worker() {
 			}
 		}
 
-		// Push record if a rule matched (or if we are in enrich mode)
+		// Push record if a rule matches (or if mode is enrich)
 		if match && pi.out != nil {
 			pi.out(r)
 		}
@@ -204,11 +205,11 @@ func (pi *PolicyInterpreter) worker() {
 // Process executes all compiled policies against record r.
 func (pi *PolicyInterpreter) Process(r *Record) *Record {
 	// Drop record if amy drop rule applied.
-	if pi.EvalFilters(r)  {
+	if pi.EvalFilters(r) {
 		return nil
 	}
 
-	// Enrich mode is non-blocking: Push record even if no rule matches 
+	// Enrich mode is non-blocking: Push record even if no rule matches
 	match := (pi.mode == EnrichMode)
 
 	for _, rule := range pi.rules {
@@ -347,11 +348,11 @@ func (pi *PolicyInterpreter) getPriority(ctx *parser.PruleContext) Priority {
 func (pi *PolicyInterpreter) getActions(ctx *parser.PruleContext) []string {
 	var actions []string
 	if ctx.ACTION(0) != nil || ctx.OUTPUT(0) != nil {
-              astr := ctx.Text(2).GetText()
-              l := pi.extractList(astr)
-              for _, v := range l {
-                      actions = append(actions, strings.ToLower(v))
-              }
+		astr := ctx.Text(2).GetText()
+		l := pi.extractList(astr)
+		for _, v := range l {
+			actions = append(actions, strings.ToLower(v))
+		}
 	}
 	return actions
 }
