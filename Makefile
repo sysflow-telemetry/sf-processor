@@ -18,10 +18,15 @@ GOGET=$(GOCMD) get -tags exclude_graphdriver_btrfs
 BIN=sfprocessor
 OUTPUT=$(BIN)
 SRC=./driver
+PACKDIR=./scripts/cpack
 
 .PHONY: build
 build: version deps
 	cd $(SRC) && $(GOBUILD) -o $(OUTPUT) -v
+
+.PHONY: package
+package: build
+	cd $(PACKDIR) && ./prepackage.sh &&	cpack --config ./CPackConfig.cmake
 
 .PHONY: deps
 deps:
@@ -42,6 +47,7 @@ clean:
 	cd $(SRC) && $(GOCLEAN)
 	rm -f $(SRC)/$(BIN)
 	rm -f $(SRC)/manifest/manifest.go
+	$(PACKDIR)/clean.sh
 
 .PHONY: install
 install: build
@@ -53,6 +59,10 @@ install: build
 .PHONY: docker-build
 docker-build:
 	docker build -t sf-processor --build-arg UBI_VER=$(UBI_VERSION) --target=runtime -f Dockerfile .
+
+.PHONY: docker-build-base
+docker-build-base:
+	docker build -t sf-processor:base --build-arg UBI_VER=$(UBI_VERSION) --target=base -f Dockerfile .
 
 .PHONY: pull
 pull:
