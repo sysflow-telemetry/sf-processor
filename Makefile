@@ -26,7 +26,7 @@ build: version deps
 
 .PHONY: package
 package: build
-	cd $(PACKDIR) && ./prepackage.sh &&	cpack --config ./CPackConfig.cmake
+	cd $(PACKDIR) && ./prepackage.sh &&	export SYSFLOW_VERSION=$(SYSFLOW_VERSION); cpack --config ./CPackConfig.cmake
 
 .PHONY: deps
 deps:
@@ -47,7 +47,7 @@ clean:
 	cd $(SRC) && $(GOCLEAN)
 	rm -f $(SRC)/$(BIN)
 	rm -f $(SRC)/manifest/manifest.go
-	$(PACKDIR)/clean.sh
+	cd $(PACKDIR) && ./clean.sh
 
 .PHONY: install
 install: build
