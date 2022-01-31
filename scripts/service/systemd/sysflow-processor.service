@@ -1,0 +1,24 @@
+[Unit]
+Description=SysFlow cloud-native system telemetry 
+Documentation=https://sysflow.readthedocs.io
+PartOf=sysflow.service
+After=sysflow.service
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/sfprocessor -log=error -driver=socket -config=/etc/sysflow/pipelines/pipeline.distribution.json /sock/sysflow.sock
+UMask=0077
+TimeoutSec=30
+RestartSec=15s
+Restart=on-failure
+PrivateTmp=true
+NoNewPrivileges=yes
+ProtectHome=read-only
+ProtectSystem=full
+ProtectKernelTunables=true
+RestrictAddressFamilies=~AF_PACKET
+KillSignal=SIGKILL
+
+[Install]
+WantedBy=sysflow.service
