@@ -10,7 +10,8 @@
        "processor": "policyengine",
        "in": "flat flattenerchan",
        "out": "evt eventchan",
-       "policies": "../resources/policies/distribution/filter.yaml"
+       "policies": "../resources/policies/distribution/filter.yaml",
+       "mode": "alert"     
       },
       {
        "processor": "exporter",
