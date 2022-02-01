@@ -18,7 +18,7 @@
      "in": "evt eventchan",
      "export": "syslog",
      "format": "json",
-     "syslog.proto": "tcp",
+     "syslog.proto": "udp",
      "syslog.tag": "sysflow",
      "syslog.host": "localhost",
      "syslog.port": "514"
