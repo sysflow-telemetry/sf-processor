@@ -1,5 +1,5 @@
 [Unit]
-Description=SysFlow cloud-native system telemetry 
+Description=SysFlow cloud-native system telemetry (processor)
 Documentation=https://sysflow.readthedocs.io
 PartOf=sysflow.service
 After=sysflow.service
@@ -7,7 +7,9 @@ After=sysflow.service
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/bin/sfprocessor -log=error -driver=socket -config=/etc/sysflow/pipelines/pipeline.distribution.json /sock/sysflow.sock
+EnvironmentFile=/etc/sysflow/conf/sysflow.env
+PassEnvironment=CONFIG_PATH
+ExecStart=/usr/bin/sfprocessor -log=error -driver=socket -config=${CONFIG_PATH} /sock/sysflow.sock
 UMask=0077
 TimeoutSec=30
 RestartSec=15s
