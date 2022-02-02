@@ -4,6 +4,7 @@
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,21 +29,6 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
 
-// Action type for enumeration.
-type Action int
-
-// Action enumeration.
-const (
-	Alert Action = iota
-	Tag
-	Hash
-)
-
-// String returns the string representation of an action instance.
-func (a Action) String() string {
-	return [...]string{"alert", "tag", "hash"}[a]
-}
-
 // EnrichmentTag denotes the type for enrichment tags.
 type EnrichmentTag interface{}
 
@@ -66,7 +52,7 @@ type Rule struct {
 	Name      string
 	Desc      string
 	condition Criterion
-	Actions   []Action
+	Actions   []string
 	Tags      []EnrichmentTag
 	Priority  Priority
 	Prefilter []string
@@ -99,11 +85,12 @@ type Record struct {
 	Ctx Context
 }
 
+
 // NewRecord creates a new Record isntance.
 func NewRecord(fr sfgo.FlatRecord) *Record {
 	var r = new(Record)
 	r.Fr = fr
-	r.Ctx = make(Context, 3)
+	r.Ctx = make(Context, 4)
 	return r
 }
 
@@ -241,12 +228,24 @@ type contextKey int
 
 // ContextKey enum
 const (
-	ruleCtxKey contextKey = iota
+	alertCtxKey contextKey = iota
+	ruleCtxKey
 	tagCtxKey
 	hashCtxKey
 )
 
-// AddRule stores add a rule instance to the set of rules matching a record.
+func (s Context) IsAlert() bool {
+	if s[alertCtxKey] != nil {
+		return s[alertCtxKey].(bool)
+	}
+	return false
+}
+
+func (s Context) SetAlert(isAlert bool) {
+	s[alertCtxKey] = isAlert
+}
+
+// AddRule adds a rule instance to the set of rules matching a record.
 func (s Context) AddRule(r Rule) {
 	if s[ruleCtxKey] == nil {
 		s[ruleCtxKey] = make([]Rule, 0)
@@ -267,6 +266,14 @@ func (s Context) SetTags(tags []string) {
 	s[tagCtxKey] = tags
 }
 
+// Adds tags to context object.
+func (s Context) AddTag(tag string) {
+	if s[tagCtxKey] == nil {
+		s[tagCtxKey] = make([]string, 0)
+	}
+	s[tagCtxKey] = append(s[tagCtxKey].([]string), tag)
+}
+
 // GetTags retrieves hashes from context object.
 func (s Context) GetTags() []string {
 	if s[tagCtxKey] != nil {
@@ -275,24 +282,36 @@ func (s Context) GetTags() []string {
 	return nil
 }
 
-// SetHashes stores hashes into context object.
-func (s Context) SetHashes(h HashSet) {
-	s[hashCtxKey] = h
-}
-
-// GetHashes retrieves hashes from context object.
-func (s Context) GetHashes() HashSet {
-	if s[hashCtxKey] != nil {
-		return s[hashCtxKey].(HashSet)
+func (s Context) GetHash(ht HashType) *HashSet {
+	if s[hashCtxKey] == nil {
+		return nil
 	}
-	return HashSet{}
+	hpa := s[hashCtxKey].([]*HashSet)
+	return hpa[ht]
 }
 
-// HashSet type
-type HashSet struct {
-	MD5      string
-	SHA1     string
-	SHA256   string
-	Size     int
-	UpdateTs int64
+// Adds a hash set to context object.
+func (s Context) SetHashes(ht HashType, hs *HashSet) {
+	if s[hashCtxKey] == nil {
+		s[hashCtxKey] = make([]*HashSet, 2)
+	}
+	hpa := s[hashCtxKey].([]*HashSet)
+
+	if hpa[ht] == nil {
+		hpa[ht] = hs
+	}
 }
+
+type HashType uint
+
+const (
+	HASH_TYPE_PROC HashType = iota
+	HASH_TYPE_FILE
+)
+
+type HashSet struct {
+	Md5    string  `json:"md5,omitempty"`
+	Sha1   string  `json:"sha1,omitempty"`
+	Sha256 string  `json:"sha256,omitempty"`
+}
+

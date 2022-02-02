@@ -1,6 +1,5 @@
 - rule: Exists rule
   desc: unit test unary operator
   condition: sf.container.name contains node and sf.pproc.name exists
-  action: [alert]
   priority: low
   tags: [test]

@@ -4,6 +4,7 @@
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +22,8 @@
 package engine
 
 import (
-	"errors"
+	"strconv"
+	"time"
 )
 
 // Configuration keys.
@@ -32,6 +34,9 @@ const (
 	JSONSchemaVersionKey string = "jsonschemaversion"
 	BuildNumberKey       string = "buildnumber"
 	MonitorKey           string = "monitor"
+	MonitorIntervalKey   string = "monitor.interval"
+	ConcurrencyKey       string = "concurrency"
+	ActionDirKey         string = "actiondir"
 )
 
 // Config defines a configuration object for the engine.
@@ -42,11 +47,15 @@ type Config struct {
 	JSONSchemaVersion string
 	BuildNumber       string
 	Monitor           MonitorType
+	MonitorInterval   time.Duration
+	Concurrency       int
+	ActionDir         string
 }
 
 // CreateConfig creates a new config object from config dictionary.
 func CreateConfig(conf map[string]interface{}) (Config, error) {
-	var c Config = Config{Mode: AlertMode} // default values
+	var c Config = Config{Mode: EnrichMode, Concurrency: 5, Monitor: NoneType, MonitorInterval: 30 * time.Second} // default values
+	var err error
 
 	if v, ok := conf[PoliciesConfigKey].(string); ok {
 		c.PoliciesPath = v
@@ -63,17 +72,23 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 	if v, ok := conf[BuildNumberKey].(string); ok {
 		c.BuildNumber = v
 	}
-	c.Monitor = NoneType
 	if v, ok := conf[MonitorKey].(string); ok {
-		if v == "local" {
-			c.Monitor = LocalType
-		} else if v == "none" {
-			c.Monitor = NoneType
-		} else {
-			return c, errors.New("Configuration tag 'monitor' must be set to 'none', 'local'")
+		c.Monitor = parseMonitorType(v)
+	}
+	if v, ok := conf[MonitorIntervalKey].(string); ok {
+		var duration int
+		duration, err = strconv.Atoi(v)
+		if err == nil {
+			c.MonitorInterval = time.Duration(duration) * time.Second
 		}
 	}
-	return c, nil
+	if v, ok := conf[ConcurrencyKey].(string); ok {
+		c.Concurrency, err = strconv.Atoi(v)
+	}
+	if v, ok := conf[ActionDirKey].(string); ok {
+		c.ActionDir = v
+	}
+	return c, err
 }
 
 // Mode type.
@@ -81,26 +96,22 @@ type Mode int
 
 // Mode config options.
 const (
-	AlertMode Mode = iota
-	FilterMode
-	BypassMode
+	EnrichMode Mode = iota
+	AlertMode
 )
 
 func (s Mode) String() string {
-	return [...]string{"alert", "filter", "bypass"}[s]
+	return [...]string{"enrich", "alert"}[s]
 }
 
 func parseModeConfig(s string) Mode {
+	if EnrichMode.String() == s {
+		return EnrichMode
+	}
 	if AlertMode.String() == s {
 		return AlertMode
 	}
-	if FilterMode.String() == s {
-		return FilterMode
-	}
-	if BypassMode.String() == s {
-		return BypassMode
-	}
-	return AlertMode
+	return EnrichMode
 }
 
 // MonitorType defines a policy monitor type.
@@ -114,4 +125,14 @@ const (
 
 func (s MonitorType) String() string {
 	return [...]string{"none", "local"}[s]
+}
+
+func parseMonitorType(s string) MonitorType {
+	if NoneType.String() == s {
+		return NoneType
+	}
+	if LocalType.String() == s {
+		return LocalType
+	}
+	return NoneType
 }

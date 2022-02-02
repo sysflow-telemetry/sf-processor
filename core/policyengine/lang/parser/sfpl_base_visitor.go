@@ -31,6 +31,10 @@ func (v *BaseSfplVisitor) VisitSfilter(ctx *SfilterContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseSfplVisitor) VisitDrop_keyword(ctx *Drop_keywordContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseSfplVisitor) VisitPmacro(ctx *PmacroContext) interface{} {
 	return v.VisitChildren(ctx)
 }

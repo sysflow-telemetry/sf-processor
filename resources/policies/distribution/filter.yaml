@@ -486,9 +486,9 @@
              and (sf.proc.exe in (_os_level_noisy_hard_link_creation_by_process)
                  or (infrastructure_containers and sf.proc.exe in (_openshift_infrastructure_container_noisy_hard_link_creation_by_process)))
 
-##### Global filter
+##### Global drop rule
 
-- filter: __global__
+- drop: __global__
   condition: _drop_out_noisy_process_clone_events
              or _drop_thread_clone_events
              or _drop_out_noisy_process_clone_events_from_ansible
@@ -551,91 +551,78 @@
 - rule: File Opened with Read Permissions
   desc: File Opened with Read Permissions
   condition: file_open_read and not (file_write_or_file_opened_for_write or file_read or setns_syscall)
-  action: [alert]
   priority: low
   prefilter: [FF]
 
 - rule: File Read
   desc: File Read
   condition: file_read and not file_write
-  action: [alert]
   priority: low
   prefilter: [FF]
 
 - rule: File Modified
   desc: File Modified
   condition: file_write
-  action: [alert]
   priority: low
   prefilter: [FF]
 
 - rule: File Opened with Write Permissions
   desc: File Opened with Write Permissions
   condition: file_open_write and not (file_write or setns_syscall)
-  action: [alert]
   priority: low
   prefilter: [FF]
 
 - rule: Directory created
   desc: when a directory will be created
   condition: sf.opflags = MKDIR
-  action: [alert]
   priority: low
   prefilter: [FE]
 
 - rule: Directory removed
   desc: when a directory will be removed
   condition: sf.opflags = RMDIR
-  action: [alert]
   priority: low
   prefilter: [FE]
 
 - rule: Hard link created
   desc: when process creates hard link to an existing file
   condition: sf.opflags = LINK
-  action: [alert]
   priority: low
   prefilter: [FE]
 
 - rule: Soft link created
   desc: when process creates soft link to an existing file
   condition: sf.opflags = SYMLINK
-  action: [alert]
   priority: low
   prefilter: [FE]
 
 - rule: File deleted
   desc: when a file will be deleted
   condition: sf.opflags = UNLINK
-  action: [alert]
   priority: low
   prefilter: [FE]
 
 - rule: File renamed
   desc: when a file will be renamed
   condition: sf.opflags = RENAME
-  action: [alert]
   priority: low
   prefilter: [FE]
 
 - rule: UID of process was changed
   desc: UID of process was changed
   condition: sf.opflags = SETUID
-  action: [alert]
   priority: low
   prefilter: [PE]
 
 - rule: Process cloned
   desc: Process cloned
   condition: clone_syscall
-  action: [alert]
   priority: low
   prefilter: [PE]
 
 - rule: Execution of a file
   desc: Execution of a file
   condition: exec_syscall
-  action: [alert]
   priority: low
   tags: [test]
   prefilter: [PE]
@@ -643,7 +630,6 @@
 - rule: Process or thread exit
   desc: Process or thread exit
   condition: exit_syscall
-  action: [alert]
   priority: low
   prefilter: [PE]
 
@@ -651,48 +637,41 @@
 - rule: Process entered namespace
   desc: Process entered namespace
   condition: setns_syscall
-  action: [alert]
   priority: low
   prefilter: [FF]
 
 - rule: Process Created a Network Connection
   desc: Process Created a Network Connection
   condition: sf.opflags = CONNECT
-  action: [alert]
   priority: medium
   prefilter: [NF]
 
 - rule: Process Accepted a Network Connection
   desc: Network Flow ingress
   condition: sf.opflags = ACCEPT
-  action: [alert]
   priority: medium
   prefilter: [NF]
 
 - rule: Process Sending and Receiving Network Data
   desc: Network Flow ingress and engress
   condition: sf.opflags in (SEND, WRITE) and sf.opflags in (RECV, READ)
-  action: [alert]
   priority: medium
   prefilter: [NF]
 
 - rule: Process Sending Network Data
   desc: Network Flow engress
   condition: sf.opflags in (SEND, WRITE) and not sf.opflags in (RECV, READ)
-  action: [alert]
   priority: medium
   prefilter: [NF]
 
 - rule: Process Receiving Network Data
   desc: Network Flow ingress
   condition: sf.opflags in (RECV, READ) and not sf.opflags in (SEND, WRITE)
-  action: [alert]
   priority: medium
   prefilter: [NF]
 
 - rule: Network Connection Closed
   desc: Network Connection Closed
   condition: sf.opflags = CLOSE
-  action: [alert]
   priority: low
   prefilter: [NF]

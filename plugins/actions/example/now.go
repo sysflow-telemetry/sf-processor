@@ -1,9 +1,8 @@
 //
-// Copyright (C) 2020 IBM Corporation.
+// Copyright (C) 2021 IBM Corporation.
 //
 // Authors:
-// Frederico Araujo <frederico.araujo@ibm.com>
-// Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,17 +16,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package engine
+package main
 
 import (
-	"os"
-	"testing"
+	"strconv"
+	"time"
 
-	"github.com/sysflow-telemetry/sf-apis/go/logger"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
-func TestMain(m *testing.M) {
-	logger.InitLoggers(logger.TRACE)
-	SetupInterpreter(m)
-	os.Exit(m.Run())
+type MyAction struct{}
+
+func (a *MyAction) GetName() string {
+	return "now"
 }
+
+func (a *MyAction) GetFunc() engine.ActionFunc {
+	return addMyTag
+}
+
+func addMyTag(r *engine.Record) error {
+	r.Ctx.AddTag("now_in_nanos:" + strconv.FormatInt(time.Now().UnixNano(), 10))
+	return nil
+}
+
+var Action MyAction
+

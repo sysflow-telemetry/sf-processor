@@ -25,6 +25,9 @@ type SfplVisitor interface {
 	// Visit a parse tree produced by SfplParser#sfilter.
 	VisitSfilter(ctx *SfilterContext) interface{}
 
+	// Visit a parse tree produced by SfplParser#drop_keyword.
+	VisitDrop_keyword(ctx *Drop_keywordContext) interface{}
+
 	// Visit a parse tree produced by SfplParser#pmacro.
 	VisitPmacro(ctx *PmacroContext) interface{}
 

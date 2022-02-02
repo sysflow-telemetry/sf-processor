@@ -1,9 +1,8 @@
 //
-// Copyright (C) 2020 IBM Corporation.
+// Copyright (C) 2021 IBM Corporation.
 //
 // Authors:
-// Frederico Araujo <frederico.araujo@ibm.com>
-// Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,17 +16,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package engine
+module github.com/sysflow-telemetry/sf-processor/plugins/actions/example
 
-import (
-	"os"
-	"testing"
+go 1.14
 
-	"github.com/sysflow-telemetry/sf-apis/go/logger"
-)
+require github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201209134442-13e2a6e66430
 
-func TestMain(m *testing.M) {
-	logger.InitLoggers(logger.TRACE)
-	SetupInterpreter(m)
-	os.Exit(m.Run())
-}
+replace github.com/sysflow-telemetry/sf-processor/core => ../../../core
