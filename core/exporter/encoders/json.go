@@ -1,9 +1,10 @@
 //
-// Copyright (C) 2020 IBM Corporation.
+// Copyright (C) 2021 IBM Corporation.
 //
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -217,52 +218,55 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 		}
 	}
 	t.writer.RawByte(END_CURLY)
-	/* // Need to add hash support
-	hashset := rec.Ctx.GetHashes()
-	if !reflect.ValueOf(hashset.MD5).IsZero() {
-		r.Hashes = &hashset
-	} */
-	rules := rec.Ctx.GetRules()
-	numRules := len(rules)
+
+	// Encode policies
+	numRules := len(rec.Ctx.GetRules())
+	rtags := make([]string, 0)
 	if numRules > 0 {
 		t.writer.RawString(POLICIES)
-		for id, r := range rules {
+		for num, r := range rec.Ctx.GetRules() {
 			t.writer.RawString(ID_TAG)
 			t.writer.String(r.Name)
 			t.writer.RawString(DESC)
 			t.writer.String(r.Desc)
 			t.writer.RawString(PRIORITY)
 			t.writer.Int64(int64(r.Priority))
-			numTags := len(r.Tags)
-			currentTag := 0
-			if numTags > 0 {
-				t.writer.RawString(TAGS)
-				for _, tag := range r.Tags {
-					switch tag := tag.(type) {
-					case []string:
-						tags := tag
-						numTags := numTags + len(tags) - 1
-						for _, s := range tags {
-							t.writer.String(s)
-							if currentTag < (numTags - 1) {
-								t.writer.RawByte(COMMA)
-							}
-							currentTag++
-						}
-					default:
-						t.writer.String(tag.(string))
-						if currentTag < (numTags - 1) {
-							t.writer.RawByte(COMMA)
-						}
-						currentTag++
-					}
-				}
-				t.writer.RawByte(END_SQUARE)
-			}
 			t.writer.RawByte(END_CURLY)
-			if id < (numRules - 1) {
+			if num < (numRules - 1) {
 				t.writer.RawByte(COMMA)
 			}
+
+			for _, tag := range r.Tags {
+				switch tag := tag.(type) {
+				case []string:
+					rtags = append(rtags, tag...)
+				default:
+					rtags = append(rtags, tag.(string))
+				}
+			}
+		}
+		t.writer.RawByte(END_SQUARE)
+	}
+
+
+	// Encode tags as a list of record tag context plus all rule tags
+	numTags := len(rtags) + len(rec.Ctx.GetTags())
+	if numTags > 0 {
+		currentTag := 0
+		t.writer.RawString(TAGS)
+		for _, tag := range rec.Ctx.GetTags() {
+			t.writer.String(tag)
+			if currentTag < (numTags - 1) {
+				t.writer.RawByte(COMMA)
+			}
+			currentTag++
+		}
+		for _, tag := range rtags {
+			t.writer.String(tag)
+			if currentTag < (numTags - 1) {
+				t.writer.RawByte(COMMA)
+			}
+			currentTag++
 		}
 		t.writer.RawByte(END_SQUARE)
 	}

@@ -47,8 +47,6 @@ github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8
 github.com/docker/go-units v0.4.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
 github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae h1:sZOzFMm2XxvAO0hwo0k1XUyKusaUedme7rnUMXF96zs=
 github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae/go.mod h1:xe9a/L2aeOgFKKgrO3ibQTnMdpAeL0GC+5/HpGScSa4=
-github.com/enriquebris/goconcurrentqueue v0.6.0 h1:DJ97cgoPVoqlC4tTGBokn/omaB3o16yIs5QdAm6YEjc=
-github.com/enriquebris/goconcurrentqueue v0.6.0/go.mod h1:wGJhQNFI4wLNHleZLo5ehk1puj8M6OIl0tOjs3kwJus=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
@@ -209,16 +207,6 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/syndtr/gocapability v0.0.0-20170704070218-db04d3cc01c8/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210713130650-c57558d63305 h1:p070lVdjQYxe8f8ixziQK10wsKNpelcV9bQqL4q9CF0=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210713130650-c57558d63305/go.mod h1:OSPDOqeD66l/sjuOG8klXtLQ8sUcx6WHvsXmwrtJoyE=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210720205833-7d3c76ce0587 h1:PJLmNj2xTdx6P44fCVIJvNwMMhSCdUU3Y/VZk+wzvNs=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210720205833-7d3c76ce0587/go.mod h1:OSPDOqeD66l/sjuOG8klXtLQ8sUcx6WHvsXmwrtJoyE=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210914140710-88570181e301 h1:HRz+HBTN1dax56mLxNtDq0fFhMTnYBBOhoXGQyEJ5tw=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210914140710-88570181e301/go.mod h1:OSPDOqeD66l/sjuOG8klXtLQ8sUcx6WHvsXmwrtJoyE=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210914182109-e6f4f5d15859 h1:nHO9TS10b1ZGes92J8GjBN1B8Jjsgc3uVAgPr8RTlkQ=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210914182109-e6f4f5d15859/go.mod h1:OSPDOqeD66l/sjuOG8klXtLQ8sUcx6WHvsXmwrtJoyE=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210927153122-600863723962 h1:fAUDumd/STImrmkfKaKn5qsHL4FSQC7Q007YogGpiFg=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210927153122-600863723962/go.mod h1:OSPDOqeD66l/sjuOG8klXtLQ8sUcx6WHvsXmwrtJoyE=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210929184451-1b092dc0cfc7 h1:tXxUI8Jz8gTNflnOqKo/FPWn6G1FUCT1NGo9d3p+GsQ=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210929184451-1b092dc0cfc7/go.mod h1:OSPDOqeD66l/sjuOG8klXtLQ8sUcx6WHvsXmwrtJoyE=
 github.com/tchap/go-patricia v2.3.0+incompatible/go.mod h1:bmLyhP68RS6kStMGxByiQ23RP/odRBOTVjwp2cDyi6I=
@@ -284,8 +272,9 @@ golang.org/x/sys v0.0.0-20191115151921-52ab43148777/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20191127021746-63cb32ae39b2/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20201119102817-f84b799fce68/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.0.0-20210315160823-c6e025ad8005 h1:pDMpM2zh2MT0kHy037cKlSby2nEhD50SYqwQk76Nm40=
 golang.org/x/sys v0.0.0-20210315160823-c6e025ad8005/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 h1:RqytpXGR1iVNX7psjB3ff8y7sNFinVFvkx1c8SjBkio=
+golang.org/x/sys v0.0.0-20210616094352-59db8d763f22/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.2/go.mod h1:bEr9sfX3Q8Zfm5fL9x+3itogRgK3+ptLWKqgva+5dAk=
