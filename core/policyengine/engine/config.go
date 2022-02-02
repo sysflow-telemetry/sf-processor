@@ -70,7 +70,7 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 		} else if v == "none" {
 			c.Monitor = NoneType
 		} else {
-			return c, errors.New("Configuration tag 'monitor' must be set to 'none', 'local'")
+			return c, errors.New("configuration tag 'monitor' must be set to 'none', 'local'")
 		}
 	}
 	return c, nil
