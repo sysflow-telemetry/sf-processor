@@ -19,14 +19,20 @@ BIN=sfprocessor
 OUTPUT=$(BIN)
 SRC=./driver
 PACKDIR=./scripts/cpack
+INSTALL_PATH=/usr/local/sysflow
 
 .PHONY: build
 build: version deps
 	cd $(SRC) && $(GOBUILD) -o $(OUTPUT) -v
 
+#.PHONY: package
+#package: build
+#	cd $(PACKDIR) && ./prepackage.sh &&	export SYSFLOW_VERSION=$(SYSFLOW_VERSION); cpack --config ./CPackConfig.cmake
+
 .PHONY: package
-package: build
-	cd $(PACKDIR) && ./prepackage.sh &&	export SYSFLOW_VERSION=$(SYSFLOW_VERSION); cpack --config ./CPackConfig.cmake
+package: 
+	docker run --rm --entrypoint=/bin/bash -v $(shell pwd)/scripts:$(INSTALL_PATH)/scripts sysflowtelemetry/sf-processor:${SYSFLOW_VERSION} -- $(INSTALL_PATH)/scripts/cpack/prepackage.sh
+	cd scripts/cpack && export SYSFLOW_VERSION=$(SYSFLOW_VERSION); cpack --config ./CPackConfig.cmake
 
 .PHONY: deps
 deps:
@@ -58,11 +64,11 @@ install: build
 
 .PHONY: docker-build
 docker-build:
-	docker build -t sf-processor --build-arg UBI_VER=$(UBI_VERSION) --build-arg DOCKER_GID=$(DOCKER_GID) --target=runtime -f Dockerfile .
+	( DOCKER_BUILDKIT=1 docker build -t sf-processor:${SYSFLOW_VERSION} --build-arg UBI_VER=$(UBI_VERSION) --target=runtime -f Dockerfile . )
 
 .PHONY: docker-build-base
 docker-build-base:
-	docker build -t sf-processor:base --build-arg UBI_VER=$(UBI_VERSION) --target=base -f Dockerfile .
+	( DOCKER_BUILDKIT=1 docker build -t sf-processor:base --build-arg UBI_VER=$(UBI_VERSION) --target=base -f Dockerfile . )
 
 .PHONY: pull
 pull:
