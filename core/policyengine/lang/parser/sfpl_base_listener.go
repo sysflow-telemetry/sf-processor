@@ -56,6 +56,12 @@ func (s *BaseSfplListener) EnterSfilter(ctx *SfilterContext) {}
 // ExitSfilter is called when production sfilter is exited.
 func (s *BaseSfplListener) ExitSfilter(ctx *SfilterContext) {}
 
+// EnterDrop_keyword is called when production drop_keyword is entered.
+func (s *BaseSfplListener) EnterDrop_keyword(ctx *Drop_keywordContext) {}
+
+// ExitDrop_keyword is called when production drop_keyword is exited.
+func (s *BaseSfplListener) ExitDrop_keyword(ctx *Drop_keywordContext) {}
+
 // EnterPmacro is called when production pmacro is entered.
 func (s *BaseSfplListener) EnterPmacro(ctx *PmacroContext) {}
 

@@ -4,6 +4,5 @@
 - rule: Simple rule to test if Python process
   desc: unit test macro rule
   condition: sf.container.name contains node and sf.state=CREATE and sf.type=PE and is_python
-  action: [alert]
   priority: low
   tags: [test]

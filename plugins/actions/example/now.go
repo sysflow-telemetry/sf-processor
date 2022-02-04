@@ -1,9 +1,8 @@
 //
-// Copyright (C) 2020 IBM Corporation.
+// Copyright (C) 2021 IBM Corporation.
 //
 // Authors:
-// Frederico Araujo <frederico.araujo@ibm.com>
-// Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,13 +16,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-module github.com/sysflow-telemetry/sf-processor/plugins/processors/example
+package main
 
-go 1.14
+import (
+	"strconv"
+	"time"
 
-require (
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220204025248-25d44ab7fe1f
-	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201209134442-13e2a6e66430
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
-replace github.com/sysflow-telemetry/sf-processor/core => ../../../core
+type MyAction struct{}
+
+func (a *MyAction) GetName() string {
+	return "now"
+}
+
+func (a *MyAction) GetFunc() engine.ActionFunc {
+	return addMyTag
+}
+
+func addMyTag(r *engine.Record) error {
+	r.Ctx.AddTag("now_in_nanos:" + strconv.FormatInt(time.Now().UnixNano(), 10))
+	return nil
+}
+
+var Action MyAction
+

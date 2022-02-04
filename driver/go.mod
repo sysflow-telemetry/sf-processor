@@ -23,14 +23,10 @@ go 1.14
 
 require (
 	github.com/actgardner/gogen-avro/v7 v7.3.1
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/google/pprof v0.0.0-20210827144239-02619b876842 // indirect
-	github.com/ianlancetaylor/demangle v0.0.0-20210905161508-09a460cdf81d // indirect
 	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.3
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220204025248-25d44ab7fe1f
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20210709164444-484da05c2a85
@@ -44,6 +40,4 @@ replace github.com/sysflow-telemetry/sf-processor/core => ../core
 replace (
 	github.com/Shopify/sarama => github.com/elastic/sarama v1.19.1-0.20200629123429-0e7b69039eec
 	github.com/dop251/goja => github.com/andrewkroh/goja v0.0.0-20190128172624-dd2ac4456e20
-	github.com/fsnotify/fsevents => github.com/elastic/fsevents v0.0.0-20181029231046-e1d381a4d270
-	github.com/fsnotify/fsnotify => github.com/adriansr/fsnotify v0.0.0-20180417234312-c9bbe1f46f1d
 )

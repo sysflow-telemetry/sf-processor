@@ -28,7 +28,6 @@ require (
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0
 	github.com/cespare/xxhash v1.1.0
 	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae
-	github.com/enriquebris/goconcurrentqueue v0.6.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-openapi/strfmt v0.19.4
 	github.com/golang/snappy v0.0.3 // indirect
@@ -37,7 +36,6 @@ require (
 	github.com/mailru/easyjson v0.7.6
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/pkg/errors v0.9.1
-	github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7 // indirect
 	github.com/satta/gommunityid v0.0.0-20210315182841-1cdcb73ce408
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
@@ -46,4 +44,4 @@ require (
 	gopkg.in/linkedin/goavro.v1 v1.0.5 // indirect
 )
 
-// replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go
+//replace github.com/sysflow-telemetry/sf-apis/go => ../../sf-apis/go
