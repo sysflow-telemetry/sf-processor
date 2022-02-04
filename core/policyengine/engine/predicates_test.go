@@ -17,13 +17,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package engine_test
+package engine
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	. "github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 )
 
 func TestNot(t *testing.T) {

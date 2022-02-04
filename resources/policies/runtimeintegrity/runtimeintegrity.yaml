@@ -500,7 +500,6 @@
              and sf.proc.exe != sf.pproc.exe
              and not sf.pproc.exe = /usr/local/sbin/runc
              and sf.proc.name pmatch (shell_binaries, compilers, pkg_mgmt_binaries, shell_interpreters, coreutils_mod_binaries)
-  action: [alert]
   priority: low
   tags: [notification, suspicious-process]
   prefilter: [PE]
@@ -511,7 +510,6 @@
              and open_write
              and possibly_webserver 
              and not sf.file.path pmatch (log_paths)
-  action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
   prefilter: [FF]
@@ -521,7 +519,6 @@
   condition: sf.opflags = EXEC 
              and (sf.proc.name pmatch (package_mgmt_binaries) or java_package_installer) 
              and container          
-  action: [alert]
   priority: medium
   tags: [actionable-offense, suspicious-process]
   prefilter: [PE]
@@ -530,7 +527,6 @@
   desc: Downloader is being run inside the container. Could be downloading something malicious
   condition: sf.opflags = EXEC 
              and sf.proc.name pmatch (downloader_binaries)
-  action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
   prefilter: [PE]
@@ -540,7 +536,6 @@
   condition: sf.opflags = EXEC
              and sf.proc.name in (remote_copy_binaries) 
              and container  
-  action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
   prefilter: [PE]
@@ -549,7 +544,6 @@
   desc: User/Group was modified, added or deleted
   condition: sf.opflags = EXEC 
              and sf.proc.name in (modify_passwd_binaries, create_user_binaries, delete_user_binaries, modify_user_binaries, create_grp_binaries, delete_group_binaries, modify_grp_binaries)
-  action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
   prefilter: [PE]
@@ -559,7 +553,6 @@
   condition: sf.opflags = EXEC               
              and sf.proc.name pmatch (modify_passwd_binaries, verify_passwd_binaries, user_util_binaries)
              and container
-  action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
   prefilter: [PE]
@@ -569,7 +562,6 @@
   condition: sf.opflags = EXEC              
              and sf.proc.name pmatch (modify_passwd_binaries, verify_passwd_binaries, user_util_binaries)
              and not container
-  action: [alert]
   priority: high
   tags: [notification, suspicious-process]
   prefilter: [PE]
@@ -577,7 +569,6 @@
 - rule: Interactive login detected
   desc: Interactive login to container detected
   condition: interactive and container       
-  action: [alert]
   priority: high
   tags: [actionable-offense, suspicious-process]
   prefilter: [PE]
@@ -585,7 +576,6 @@
 - rule: Interactive login to host system detected
   desc: Interactive login to host detected
   condition: interactive and not container       
-  action: [alert]
   priority: high
   tags: [notification, suspicious-process]
   prefilter: [PE]
@@ -593,7 +583,6 @@
 - rule: Password file modified
   desc: Password file was modified
   condition: sf.file.path pmatch (sys_password_files) and open_write           
-  action: [alert]
   priority: high
   tags: [actionable-offense, filesystem-tampering]
   prefilter: [FF,FE]
@@ -601,7 +590,6 @@
 - rule: History file modified
   desc: History file modified indicating interactive session
   condition: sf.file.path pmatch (history_files) and open_write
-  action: [alert]
   priority: high
   tags: [notification, filesystem-tampering]
   prefilter: [FF,FE]
@@ -609,7 +597,6 @@
 - rule: Profile file modified
   desc: Profile file modified indicating interactive session
   condition: sf.file.path pmatch (profile_files) and open_write
-  action: [alert]
   priority: high
   tags: [notification, filesystem-tampering]
   prefilter: [FF,FE]
@@ -617,7 +604,6 @@
 - rule: Library preload file modified
   desc: Library preload file modified could indicate a library injection attack
   condition: sf.file.path pmatch (ld_preload_files) and open_write           
-  action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
   prefilter: [FF,FE]
@@ -626,7 +612,6 @@
   desc: Crontab file edited
   condition: (sf.file.path in (scheduler_files) and open_write) or
              (sf.file.newpath in (scheduler_files) and overwrite)
-  action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
   prefilter: [FF]
@@ -634,7 +619,6 @@
 - rule: Write below binary dir
   desc: an attempt to write to any file below a set of binary directories
   condition: open_write and bin_dir
-  action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
   prefilter: [FF,FE]
@@ -642,7 +626,6 @@
 - rule: Write below system dirs
   desc: an attempt to write to any file below a set of system directories
   condition: open_write and system_dir and not privileged_execution
-  action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
   prefilter: [FF,FE]
@@ -650,7 +633,6 @@
 - rule: Write to init directories 
   desc: an attempt to write to an init directory could indicate a persisted piece of malware
   condition: open_write and init_dir
-  action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
   prefilter: [FF,FE]
@@ -658,7 +640,6 @@
 - rule: Write to scheduler directories 
   desc: an attempt to write to a scheduler directory could indicate a persisted piece of malware
   condition: open_write and scheduler_dir
-  action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
   prefilter: [FF,FE]
@@ -670,7 +651,6 @@
     and not sf.file.path in (known_root_files)
     and not sf.file.directory in (known_root_directories)
     and not known_root_conditions
-  action: [alert]
   priority: high
   tags: [actionable-offense, filesystem-tampering]
   prefilter: [FF,FE]
@@ -679,7 +659,6 @@
   desc: an attempt to read any sensitive file (e.g. files containing user/password/authentication
 information). 
   condition: sensitive_files and open_read and not privileged_execution and not auth_execution
-  action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
   prefilter: [FF]
@@ -689,7 +668,6 @@ information).
   condition: (sf.file.path startswith /var/lib/rpm or 
              sf.file.path startswith /var/lib/dpkg) and 
              open_write
-  action: [alert]
   priority: medium
   tags: [unauthorized-package-install, notification]
   prefilter: [FF,FE]
@@ -703,7 +681,6 @@ information).
     and not sf.proc.aname in (docker_binaries, k8s_binaries, lxd_binaries)
     and not sf.proc.aname startswith "runc:"
     and not sf.file.path startswith /var/run/netns/cni
-  action: [alert]
   priority: medium
   tags: [notification, suspicious-process]
   prefilter: [FF]
@@ -718,7 +695,6 @@ information).
     and sf.proc.username != root 
     and not sf.proc.name in (known_setuid_binaries, userexec_binaries, mail_binaries, docker_binaries, nomachine_binaries)
     and not nrpe_becoming_nagios
-  action: [alert]
   priority: medium
   tags: [notification, suspicious-process]
   prefilter: [FF]
@@ -731,7 +707,6 @@ information).
     and not sf.proc.name in (dev_creation_binaries)
     and not sf.file.path in (allowed_dev_files)
     and not sf.file.path startswith /dev/tty
-  action: [alert]
   priority: medium
   tags: [notification, filesystem-tampering]
   prefilter: [FF,FE]
@@ -743,7 +718,6 @@ information).
     and inbound_outbound
     and not sf.proc.name in (systemd, hostid, id)
     and not login_doing_dns_lookup
-  action: [alert]
   priority: medium
   tags: [notification, suspicious-process]
   prefilter: [NF]

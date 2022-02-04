@@ -4,6 +4,5 @@
              and sf.type=FF
   			     and sf.is_open_write=true
   			     and sf.proc.exe contains python
-  action: [alert]
   priority: low
   tags: [test]

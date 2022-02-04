@@ -82,7 +82,7 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 		return err
 	}
 
-    dir := filepath.Dir(path)
+	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0600); err != nil {
 		logger.Error.Println("Unable to create directory: ", err)
 		return err
