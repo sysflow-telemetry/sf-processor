@@ -102,9 +102,8 @@ COPY ./LICENSE.md /licenses/
 # Fix plugin load error
 RUN ln -s /lib64/libdevmapper.so.1.02 /lib64/libdevmapper.so.1.02.1
 
-# Add user and groups
+# Add user
 RUN useradd -u 1001 sysflow
-RUN if [ -n "$DOCKER_GID" ]; then groupadd -g "$DOCKER_GID" docker && usermod -aG docker sysflow; fi
 
 # Copy files from previous stage
 COPY --from=base --chown=sysflow:sysflow /usr/local/sysflow/ /usr/local/sysflow/
