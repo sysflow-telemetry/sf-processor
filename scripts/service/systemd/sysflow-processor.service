@@ -8,8 +8,8 @@ After=sysflow.service
 Type=simple
 User=root
 EnvironmentFile=/etc/sysflow/conf/sysflow.env
-PassEnvironment=CONFIG_PATH
-ExecStart=/usr/bin/sfprocessor -log=error -driver=socket -config=${CONFIG_PATH} /sock/sysflow.sock
+PassEnvironment=CONFIG_PATH SOCKET
+ExecStart=/usr/bin/sfprocessor -log=error -driver=socket -config=${CONFIG_PATH} ${SOCKET:-/sock/sysflow.sock}
 UMask=0077
 TimeoutSec=30
 RestartSec=15s
