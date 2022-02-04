@@ -309,9 +309,9 @@ func (oe *OccurrenceEncoder) addEvent(r *engine.Record) (e *Event, ep *EventPool
 	// encode and add event to event pool
 	e = oe.encodeEvent(r)
 	ep.Events = append(ep.Events, e)
-	for _, rule := range r.Ctx.GetRules() {
-		ep.RuleTypes.Add(rule.Name)
-		ep.TopSeverity = Severity(utils.Max(int(ep.TopSeverity), int(rule.Priority)))
+	for _, r := range r.Ctx.GetRules() {
+		ep.RuleTypes.Add(r.Name)
+		ep.TopSeverity = Severity(utils.Max(int(ep.TopSeverity), int(r.Priority)))
 	}
 
 	// check if a semantically equivalent record has been seen before
@@ -405,10 +405,11 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 
 // summarizePolicy extracts a summary of rules applied to a record.
 func (oe *OccurrenceEncoder) summarizePolicy(r *engine.Record) (rnames []string, tags []string, severity Severity) {
-	for _, rule := range r.Ctx.GetRules() {
-		rnames = append(rnames, rule.Name)
-		severity = Severity(utils.Max(int(severity), int(rule.Priority)))
-		for _, tag := range rule.Tags {
+	tags = append(tags, r.Ctx.GetTags()...)
+	for _, r := range r.Ctx.GetRules() {
+		rnames = append(rnames, r.Name)
+		severity = Severity(utils.Max(int(severity), int(r.Priority)))
+		for _, tag := range r.Tags {
 			switch tag := tag.(type) {
 			case []string:
 				tags = append(tags, tag...)
