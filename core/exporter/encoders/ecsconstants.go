@@ -57,6 +57,12 @@ const (
 	ECS_GROUP_ID   = "id"
 	ECS_GROUP_NAME = "name"
 
+	// used in proc and file fields
+	ECS_HASH        = "hash"
+	ECS_HASH_MD5    = "md5"
+	ECS_HASH_SHA1   = "sha1"
+	ECS_HASH_SHA256 = "sha256"
+
 	ECS_NET_BYTES = "bytes"
 	ECS_NET_CID   = "community_id"
 	ECS_NET_IANA  = "iana_number"
@@ -94,8 +100,11 @@ const (
 	ECS_TAGS = "tags"
 )
 
-// ECS_KIND_EVENT defines the ECS kind value.
-const ECS_KIND_EVENT = "event"
+// ECS kind values.
+const (
+	ECS_KIND_ALERT = "alert"
+	ECS_KIND_EVENT = "event"
+)
 
 // ECS category values.
 const (

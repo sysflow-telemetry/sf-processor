@@ -33,7 +33,7 @@ jobs:
       - name: Lint core module
         uses: golangci/golangci-lint-action@v2
         with:          
-          version: latest          
+          version: v1.42.1          
           working-directory: core
           args: --disable=errcheck                     
   lint-driver:    
@@ -45,7 +45,7 @@ jobs:
       - name: Lint driver module
         uses: golangci/golangci-lint-action@v2
         with:          
-          version: latest          
+          version: v1.42.1          
           working-directory: driver
           args: --disable=errcheck      
   docker:

@@ -13,7 +13,7 @@ include ./makefile.manifest.inc
 GOCMD=go
 GOBUILD=$(GOCMD) build -tags exclude_graphdriver_btrfs
 GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test
+GOTEST=$(GOCMD) test -tags exclude_graphdriver_btrfs
 GOGET=$(GOCMD) get -tags exclude_graphdriver_btrfs
 BIN=sfprocessor
 OUTPUT=$(BIN)
@@ -30,7 +30,7 @@ package: build
 
 .PHONY: deps
 deps:
-	cd $(SRC) && $(GOGET) ./...
+	cd $(SRC) && $(GOGET)  ./...
 
 .PHONY: version
 version:
@@ -40,7 +40,7 @@ version:
 
 .PHONY: test
 test:
-	cd $(SRC) && $(GOTEST) -v ./...
+	cd $(SRC) && $(GOTEST) ./...
 
 .PHONY: clean
 clean:
@@ -58,7 +58,7 @@ install: build
 
 .PHONY: docker-build
 docker-build:
-	docker build -t sf-processor --build-arg UBI_VER=$(UBI_VERSION) --target=runtime -f Dockerfile .
+	docker build -t sf-processor --build-arg UBI_VER=$(UBI_VERSION) --build-arg DOCKER_GID=$(DOCKER_GID) --target=runtime -f Dockerfile .
 
 .PHONY: docker-build-base
 docker-build-base:

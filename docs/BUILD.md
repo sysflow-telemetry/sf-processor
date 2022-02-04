@@ -12,7 +12,7 @@ The endpoint of a pipeline configuration is an exporter plugin that sends the pr
 
 The processor has been tested on Ubuntu/RHEL distributions, but should work on any Linux system.
 
-- Golang version 1.14+ and make (if buiding from sources)
+- Golang version 1.14+ and make (if building from sources)
 - Docker, docker-compose  (if building with docker)
 
 ## Build

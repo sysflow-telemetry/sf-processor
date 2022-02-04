@@ -17,7 +17,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package engine_test
+package engine
 
 import (
 	"os"
@@ -28,5 +28,6 @@ import (
 
 func TestMain(m *testing.M) {
 	logger.InitLoggers(logger.TRACE)
+	SetupInterpreter(m)
 	os.Exit(m.Run())
 }

@@ -68,6 +68,7 @@ type Config struct {
 func setManifestInfo(conf *Config) {
 	addGlobalConfigItem(conf, manifest.VersionKey, manifest.Version)                     //nolint:typecheck
 	addGlobalConfigItem(conf, manifest.JSONSchemaVersionKey, manifest.JSONSchemaVersion) //nolint:typecheck
+	addGlobalConfigItem(conf, manifest.EcsVersionKey, manifest.EcsVersion)               //nolint:typecheck
 	addGlobalConfigItem(conf, manifest.BuildNumberKey, manifest.BuildNumber)             //nolint:typecheck
 	addGlobalConfigItem(conf, commons.ClusterIDKey, getEnv(ClusterIDEnvKey))
 }

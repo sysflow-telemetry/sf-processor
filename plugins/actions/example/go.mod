@@ -1,9 +1,8 @@
 //
-// Copyright (C) 2020 IBM Corporation.
+// Copyright (C) 2021 IBM Corporation.
 //
 // Authors:
-// Frederico Araujo <frederico.araujo@ibm.com>
-// Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,13 +16,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-module github.com/sysflow-telemetry/sf-processor/plugins/processors/example
+module github.com/sysflow-telemetry/sf-processor/plugins/actions/example
 
 go 1.14
 
-require (
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220204025248-25d44ab7fe1f
-	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201209134442-13e2a6e66430
-)
+require github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201209134442-13e2a6e66430
 
 replace github.com/sysflow-telemetry/sf-processor/core => ../../../core
