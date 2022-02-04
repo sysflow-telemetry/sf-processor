@@ -24,6 +24,7 @@ import (
 	"bytes"
 	"net"
 	"os"
+	"path/filepath"
 
 	"github.com/actgardner/gogen-avro/v7/compiler"
 	"github.com/actgardner/gogen-avro/v7/vm"
@@ -78,6 +79,12 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 	records := sfChannel.In
 	if err := os.RemoveAll(path); err != nil {
 		logger.Error.Println("Remove error: ", err)
+		return err
+	}
+
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0600); err != nil {
+		logger.Error.Println("Unable to create directory: ", err)
 		return err
 	}
 

@@ -22,7 +22,8 @@ module github.com/sysflow-telemetry/sf-processor/plugins/processors/example
 go 1.14
 
 require (
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210611191016-bbdbd17a2eaf
+	github.com/actgardner/gogen-avro v6.5.0+incompatible // indirect
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220204025248-25d44ab7fe1f
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20201209134442-13e2a6e66430
 )
 
