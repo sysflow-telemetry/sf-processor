@@ -26,17 +26,14 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/google/pprof v0.0.0-20210827144239-02619b876842 // indirect
 	github.com/ianlancetaylor/demangle v0.0.0-20210905161508-09a460cdf81d // indirect
-	github.com/kr/pretty v0.2.0 // indirect
 	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
-	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.3
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220124183703-8872fac205bc
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220204025248-25d44ab7fe1f
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20210709164444-484da05c2a85
-	golang.org/x/sys v0.0.0-20210908160347-a851e7ddeee0 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
 )
 
