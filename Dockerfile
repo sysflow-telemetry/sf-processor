@@ -38,8 +38,8 @@ ENV SRC_ROOT=/go/src/github.com/sysflow-telemetry/sf-processor/
 RUN dnf update -y --disableplugin=subscription-manager && \
      dnf install -y  --disableplugin=subscription-manager wget gcc make git device-mapper-devel
 
-RUN wget https://dl.google.com/go/go1.16.3.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go1.16.3.linux-amd64.tar.gz && mkdir -p $SRC_ROOT
+RUN wget https://go.dev/dl/go1.17.6.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.17.6.linux-amd64.tar.gz && mkdir -p $SRC_ROOT
 
 # Copy sources
 COPY core ${SRC_ROOT}core
@@ -102,9 +102,8 @@ COPY ./LICENSE.md /licenses/
 # Fix plugin load error
 RUN ln -s /lib64/libdevmapper.so.1.02 /lib64/libdevmapper.so.1.02.1
 
-# Add user and groups
+# Add user
 RUN useradd -u 1001 sysflow
-RUN if [ -n "$DOCKER_GID" ]; then groupadd -g "$DOCKER_GID" docker && usermod -aG docker sysflow; fi
 
 # Copy files from previous stage
 COPY --from=base --chown=sysflow:sysflow /usr/local/sysflow/ /usr/local/sysflow/

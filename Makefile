@@ -10,6 +10,7 @@
 include ./makefile.manifest.inc
 
 # Basic go commands
+PATH=$(shell printenv PATH):/usr/local/go/bin
 GOCMD=go
 GOBUILD=$(GOCMD) build -tags exclude_graphdriver_btrfs
 GOCLEAN=$(GOCMD) clean
@@ -18,10 +19,22 @@ GOGET=$(GOCMD) get -tags exclude_graphdriver_btrfs
 BIN=sfprocessor
 OUTPUT=$(BIN)
 SRC=./driver
+PACKDIR=./scripts/cpack
+INSTALL_PATH=/usr/local/sysflow
 
 .PHONY: build
 build: version deps
 	cd $(SRC) && $(GOBUILD) -o $(OUTPUT) -v
+
+.PHONY: package
+package: 
+	docker run --rm --user $(id -u):$(id -g) --group-add users --entrypoint=/bin/bash \
+		-v $(shell pwd)/scripts:$(INSTALL_PATH)/scripts \
+		-v $(shell pwd)/resources:$(INSTALL_PATH)/resources \
+		-v $(shell pwd)/LICENSE.md:$(INSTALL_PATH)/LICENSE.md \
+		-v $(shell pwd)/README.md:$(INSTALL_PATH)/README.md \
+		sysflowtelemetry/sf-processor:${SYSFLOW_VERSION} -- $(INSTALL_PATH)/scripts/cpack/prepackage.sh
+	cd scripts/cpack && export SYSFLOW_VERSION=$(SYSFLOW_VERSION); cpack --config ./CPackConfig.cmake
 
 .PHONY: deps
 deps:
@@ -42,6 +55,7 @@ clean:
 	cd $(SRC) && $(GOCLEAN)
 	rm -f $(SRC)/$(BIN)
 	rm -f $(SRC)/manifest/manifest.go
+	cd $(PACKDIR) && ./clean.sh
 
 .PHONY: install
 install: build
@@ -52,7 +66,11 @@ install: build
 
 .PHONY: docker-build
 docker-build:
-	docker build -t sf-processor --build-arg UBI_VER=$(UBI_VERSION) --build-arg DOCKER_GID=$(DOCKER_GID) --target=runtime -f Dockerfile .
+	( DOCKER_BUILDKIT=1 docker build -t sysflowtelemetry/sf-processor:${SYSFLOW_VERSION} --build-arg UBI_VER=$(UBI_VERSION) --target=runtime -f Dockerfile . )
+
+.PHONY: docker-build-base
+docker-build-base:
+	( DOCKER_BUILDKIT=1 docker build -t sysflowtelemetry/sf-processor:base --build-arg UBI_VER=$(UBI_VERSION) --target=base -f Dockerfile . )
 
 .PHONY: pull
 pull:
