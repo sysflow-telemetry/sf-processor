@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Changed policy engine modes and action verbs
 - Updated the short union strings from gogen-avro
 - Updated CI to automate packaging or release assets with release notes
+- Bump go version to go1.17.6
 
 ### Fixed
 
