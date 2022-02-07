@@ -63,7 +63,7 @@ func run() int {
 	memprofile := flag.String("memprofile", "", "Write memory profile to `file`")
 	traceprofile := flag.String("traceprofile", "", "Write trace profile to `file`")
 	configFile := flag.String("config", "pipeline.json", "Path to pipeline configuration file")
-	logLevel := flag.String("log", "info", "Log level {trace|info|warn|error}")
+	logLevel := flag.String("log", "info", "Log level {trace|info|warn|error|health|quiet}")
 	driverDir := flag.String("driverdir", pipeline.DriverDir, "Dynamic driver directory")
 	pluginDir := flag.String("plugdir", pipeline.PluginDir, "Dynamic plugins directory")
 	test := flag.Bool("test", false, "Test pipeline configuration")
