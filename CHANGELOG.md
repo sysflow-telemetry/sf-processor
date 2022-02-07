@@ -13,13 +13,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 > - **Fixed**: for any bug fixes.
 > - **Security**: in case of vulnerabilities.
 
-## [[UNRELEASED](https://github.com/sysflow-telemetry/sf-processor/compare/0.3.0...HEAD)]
+## [Unreleased]
 
 ### Changed
 
 - Update(ubi): Bumped UBI version to 8.4-211.
 
-## [[0.3.0](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...0.3.0)] - 2021-09-20
+## [0.3.0] - 2021-09-20
 
 ### Added
 
@@ -47,19 +47,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - Support for flat JSON schema
 
-## [[0.2.2](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.1...0.2.2)] - 2020-12-07
+## [0.2.2] - 2020-12-07
 
 ### Changed
 
 - Updated dependencies to latest `sf-apis`.
 
-## [[0.2.1](https://github.com/sysflow-telemetry/sf-processor/compare/0.2.0...0.2.1)] - 2020-12-02
+## [0.2.1] - 2020-12-02
 
 ### Fixed
 
 - Fixes `sf.file.oid` and `sf.file.newoid` attribute mapping.
 
-## [[0.2.0](https://github.com/sysflow-telemetry/sf-processor/compare/0.1.0...0.2.0)] - 2020-12-01
+## [0.2.0] - 2020-12-01
 
 ### Added
 
@@ -83,3 +83,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - First release of SysFlow Processor.
+
+[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.0...HEAD
+[0.3.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...0.3.0
+[0.2.2]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.1...0.2.2
+[0.2.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.0...0.2.1
+[0.2.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.1.0...0.2.0
+[0.1.0]: https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.1.0
