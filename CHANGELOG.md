@@ -15,9 +15,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-02-18
+
+### Added
+
+- Support for pluggable actions for policy engine
+- Support for asynchonous policy engine with thread pooling
+- Packaging in deb, rpm, and targz formats
+- Added 14 new MITRE TTP tagging rules
+- Added support for quiet logging mode
+
 ### Changed
 
-- Update(ubi): Bumped UBI version to 8.4-211.
+- Added contextual sysflow structure, removed global cache and cache synchronization primitives; refactored handler interface
+- Changed cache keys to OID types
+- Changed policy engine modes and action verbs
+- Updated the short union strings from gogen-avro
+- Updated CI to automate packaging or release assets with release notes
+
+### Fixed
+
+- Fixed cache coherence and race condition when updating the cache in the processor plugin; splits the processor plugin into two plugins, reader (which builds the cache) and processor (only reads from cache)
 
 ## [0.3.0] - 2021-09-20
 
@@ -84,7 +102,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - First release of SysFlow Processor.
 
-[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.0...HEAD
+[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.0-rc1...HEAD
+[0.4.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.3.0...0.4.0-rc1
 [0.3.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...0.3.0
 [0.2.2]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.1...0.2.2
 [0.2.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.0...0.2.1
