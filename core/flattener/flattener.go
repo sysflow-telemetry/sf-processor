@@ -131,6 +131,7 @@ func (s *Flattener) HandleNetFlow(sf *plugins.CtxSysFlow, nf *sfgo.NetworkFlow) 
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_NUMRRECVBYTES_INT] = nf.NumRRecvBytes
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_NUMWSENDBYTES_INT] = nf.NumWSendBytes
 	fr.Ptree = sf.PTree
+	fr.GraphletID = sf.GraphletID
 	for _, ch := range s.outCh {
 		ch <- fr
 	}
@@ -153,6 +154,7 @@ func (s *Flattener) HandleFileFlow(sf *plugins.CtxSysFlow, ff *sfgo.FileFlow) er
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_NUMRRECVBYTES_INT] = ff.NumRRecvBytes
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_NUMWSENDBYTES_INT] = ff.NumWSendBytes
 	fr.Ptree = sf.PTree
+	fr.GraphletID = sf.GraphletID
 	for _, ch := range s.outCh {
 		ch <- fr
 	}
@@ -168,7 +170,7 @@ func (s *Flattener) HandleFileEvt(sf *plugins.CtxSysFlow, fe *sfgo.FileEvent) er
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_RESTYPE_INT] = int64(sf.NewFile.Restype)
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_OID_STR] = getOIDStr(sf.NewFile.Oid[:])
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_PATH_STR] = strings.TrimSpace(sf.NewFile.Path)
-		if sf.NewFile.ContainerId != nil && sf.NewFile.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+		if sf.NewFile.ContainerId != nil && sf.NewFile.ContainerId.UnionType == sfgo.ContainerIdUnionTypeEnumString {
 			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_CONTAINERID_STRING_STR] = sf.NewFile.ContainerId.String
 		} else {
 			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String
@@ -188,6 +190,7 @@ func (s *Flattener) HandleFileEvt(sf *plugins.CtxSysFlow, fe *sfgo.FileEvent) er
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_OPFLAGS_INT] = int64(fe.OpFlags)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_RET_INT] = int64(fe.Ret)
 	fr.Ptree = sf.PTree
+	fr.GraphletID = sf.GraphletID
 	for _, ch := range s.outCh {
 		ch <- fr
 	}
@@ -214,6 +217,7 @@ func (s *Flattener) HandleProcEvt(sf *plugins.CtxSysFlow, pe *sfgo.ProcessEvent)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_OPFLAGS_INT] = int64(pe.OpFlags)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_RET_INT] = int64(pe.Ret)
 	fr.Ptree = sf.PTree
+	fr.GraphletID = sf.GraphletID
 	for _, ch := range s.outCh {
 		ch <- fr
 	}
@@ -256,7 +260,7 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.PROC_STATE_INT] = int64(proc.State)
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.PROC_OID_CREATETS_INT] = int64(proc.Oid.CreateTS)
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.PROC_OID_HPID_INT] = int64(proc.Oid.Hpid)
-		if proc.Poid != nil && proc.Poid.UnionType == sfgo.UnionNullOIDTypeEnumOID {
+		if proc.Poid != nil && proc.Poid.UnionType == sfgo.PoidUnionTypeEnumOID {
 			fr.Ints[sfgo.SYSFLOW_IDX][sfgo.PROC_POID_CREATETS_INT] = proc.Poid.OID.CreateTS
 			fr.Ints[sfgo.SYSFLOW_IDX][sfgo.PROC_POID_HPID_INT] = proc.Poid.OID.Hpid
 		} else {
@@ -280,7 +284,7 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		} else {
 			fr.Ints[sfgo.SYSFLOW_IDX][sfgo.PROC_ENTRY_INT] = 0
 		}
-		if proc.ContainerId != nil && proc.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+		if proc.ContainerId != nil && proc.ContainerId.UnionType == sfgo.ContainerIdUnionTypeEnumString {
 			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.PROC_CONTAINERID_STRING_STR] = proc.ContainerId.String
 		} else {
 			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.PROC_CONTAINERID_STRING_STR] = sfgo.Zeros.String
@@ -309,7 +313,7 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FILE_RESTYPE_INT] = int64(file.Restype)
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_OID_STR] = getOIDStr(file.Oid[:])
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_PATH_STR] = strings.TrimSpace(file.Path)
-		if file.ContainerId != nil && file.ContainerId.UnionType == sfgo.UnionNullStringTypeEnumString {
+		if file.ContainerId != nil && file.ContainerId.UnionType == sfgo.ContainerIdUnionTypeEnumString {
 			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_CONTAINERID_STRING_STR] = file.ContainerId.String
 		} else {
 			fr.Strs[sfgo.SYSFLOW_IDX][sfgo.FILE_CONTAINERID_STRING_STR] = sfgo.Zeros.String

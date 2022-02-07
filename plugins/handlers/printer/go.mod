@@ -21,6 +21,10 @@ module github.com/sysflow-telemetry/sf-processor/plugins/handlers/printer
 
 go 1.14
 
-require github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210611191016-bbdbd17a2eaf
+require (
+	github.com/actgardner/gogen-avro v6.5.0+incompatible // indirect
+	github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7 // indirect
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220204025248-25d44ab7fe1f
+)
 
 replace github.com/sysflow-telemetry/sf-processor/core => ../../../core

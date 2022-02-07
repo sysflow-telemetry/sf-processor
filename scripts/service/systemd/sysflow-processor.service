@@ -1,0 +1,26 @@
+[Unit]
+Description=SysFlow cloud-native system telemetry (processor)
+Documentation=https://sysflow.readthedocs.io
+PartOf=sysflow.service
+After=sysflow.service
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=/etc/sysflow/conf/sysflow.env
+PassEnvironment=CONFIG_PATH SOCKET
+ExecStart=/usr/bin/sfprocessor -log=error -driver=socket -config=${CONFIG_PATH} ${SOCKET}
+UMask=0077
+TimeoutSec=30
+RestartSec=15s
+Restart=on-failure
+PrivateTmp=true
+NoNewPrivileges=yes
+ProtectHome=read-only
+ProtectSystem=full
+ProtectKernelTunables=true
+RestrictAddressFamilies=~AF_PACKET
+KillSignal=SIGKILL
+
+[Install]
+WantedBy=sysflow.service

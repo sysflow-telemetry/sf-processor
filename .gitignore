@@ -32,3 +32,8 @@ driver/test.sh
 # Manifest
 driver/manifest/manifest.go
 driver/manifest/manifest.gobak
+
+# Cpack
+scripts/cpack/_CPack_Packages/
+scripts/cpack/build/
+scripts/cpack/sfprocessor*

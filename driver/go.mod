@@ -23,11 +23,14 @@ go 1.14
 
 require (
 	github.com/actgardner/gogen-avro/v7 v7.3.1
-	github.com/kr/pretty v0.2.0 // indirect
 	github.com/linkedin/goavro v2.1.0+incompatible
+	github.com/mitchellh/mapstructure v1.2.2 // indirect
+	github.com/spf13/cast v1.3.1 // indirect
+	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.6.3
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20210929184451-1b092dc0cfc7
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220204025248-25d44ab7fe1f
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20210709164444-484da05c2a85
+	gopkg.in/ini.v1 v1.55.0 // indirect
 )
 
 replace github.com/sysflow-telemetry/sf-processor/core => ../core
