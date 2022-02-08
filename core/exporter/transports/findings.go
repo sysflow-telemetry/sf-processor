@@ -26,8 +26,8 @@ import (
 
 	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/go-openapi/strfmt"
-	"github.com/ibm-cloud-security/security-advisor-sdk-go/common"
-	"github.com/ibm-cloud-security/security-advisor-sdk-go/findingsapiv1"
+	"github.com/ibm-cloud-security/security-advisor-sdk-go/v3/common"
+	"github.com/ibm-cloud-security/security-advisor-sdk-go/v3/findingsapiv1"
 	"github.com/pkg/errors"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"

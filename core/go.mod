@@ -29,9 +29,9 @@ require (
 	github.com/cespare/xxhash v1.1.0
 	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/go-openapi/strfmt v0.19.4
+	github.com/go-openapi/strfmt v0.20.1
 	github.com/golang/snappy v0.0.3 // indirect
-	github.com/ibm-cloud-security/security-advisor-sdk-go v1.1.1
+	github.com/ibm-cloud-security/security-advisor-sdk-go/v3 v3.0.0
 	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/mailru/easyjson v0.7.6
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
