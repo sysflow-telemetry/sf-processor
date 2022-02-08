@@ -24,7 +24,6 @@ go 1.14
 require (
 	github.com/actgardner/gogen-avro/v7 v7.3.1
 	github.com/linkedin/goavro v2.1.0+incompatible
-	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.6.3

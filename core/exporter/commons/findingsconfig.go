@@ -23,7 +23,7 @@ package commons
 import (
 	"strconv"
 
-	"github.com/ibm-cloud-security/security-advisor-sdk-go/findingsapiv1"
+	"github.com/ibm-cloud-security/security-advisor-sdk-go/v3/findingsapiv1"
 )
 
 // Configuration keys.
