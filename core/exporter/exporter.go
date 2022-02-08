@@ -153,6 +153,7 @@ RecLoop:
 					lastFlush = time.Now()
 				}
 			} else {
+				ticker.Stop()
 				if s.counter > 0 {
 					s.process()
 				}

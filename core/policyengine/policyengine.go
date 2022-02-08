@@ -135,7 +135,7 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 					case pi := <-s.policyMonitor.GetInterpreterChan():
 						logger.Info.Println("Updated policy interpreter in main policy engine thread.")
 						// stop workers from old policy interpreter before assigning new one
-						s.pi.StartWorkers()
+						s.pi.StopWorkers()
 						pi.StartWorkers()
 						s.pi = pi
 					default:
