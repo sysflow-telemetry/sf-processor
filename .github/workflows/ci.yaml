@@ -151,9 +151,9 @@ jobs:
         run: |
           docker pull ${{ env.DOCKER_REGISTRY_REPOSITORY }}:${{ steps.tag_name.outputs.current_tag }}
           make package
-          echo "##[set-output name=deb;] $(ls scripts/cpack/*.deb)"          
-          echo "##[set-output name=rpm;] $(ls scripts/cpack/*.rpm)"          
-          echo "##[set-output name=targz;] $(ls scripts/cpack/*.tar.gz)"                  
+          echo "##[set-output name=deb;] $(ls ${{ env.GITHUB_WORKSPACE }}/scripts/cpack/*.deb)"          
+          echo "##[set-output name=rpm;] $(ls ${{ env.GITHUB_WORKSPACE }}/scripts/cpack/*.rpm)"          
+          echo "##[set-output name=targz;] $(ls ${{ env.GITHUB_WORKSPACE }}/scripts/cpack/*.tar.gz)"                  
       - name: Get Changelog Entry
         id: changelog_reader
         uses: mindsers/changelog-reader-action@v2
