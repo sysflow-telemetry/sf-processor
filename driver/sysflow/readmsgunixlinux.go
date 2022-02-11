@@ -27,7 +27,7 @@ import (
 	"syscall"
 )
 
-// readMsgUnix reads a message from a unix socket (compatible with the Darwin architecture).
+// readMsgUnix reads a message from a unix socket (compatible with the Linux architecture).
 func (s *StreamingDriver) readMsgUnix(buf []byte, oobuf []byte) error {
 	_, _, flags, _, err := s.conn.ReadMsgUnix(buf[:], oobuf[:])
 	if flags != syscall.MSG_CMSG_CLOEXEC {
