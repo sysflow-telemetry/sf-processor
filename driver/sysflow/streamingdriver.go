@@ -17,6 +17,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build linux || darwin
+
 // Package sysflow implements pluggable drivers for SysFlow ingestion.
 package sysflow
 
@@ -24,8 +26,7 @@ import (
 	"bytes"
 	"net"
 	"os"
-    "syscall"
-    "path/filepath"
+	"path/filepath"
 
 	"github.com/actgardner/gogen-avro/v7/compiler"
 	"github.com/actgardner/gogen-avro/v7/vm"
@@ -116,15 +117,11 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 		logger.Health.Println("Successfully accepted new input stream")
 		for *running {
 			sFlow = sfgo.NewSysFlow()
-			_, _, flags, _, err := s.conn.ReadMsgUnix(buf[:], oobuf[:])
+			err := s.readMsgUnix(buf[:], oobuf[:])
 			if err != nil {
 				logger.Error.Println("Read error: ", err)
 				break
 			}
-            if flags != syscall.MSG_CMSG_CLOEXEC {
-			    logger.Error.Println("ReadMsgUnix flags = %#x, want %#x (MSG_CMSG_CLOEXEC)", flags, syscall.MSG_CMSG_CLOEXEC)
-				break
-		    }
 			reader.Reset(buf)
 			err = vm.Eval(reader, deser, sFlow)
 			if err != nil {
