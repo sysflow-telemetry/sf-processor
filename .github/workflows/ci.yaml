@@ -168,7 +168,7 @@ jobs:
           prerelease: contains(steps.tag_name.outputs.current_version, '-rc')
           draft: true
           files: |
-            ${{ steps.build_release_assets.deb }}
-            ${{ steps.build_release_assets.rpm }}
-            ${{ steps.build_release_assets.targz }}
+            ${{ steps.build_release_assets.outputs.deb }}
+            ${{ steps.build_release_assets.outputs.rpm }}
+            ${{ steps.build_release_assets.outputs.targz }}
             
