@@ -29,7 +29,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - Added contextual sysflow structure, removed global cache and cache synchronization primitives; refactored handler interface
 - Changed cache keys to OID types
-- Changed policy engine modes and action verbs
+- BREAKING Changed policy engine modes and action verbs (update policy yaml rule declarations to remove `action` attribute if used with `alert` or `tag` verbs)
+  - `alert` and `enrich` are now policy engine modes, and `action` in policy rule declaration is now used for calling action handling plugins
 - Updated the short union strings from gogen-avro
 - Updated CI to automate packaging or release assets with release notes
 - Bump go version to go1.17.7
