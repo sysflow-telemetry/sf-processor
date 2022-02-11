@@ -24,6 +24,7 @@ import (
 	"bytes"
 	"net"
 	"os"
+    "syscall"
     "path/filepath"
 
 	"github.com/actgardner/gogen-avro/v7/compiler"
@@ -120,20 +121,20 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 				logger.Error.Println("Read error: ", err)
 				break
 			}
-			if flags == 0 {
-				reader.Reset(buf)
-				err = vm.Eval(reader, deser, sFlow)
-				if err != nil {
-					logger.Error.Println("Deserialization error: ", err)
-				}
-				if !health {
-					logger.Health.Println("Successfully read first record from input stream")
-					health = true
-				}
-				records <- sFlow
-			} else {
-				logger.Error.Println("Flag error ReadMsgUnix: ", flags)
+            if flags != syscall.MSG_CMSG_CLOEXEC {
+			    logger.Error.Println("ReadMsgUnix flags = %#x, want %#x (MSG_CMSG_CLOEXEC)", flags, syscall.MSG_CMSG_CLOEXEC)
+				break
+		    }
+			reader.Reset(buf)
+			err = vm.Eval(reader, deser, sFlow)
+			if err != nil {
+				logger.Error.Println("Deserialization error: ", err)
 			}
+			if !health {
+				logger.Health.Println("Successfully read first record from input stream")
+				health = true
+			}
+			records <- sFlow
 		}
 		s.conn.Close()
 	}

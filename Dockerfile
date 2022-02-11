@@ -38,8 +38,8 @@ ENV SRC_ROOT=/go/src/github.com/sysflow-telemetry/sf-processor/
 RUN dnf update -y --disableplugin=subscription-manager && \
      dnf install -y  --disableplugin=subscription-manager wget gcc make git device-mapper-devel
 
-RUN wget https://go.dev/dl/go1.17.6.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go1.17.6.linux-amd64.tar.gz && mkdir -p $SRC_ROOT
+RUN wget https://go.dev/dl/go1.17.7.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.17.7.linux-amd64.tar.gz && mkdir -p $SRC_ROOT
 
 # Copy sources
 COPY core ${SRC_ROOT}core
