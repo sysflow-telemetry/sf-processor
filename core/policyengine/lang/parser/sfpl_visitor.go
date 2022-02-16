@@ -1,4 +1,4 @@
-// Code generated from Sfpl.g4 by ANTLR 4.8. DO NOT EDIT.
+// Code generated from Sfpl.g4 by ANTLR 4.9.2. DO NOT EDIT.
 
 package parser // Sfpl
 import "github.com/antlr/antlr4/runtime/Go/antlr"
@@ -51,6 +51,9 @@ type SfplVisitor interface {
 
 	// Visit a parse tree produced by SfplParser#items.
 	VisitItems(ctx *ItemsContext) interface{}
+
+	// Visit a parse tree produced by SfplParser#actions.
+	VisitActions(ctx *ActionsContext) interface{}
 
 	// Visit a parse tree produced by SfplParser#tags.
 	VisitTags(ctx *TagsContext) interface{}

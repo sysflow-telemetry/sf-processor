@@ -1,4 +1,4 @@
-// Code generated from Sfpl.g4 by ANTLR 4.8. DO NOT EDIT.
+// Code generated from Sfpl.g4 by ANTLR 4.9.2. DO NOT EDIT.
 
 package parser // Sfpl
 import "github.com/antlr/antlr4/runtime/Go/antlr"
@@ -64,6 +64,10 @@ func (v *BaseSfplVisitor) VisitTerm(ctx *TermContext) interface{} {
 }
 
 func (v *BaseSfplVisitor) VisitItems(ctx *ItemsContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseSfplVisitor) VisitActions(ctx *ActionsContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

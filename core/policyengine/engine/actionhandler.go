@@ -94,6 +94,19 @@ func NewActionHandler(conf Config) *ActionHandler {
 	return ah
 }
 
+// CheckActions checks whether actions rules definitions have known implementations.
+func (ah *ActionHandler) CheckActions(rules []Rule) {
+	for _, r := range rules {
+		for _, a := range r.Actions {
+			if _, ok := ah.BuiltInActions[a]; !ok {
+				if _, ok = ah.UserDefinedActions[a]; !ok {
+					logger.Warn.Printf("Unknown action identifier '%s' found in rule '%s'", a, r.Name)
+				}
+			}
+		}
+	}
+}
+
 // HandleAction handles actions defined in rule.
 func (ah *ActionHandler) HandleActions(rule Rule, r *Record) {
 	for _, a := range rule.Actions {
@@ -102,10 +115,8 @@ func (ah *ActionHandler) HandleActions(rule Rule, r *Record) {
 			action, ok = ah.UserDefinedActions[a]
 		}
 		if !ok {
-			logger.Error.Println("Unknown action: '" + a + "'")
 			continue
 		}
-
 		if err := action(r); err != nil {
 			logger.Error.Println("Error in action: " + err.Error())
 		}

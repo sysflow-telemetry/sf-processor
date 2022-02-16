@@ -158,6 +158,7 @@ func (pi *PolicyInterpreter) Compile(paths ...string) error {
 			return err
 		}
 	}
+	pi.ah.CheckActions(pi.rules)
 	return nil
 }
 
@@ -347,18 +348,19 @@ func (pi *PolicyInterpreter) getPriority(ctx *parser.PruleContext) Priority {
 
 func (pi *PolicyInterpreter) getActions(ctx *parser.PruleContext) []string {
 	var actions []string
-	if ctx.ACTION(0) != nil || ctx.OUTPUT(0) != nil {
-		astr := ctx.Text(2).GetText()
-		l := pi.extractList(astr)
-		for _, v := range l {
-			actions = append(actions, strings.ToLower(v))
-		}
+	ictx := ctx.Actions(0)
+	if ictx != nil {
+		return append(actions, pi.extractActions(ictx)...)
 	}
 	return actions
 }
 
 func (pi *PolicyInterpreter) extractList(str string) []string {
-	return strings.Split(itemsre.ReplaceAllString(str, "$2"), LISTSEP)
+	var items []string
+	for _, i := range strings.Split(itemsre.ReplaceAllString(str, "$2"), LISTSEP) {
+		items = append(items, trimBoundingQuotes(i))
+	}
+	return items
 }
 
 func (pi *PolicyInterpreter) extractListFromItems(ctx parser.IItemsContext) []string {
@@ -369,6 +371,13 @@ func (pi *PolicyInterpreter) extractListFromItems(ctx parser.IItemsContext) []st
 }
 
 func (pi *PolicyInterpreter) extractTags(ctx parser.ITagsContext) []string {
+	if ctx != nil {
+		return pi.extractList(ctx.GetText())
+	}
+	return []string{}
+}
+
+func (pi *PolicyInterpreter) extractActions(ctx parser.IActionsContext) []string {
 	if ctx != nil {
 		return pi.extractList(ctx.GetText())
 	}
