@@ -28,12 +28,12 @@ defs
 	: (srule | sfilter | pmacro | plist | preq)* EOF
 	;
 
-prule
-	: DECL RULE DEF text DESC DEF text COND DEF expression ((ACTION|OUTPUT) DEF text | PRIORITY DEF severity | TAGS DEF tags | PREFILTER DEF prefilter | ENABLED DEF enabled | WARNEVTTYPE DEF warnevttype | SKIPUNKNOWN DEF skipunknown)*
+prule			
+	: DECL RULE DEF text DESC DEF text COND DEF expression (OUTPUT DEF text | ACTION DEF actions | PRIORITY DEF severity | TAGS DEF tags | PREFILTER DEF prefilter | ENABLED DEF enabled | WARNEVTTYPE DEF warnevttype | SKIPUNKNOWN DEF skipunknown)*
 	;
 
 srule
-	: DECL RULE DEF text DESC DEF text COND DEF expression ((ACTION|OUTPUT) DEF text | PRIORITY DEF severity | TAGS DEF tags | PREFILTER DEF prefilter | ENABLED DEF enabled | WARNEVTTYPE DEF warnevttype | SKIPUNKNOWN DEF skipunknown)*
+	: DECL RULE DEF text DESC DEF text COND DEF expression (OUTPUT DEF text | ACTION DEF actions | PRIORITY DEF severity | TAGS DEF tags | PREFILTER DEF prefilter | ENABLED DEF enabled | WARNEVTTYPE DEF warnevttype | SKIPUNKNOWN DEF skipunknown)*
 	;
 
 pfilter
@@ -82,6 +82,10 @@ term
 	;
 
 items 
+	: LBRACK (atom (LISTSEP atom)*)? (LISTSEP)? RBRACK
+	;
+
+actions
 	: LBRACK (atom (LISTSEP atom)*)? (LISTSEP)? RBRACK
 	;
 
@@ -138,9 +142,9 @@ text
 		  p.GetCurrentToken().GetText() == "enabled" ||
 		  p.GetCurrentToken().GetText() == "warn_evttypes" ||
 		  p.GetCurrentToken().GetText() == "skip-if-unknown-filter" ||
-		  p.GetCurrentToken().GetText() == "append")}? .)+
+		  p.GetCurrentToken().GetText() == "append" )}? .)+
 	;
-	
+
 binary_operator 
 	: LT 
 	| LE 

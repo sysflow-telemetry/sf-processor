@@ -1,4 +1,4 @@
-// Code generated from Sfpl.g4 by ANTLR 4.8. DO NOT EDIT.
+// Code generated from Sfpl.g4 by ANTLR 4.9.2. DO NOT EDIT.
 
 package parser // Sfpl
 import "github.com/antlr/antlr4/runtime/Go/antlr"
@@ -109,6 +109,12 @@ func (s *BaseSfplListener) EnterItems(ctx *ItemsContext) {}
 
 // ExitItems is called when production items is exited.
 func (s *BaseSfplListener) ExitItems(ctx *ItemsContext) {}
+
+// EnterActions is called when production actions is entered.
+func (s *BaseSfplListener) EnterActions(ctx *ActionsContext) {}
+
+// ExitActions is called when production actions is exited.
+func (s *BaseSfplListener) ExitActions(ctx *ActionsContext) {}
 
 // EnterTags is called when production tags is entered.
 func (s *BaseSfplListener) EnterTags(ctx *TagsContext) {}
