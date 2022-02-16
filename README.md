@@ -6,7 +6,7 @@
 
 # Supported tags and respective `Dockerfile` links
 
--	[`0.4.0`, `latest`](https://github.com/sysflow-telemetry/sf-processor/blob/0.4.0-rc1/Dockerfile), [`edge`](https://github.com/sysflow-telemetry/sf-processor/blob/master/Dockerfile), [`dev`](https://github.com/sysflow-telemetry/sf-processor/blob/dev/Dockerfile)
+-	[`0.4.0`, `latest`](https://github.com/sysflow-telemetry/sf-processor/blob/0.4.0-rc2/Dockerfile), [`edge`](https://github.com/sysflow-telemetry/sf-processor/blob/master/Dockerfile), [`dev`](https://github.com/sysflow-telemetry/sf-processor/blob/dev/Dockerfile)
 
 # Quick reference
 
@@ -26,7 +26,7 @@
 	[docker hub](https://hub.docker.com/u/sysflowtelemetry) | [GHCR](https://github.com/orgs/sysflow-telemetry/packages)
 
 -	**Binary packages**:  
-	[deb](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.4.0-rc1/sfprocessor-0.4.0-rc1-x86_64.deb) | [rpm](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.4.0-rc1/sfprocessor-0.4.0-rc1-x86_64.rpm) | [tgz](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.4.0-rc1/sfprocessor-0.4.0-rc1-x86_64.tar.gz)
+	[deb](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.4.0-rc2/sfprocessor-0.4.0-rc2-x86_64.deb) | [rpm](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.4.0-rc2/sfprocessor-0.4.0-rc2-x86_64.rpm) | [tgz](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.4.0-rc2/sfprocessor-0.4.0-rc2-x86_64.tar.gz)
 
 # What is SysFlow?
 
@@ -66,7 +66,7 @@ See [template](https://github.com/sysflow-telemetry/sf-processor/blob/master/dri
 
 # License
 
-View [license information](https://github.com/sysflow-telemetry/sf-exporter/blob/master/LICENSE.md) for the software contained in this image.
+View [license information](https://github.com/sysflow-telemetry/sf-processor/blob/master/LICENSE.md) for the software contained in this image.
 
 As with all Docker images, these likely also contain other software which may be under other licenses (such as Bash, etc from the base distribution, along with any direct or indirect dependencies of the primary software being contained).
 
