@@ -395,8 +395,13 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 		detStr = fmt.Sprintf(nfStrFmt, proc, conn)
 	}
 	// sanitizes details string to avoid being flagged by tools like CloudFlare
+	shortStr := strings.ReplaceAll(rnames[0], "/", fwdSlash)
 	encDetStr := strings.ReplaceAll(detStr, "/", fwdSlash)
-	oc.ShortDescr = encDetStr
+	if len(rnames) == 1 {
+		oc.ShortDescr = shortStr
+	} else {
+		oc.ShortDescr = fmt.Sprintf("%s (+)", strings.ReplaceAll(shortStr, "/", fwdSlash))
+	}
 	oc.LongDescr = fmt.Sprintf(detailsStrFmt, encDetStr, polStr, tagsStr)
 	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, oe.config.FindingsS3Region, oe.config.FindingsS3Bucket,
 		e.getExportFilePath(oe.config.FindingsS3Prefix, oe.config.ClusterID), oe.config.FindingsS3Region, oe.config.FindingsS3Bucket)
