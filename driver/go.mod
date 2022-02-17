@@ -30,24 +30,26 @@ require (
 )
 
 require (
-	github.com/IBM/go-sdk-core/v3 v3.3.1 // indirect
+	github.com/IBM/go-sdk-core/v5 v5.9.2 // indirect
+	github.com/IBM/scc-go-sdk/v3 v3.1.5 // indirect
 	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91 // indirect
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-openapi/errors v0.19.8 // indirect
-	github.com/go-openapi/strfmt v0.20.1 // indirect
-	github.com/go-playground/locales v0.13.0 // indirect
-	github.com/go-playground/universal-translator v0.17.0 // indirect
+	github.com/go-openapi/strfmt v0.21.1 // indirect
+	github.com/go-playground/locales v0.14.0 // indirect
+	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/gopacket v1.1.19 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/ibm-cloud-security/security-advisor-sdk-go/v3 v3.0.0 // indirect
-	github.com/leodido/go-urn v1.2.0 // indirect
+	github.com/ibm-cloud-security/security-advisor-sdk-go/v3 v3.0.1-0.20220209054526-9b7b213d988c // indirect
+	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
@@ -63,10 +65,10 @@ require (
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570 // indirect
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	go.mongodb.org/mongo-driver v1.5.1 // indirect
-	golang.org/x/net v0.0.0-20210825183410-e898025ed96a // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
-	golang.org/x/text v0.3.6 // indirect
+	go.mongodb.org/mongo-driver v1.7.5 // indirect
+	golang.org/x/net v0.0.0-20220114011407-0dd24b26b47d // indirect
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
+	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
