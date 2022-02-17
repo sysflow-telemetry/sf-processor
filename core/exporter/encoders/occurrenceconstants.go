@@ -33,6 +33,8 @@ const (
 	ffStrFmt = "File access %s " + rightArrow + " %s"
 	nfStrFmt = "Network traffic %s " + rightArrow + " %s"
 
+	defaultShortDescr = "telemetry event"
+
 	policiesStrFmt = "<b>Policies</b><br>%s"
 	tagsStrFmt     = "<b>Tags</b><br>%s"
 	detailsStrFmt  = "%s<br><br>%s<br><br>%s"
