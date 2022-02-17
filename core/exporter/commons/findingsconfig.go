@@ -23,7 +23,7 @@ package commons
 import (
 	"strconv"
 
-	"github.com/ibm-cloud-security/security-advisor-sdk-go/v3/findingsapiv1"
+	"github.com/IBM/scc-go-sdk/v3/findingsv1"
 )
 
 // Configuration keys.
@@ -64,7 +64,7 @@ type FindingsConfig struct {
 func CreateFindingsConfig(bc Config, conf map[string]interface{}) (c FindingsConfig, err error) {
 	// default values
 	c = FindingsConfig{
-		FindingsURL:          findingsapiv1.DefaultServiceURL,
+		FindingsURL:          findingsv1.DefaultServiceURL,
 		FindingsSQLQueryURL:  "https://us.sql-query.cloud.ibm.com/sqlquery",
 		FindingsPath:         "/mnt/occurrences",
 		FindingsPoolCapacity: 250,

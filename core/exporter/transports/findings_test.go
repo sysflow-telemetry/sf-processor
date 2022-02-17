@@ -11,8 +11,8 @@ import (
 func TestFindings(t *testing.T) {
 	config := commons.Config{
 		FindingsConfig: commons.FindingsConfig{
-			FindingsAccountID:  "79b06b84fc25fe1bd84a1e81d2e73cf0",
-			FindingsAPIKey:     "dJaIXtX-b1Kmrh0pw9Ryx_xIQ2hNcIS5KpViEpOEfIwN",
+			FindingsAccountID:  "<ACCOUNT_ID>",
+			FindingsAPIKey:     "<API_KEY>",
 			FindingsProviderID: "system-analytics-pipeline",
 			FindingsRegion:     "us-south",
 		},
