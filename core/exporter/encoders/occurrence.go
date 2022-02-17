@@ -51,16 +51,17 @@ type EventPool struct {
 	RuleTypes     *utils.Set
 	TopSeverity   Severity
 	LastFlushTime time.Time
+	encTs         int64
 	epw           *EventPoolWriter
 }
 
 // NewEventPool creates a new EventPool instace.
-func NewEventPool(cid string) (ep *EventPool, err error) {
+func NewEventPool(cid string, ts int64) (ep *EventPool, err error) {
 	bf, err := bloomfilter.NewOptimal(maxElements, probCollide)
 	if err != nil {
 		return
 	}
-	return &EventPool{CID: cid, Filter: bf, RuleTypes: utils.NewSet(), TopSeverity: SeverityLow}, nil
+	return &EventPool{CID: cid, Filter: bf, RuleTypes: utils.NewSet(), TopSeverity: SeverityLow, encTs: ts}, nil
 }
 
 // State returns a tuple summarizing the state of the event pool.
@@ -82,7 +83,7 @@ func (ep *EventPool) ReachedCapacity(capacity int) bool {
 func (ep *EventPool) Flush(pathPrefix string, s3Prefix string, clusterID string) (err error) {
 	var events []interface{}
 	for _, v := range ep.Events {
-		exportPath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath(s3Prefix, clusterID))
+		exportPath := fmt.Sprintf("%s/%s", pathPrefix, v.getExportFilePath(s3Prefix, clusterID, ep.encTs))
 		if err = ep.UpdateEventPoolWriter(exportPath, v.Schema()); err != nil {
 			return
 		}
@@ -204,9 +205,9 @@ func (e *Event) getExportFileName() string {
 }
 
 // getExportFilePath builds the export file path for the event.
-func (e *Event) getExportFilePath(prefix string, clusterID string) string {
+func (e *Event) getExportFilePath(prefix string, clusterID string, encTs int64) string {
 	y, m, d := e.getTimePartitions()
-	path := fmt.Sprintf("%d/%d/%d/%s.avro", y, m, d, e.getExportFileName())
+	path := fmt.Sprintf("%d/%d/%d/%s_%d.avro", y, m, d, e.getExportFileName(), encTs)
 	return e.prependEnvPath(prefix, clusterID, path)
 }
 
@@ -264,6 +265,7 @@ type OccurrenceEncoder struct {
 	config      commons.Config
 	exportCache cmap.ConcurrentMap
 	batch       []commons.EncodedData
+	ts          int64
 }
 
 // NewOccurrenceEncoder creates a new Occurrence encoder.
@@ -271,7 +273,8 @@ func NewOccurrenceEncoder(config commons.Config) Encoder {
 	return &OccurrenceEncoder{
 		config:      config,
 		exportCache: cmap.New(),
-		batch:       make([]commons.EncodedData, 0, config.EventBuffer)}
+		batch:       make([]commons.EncodedData, 0, config.EventBuffer),
+		ts:          time.Now().Unix()}
 }
 
 // Register registers the encoder to the codecs cache.
@@ -352,7 +355,7 @@ func (oe *OccurrenceEncoder) getEventPool(cid string) *EventPool {
 	if v, ok := m.Get(cid); ok {
 		ep = v.(*EventPool)
 	} else {
-		ep, _ = NewEventPool(cid)
+		ep, _ = NewEventPool(cid, oe.ts)
 		m.Set(cid, ep)
 	}
 	return ep
@@ -406,7 +409,7 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 	oc.ShortDescr = shortDescr
 	oc.LongDescr = fmt.Sprintf(detailsStrFmt, encDetStr, polStr, tagsStr)
 	oc.AlertQuery = fmt.Sprintf(sqlQueryStrFmt, oe.config.FindingsS3Region, oe.config.FindingsS3Bucket,
-		e.getExportFilePath(oe.config.FindingsS3Prefix, oe.config.ClusterID), oe.config.FindingsS3Region, oe.config.FindingsS3Bucket)
+		e.getExportFilePath(oe.config.FindingsS3Prefix, oe.config.ClusterID, ep.encTs), oe.config.FindingsS3Region, oe.config.FindingsS3Bucket)
 	return oc
 }
 
