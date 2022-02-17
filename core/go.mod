@@ -23,13 +23,13 @@ go 1.17
 
 require (
 	github.com/IBM/go-sdk-core/v5 v5.9.2
+	github.com/IBM/scc-go-sdk/v3 v3.1.5
 	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91
 	github.com/actgardner/gogen-avro/v7 v7.3.1
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0
 	github.com/cespare/xxhash v1.1.0
 	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/go-openapi/strfmt v0.21.1	
 	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/mailru/easyjson v0.7.6
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
@@ -41,11 +41,10 @@ require (
 )
 
 require (
-	github.com/IBM/scc-go-sdk/v3 v3.1.5 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-openapi/errors v0.19.8 // indirect
+	github.com/go-openapi/strfmt v0.21.1 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
