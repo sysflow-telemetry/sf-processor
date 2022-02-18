@@ -54,7 +54,7 @@ type Config struct {
 
 // CreateConfig creates a new config object from config dictionary.
 func CreateConfig(conf map[string]interface{}) (Config, error) {
-	var c Config = Config{Mode: EnrichMode, Concurrency: 5, Monitor: NoneType, MonitorInterval: 30 * time.Second} // default values
+	var c Config = Config{Mode: AlertMode, Concurrency: 5, Monitor: NoneType, MonitorInterval: 30 * time.Second} // default values
 	var err error
 
 	if v, ok := conf[PoliciesConfigKey].(string); ok {

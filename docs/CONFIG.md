@@ -57,8 +57,9 @@ The policy engine (`"processor": "policyengine"`) plugin is driven by a set of r
 
 - _policies_ (required): The path to the YAML rules specification file. More information on rules can be found in the [Policies](POLICIES.md) section.
 - _mode_ (optional): The mode of the policy engine. Allowed values are:
-  - `enrich` for enriching records with additional context from the rule. This is a non-blocking mode which applies policy, tag and action enrichments to matching records as defined in the policy file. Non-matching records are passed on "as is". If no mode was specified, the policy engine runs in `enrich` mode by default.
-  - `alert` for generating rule-based alerts. In contrast to `enrich`, `alert` is a blocking mode that drops all records that do not match any given rule.
+  - `alert` (default): the policy engine generates rule-based alerts; `alert` is a blocking mode that drops all records that do not match any given rule. If no mode is specified, the policy engine runs in `alert` mode by default.
+  - `enrich` for enriching records with additional context from the rule. In contrast to `alert`, this is a non-blocking mode which applies tagging and action enrichments to matching records as defined in the policy file. Non-matching records are passed on "as is".
+  
 - _monitor_ (optional): Specifies if changes to the policy file(s) should be monitored and updated in the policy engine.
   - `none` (default): no monitor is used.
   - `local`: the processor will monitor for changes in the policies path and update its rule set if changes are detected.
