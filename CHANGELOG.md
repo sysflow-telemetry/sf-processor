@@ -35,11 +35,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Updated CI to automate packaging or release assets with release notes
 - Bump go version to go1.17.7
 - BREAKING Added support for architecture-dependent build (darwin, linux), due to [changes in go 1.17 net](https://github.com/golang/go/commit/e97d8eb027c0067f757860b6f766644de15941f2) package
+- Updated findings short description formatting and name convention
 
 ### Fixed
 
 - Fixed cache coherence and race condition when updating the cache in the processor plugin; splits the processor plugin into two plugins, reader (which builds the cache) and processor (only reads from cache)
 - Fixed stream socket reader issue introduced with the upgrade to go 1.17
+
+### Security
+
+- Updated IBM Findings SDK to fix [CVE-2020-26160](https://github.com/advisories/GHSA-w73w-5m7g-f7qc)
 
 ## [0.3.1] - 2021-09-29
 
