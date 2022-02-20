@@ -1,0 +1,4 @@
+- rule: Action example
+  desc: user-defined action example
+  condition: sf.opflags = EXEC
+  actions: [now]

@@ -53,7 +53,7 @@ func (ah *ActionHandler) loadUserActions(dir string) {
 	if paths, err := ioutils.ListFilePaths(dir, ".so"); err == nil {
 		var plug *plugin.Plugin
 		for _, path := range paths {
-			logger.Info.Println("Loading user-defined actions from file " + path)
+			logger.Info.Println("Loading user-defined action from file " + path)
 			if plug, err = plugin.Open(path); err != nil {
 				logger.Error.Println(err.Error())
 				continue

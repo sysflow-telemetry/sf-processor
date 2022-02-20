@@ -161,7 +161,7 @@ See the resources policies directory in [github](https://github.com/sysflow-tele
 
 ### User-defined Actions
 
-User-defined actions are implemented via the golang plugin mechanism. They have to implement the following interface defined in the `core/policyengine/engine` package.
+User-defined actions are implemented via the golang plugin mechanism. An action must implement the following interface defined in the `core/policyengine/engine` package.
 
 ```go
 // Prototype of an action function
@@ -206,7 +206,6 @@ func addMyTag(r *engine.Record) error {
 var Action MyAction
 ```
 
-For matching records above action can be executed by specifying `action: [now]` as part of the rule.
+For the matching records above action can be executed by specifying `actions: [now]` as part of the rule.
 
 Using the Golang compiler switch `-buildmode=plugin`, the action code is compiled into a shared object file (`.so`). There is no limit to the number of user-defined actions. The policy engine loads all `.so` files found in the action directory specified via the `actiondir` parameter of the pipeline configuration.
-

@@ -1,0 +1,52 @@
+# Pluggable Action Example
+
+User-defined actions can be plugged to SysFlow's Policy Engine rule declarations to perform additional processing on matched records.
+
+### How do they work?
+
+Actions are implemented via the golang plugin mechanism. An action must implement the following interface defined in the `core/policyengine/engine` package.
+
+```go
+// Prototype of an action function
+type ActionFunc func(r *Record) error
+
+// Action interface for user-defined actions
+type Action interface {
+        GetName() string
+        GetFunc() ActionFunc
+}
+```
+
+Actions have a name and an action function. Within a single policy engine instance, action names must be unique. User-defined actions cannot re-declare built-in actions. Reusing names of user-defined actions overwrites previously registered actions.
+
+The action function receives the current record as an argument and thus has access to all record attributes. The action result can be stored in the record context via the context modifier methods. 
+
+### How to run this example?
+
+The `now` action is a pluggable action that creates a tag containing the current time in nanosecond precision.
+
+First, in the root of sf-processor, build the processor and the action plugin:
+
+```bash
+make build && make -C plugins/actions/example
+```
+
+Then, run:
+
+```bash
+cd driver && ./sfprocessor -log=error -config=../plugins/actions/example/pipeline.actions.json ../resources/traces/tcp.sf
+```
+
+### Building the plugin for deployment
+
+To build the plugin for deployment, Go requires the code to be compile with the exact packages that the SysFlow processor was compiled with. The easiest way to achieve this is to re-use the pre-built SysFlow Docker images in your build. Below is an example of how this can be achieved. Set $TAG to a SysFlow release (>=0.4.0), `edge`, or `dev`.
+
+```bash
+docker run --rm \        
+    -v $(pwd)/plugins:/usr/local/sysflow/plugins \
+    -v $(pwd)/plugins:/usr/local/sysflow/core \    
+    -v $(pwd)/resources:/usr/local/sysflow/resources \
+    --entrypoint=/bin/bash \
+    sysflowtelemetry/sf-processor:$TAG \
+    make -C /usr/local/sysflow/plugins/actions/example
+```
