@@ -124,6 +124,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: "${{ steps.meta.outputs.tags }}"
           labels: "${{ steps.meta.outputs.labels }}"
+          cache-from: type=registry,ref=ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ steps.args.outputs.branch }}
           build-args: |            
             BUILD_NUMBER=${{ steps.args.outputs.sha_short }}
             VERSION=${{ steps.args.outputs.branch }}
