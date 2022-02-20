@@ -25,8 +25,8 @@ require (
 	github.com/actgardner/gogen-avro/v7 v7.3.1
 	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/spf13/viper v1.6.3
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220204025248-25d44ab7fe1f
-	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20210709164444-484da05c2a85
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220220141421-08882228d4d8
+	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20220218215337-cb82d403e9f6
 )
 
 require (
@@ -35,7 +35,7 @@ require (
 	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91 // indirect
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
-	github.com/cespare/xxhash v1.1.0 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-openapi/errors v0.19.8 // indirect
