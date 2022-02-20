@@ -28,7 +28,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cespare/xxhash"
+	"github.com/cespare/xxhash/v2"
 	"github.com/satta/gommunityid"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
@@ -210,10 +210,10 @@ func (ecs *ECSRecord) encodeFileFlow(rec *engine.Record) {
 	category := ECS_CAT_FILE
 	eventType := ECS_TYPE_ACCESS
 	action := category + "-" + eventType
-	if opFlags&sfgo.OP_READ_RECV == sfgo.OP_READ_RECV && (rbytes > 0 || rops > 0 ) {
+	if opFlags&sfgo.OP_READ_RECV == sfgo.OP_READ_RECV && (rbytes > 0 || rops > 0) {
 		action = action + "-" + ECS_ACTION_READ
 	}
-	if opFlags&sfgo.OP_WRITE_SEND == sfgo.OP_WRITE_SEND && ( wbytes > 0 || wops > 0 ) {
+	if opFlags&sfgo.OP_WRITE_SEND == sfgo.OP_WRITE_SEND && (wbytes > 0 || wops > 0) {
 		eventType = ECS_TYPE_CHANGE
 		action = action + "-" + ECS_ACTION_WRITE
 	}
@@ -311,15 +311,15 @@ func encodeContainer(rec *engine.Record) JSONData {
 func encodeUser(rec *engine.Record) JSONData {
 	gname := engine.Mapper.MapStr(engine.SF_PROC_GROUP)(rec)
 	group := JSONData{
-		ECS_GROUP_ID:   engine.Mapper.MapInt(engine.SF_PROC_GID)(rec),
+		ECS_GROUP_ID: engine.Mapper.MapInt(engine.SF_PROC_GID)(rec),
 	}
 	if gname != sfgo.Zeros.String {
 		group[ECS_GROUP_NAME] = gname
 	}
 	uname := engine.Mapper.MapStr(engine.SF_PROC_USER)(rec)
 	user := JSONData{
-		ECS_GROUP:     group,
-		ECS_USER_ID:   engine.Mapper.MapInt(engine.SF_PROC_UID)(rec),
+		ECS_GROUP:   group,
+		ECS_USER_ID: engine.Mapper.MapInt(engine.SF_PROC_UID)(rec),
 	}
 	if uname != sfgo.Zeros.String {
 		user[ECS_USER_NAME] = uname

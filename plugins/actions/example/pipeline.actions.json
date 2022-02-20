@@ -1,0 +1,23 @@
+{
+  "pipeline":[
+    {
+     "processor": "sysflowreader",
+     "handler": "flattener",
+     "in": "sysflow sysflowchan",
+     "out": "flat flattenerchan"
+    },
+    {
+     "processor": "policyengine",
+     "in": "flat flattenerchan",
+     "out": "evt eventchan",
+     "policies": "../plugins/actions/example/policy.yaml", 
+     "mode": "alert"     
+    },
+    {
+     "processor": "exporter",
+     "in": "evt eventchan",
+     "export": "terminal",
+     "format": "json"
+    }
+  ]
+}

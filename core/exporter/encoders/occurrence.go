@@ -31,7 +31,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cespare/xxhash"
+	"github.com/cespare/xxhash/v2"
 	"github.com/linkedin/goavro"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/steakknife/bloomfilter"

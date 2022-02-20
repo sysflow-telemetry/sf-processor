@@ -166,7 +166,7 @@ var parserATN = []uint16{
 }
 var literalNames = []string{
 	"", "'rule'", "'filter'", "'drop'", "'macro'", "'list'", "'name'", "'items'",
-	"'condition'", "'desc'", "'action'", "'output'", "'priority'", "'tags'",
+	"'condition'", "'desc'", "'actions'", "'output'", "'priority'", "'tags'",
 	"'prefilter'", "'enabled'", "'warn_evttypes'", "'skip-if-unknown-filter'",
 	"'append'", "'required_engine_version'", "'and'", "'or'", "'not'", "'<'",
 	"'<='", "'>'", "'>='", "'='", "'!='", "'in'", "'contains'", "'icontains'",
@@ -175,7 +175,7 @@ var literalNames = []string{
 }
 var symbolicNames = []string{
 	"", "RULE", "FILTER", "DROP", "MACRO", "LIST", "NAME", "ITEMS", "COND",
-	"DESC", "ACTION", "OUTPUT", "PRIORITY", "TAGS", "PREFILTER", "ENABLED",
+	"DESC", "ACTIONS", "OUTPUT", "PRIORITY", "TAGS", "PREFILTER", "ENABLED",
 	"WARNEVTTYPE", "SKIPUNKNOWN", "FAPPEND", "REQ", "AND", "OR", "NOT", "LT",
 	"LE", "GT", "GE", "EQ", "NEQ", "IN", "CONTAINS", "ICONTAINS", "STARTSWITH",
 	"ENDSWITH", "PMATCH", "EXISTS", "LBRACK", "RBRACK", "LPAREN", "RPAREN",
@@ -232,7 +232,7 @@ const (
 	SfplParserITEMS       = 7
 	SfplParserCOND        = 8
 	SfplParserDESC        = 9
-	SfplParserACTION      = 10
+	SfplParserACTIONS     = 10
 	SfplParserOUTPUT      = 11
 	SfplParserPRIORITY    = 12
 	SfplParserTAGS        = 13
@@ -936,12 +936,12 @@ func (s *PruleContext) OUTPUT(i int) antlr.TerminalNode {
 	return s.GetToken(SfplParserOUTPUT, i)
 }
 
-func (s *PruleContext) AllACTION() []antlr.TerminalNode {
-	return s.GetTokens(SfplParserACTION)
+func (s *PruleContext) AllACTIONS() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserACTIONS)
 }
 
-func (s *PruleContext) ACTION(i int) antlr.TerminalNode {
-	return s.GetToken(SfplParserACTION, i)
+func (s *PruleContext) ACTIONS(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserACTIONS, i)
 }
 
 func (s *PruleContext) AllActions() []IActionsContext {
@@ -1249,7 +1249,7 @@ func (p *SfplParser) Prule() (localctx IPruleContext) {
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
-	for ((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<SfplParserACTION)|(1<<SfplParserOUTPUT)|(1<<SfplParserPRIORITY)|(1<<SfplParserTAGS)|(1<<SfplParserPREFILTER)|(1<<SfplParserENABLED)|(1<<SfplParserWARNEVTTYPE)|(1<<SfplParserSKIPUNKNOWN))) != 0 {
+	for ((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<SfplParserACTIONS)|(1<<SfplParserOUTPUT)|(1<<SfplParserPRIORITY)|(1<<SfplParserTAGS)|(1<<SfplParserPREFILTER)|(1<<SfplParserENABLED)|(1<<SfplParserWARNEVTTYPE)|(1<<SfplParserSKIPUNKNOWN))) != 0 {
 		p.SetState(113)
 		p.GetErrorHandler().Sync(p)
 
@@ -1268,10 +1268,10 @@ func (p *SfplParser) Prule() (localctx IPruleContext) {
 				p.Text()
 			}
 
-		case SfplParserACTION:
+		case SfplParserACTIONS:
 			{
 				p.SetState(92)
-				p.Match(SfplParserACTION)
+				p.Match(SfplParserACTIONS)
 			}
 			{
 				p.SetState(93)
@@ -1481,12 +1481,12 @@ func (s *SruleContext) OUTPUT(i int) antlr.TerminalNode {
 	return s.GetToken(SfplParserOUTPUT, i)
 }
 
-func (s *SruleContext) AllACTION() []antlr.TerminalNode {
-	return s.GetTokens(SfplParserACTION)
+func (s *SruleContext) AllACTIONS() []antlr.TerminalNode {
+	return s.GetTokens(SfplParserACTIONS)
 }
 
-func (s *SruleContext) ACTION(i int) antlr.TerminalNode {
-	return s.GetToken(SfplParserACTION, i)
+func (s *SruleContext) ACTIONS(i int) antlr.TerminalNode {
+	return s.GetToken(SfplParserACTIONS, i)
 }
 
 func (s *SruleContext) AllActions() []IActionsContext {
@@ -1794,7 +1794,7 @@ func (p *SfplParser) Srule() (localctx ISruleContext) {
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
-	for ((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<SfplParserACTION)|(1<<SfplParserOUTPUT)|(1<<SfplParserPRIORITY)|(1<<SfplParserTAGS)|(1<<SfplParserPREFILTER)|(1<<SfplParserENABLED)|(1<<SfplParserWARNEVTTYPE)|(1<<SfplParserSKIPUNKNOWN))) != 0 {
+	for ((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<SfplParserACTIONS)|(1<<SfplParserOUTPUT)|(1<<SfplParserPRIORITY)|(1<<SfplParserTAGS)|(1<<SfplParserPREFILTER)|(1<<SfplParserENABLED)|(1<<SfplParserWARNEVTTYPE)|(1<<SfplParserSKIPUNKNOWN))) != 0 {
 		p.SetState(152)
 		p.GetErrorHandler().Sync(p)
 
@@ -1813,10 +1813,10 @@ func (p *SfplParser) Srule() (localctx ISruleContext) {
 				p.Text()
 			}
 
-		case SfplParserACTION:
+		case SfplParserACTIONS:
 			{
 				p.SetState(131)
-				p.Match(SfplParserACTION)
+				p.Match(SfplParserACTIONS)
 			}
 			{
 				p.SetState(132)
@@ -5185,7 +5185,7 @@ func (p *SfplParser) Text() (localctx ITextContext) {
 
 			if !(!(p.GetCurrentToken().GetText() == "desc" ||
 				p.GetCurrentToken().GetText() == "condition" ||
-				p.GetCurrentToken().GetText() == "action" ||
+				p.GetCurrentToken().GetText() == "actions" ||
 				p.GetCurrentToken().GetText() == "output" ||
 				p.GetCurrentToken().GetText() == "priority" ||
 				p.GetCurrentToken().GetText() == "tags" ||
@@ -5194,7 +5194,7 @@ func (p *SfplParser) Text() (localctx ITextContext) {
 				p.GetCurrentToken().GetText() == "warn_evttypes" ||
 				p.GetCurrentToken().GetText() == "skip-if-unknown-filter" ||
 				p.GetCurrentToken().GetText() == "append")) {
-				panic(antlr.NewFailedPredicateException(p, "!(p.GetCurrentToken().GetText() == \"desc\" ||\n\t      p.GetCurrentToken().GetText() == \"condition\" ||\n\t      p.GetCurrentToken().GetText() == \"action\" ||\n\t      p.GetCurrentToken().GetText() == \"output\" ||\n\t      p.GetCurrentToken().GetText() == \"priority\" ||\n\t      p.GetCurrentToken().GetText() == \"tags\" ||\n\t\t  p.GetCurrentToken().GetText() == \"prefilter\" ||\n\t\t  p.GetCurrentToken().GetText() == \"enabled\" ||\n\t\t  p.GetCurrentToken().GetText() == \"warn_evttypes\" ||\n\t\t  p.GetCurrentToken().GetText() == \"skip-if-unknown-filter\" ||\n\t\t  p.GetCurrentToken().GetText() == \"append\" )", ""))
+				panic(antlr.NewFailedPredicateException(p, "!(p.GetCurrentToken().GetText() == \"desc\" ||\n\t      p.GetCurrentToken().GetText() == \"condition\" ||\n\t      p.GetCurrentToken().GetText() == \"actions\" ||\n\t      p.GetCurrentToken().GetText() == \"output\" ||\n\t      p.GetCurrentToken().GetText() == \"priority\" ||\n\t      p.GetCurrentToken().GetText() == \"tags\" ||\n\t\t  p.GetCurrentToken().GetText() == \"prefilter\" ||\n\t\t  p.GetCurrentToken().GetText() == \"enabled\" ||\n\t\t  p.GetCurrentToken().GetText() == \"warn_evttypes\" ||\n\t\t  p.GetCurrentToken().GetText() == \"skip-if-unknown-filter\" ||\n\t\t  p.GetCurrentToken().GetText() == \"append\" )", ""))
 			}
 			p.SetState(326)
 			p.MatchWildcard()
@@ -5476,7 +5476,7 @@ func (p *SfplParser) Text_Sempred(localctx antlr.RuleContext, predIndex int) boo
 	case 0:
 		return !(p.GetCurrentToken().GetText() == "desc" ||
 			p.GetCurrentToken().GetText() == "condition" ||
-			p.GetCurrentToken().GetText() == "action" ||
+			p.GetCurrentToken().GetText() == "actions" ||
 			p.GetCurrentToken().GetText() == "output" ||
 			p.GetCurrentToken().GetText() == "priority" ||
 			p.GetCurrentToken().GetText() == "tags" ||
