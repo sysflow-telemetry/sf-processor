@@ -24,6 +24,7 @@ import (
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/flattener"
 )
 
@@ -70,7 +71,9 @@ func (s *Example) Process(ch interface{}, wg *sync.WaitGroup) {
 			logger.Trace.Println("Channel closed. Shutting down.")
 			break
 		}
-		logger.Trace.Println(fc)
+		if fc.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] == sfgo.PROC_EVT {
+			logger.Info.Printf("Process Event: %s, %d", fc.Strs[sfgo.SYSFLOW_IDX][sfgo.PROC_EXE_STR], fc.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_TID_INT])
+		}
 	}
 	logger.Trace.Println("Exiting Example")
 }

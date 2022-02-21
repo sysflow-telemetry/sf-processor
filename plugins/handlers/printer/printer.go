@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	handlerName string = "print"
+	handlerName string = "printer"
 )
 
 // Handler exports a symbol for this plugin.

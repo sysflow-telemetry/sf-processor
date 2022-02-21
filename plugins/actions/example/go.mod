@@ -20,7 +20,7 @@ module github.com/sysflow-telemetry/sf-processor/plugins/actions/example
 
 go 1.17
 
-require github.com/sysflow-telemetry/sf-processor/core v0.0.0-20220220202552-4094158d0b78
+require github.com/sysflow-telemetry/sf-processor/core v0.0.0-20220221021811-25c7181c2904
 
 require (
 	github.com/actgardner/gogen-avro/v7 v7.3.1 // indirect
@@ -28,7 +28,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6 // indirect
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220220141421-08882228d4d8 // indirect
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220221182316-8e41f56e373e // indirect
 )
 
 replace github.com/sysflow-telemetry/sf-processor/core => ../../../core
