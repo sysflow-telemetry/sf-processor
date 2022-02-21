@@ -4,7 +4,7 @@ User-defined actions can be plugged to SysFlow's Policy Engine rule declarations
 
 ## How do actions work?
 
-Actions are implemented via the golang plugin mechanism. An action must implement the following interface defined in the `core/policyengine/engine` package.
+Actions are implemented via the golang plugin mechanism. An action must implement the following interface, defined in the `github.com/sysflow-telemetry/sf-processor/core/policyengine/engine` package.
 
 ```go
 // Prototype of an action function
@@ -25,7 +25,7 @@ The action function receives the current record as an argument and thus has acce
 
 The `now` action is a pluggable action that creates a tag containing the current time in nanosecond precision.
 
-First, in the root of sf-processor, build the processor and the action plugin:
+First, in the root of sf-processor, build the processor and the action plugin. Note, this plugin's shared object is generated in `resources/actions/now.so`.
 
 ```bash
 make build && make -C plugins/actions/example
@@ -39,7 +39,7 @@ cd driver && ./sfprocessor -log=quiet -config=../plugins/actions/example/pipelin
 
 ## Building the plugin for release
 
-To build the plugin for deployment, Go requires the code to be compiled with the exact package versions that the SysFlow processor was compiled with. The easiest way to achieve this is to use the pre-built `plugin-builder` Docker image in your build. This option also works for building plugins for deployment with the SysFlow binary packages.
+To build the plugin for release, Go requires the code to be compiled with the exact package versions that the SysFlow processor was compiled with. The easiest way to achieve this is to use the pre-built `plugin-builder` Docker image in your build. This option also works for building plugins for deployment with the SysFlow binary packages.
 
 Below is an example of how this can be achieved. Set $TAG to a SysFlow release (>=0.4.0), `edge`, or `dev`.
 
@@ -48,6 +48,7 @@ First, build the plugin:
 ```bash
 docker run --rm \
     -v $(pwd)/plugins:/go/src/github.com/sysflow-telemetry/sf-processor/plugins \
+    -v $(pwd)/resources:/go/src/github.com/sysflow-telemetry/sf-processor/resources \
     sysflowtelemetry/plugin-builder:$TAG \
     make -C /go/src/github.com/sysflow-telemetry/sf-processor/plugins/actions/example
 ```
@@ -66,7 +67,7 @@ docker run --rm \
 
 In the output, observe that all records matching the policy speficied in `pipeline.actions.json` are tagged by action `now` with the tag `now_in_nanos`. For example:
 
-```json
+```plain
 {
   "version": 4,
   "endts": 0,

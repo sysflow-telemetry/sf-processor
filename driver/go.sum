@@ -750,8 +750,8 @@ github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69
 github.com/syndtr/gocapability v0.0.0-20170704070218-db04d3cc01c8/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220220141421-08882228d4d8 h1:5PfMlv3Su4dSvHnXJgyZ1t9U3up9ZEnhujBW7AryUCM=
-github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220220141421-08882228d4d8/go.mod h1:0xb+dFYM8a3FGTjB6s5w7Yt58HxdJat3ZRXr/dTndG8=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220221182316-8e41f56e373e h1:VR8J80DbrpjOBdgc5qGZLuxqo1PJYJcdbLgyZ+9yQL0=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220221182316-8e41f56e373e/go.mod h1:0xb+dFYM8a3FGTjB6s5w7Yt58HxdJat3ZRXr/dTndG8=
 github.com/tchap/go-patricia v2.2.6+incompatible/go.mod h1:bmLyhP68RS6kStMGxByiQ23RP/odRBOTVjwp2cDyi6I=
 github.com/tchap/go-patricia v2.3.0+incompatible/go.mod h1:bmLyhP68RS6kStMGxByiQ23RP/odRBOTVjwp2cDyi6I=
 github.com/tidwall/pretty v1.0.0 h1:HsD+QiTn7sK6flMKIvNmpqz1qrpP3Ps6jOKIKMooyg4=

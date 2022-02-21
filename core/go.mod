@@ -37,7 +37,7 @@ require (
 	github.com/satta/gommunityid v0.0.0-20210315182841-1cdcb73ce408
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570
 	github.com/stretchr/testify v1.7.0
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220220141421-08882228d4d8
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220221182316-8e41f56e373e
 )
 
 require (
