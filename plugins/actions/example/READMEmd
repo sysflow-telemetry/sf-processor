@@ -39,14 +39,24 @@ cd driver && ./sfprocessor -log=error -config=../plugins/actions/example/pipelin
 
 ### Building the plugin for deployment
 
-To build the plugin for deployment, Go requires the code to be compile with the exact packages that the SysFlow processor was compiled with. The easiest way to achieve this is to re-use the pre-built SysFlow Docker images in your build. Below is an example of how this can be achieved. Set $TAG to a SysFlow release (>=0.4.0), `edge`, or `dev`.
+To build the plugin for deployment, Go requires the code to be compiled with the exact package versions that the SysFlow processor was compiled with. The easiest way to achieve this is to use the pre-built `plugin-builder` Docker image in your build. This option also works for building plugins for deployment with the SysFlow binary packages.
+
+Below is an example of how this can be achieved. Set $TAG to a SysFlow release (>=0.4.0), `edge`, or `dev`.
 
 ```bash
-docker run --rm \        
+docker run --rm \
+    -v $(pwd)/plugins:/go/src/github.com/sysflow-telemetry/sf-processor/plugins \
+    -v $(pwd)/resources:/go/src/github.com/sysflow-telemetry/sf-processor/resources \
+    sysflowtelemetry/plugin-builder:$TAG \
+    make -C /go/src/github.com/sysflow-telemetry/sf-processor/plugins/actions/example
+```
+
+```bash
+docker run --rm \
     -v $(pwd)/plugins:/usr/local/sysflow/plugins \
-    -v $(pwd)/plugins:/usr/local/sysflow/core \    
     -v $(pwd)/resources:/usr/local/sysflow/resources \
-    --entrypoint=/bin/bash \
+    -w /usr/local/sysflow/bin \
+    --entrypoint=/usr/local/sysflow/bin/sfprocessor \
     sysflowtelemetry/sf-processor:$TAG \
-    make -C /usr/local/sysflow/plugins/actions/example
+    -log=error -config=../plugins/actions/example/pipeline.actions.json ../resources/traces/tcp.sf
 ```

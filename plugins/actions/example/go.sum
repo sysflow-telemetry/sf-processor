@@ -706,6 +706,8 @@ github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2/go.mod h1:hkRG
 github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220220141421-08882228d4d8 h1:5PfMlv3Su4dSvHnXJgyZ1t9U3up9ZEnhujBW7AryUCM=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220220141421-08882228d4d8/go.mod h1:0xb+dFYM8a3FGTjB6s5w7Yt58HxdJat3ZRXr/dTndG8=
+github.com/sysflow-telemetry/sf-processor/core v0.0.0-20220220202552-4094158d0b78 h1:j2ji94vQWyR0KhZPY219R28b6nJNOhXZO+M/50KiVZY=
+github.com/sysflow-telemetry/sf-processor/core v0.0.0-20220220202552-4094158d0b78/go.mod h1:Mk6c4gnk6gBtzd7EE3/469+5DE814/3i9S014re1Ex8=
 github.com/tchap/go-patricia v2.2.6+incompatible/go.mod h1:bmLyhP68RS6kStMGxByiQ23RP/odRBOTVjwp2cDyi6I=
 github.com/tchap/go-patricia v2.3.0+incompatible/go.mod h1:bmLyhP68RS6kStMGxByiQ23RP/odRBOTVjwp2cDyi6I=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=

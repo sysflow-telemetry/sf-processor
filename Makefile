@@ -12,7 +12,7 @@ include ./makefile.manifest.inc
 # Basic go commands
 PATH=$(shell printenv PATH):/usr/local/go/bin
 GOCMD=go
-GOBUILD=$(GOCMD) build -tags exclude_graphdriver_btrfs
+GOBUILD=$(GOCMD) build -trimpath -tags exclude_graphdriver_btrfs
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test -tags exclude_graphdriver_btrfs
 GOGET=$(GOCMD) get -tags exclude_graphdriver_btrfs
@@ -66,11 +66,11 @@ install: build
 
 .PHONY: docker-build
 docker-build:
-	( DOCKER_BUILDKIT=1 docker build -t sysflowtelemetry/sf-processor:${SYSFLOW_VERSION} --build-arg UBI_VER=$(UBI_VERSION) --target=runtime -f Dockerfile . )
+	( DOCKER_BUILDKIT=1 docker build --cache-from=sysflowtelemetry/plugin-builder:${SYSFLOW_VERSION} -t sysflowtelemetry/sf-processor:${SYSFLOW_VERSION} --build-arg UBI_VER=$(UBI_VERSION) --target=runtime -f Dockerfile . )
 
-.PHONY: docker-build-base
-docker-build-base:
-	( DOCKER_BUILDKIT=1 docker build -t sysflowtelemetry/sf-processor:base --build-arg UBI_VER=$(UBI_VERSION) --target=base -f Dockerfile . )
+.PHONY: docker-plugin-builder
+docker-plugin-builder:
+	( DOCKER_BUILDKIT=1 docker build -t sysflowtelemetry/plugin-builder:${SYSFLOW_VERSION} --build-arg UBI_VER=$(UBI_VERSION) --target=base -f Dockerfile . )
 
 .PHONY: pull
 pull:
