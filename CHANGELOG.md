@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Packaging in deb, rpm, and targz formats
 - Added 14 new MITRE TTP tagging rules
 - Added support for quiet logging mode
+- Added plugin builder image to support plugin development and releases
 
 ### Changed
 
