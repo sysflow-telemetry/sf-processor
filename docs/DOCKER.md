@@ -2,10 +2,6 @@
 
 Documentation and scripts for how to deploy the SysFlow Processor with docker compose can be found in [here](https://sysflow.readthedocs.io/en/latest/docker.html). 
 
-### Collector environment
-
-The key setting in the collector portion of the file is the `FILTER` variable.  Since the collector is built atop the Falco libs, it uses Falco's filtering mechanism described [here](https://falco.org/docs/rules/supported-fields/) and can support the attributes described there in case you want to filter on specific containers, processes, operations, etc.  One of the most powerful filters is the `container.type!=host` filter, which limits collection only to container monitoring.  If you want to monitor the entire host, simply remove the `container.type` operation from the filter.
-
 ### Processor environment
 
 As mentioned in a previous section, all custom plugin attributes can be set using the following: `<PLUGIN NAME>_<CONFIG ATTRIBUTE NAME>` format.  Note that the docker compose file sets several attributes including `EXPORTER_TYPE`, `EXPORTER_HOST` and `EXPORTER_PORT`.
