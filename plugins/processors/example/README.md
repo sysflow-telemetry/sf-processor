@@ -2,7 +2,7 @@
 
 User-defined plugins can be plugged and extend the sf-processor pipeline. These are the most generic type of plugins, from which all built-in processor plugins are build. Check the `core` package for examples. We have built-in processor plugins for flattening the telemetry stream, implementing a policy engine, and creating event exporters.
 
-## How do data processing plugins work?
+## Interface
 
 Processor plugins (or just plugins) are implemented via the golang plugin mechanism. A plugin must implement the following interface, defined in the `github.com/sysflow-telemetry/sf-apis/go/plugins` package.
 
@@ -30,7 +30,11 @@ type SFTestableProcessor interface {
 }
 ```
 
-## How to run this example?
+## Pre-requisites
+
+* Go 1.17 (if building locally, without the plugin builder)
+
+## Build
 
 The `example` plugin is a custom plugin that illustrates how to implement a minimal plugin that reads the records from the input channel and logs them to the standard output.
 
@@ -46,7 +50,7 @@ Then, run:
 cd driver && ./sfprocessor -log=info -config=../plugins/processors/example/pipeline.example.json ../resources/traces/tcp.sf
 ```
 
-## Building the plugin for release
+## Plugin builder
 
 To build the plugin for release, Go requires the code to be compiled with the exact package versions that the SysFlow processor was compiled with. The easiest way to achieve this is to use the pre-built `plugin-builder` Docker image in your build. This option also works for building plugins for deployment with the SysFlow binary packages.
 

@@ -2,7 +2,7 @@
 
 User-defined actions can be plugged to SysFlow's Policy Engine rule declarations to perform additional processing on matched records.
 
-## How do action plugins work?
+## Interface
 
 Actions are implemented via the golang plugin mechanism. An action must implement the following interface, defined in the `github.com/sysflow-telemetry/sf-processor/core/policyengine/engine` package.
 
@@ -21,7 +21,11 @@ Actions have a name and an action function. Within a single policy engine instan
 
 The action function receives the current record as an argument and thus has access to all record attributes. The action result can be stored in the record context via the context modifier methods. 
 
-## How to run this example?
+## Pre-requisites
+
+* Go 1.17 (if building locally, without the plugin builder)
+
+## Build
 
 The `now` action is a pluggable action that creates a tag containing the current time in nanosecond precision.
 
@@ -37,7 +41,7 @@ Then, run:
 cd driver && ./sfprocessor -log=quiet -config=../plugins/actions/example/pipeline.actions.json ../resources/traces/tcp.sf
 ```
 
-## Building the plugin for release
+## Plugin builder
 
 To build the plugin for release, Go requires the code to be compiled with the exact package versions that the SysFlow processor was compiled with. The easiest way to achieve this is to use the pre-built `plugin-builder` Docker image in your build. This option also works for building plugins for deployment with the SysFlow binary packages.
 

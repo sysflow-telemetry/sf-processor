@@ -2,7 +2,7 @@
 
 User-defined handler modules can be plugged to the built-in SysFlow `processor` plugin to implement custom data processing and analytic pipelines.
 
-## How do handler plugin work?
+## Interface
 
 Handlers are implemented via the golang plugin mechanism. A handler must implement the following interface, defined in the `github.com/sysflow-telemetry/sf-apis/go/plugins` package.
 
@@ -30,7 +30,11 @@ type SFHandler interface {
 
 Each `Handle*` function receives the current SysFlow record being processed along with its corresponding parsed record type. Custom processing code should be implemented using these functions.
 
-## How to run this example?
+## Pre-requisites
+
+* Go 1.17 (if building locally, without the plugin builder)
+
+## Build
 
 The `printer` handler is a pluggable handler that logs select SysFlow records to the standard output. This plugin doesn't define any output channels, so it acts as a plugin sink (last plugin in a pipeline).
 
@@ -46,7 +50,7 @@ Then, run:
 cd driver && ./sfprocessor -log=info -config=../plugins/handlers/printer/pipeline.printer.json ../resources/traces/tcp.sf
 ```
 
-## Building the plugin for release
+## Plugin builder
 
 To build the plugin for release, Go requires the code to be compiled with the exact package versions that the SysFlow processor was compiled with. The easiest way to achieve this is to use the pre-built `plugin-builder` Docker image in your build. This option also works for building plugins for deployment with the SysFlow binary packages.
 
