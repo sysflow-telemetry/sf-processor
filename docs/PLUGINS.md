@@ -9,7 +9,7 @@ The processor supports four types of plugins:
 * **handlers**: enable the creation of custom SysFlow record handling plugins.
 * **actions**: enable the creation of custom action plugins to extend sf-processor's policy engine.
 
-## Pre-requisites
+### Pre-requisites
 
 * Go 1.17 (if building locally, without the plugin builder)
 
