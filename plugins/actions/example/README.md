@@ -1,8 +1,8 @@
-# Pluggable Action Example
+# Action Plugins
 
 User-defined actions can be plugged to SysFlow's Policy Engine rule declarations to perform additional processing on matched records.
 
-## How do actions work?
+## How do action plugins work?
 
 Actions are implemented via the golang plugin mechanism. An action must implement the following interface, defined in the `github.com/sysflow-telemetry/sf-processor/core/policyengine/engine` package.
 

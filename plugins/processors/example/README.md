@@ -1,8 +1,8 @@
 # Processor Plugins
 
-User-defined plugins can be plugged and extend the SysFlow `processor` pipeline. These are the most generic type of plugins, from which all built-in processor plugins are build. Check the `core` package for examples. We have built-in processor plugins for flattening the telemetry stream, implementing a policy engine, and creating event exporters.
+User-defined plugins can be plugged and extend the sf-processor pipeline. These are the most generic type of plugins, from which all built-in processor plugins are build. Check the `core` package for examples. We have built-in processor plugins for flattening the telemetry stream, implementing a policy engine, and creating event exporters.
 
-## How do data processing handlers work?
+## How do data processing plugins work?
 
 Processor plugins (or just plugins) are implemented via the golang plugin mechanism. A plugin must implement the following interface, defined in the `github.com/sysflow-telemetry/sf-apis/go/plugins` package.
 
@@ -20,7 +20,7 @@ type SFProcessor interface {
 
 The `Process` function is the main function of the plugin.It's where the "main loop" of the plugin should be implemented. It receives the input channel configured in the custom plugin's block in the pipeline configuration. It also received the pepeline thread WaitGroup. Custom processing code should be implemented using this function. `Init` is called once, when the pipeline is loaded. `Cleanup` is called when the pipeline is terminated. `SetOutChannel` receives a slice with the output channels configured in the plugin's block in the pipeline configuration.
 
-When loading a pipeline, sf-processor performes a series of health checks before the pipeline is enabled. If these health checks fail, the processor terminates. To enable health checks on cutom plugins, implement the `Test` function defined in the interface below.
+When loading a pipeline, sf-processor performs a series of health checks before the pipeline is enabled. If these health checks fail, the processor terminates. To enable health checks on cutom plugins, implement the `Test` function defined in the interface below.
 
 ```go
 // SFTestableProcessor defines a testable SysFlow processor interface.
