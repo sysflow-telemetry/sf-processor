@@ -31,7 +31,7 @@ type SFProcessor interface {
 
 The `Process` function is the main function of the plugin.It's where the "main loop" of the plugin should be implemented. It receives the input channel configured in the custom plugin's block in the pipeline configuration. It also received the pepeline thread WaitGroup. Custom processing code should be implemented using this function. `Init` is called once, when the pipeline is loaded. `Cleanup` is called when the pipeline is terminated. `SetOutChannel` receives a slice with the output channels configured in the plugin's block in the pipeline configuration.
 
-When loading a pipeline, sf-processor performs a series of health checks before the pipeline is enabled. If these health checks fail, the processor terminates. To enable health checks on cutom plugins, implement the `Test` function defined in the interface below.
+When loading a pipeline, sf-processor performs a series of health checks before the pipeline is enabled. If these health checks fail, the processor terminates. To enable health checks on custom plugins, implement the `Test` function defined in the interface below. For an example, check `core/exporter/exporter.go`.
 
 ```go
 // SFTestableProcessor defines a testable SysFlow processor interface.
