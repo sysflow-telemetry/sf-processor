@@ -1,8 +1,8 @@
-# Pluggable Data Processing Handler Example
+# Handler Plugins
 
 User-defined handler modules can be plugged to the built-in SysFlow `processor` plugin to implement custom data processing and analytic pipelines.
 
-## How do data processing handlers work?
+## How do handler plugin work?
 
 Handlers are implemented via the golang plugin mechanism. A handler must implement the following interface, defined in the `github.com/sysflow-telemetry/sf-apis/go/plugins` package.
 
