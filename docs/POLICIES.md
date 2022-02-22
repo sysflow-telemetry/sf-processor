@@ -1,4 +1,4 @@
-## Writing runtime policies
+## Policy Language
 
 The policy engine adopts and extends the Falco rules definition syntax. Before reading the rest of this section, please go through the [Falco Rules](https://falco.org/docs/rules/) documentation to get familiar with _rule_, _macro_, and _list_ syntax, all of which are supported in our policy engine. Policies are written in one or more `yaml` files, and stored in a directory specified in the pipeline configuration file under the `policies` attribute of the policy engine plugin.  
 
@@ -161,52 +161,4 @@ See the resources policies directory in [github](https://github.com/sysflow-tele
 
 ### User-defined Actions
 
-User-defined actions are implemented via the golang plugin mechanism. They have to implement the following interface defined in the `core/policyengine/engine` package.
-
-```go
-// Prototype of an action function
-type ActionFunc func(r *Record) error
-
-// Action interface for user-defined actions
-type Action interface {
-        GetName() string
-        GetFunc() ActionFunc
-}
-```
-
-Actions have a name and an action function. Within a single policy engine instance, action names must be unique. User-defined actions cannot re-declare built-in actions. Reusing names of user-defined actions overwrites previously registered actions.
-
-The action function receives the current record as an argument and thus has access to all record attributes. The action result can be stored in the record context via the context modifier methods. Below is a sample implementation of a user-defined action that creates a tag containing the current time in nanosecond precision.
-
-```go
-package main
-
-import (
-        "strconv"
-        "time"
-
-        "github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
-)
-
-type MyAction struct{}
-
-func (a *MyAction) GetName() string {
-        return "now"
-}
-
-func (a *MyAction) GetFunc() engine.ActionFunc {
-        return addMyTag
-}
-
-func addMyTag(r *engine.Record) error {
-        r.Ctx.AddTag("now_in_nanos:" + strconv.FormatInt(time.Now().UnixNano(), 10))
-        return nil
-}
-
-var Action MyAction
-```
-
-For matching records above action can be executed by specifying `action: [now]` as part of the rule.
-
-Using the Golang compiler switch `-buildmode=plugin`, the action code is compiled into a shared object file (`.so`). There is no limit to the number of user-defined actions. The policy engine loads all `.so` files found in the action directory specified via the `actiondir` parameter of the pipeline configuration.
-
+User-defined actions are implemented via the golang plugin mechanism. Check the documentation on [Action Plugins](https://sysflow.readthedocs.io/en/latest/processor.html#action-plugins) for a custom action plugin example.

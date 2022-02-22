@@ -9,7 +9,7 @@ NAME: 'name';
 ITEMS: 'items';
 COND: 'condition';
 DESC: 'desc' ;
-ACTION: 'action';
+ACTIONS: 'actions';
 OUTPUT: 'output';
 PRIORITY: 'priority';
 TAGS: 'tags';
@@ -29,11 +29,11 @@ defs
 	;
 
 prule			
-	: DECL RULE DEF text DESC DEF text COND DEF expression (OUTPUT DEF text | ACTION DEF actions | PRIORITY DEF severity | TAGS DEF tags | PREFILTER DEF prefilter | ENABLED DEF enabled | WARNEVTTYPE DEF warnevttype | SKIPUNKNOWN DEF skipunknown)*
+	: DECL RULE DEF text DESC DEF text COND DEF expression (OUTPUT DEF text | ACTIONS DEF actions | PRIORITY DEF severity | TAGS DEF tags | PREFILTER DEF prefilter | ENABLED DEF enabled | WARNEVTTYPE DEF warnevttype | SKIPUNKNOWN DEF skipunknown)*
 	;
 
 srule
-	: DECL RULE DEF text DESC DEF text COND DEF expression (OUTPUT DEF text | ACTION DEF actions | PRIORITY DEF severity | TAGS DEF tags | PREFILTER DEF prefilter | ENABLED DEF enabled | WARNEVTTYPE DEF warnevttype | SKIPUNKNOWN DEF skipunknown)*
+	: DECL RULE DEF text DESC DEF text COND DEF expression (OUTPUT DEF text | ACTIONS DEF actions | PRIORITY DEF severity | TAGS DEF tags | PREFILTER DEF prefilter | ENABLED DEF enabled | WARNEVTTYPE DEF warnevttype | SKIPUNKNOWN DEF skipunknown)*
 	;
 
 pfilter
@@ -134,7 +134,7 @@ atom
 text
 	: ({!(p.GetCurrentToken().GetText() == "desc" ||
 	      p.GetCurrentToken().GetText() == "condition" ||
-	      p.GetCurrentToken().GetText() == "action" ||
+	      p.GetCurrentToken().GetText() == "actions" ||
 	      p.GetCurrentToken().GetText() == "output" ||
 	      p.GetCurrentToken().GetText() == "priority" ||
 	      p.GetCurrentToken().GetText() == "tags" ||
