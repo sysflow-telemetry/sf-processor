@@ -4,7 +4,7 @@ In addition to its core plugins, the processor also supports custom plugins that
 
 The processor supports four types of plugins:
 
-* **sources**: enable the ingestion of different telemetry sources into the processor pipeline.
+* **drivers**: enable the ingestion of different telemetry sources into the processor pipeline.
 * **processors**: enable the creation of custom data processing and analytic plugins to extend sf-processor pipelines.
 * **handlers**: enable the creation of custom SysFlow record handling plugins.
 * **actions**: enable the creation of custom action plugins to extend sf-processor's policy engine.
