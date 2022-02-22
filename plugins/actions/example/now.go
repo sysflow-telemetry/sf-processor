@@ -42,3 +42,5 @@ func addMyTag(r *engine.Record) error {
 
 var Action MyAction
 
+// This function is not run when module is used as a plugin.
+func main() {}

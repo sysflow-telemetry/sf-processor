@@ -22,7 +22,9 @@ on:
   workflow_dispatch:
     
 env:
-  DOCKER_REGISTRY_REPOSITORY: sysflowtelemetry/sf-processor  
+  DOCKER_REGISTRY_REPOSITORY: sysflowtelemetry/sf-processor
+  PLUGIN_BUILDER_DOCKER_REGISTRY_REPOSITORY: sysflowtelemetry/plugin-builder
+  GH_ORGANIZATION: sysflow-telemetry
 
 jobs:
   lint-core:
@@ -60,7 +62,7 @@ jobs:
       - name: Read manifest        
         shell: bash        
         run: |             
-          echo "UBI_VERSION=$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)" >> $GITHUB_ENV      
+          echo "UBI_VERSION=$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)" >> $GITHUB_ENV            
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
@@ -100,6 +102,21 @@ jobs:
           echo "##[set-output name=ubi_version;]$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)"
           echo "##[set-output name=branch;]$(echo ${GITHUB_REF##refs/*/})"
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"    
+      - name: Build and push plugin builder image
+        id: docker_plugin_builder        
+        uses: docker/build-push-action@v2        
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ env.PLUGIN_BUILDER_DOCKER_REGISTRY_REPOSITORY }}:${{ steps.args.outputs.branch }}
+            ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ steps.args.outputs.branch }}        
+          target: base    
+          labels: "${{ steps.meta.outputs.labels }}"
+          build-args: |            
+            BUILD_NUMBER=${{ steps.args.outputs.sha_short }}
+            VERSION=${{ steps.args.outputs.branch }}
+            RELEASE=${{ steps.args.outputs.sha_short }}
+            UBI_VER=${{ steps.args.outputs.ubi_version }} 
       - name: Build and push
         id: docker_build        
         uses: docker/build-push-action@v2        
@@ -107,6 +124,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: "${{ steps.meta.outputs.tags }}"
           labels: "${{ steps.meta.outputs.labels }}"
+          cache-from: type=registry,ref=ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ steps.args.outputs.branch }}
           build-args: |            
             BUILD_NUMBER=${{ steps.args.outputs.sha_short }}
             VERSION=${{ steps.args.outputs.branch }}

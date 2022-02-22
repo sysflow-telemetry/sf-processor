@@ -27,7 +27,7 @@ require (
 	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91
 	github.com/actgardner/gogen-avro/v7 v7.3.1
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0
-	github.com/cespare/xxhash v1.1.0
+	github.com/cespare/xxhash/v2 v2.1.2
 	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/linkedin/goavro v2.1.0+incompatible
@@ -37,7 +37,7 @@ require (
 	github.com/satta/gommunityid v0.0.0-20210315182841-1cdcb73ce408
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570
 	github.com/stretchr/testify v1.7.0
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220204025248-25d44ab7fe1f
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220221182316-8e41f56e373e
 )
 
 require (
