@@ -8,11 +8,11 @@ Custom plugins and drivers can be implemented as dynamic libraries to tailor ana
 
 The endpoint of a pipeline configuration is an exporter plugin that sends the processed data to a target. The processor supports various types of export plugins for a variety of different targets.
 
-## Prerequisites
+## Pre-requisites
 
 The processor has been tested on Ubuntu/RHEL distributions, but should work on any Linux system.
 
-- Golang version 1.14+ and make (if building from sources)
+- Golang version 1.17+ and make (if building from sources)
 - Docker, docker-compose  (if building with docker)
 
 ## Build

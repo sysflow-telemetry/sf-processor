@@ -9,6 +9,10 @@ The processor supports four types of plugins:
 * **handlers**: enable the creation of custom SysFlow record handling plugins.
 * **actions**: enable the creation of custom action plugins to extend sf-processor's policy engine.
 
+## Pre-requisites
+
+* Go 1.17 (if building locally, without the plugin builder)
+
 ### Processor Plugins
 
 User-defined plugins can be plugged and extend the sf-processor pipeline. These are the most generic type of plugins, from which all built-in processor plugins are build. Check the `core` package for examples. We have built-in processor plugins for flattening the telemetry stream, implementing a policy engine, and creating event exporters.
