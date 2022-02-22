@@ -13,7 +13,7 @@ The processor supports four types of plugins:
 
 User-defined plugins can be plugged and extend the sf-processor pipeline. These are the most generic type of plugins, from which all built-in processor plugins are build. Check the `core` package for examples. We have built-in processor plugins for flattening the telemetry stream, implementing a policy engine, and creating event exporters.
 
-#### How do data processing plugins work?
+#### Interface
 
 Processor plugins (or just plugins) are implemented via the golang plugin mechanism. A plugin must implement the following interface, defined in the `github.com/sysflow-telemetry/sf-apis/go/plugins` package.
 
@@ -41,7 +41,7 @@ type SFTestableProcessor interface {
 }
 ```
 
-#### An example plugin
+#### Example
 
 A dynamic plugin example is provided in [github](https://github.com/sysflow-telemetry/sf-processor/tree/master/plugins/processors/example). The core of the plugin is building an object that implements an [SFProcessor interface](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/processor.go). Such an implementation looks as follows:
 
@@ -167,7 +167,7 @@ This pipeline contains two plugins:
 
 The key item to note is that the output channel (i.e., `out`) of `sysflowreader` matches the input channel (i.e., `in`) of the example plugin. This ensures that the plugins will be properly stitched together.
 
-#### How to run this example?
+#### Build
 
 The `example` plugin is a custom plugin that illustrates how to implement a minimal plugin that reads the records from the input channel and logs them to the standard output.
 
@@ -183,7 +183,7 @@ Then, run:
 cd driver && ./sfprocessor -log=info -config=../plugins/processors/example/pipeline.example.json ../resources/traces/tcp.sf
 ```
 
-#### Building the plugin for release
+#### Plugin builder
 
 To build the plugin for release, Go requires the code to be compiled with the exact package versions that the SysFlow processor was compiled with. The easiest way to achieve this is to use the pre-built `plugin-builder` Docker image in your build. This option also works for building plugins for deployment with the SysFlow binary packages.
 
@@ -227,7 +227,7 @@ The output on the above pre-recorded trace should look like this:
 
 User-defined handler modules can be plugged to the built-in SysFlow `processor` plugin to implement custom data processing and analytic pipelines.
 
-#### How do handler plugins work?
+#### Interface
 
 Handlers are implemented via the golang plugin mechanism. A handler must implement the following interface, defined in the `github.com/sysflow-telemetry/sf-apis/go/plugins` package.
 
@@ -255,7 +255,7 @@ type SFHandler interface {
 
 Each `Handle*` function receives the current SysFlow record being processed along with its corresponding parsed record type. Custom processing code should be implemented using these functions.
 
-## How to run this example?
+#### Build
 
 The `printer` handler is a pluggable handler that logs select SysFlow records to the standard output. This plugin doesn't define any output channels, so it acts as a plugin sink (last plugin in a pipeline).
 
@@ -271,7 +271,7 @@ Then, run:
 cd driver && ./sfprocessor -log=info -config=../plugins/handlers/printer/pipeline.printer.json ../resources/traces/tcp.sf
 ```
 
-## Building the plugin for release
+#### Plugin builder
 
 To build the plugin for release, Go requires the code to be compiled with the exact package versions that the SysFlow processor was compiled with. The easiest way to achieve this is to use the pre-built `plugin-builder` Docker image in your build. This option also works for building plugins for deployment with the SysFlow binary packages.
 
@@ -318,7 +318,7 @@ The output on the above pre-recorded trace should look like this:
 
 User-defined actions can be plugged to SysFlow's Policy Engine rule declarations to perform additional processing on matched records.
 
-#### How do action plugins work?
+#### Interface
 
 Actions are implemented via the golang plugin mechanism. An action must implement the following interface, defined in the `github.com/sysflow-telemetry/sf-processor/core/policyengine/engine` package.
 
@@ -337,7 +337,7 @@ Actions have a name and an action function. Within a single policy engine instan
 
 The action function receives the current record as an argument and thus has access to all record attributes. The action result can be stored in the record context via the context modifier methods. 
 
-#### How to run this example?
+#### Build
 
 The `now` action is a pluggable action that creates a tag containing the current time in nanosecond precision.
 
@@ -353,7 +353,7 @@ Then, run:
 cd driver && ./sfprocessor -log=quiet -config=../plugins/actions/example/pipeline.actions.json ../resources/traces/tcp.sf
 ```
 
-#### Building the plugin for release
+#### Plugin builder
 
 To build the plugin for release, Go requires the code to be compiled with the exact package versions that the SysFlow processor was compiled with. The easiest way to achieve this is to use the pre-built `plugin-builder` Docker image in your build. This option also works for building plugins for deployment with the SysFlow binary packages.
 
