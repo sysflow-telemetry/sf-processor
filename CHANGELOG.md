@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.4.1] - 2022-03-31
+
 ### CHANGED
 
 - Bumped UBI version to 8.5-236.1647448331
@@ -123,8 +125,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - First release of SysFlow Processor.
 
-[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.0-rc1...HEAD
-[0.4.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.3.1...0.4.0-rc1
+[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.1-rc1...HEAD
+[0.4.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.0...0.4.1-rc1
+[0.4.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.3.1...0.4.0
 [0.3.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...0.3.1
 [0.3.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...0.3.0
 [0.2.2]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.1...0.2.2
