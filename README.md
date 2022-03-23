@@ -6,27 +6,27 @@
 
 # Supported tags and respective `Dockerfile` links
 
--	[`0.4.0`, `latest`](https://github.com/sysflow-telemetry/sf-processor/blob/0.4.0/Dockerfile), [`edge`](https://github.com/sysflow-telemetry/sf-processor/blob/master/Dockerfile), [`dev`](https://github.com/sysflow-telemetry/sf-processor/blob/dev/Dockerfile)
+-	[`0.4.1-rc1`, `latest`](https://github.com/sysflow-telemetry/sf-processor/blob/0.4.1-rc1/Dockerfile), [`edge`](https://github.com/sysflow-telemetry/sf-processor/blob/master/Dockerfile), [`dev`](https://github.com/sysflow-telemetry/sf-processor/blob/dev/Dockerfile)
 
 # Quick reference
 
--	**Documentation**:  
+-	**Documentation**:
 	[the SysFlow Documentation](https://sysflow.readthedocs.io)
-  
--	**Where to get help**:  
+
+-	**Where to get help**:
 	[the SysFlow Community Slack](https://join.slack.com/t/sysflow-telemetry/shared_invite/enQtODA5OTA3NjE0MTAzLTlkMGJlZDQzYTc3MzhjMzUwNDExNmYyNWY0NWIwODNjYmRhYWEwNGU0ZmFkNGQ2NzVmYjYxMWFjYTM1MzA5YWQ)
 
--	**Where to file issues**:  
+-	**Where to file issues**:
 	[the github issue tracker](https://github.com/sysflow-telemetry/sysflow/issues) (include the `sf-processor` tag)
 
--	**Source of this description**:  
+-	**Source of this description**:
 	[repo's readme](https://github.com/sysflow-telemetry/sf-processor/edit/master/README.md) ([history](https://github.com/sysflow-telemetry/sf-processor/commits/master))
 
--	**Docker images**:  
+-	**Docker images**:
 	[docker hub](https://hub.docker.com/u/sysflowtelemetry) | [GHCR](https://github.com/orgs/sysflow-telemetry/packages)
 
--	**Binary packages**:  
-	[deb](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.4.0/sfprocessor-0.4.0-x86_64.deb) | [rpm](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.4.0/sfprocessor-0.4.0-x86_64.rpm) | [tgz](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.4.0/sfprocessor-0.4.0-x86_64.tar.gz)
+-	**Binary packages**:
+	[deb](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.4.1-rc1/sfprocessor-0.4.1-rc1-x86_64.deb) | [rpm](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.4.1-rc1/sfprocessor-0.4.1-rc1-x86_64.rpm) | [tgz](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.4.1-rc1/sfprocessor-0.4.1-rc1-x86_64.tar.gz)
 
 # What is SysFlow?
 
@@ -43,7 +43,7 @@ The SysFlow framework consists of the following sub-projects:
 
 # About this image
 
-The SysFlow processor is a lighweight edge analytics pipeline that can process and enrich SysFlow data. The processor is written in golang, and allows users to build and configure various pipelines using a set of built-in and custom plugins and drivers. Pipeline plugins are producer-consumer objects that follow an interface and pass data to one another through pre-defined channels in a multi-threaded environment. By contrast, a driver represents a data source, which pushes data to the plugins. The processor currently supports two builtin drivers, including one that reads sysflow from a file, and another that reads streaming sysflow over a domain socket. Plugins and drivers are configured using a JSON file.  
+The SysFlow processor is a lighweight edge analytics pipeline that can process and enrich SysFlow data. The processor is written in golang, and allows users to build and configure various pipelines using a set of built-in and custom plugins and drivers. Pipeline plugins are producer-consumer objects that follow an interface and pass data to one another through pre-defined channels in a multi-threaded environment. By contrast, a driver represents a data source, which pushes data to the plugins. The processor currently supports two builtin drivers, including one that reads sysflow from a file, and another that reads streaming sysflow over a domain socket. Plugins and drivers are configured using a JSON file.
 
 Please check [Sysflow Processor](https://sysflow.readthedocs.io/en/latest/processor.html) for documentation on deployment and configuration options.
 
@@ -54,7 +54,7 @@ Please check [Sysflow Processor](https://sysflow.readthedocs.io/en/latest/proces
 The easiest way to run the SysFlow Processor is by using [docker-compose](https://github.com/sysflow-telemetry/sf-deployments/tree/master/docker). The provided `docker-compose.processor.yml` file deploys the SysFlow processor and collector. The rsyslog endpoint should be configured in `./config/.env.processor`. Collector settings can be changed in `./config/.env.collector`. Additional settings can be configured directly in the compose file.
 
 ```bash
-docker-compose -f docker-compose.processor.yml up                                
+docker-compose -f docker-compose.processor.yml up
 ```
 
 Instructions for `docker-compose`, `helm`, and `oc operator` deployments are available [here](https://sysflow.readthedocs.io/en/latest/deploy.html). Alternatively, you can install the SysFlow Processor using its binary installers available in the release pages.
