@@ -15,6 +15,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### CHANGED
+
+- Bumped UBI version to 8.5-236.1647448331
+- Removed binary package's dkms requirement
+
 ## [0.4.0] - 2022-02-18
 
 ### Added
