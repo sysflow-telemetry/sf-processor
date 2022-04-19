@@ -191,6 +191,7 @@ func (p *PluginCache) getEnv(proc string) map[string]string {
 // GetChan retrieves a cached plugin channel by name.
 func (p *PluginCache) GetChan(ch string, size int) (interface{}, error) {
 	fields := strings.Fields(ch)
+	logger.Trace.Println("Trying to get channel with fields ", fields[0], fields[1])
 	if len(fields) != 2 {
 		return nil, errors.New("channel must be of the form <identifier> <type>")
 	}
@@ -199,6 +200,7 @@ func (p *PluginCache) GetChan(ch string, size int) (interface{}, error) {
 		return val, nil
 	}
 	if val, ok := p.chanFuncMap[fields[1]]; ok {
+		logger.Trace.Println("Channel not in cache...creating ", fields[0], fields[1])
 		funct := val.(func(int) interface{})
 		c := funct(size)
 		p.chanMap[fields[0]] = c

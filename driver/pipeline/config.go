@@ -43,6 +43,7 @@ const (
 	HdlConfig     string = "handler"
 	InChanConfig  string = "in"
 	OutChanConfig string = "out"
+	DrivConfig    string = "driver"
 )
 
 // Driver constants/defaults
@@ -59,8 +60,12 @@ const (
 // PluginConfig defines a map for plugin configuration
 type PluginConfig map[string]interface{}
 
+// DriverConfig defines a map for plugin configuration
+type DriverConfig map[string]interface{}
+
 // Config defines a pipeline configuration object
 type Config struct {
+	Drivers  []DriverConfig `json,mapstructures:"drivers"`
 	Pipeline []PluginConfig `json,mapstructures:"pipeline"`
 }
 
