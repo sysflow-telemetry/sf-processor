@@ -58,7 +58,7 @@ func run() int {
 	initSigTerm()
 
 	// setup arg parsing
-	inputType := flag.String("driver", "file", fmt.Sprintf("Driver name {file|socket|<custom>}"))
+	inputType := flag.String("driver", "", fmt.Sprintf("Driver name {file|socket|<custom>}"))
 	cpuprofile := flag.String("cpuprofile", "", "Write cpu profile to `file`")
 	memprofile := flag.String("memprofile", "", "Write memory profile to `file`")
 	traceprofile := flag.String("traceprofile", "", "Write trace profile to `file`")
