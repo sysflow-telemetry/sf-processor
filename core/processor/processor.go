@@ -87,9 +87,13 @@ func (s *SysFlowProcessor) SetOutChan(ch []interface{}) {
 }
 
 // Process implements the main processor method of the plugin.
-func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
+func (s *SysFlowProcessor) Process(ch []interface{}, wg *sync.WaitGroup) {
 	entEnabled := s.hdl.IsEntityEnabled()
-	cha := ch.(*plugins.CtxSFChannel)
+	if len(ch) != 1 {
+		logger.Error.Println("SysFlow Processor only supports a single input channel at this time")
+		return
+	}
+	cha := ch[0].(*plugins.CtxSFChannel)
 	record := cha.In
 	defer wg.Done()
 	logger.Trace.Println("Starting SysFlow Processor...")

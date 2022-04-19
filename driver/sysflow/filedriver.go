@@ -66,6 +66,7 @@ func getFiles(filename string) ([]string, error) {
 // FileDriver represents reading a sysflow file from source
 type FileDriver struct {
 	pipeline plugins.SFPipeline
+	config   map[string]interface{}
 	file     *os.File
 }
 
@@ -85,14 +86,32 @@ func (s *FileDriver) Register(pc plugins.SFPluginCache) {
 }
 
 // Init initializes the file driver with the pipeline
-func (s *FileDriver) Init(pipeline plugins.SFPipeline) error {
+func (s *FileDriver) Init(pipeline plugins.SFPipeline, config map[string]interface{}) error {
 	s.pipeline = pipeline
+	s.config = config
 	return nil
 }
 
 // Run runs the file driver
 func (s *FileDriver) Run(path string, running *bool) error {
-	channel := s.pipeline.GetRootChannel()
+	var channel interface{}
+	configpath := path
+	if s.config == nil {
+		channel = s.pipeline.GetRootChannel()
+	} else {
+		if v, o := s.config[OutChanConfig].(string); o {
+			ch, err := s.pipeline.GetChannel(v)
+			if err != nil {
+				return err
+			}
+			channel = ch
+		} else {
+			return errors.New("out tag does not exist in driver configuration for driver " + fileDriverName)
+		}
+		if v, o := s.config[PathConfig].(string); o {
+			configpath = v
+		}
+	}
 	sfChannel := channel.(*plugins.SFChannel)
 	records := sfChannel.In
 
@@ -100,7 +119,7 @@ func (s *FileDriver) Run(path string, running *bool) error {
 
 	sfobjcvter := converter.NewSFObjectConverter()
 
-	files, err := getFiles(path)
+	files, err := getFiles(configpath)
 	if err != nil {
 		logger.Error.Println("Files error: ", err)
 		return err
@@ -134,9 +153,10 @@ func (s *FileDriver) Run(path string, running *bool) error {
 			break
 		}
 	}
-	logger.Trace.Println("Closing main channel")
+	logger.Trace.Println("Closing main channel filedriver")
 	close(records)
 	s.pipeline.Wait()
+	logger.Trace.Println("Exiting Process() function filedriver")
 	return nil
 }
 

@@ -127,8 +127,12 @@ func (s *Exporter) Test() (bool, error) {
 }
 
 // Process implements the main interface of the plugin.
-func (s *Exporter) Process(ch interface{}, wg *sync.WaitGroup) {
-	cha := ch.(*engine.RecordChannel)
+func (s *Exporter) Process(ch []interface{}, wg *sync.WaitGroup) {
+	if len(ch) != 1 {
+		logger.Error.Println("Exporter only supports a single input channel at this time")
+		return
+	}
+	cha := ch[0].(*engine.RecordChannel)
 	record := cha.In
 	defer wg.Done()
 
