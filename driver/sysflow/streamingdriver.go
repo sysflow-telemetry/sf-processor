@@ -24,6 +24,7 @@ package sysflow
 
 import (
 	"bytes"
+	"errors"
 	"net"
 	"os"
 	"path/filepath"
@@ -49,6 +50,7 @@ const (
 // StreamingDriver represents a streaming sysflow datasource
 type StreamingDriver struct {
 	pipeline plugins.SFPipeline
+	config   map[string]interface{}
 	conn     *net.UnixConn
 }
 
@@ -68,14 +70,28 @@ func (s *StreamingDriver) Register(pc plugins.SFPluginCache) {
 }
 
 // Init initializes the driver
-func (s *StreamingDriver) Init(pipeline plugins.SFPipeline) error {
+func (s *StreamingDriver) Init(pipeline plugins.SFPipeline, config map[string]interface{}) error {
 	s.pipeline = pipeline
+	s.config = config
 	return nil
 }
 
 // Run runs the driver
 func (s *StreamingDriver) Run(path string, running *bool) error {
-	channel := s.pipeline.GetRootChannel()
+	var channel interface{}
+	if s.config == nil {
+		channel = s.pipeline.GetRootChannel()
+	} else {
+		if v, o := s.config[OutChanConfig].(string); o {
+			ch, err := s.pipeline.GetChannel(v)
+			if err != nil {
+				return err
+			}
+			channel = ch
+		} else {
+			return errors.New("out tag does not exist in driver configuration for driver " + fileDriverName)
+		}
+	}
 	sfChannel := channel.(*plugins.SFChannel)
 
 	records := sfChannel.In

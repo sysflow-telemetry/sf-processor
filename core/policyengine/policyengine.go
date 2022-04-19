@@ -112,8 +112,12 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) (err error) {
 
 // Process implements the main loop of the plugin.
 // Records are processed concurrently. The number of concurrent threads is controlled by s.config.Concurrency.
-func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
-	in := ch.(*flattener.FlatChannel).In
+func (s *PolicyEngine) Process(ch []interface{}, wg *sync.WaitGroup) {
+	if len(ch) != 1 {
+		logger.Error.Println("Policy Engine only supports a single input channel at this time")
+		return
+	}
+	in := ch[0].(*flattener.FlatChannel).In
 	defer wg.Done()
 	logger.Trace.Println("Starting policy engine with capacity: ", cap(in))
 
