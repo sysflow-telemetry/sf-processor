@@ -211,6 +211,8 @@ github.com/subosito/gotenv v1.2.0 h1:Slr1R9HxAlEKefgq5jn9U+DnETlIUa6HfgEzj0g5d7s
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220720151945-fca5a11be917 h1:8CcXMnjU5TxCXDRxRQnWvon3VsA47lVe4WaAuxBuJus=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220720151945-fca5a11be917/go.mod h1:hK3FNloWIvlioheWODPJcA3TOxJbxMafoUezq3ZNCww=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230404030540-37e5fa8614fc h1:3+lsQOjaTym5jHq3X2q/NwrCLVD0BHnNqfvR7mky44Y=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230404030540-37e5fa8614fc/go.mod h1:hK3FNloWIvlioheWODPJcA3TOxJbxMafoUezq3ZNCww=
 github.com/tidwall/gjson v1.14.1 h1:iymTbGkQBhveq21bEvAQ81I0LEBork8BFe1CUZXdyuo=
 github.com/tidwall/gjson v1.14.1/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
 github.com/tidwall/match v1.1.1 h1:+Ho715JplO36QYgwN9PGYNhgZvoUSc9X2c80KVTi+GA=
