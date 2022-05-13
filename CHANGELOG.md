@@ -125,8 +125,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - First release of SysFlow Processor.
 
-[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.1-rc2...HEAD
-[0.4.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.0...0.4.1-rc2
+[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.1-rc3...HEAD
+[0.4.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.0...0.4.1-rc3
 [0.4.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.3.1...0.4.0
 [0.3.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...0.3.1
 [0.3.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...0.3.0
