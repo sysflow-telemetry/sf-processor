@@ -15,11 +15,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-## [0.4.1] - 2022-03-31
+## [0.4.1] - 2022-05-26
 
-### CHANGED
+### Changed
 
-- Bumped UBI version to 8.5-236.1647448331
+- Bumped UBI version to 8.6-754
 - Removed binary package's dkms requirement
 
 ## [0.4.0] - 2022-02-18
@@ -125,8 +125,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - First release of SysFlow Processor.
 
-[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.1-rc3...HEAD
-[0.4.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.0...0.4.1-rc3
+[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.1...HEAD
+[0.4.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.3.1...0.4.0
 [0.3.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...0.3.1
 [0.3.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.2.2...0.3.0
