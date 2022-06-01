@@ -205,7 +205,7 @@ func (pi *PolicyInterpreter) worker() {
 
 // Process executes all compiled policies against record r.
 func (pi *PolicyInterpreter) Process(r *Record) *Record {
-	// Drop record if amy drop rule applied.
+	// Drop record if any drop rule applies
 	if pi.EvalFilters(r) {
 		return nil
 	}
