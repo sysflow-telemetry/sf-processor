@@ -52,6 +52,7 @@ type ECSRecord struct {
 	} `json:"ecs,omitempty"`
 	Event       JSONData `json:"event"`
 	Container   JSONData `json:"container"`
+	Host        JSONData `json:"host,omitempty"`
 	File        JSONData `json:"file,omitempty"`
 	FileAction  JSONData `json:"sf_file_action,omitempty"`
 	Network     JSONData `json:"network,omitempty"`
@@ -96,6 +97,7 @@ func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 	ecs := &ECSRecord{
 		ID:        encodeID(rec),
 		Container: encodeContainer(rec),
+		Host:      encodeHost(rec),
 		Process:   encodeProcess(rec),
 		User:      encodeUser(rec),
 	}
@@ -160,6 +162,7 @@ func encodeID(rec *engine.Record) string {
 	}
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
+
 
 // encodeNetworkFlow populates the ECS representatiom of a NetworkFlow record.
 func (ecs *ECSRecord) encodeNetworkFlow(rec *engine.Record) {
@@ -305,6 +308,14 @@ func encodeContainer(rec *engine.Record) JSONData {
 		}
 	}
 	return container
+}
+
+// encodeHost creates the ECS host field
+func encodeHost(rec *engine.Record) JSONData {
+        return JSONData{
+		ECS_HOST_ID: engine.Mapper.MapStr(engine.SF_NODE_ID)(rec),
+		ECS_HOST_IP: engine.Mapper.MapStr(engine.SF_NODE_IP)(rec),
+	}
 }
 
 // encodeUser creates an ECS user field using user and group of the actual process.
