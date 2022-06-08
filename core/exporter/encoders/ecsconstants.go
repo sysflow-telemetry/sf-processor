@@ -34,6 +34,9 @@ const (
 	ECS_IMAGE_ID   = "id"
 	ECS_IMAGE_NAME = "name"
 
+	ECS_HOST_ID = "id"
+	ECS_HOST_IP = "ip"
+
 	ECS_EVENT_KIND     = "kind"
 	ECS_EVENT_CATEGORY = "category"
 	ECS_EVENT_TYPE     = "type"
