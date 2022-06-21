@@ -28,6 +28,7 @@ import (
 	"strings"
 
 	"github.com/cespare/xxhash/v2"
+        "github.com/tidwall/gjson"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
@@ -40,14 +41,15 @@ type MappingType uint8
 
 // Map value types
 const (
-	MapIntVal      MappingType = 0
-	MapStrVal      MappingType = 1
-	MapBoolVal     MappingType = 2
-	MapArrayStr    MappingType = 3
-	MapArrayInt    MappingType = 4
-	MapSpecialInt  MappingType = 5
-	MapSpecialStr  MappingType = 6
-	MapSpecialBool MappingType = 7
+	MapIntVal       MappingType = 0
+	MapStrVal       MappingType = 1
+	MapBoolVal      MappingType = 2
+	MapArrayStr     MappingType = 3
+	MapArrayInt     MappingType = 4
+	MapSpecialInt   MappingType = 5
+	MapSpecialStr   MappingType = 6
+	MapSpecialBool  MappingType = 7
+	MapArraySvc     MappingType = 8
 )
 
 // SectionType defines a section type
@@ -55,15 +57,17 @@ type SectionType uint8
 
 // Section constants
 const (
-	SectNone  SectionType = 0
-	SectProc  SectionType = 1
-	SectPProc SectionType = 2
-	SectFile  SectionType = 3
-	SectNet   SectionType = 4
-	SectFlow  SectionType = 5
-	SectCont  SectionType = 6
-	SectNode  SectionType = 7
-	SectMeta  SectionType = 8
+	SectNone   SectionType = 0
+	SectProc   SectionType = 1
+	SectPProc  SectionType = 2
+	SectFile   SectionType = 3
+	SectNet    SectionType = 4
+	SectFlow   SectionType = 5
+	SectCont   SectionType = 6
+	SectNode   SectionType = 7
+	SectMeta   SectionType = 8
+	SectPod    SectionType = 9
+	SectK8sEvt SectionType = 10
 )
 
 // Attribute ID constants
@@ -84,6 +88,12 @@ type FieldEntry struct {
 
 // IntFieldMap is a functional type denoting a numerical attribute mapper.
 type IntFieldMap func(r *Record) int64
+
+// IntArrayFieldMap is a functional type denoting a numerical array attribute mapper.
+type IntArrayFieldMap func(r *Record) *[]int64
+
+// SvcArrayFieldMap is a functional type denoting a service array attribute mapper.
+type SvcArrayFieldMap func(r *Record) *[]*sfgo.Service
 
 // StrFieldMap is a functional type denoting a string attribute mapper.
 type StrFieldMap func(r *Record) string
@@ -109,23 +119,59 @@ func (m FieldMapper) MapInt(attr string) IntFieldMap {
 	return func(r *Record) int64 {
 		if v, ok := m.Map(attr)(r).(int64); ok {
 			return v
-		} else if v, err := strconv.ParseInt(attr, 10, 64); err == nil {
+		}
+		if v, err := strconv.ParseInt(attr, 10, 64); err == nil {
 			return v
 		}
 		return sfgo.Zeros.Int64
 	}
 }
 
+// MapIntArray retrieves a numerical array field map based on a SysFlow attribute.
+func (m FieldMapper) MapIntArray(attr string) IntArrayFieldMap {
+	return func(r *Record) *[]int64 {
+		if v, ok := m.Map(attr)(r).(*[]int64); ok {
+			return v
+		}
+		return nil
+	}
+}
+
+// MapSvcArray retrieves a numerical array field map based on a SysFlow attribute.
+func (m FieldMapper) MapSvcArray(attr string) SvcArrayFieldMap {
+	return func(r *Record) *[]*sfgo.Service {
+		if v, ok := m.Map(attr)(r).(*[]*sfgo.Service); ok {
+			return v
+		}
+		return nil
+	}
+}
 // MapStr retrieves a string field map based on a SysFlow attribute.
 func (m FieldMapper) MapStr(attr string) StrFieldMap {
 	return func(r *Record) string {
-		if v, ok := m.Map(attr)(r).(string); ok {
-			return trimBoundingQuotes(v)
-		} else if v, ok := m.Map(attr)(r).(int64); ok {
-			return strconv.FormatInt(v, 10)
-		} else if v, ok := m.Map(attr)(r).(bool); ok {
-			return strconv.FormatBool(v)
+		baseattr, jsonpath, isPathExp := strings.Cut(attr, "[")
+		if isPathExp {  // check if baseattr is field name
+			_, isPathExp = m.Mappers[baseattr]
+		} else {
+			baseattr = attr
 		}
+		if isPathExp {  // trim ']'
+			jsonpath = jsonpath[:len(jsonpath)-1]
+		}
+
+		o := m.Map(baseattr)(r)
+		if v, ok := o.(string); ok {
+			if isPathExp && v != "" && jsonpath != "" {
+				return gjson.Get(v, jsonpath).String()
+				//res := gjson.Get(v, jsonpath).String()
+				//logger.Trace.Printf("%s[%s] = %s", baseattr, jsonpath, res)
+				//return res
+			}
+			return trimBoundingQuotes(v)
+		} else if v, ok := o.(int64); ok {
+			return strconv.FormatInt(v, 10)
+		}
+
 		return sfgo.Zeros.String
 	}
 }
@@ -212,6 +258,7 @@ func getExportedMappers() map[string]*FieldEntry {
 		SF_RET:                  &FieldEntry{Map: mapRet(sfgo.SYSFLOW_SRC), FlatIndex: sfgo.SF_REC_TYPE, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC},
 		SF_TS:                   &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.TS_INT), FlatIndex: sfgo.TS_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC},
 		SF_ENDTS:                &FieldEntry{Map: mapEndTs(sfgo.SYSFLOW_SRC), FlatIndex: sfgo.FL_FILE_ENDTS_INT, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC},
+
 		SF_PROC_OID:             &FieldEntry{Map: mapOID(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT, sfgo.PROC_OID_CREATETS_INT), FlatIndex: sfgo.PROC_OID_HPID_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
 		SF_PROC_PID:             &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_OID_HPID_INT), FlatIndex: sfgo.PROC_OID_HPID_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
 		SF_PROC_NAME:            &FieldEntry{Map: mapName(sfgo.SYSFLOW_SRC, sfgo.PROC_EXE_STR), FlatIndex: sfgo.PROC_EXE_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectProc},
@@ -230,6 +277,7 @@ func getExportedMappers() map[string]*FieldEntry {
 		SF_PROC_AEXE:            &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, ProcAExe), FlatIndex: A_IDS, Type: MapArrayStr, Source: sfgo.SYSFLOW_SRC, Section: SectProc, AuxAttr: ProcAExe},
 		SF_PROC_ACMDLINE:        &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, ProcACmdLine), FlatIndex: A_IDS, Type: MapArrayStr, Source: sfgo.SYSFLOW_SRC, Section: SectProc, AuxAttr: ProcACmdLine},
 		SF_PROC_APID:            &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, ProcAPID), FlatIndex: A_IDS, Type: MapArrayInt, Source: sfgo.SYSFLOW_SRC, Section: SectProc, AuxAttr: ProcAPID},
+
 		SF_PPROC_OID:            &FieldEntry{Map: mapOID(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT, sfgo.PROC_POID_CREATETS_INT), FlatIndex: sfgo.PROC_POID_HPID_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectPProc},
 		SF_PPROC_PID:            &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.PROC_POID_HPID_INT), FlatIndex: sfgo.PROC_POID_HPID_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectPProc},
 		SF_PPROC_NAME:           &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcName), FlatIndex: PARENT_IDS, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcName},
@@ -243,6 +291,7 @@ func getExportedMappers() map[string]*FieldEntry {
 		SF_PPROC_TTY:            &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcTTY), FlatIndex: PARENT_IDS, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcTTY},
 		SF_PPROC_ENTRY:          &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcEntry), FlatIndex: PARENT_IDS, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcEntry},
 		SF_PPROC_CMDLINE:        &FieldEntry{Map: mapCachedValue(sfgo.SYSFLOW_SRC, PProcCmdLine), FlatIndex: PARENT_IDS, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectPProc, AuxAttr: PProcCmdLine},
+
 		SF_FILE_NAME:            &FieldEntry{Map: mapName(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR), FlatIndex: sfgo.FILE_PATH_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
 		SF_FILE_PATH:            &FieldEntry{Map: mapPath(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR), FlatIndex: sfgo.FILE_PATH_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
 		SF_FILE_SYMLINK:         &FieldEntry{Map: mapSymlink(sfgo.SYSFLOW_SRC, sfgo.FILE_PATH_STR), FlatIndex: sfgo.FILE_PATH_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
@@ -258,6 +307,7 @@ func getExportedMappers() map[string]*FieldEntry {
 		SF_FILE_IS_OPEN_READ:    &FieldEntry{Map: mapIsOpenRead(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT), FlatIndex: sfgo.FL_FILE_OPENFLAGS_INT, Type: MapSpecialBool, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
 		SF_FILE_FD:              &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_FD_INT), FlatIndex: sfgo.FL_FILE_FD_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
 		SF_FILE_OPENFLAGS:       &FieldEntry{Map: mapOpenFlags(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_OPENFLAGS_INT), FlatIndex: sfgo.FL_FILE_OPENFLAGS_INT, Type: MapArrayStr, Source: sfgo.SYSFLOW_SRC, Section: SectFile},
+
 		SF_NET_PROTO:            &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_PROTO_INT), FlatIndex: sfgo.FL_NETW_PROTO_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
 		SF_NET_SPORT:            &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SPORT_INT), FlatIndex: sfgo.FL_NETW_SPORT_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
 		SF_NET_DPORT:            &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DPORT_INT), FlatIndex: sfgo.FL_NETW_DPORT_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
@@ -265,18 +315,39 @@ func getExportedMappers() map[string]*FieldEntry {
 		SF_NET_SIP:              &FieldEntry{Map: mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT), FlatIndex: sfgo.FL_NETW_SIP_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
 		SF_NET_DIP:              &FieldEntry{Map: mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_DIP_INT), FlatIndex: sfgo.FL_NETW_DIP_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
 		SF_NET_IP:               &FieldEntry{Map: mapIP(sfgo.SYSFLOW_SRC, sfgo.FL_NETW_SIP_INT, sfgo.FL_NETW_DIP_INT), FlatIndex: sfgo.FL_NETW_SIP_INT, Type: MapArrayStr, Source: sfgo.SYSFLOW_SRC, Section: SectNet},
+
 		SF_FLOW_RBYTES:          &FieldEntry{Map: mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMRRECVBYTES_INT, sfgo.FL_NETW_NUMRRECVBYTES_INT), FlatIndex: sfgo.FL_FILE_NUMRRECVBYTES_INT, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectFlow},
 		SF_FLOW_ROPS:            &FieldEntry{Map: mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMRRECVOPS_INT, sfgo.FL_NETW_NUMRRECVOPS_INT), FlatIndex: sfgo.FL_FILE_NUMRRECVOPS_INT, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectFlow},
 		SF_FLOW_WBYTES:          &FieldEntry{Map: mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMWSENDBYTES_INT, sfgo.FL_NETW_NUMWSENDBYTES_INT), FlatIndex: sfgo.FL_FILE_NUMWSENDBYTES_INT, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectFlow},
 		SF_FLOW_WOPS:            &FieldEntry{Map: mapSum(sfgo.SYSFLOW_SRC, sfgo.FL_FILE_NUMWSENDOPS_INT, sfgo.FL_NETW_NUMWSENDOPS_INT), FlatIndex: sfgo.FL_FILE_NUMWSENDOPS_INT, Type: MapSpecialInt, Source: sfgo.SYSFLOW_SRC, Section: SectFlow},
+
 		SF_CONTAINER_ID:         &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_ID_STR), FlatIndex: sfgo.CONT_ID_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
 		SF_CONTAINER_NAME:       &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_NAME_STR), FlatIndex: sfgo.CONT_NAME_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
 		SF_CONTAINER_IMAGEID:    &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGEID_STR), FlatIndex: sfgo.CONT_IMAGEID_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
 		SF_CONTAINER_IMAGE:      &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.CONT_IMAGE_STR), FlatIndex: sfgo.CONT_IMAGE_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
 		SF_CONTAINER_TYPE:       &FieldEntry{Map: mapContType(sfgo.SYSFLOW_SRC, sfgo.CONT_TYPE_INT), FlatIndex: sfgo.CONT_TYPE_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
 		SF_CONTAINER_PRIVILEGED: &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.CONT_PRIVILEGED_INT), FlatIndex: sfgo.CONT_PRIVILEGED_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectCont},
+
+		SF_POD_TS:               &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.POD_TS_INT), FlatIndex: sfgo.POD_TS_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectPod},
+		SF_POD_ID:               &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.POD_ID_STR), FlatIndex: sfgo.POD_ID_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectPod},
+		SF_POD_NAME:             &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.POD_NAME_STR), FlatIndex: sfgo.POD_NAME_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectPod},
+		SF_POD_NODENAME:         &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.POD_NODENAME_STR), FlatIndex: sfgo.POD_NODENAME_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectPod},
+		SF_POD_NAMESPACE:        &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.POD_NAMESPACE_STR), FlatIndex: sfgo.POD_NAMESPACE_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectPod},
+		SF_POD_RESTARTCOUNT:     &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.POD_RESTARTCOUNT_INT), FlatIndex: sfgo.POD_RESTARTCOUNT_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectPod},
+		SF_POD_HOSTIP_JSON:      &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.POD_HOSTIP_STR), FlatIndex: sfgo.POD_HOSTIP_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectNone},
+		SF_POD_HOSTIP:           &FieldEntry{Map: mapIntArray(sfgo.SYSFLOW_SRC, sfgo.POD_HOSTIP_ANY), FlatIndex: sfgo.POD_HOSTIP_ANY, Type: MapArrayInt, Source: sfgo.SYSFLOW_SRC, Section: SectPod},
+		SF_POD_INTERNALIP_JSON:  &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.POD_INTERNALIP_STR), FlatIndex: sfgo.POD_INTERNALIP_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectNone},
+		SF_POD_INTERNALIP:       &FieldEntry{Map: mapIntArray(sfgo.SYSFLOW_SRC, sfgo.POD_INTERNALIP_ANY), FlatIndex: sfgo.POD_INTERNALIP_ANY, Type: MapArrayInt, Source: sfgo.SYSFLOW_SRC, Section: SectPod},
+		SF_POD_SERVICES_JSON:    &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.POD_SERVICES_STR), FlatIndex: sfgo.POD_SERVICES_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectNone},
+		SF_POD_SERVICES:         &FieldEntry{Map: mapSvcArray(sfgo.SYSFLOW_SRC, sfgo.POD_SERVICES_ANY), FlatIndex: sfgo.POD_SERVICES_ANY, Type: MapArraySvc, Source: sfgo.SYSFLOW_SRC, Section: SectPod},
+
+		SF_K8SE_ACTION:          &FieldEntry{Map: mapAction(sfgo.SYSFLOW_SRC, sfgo.K8SE_ACTION_INT), FlatIndex: sfgo.K8SE_ACTION_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectK8sEvt},
+		SF_K8SE_KIND:            &FieldEntry{Map: mapKind(sfgo.SYSFLOW_SRC, sfgo.K8SE_KIND_INT), FlatIndex: sfgo.K8SE_KIND_INT, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectK8sEvt},
+		SF_K8SE_MESSAGE:         &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.K8SE_MESSAGE_STR), FlatIndex: sfgo.K8SE_MESSAGE_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectK8sEvt},
+
 		SF_NODE_ID:              &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_EXPORTER_STR), FlatIndex: sfgo.SFHE_EXPORTER_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectNode},
 		SF_NODE_IP:              &FieldEntry{Map: mapStr(sfgo.SYSFLOW_SRC, sfgo.SFHE_IP_STR), FlatIndex: sfgo.SFHE_IP_STR, Type: MapStrVal, Source: sfgo.SYSFLOW_SRC, Section: SectNode},
+
 		SF_SCHEMA_VERSION:       &FieldEntry{Map: mapInt(sfgo.SYSFLOW_SRC, sfgo.SFHE_VERSION_INT), FlatIndex: sfgo.SFHE_VERSION_INT, Type: MapIntVal, Source: sfgo.SYSFLOW_SRC, Section: SectMeta},
 		SF_TRACENAME:            &FieldEntry{Map: mapName(sfgo.SYSFLOW_SRC, sfgo.SFHE_FILENAME_STR), FlatIndex: sfgo.SFHE_FILENAME_STR, Type: MapSpecialStr, Source: sfgo.SYSFLOW_SRC, Section: SectMeta},
 	}
@@ -428,6 +499,14 @@ func mapInt(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} { return r.GetInt(attr, src) }
 }
 
+func mapIntArray(src sfgo.Source, attr sfgo.Attribute) FieldMap {
+        return func(r *Record) interface{} { return r.GetIntArray(attr, src) }
+}
+
+func mapSvcArray(src sfgo.Source, attr sfgo.Attribute) FieldMap {
+        return func(r *Record) interface{} { return r.GetSvcArray(attr, src) }
+}
+
 func mapSum(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		var sum int64 = 0
@@ -492,6 +571,8 @@ func mapEndTs(src sfgo.Source) FieldMap {
 			return r.GetInt(sfgo.FL_FILE_ENDTS_INT, src)
 		case sfgo.NET_FLOW:
 			return r.GetInt(sfgo.FL_NETW_ENDTS_INT, src)
+		case sfgo.K8S_EVT:
+			return r.GetInt(sfgo.TS_INT, src)
 		default:
 			return sfgo.Zeros.Int64
 		}
@@ -592,6 +673,18 @@ func mapIP(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 func mapContType(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		return sfgo.GetContType(r.GetInt(attr, src))
+	}
+}
+
+func mapAction(src sfgo.Source, attr sfgo.Attribute) FieldMap {
+	return func(r *Record) interface{} {
+		return sfgo.K8sAction(r.GetInt(attr, src)).String()
+	}
+}
+
+func mapKind(src sfgo.Source, attr sfgo.Attribute) FieldMap {
+	return func(r *Record) interface{} {
+		return sfgo.K8sComponent(r.GetInt(attr, src)).String()
 	}
 }
 

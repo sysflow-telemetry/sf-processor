@@ -24,6 +24,7 @@ package encoders
 import (
 	"path/filepath"
 	"reflect"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/mailru/easyjson/jwriter"
@@ -76,11 +77,14 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 	t.writer.RawString(t.config.JSONSchemaVersion)
 	t.writer.RawByte(COMMA)
 	state := BEGIN_STATE
-	pprocID := engine.Mapper.MapInt(engine.SF_PPROC_PID)(rec)
 	sftype := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
+
+	pprocID := engine.Mapper.MapInt(engine.SF_PPROC_PID)(rec)
 	pprocExists := !reflect.ValueOf(pprocID).IsZero()
 	ct := engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(rec)
 	ctExists := !reflect.ValueOf(ct).IsZero()
+	pd := engine.Mapper.MapStr(engine.SF_POD_ID)(rec)
+	pdExists := !reflect.ValueOf(pd).IsZero()
 	existed := true
 
 	for _, fv := range t.fieldCache {
@@ -89,6 +93,24 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			t.writeAttribute(fv, 1, rec)
 			t.writer.RawByte(COMMA)
 		} else if numFields == 3 {
+			if sftype == sfgo.TyKEStr {
+				if fv.Entry.Section == engine.SectK8sEvt {
+					if state != KE_STATE {
+						if state != BEGIN_STATE && existed {
+							t.writer.RawString(END_CURLY_COMMA)
+						}
+						existed = true
+						t.writeSectionBegin(KE)
+						t.writeAttribute(fv, 2, rec)
+						state = KE_STATE
+					} else {
+						t.writer.RawByte(COMMA)
+						t.writeAttribute(fv, 2, rec)
+					}
+				}
+				continue
+			}
+
 			switch fv.Entry.Section {
 			case engine.SectProc:
 				if state != PROC_STATE {
@@ -188,6 +210,23 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 					t.writer.RawByte(COMMA)
 					t.writeAttribute(fv, 2, rec)
 				}
+			case engine.SectPod:
+				if state != POD_STATE {
+					if state != BEGIN_STATE && existed {
+						t.writer.RawString(END_CURLY_COMMA)
+					}
+					if pdExists {
+						t.writeSectionBegin(POD)
+						t.writeAttribute(fv, 2, rec)
+						existed = true
+					} else {
+						existed = false
+					}
+					state = POD_STATE
+				} else if pdExists {
+					t.writer.RawByte(COMMA)
+					t.writeAttribute(fv, 2, rec)
+				}
 			case engine.SectNode:
 				if state != NODE_STATE {
 					if state != BEGIN_STATE && existed {
@@ -279,7 +318,12 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 
 func (t *JSONEncoder) writeAttribute(fv *engine.FieldValue, fieldID int, rec *engine.Record) {
 	t.writer.RawByte(DOUBLE_QUOTE)
-	t.writer.RawString(fv.FieldSects[fieldID])
+	name := fv.FieldSects[fieldID]
+	if strings.HasSuffix(name, "+") {
+		t.writer.RawString(name[:len(name)-1])
+	} else {
+		t.writer.RawString(name)
+	}
 	t.writer.RawString(QUOTE_COLON)
 	MapJSON(fv, t.writer, rec)
 }
@@ -321,6 +365,7 @@ func mapIPStr(ip int64, w *jwriter.Writer) {
 	w.RawByte(PERIOD)
 	w.Int64(ip >> 24 & 0xFF)
 }
+
 func mapIPs(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 	srcIP := r.GetInt(sfgo.FL_NETW_SIP_INT, fv.Entry.Source)
 	dstIP := r.GetInt(sfgo.FL_NETW_DIP_INT, fv.Entry.Source)
@@ -332,6 +377,16 @@ func mapIPs(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 	writer.RawByte(DOUBLE_QUOTE)
 	mapIPStr(dstIP, writer)
 	writer.RawByte(DOUBLE_QUOTE)
+	writer.RawByte(END_SQUARE)
+}
+
+func mapIPArray(ips *[]int64, writer *jwriter.Writer) {
+	writer.RawByte(BEGIN_SQUARE)
+	for _, ip := range *ips {
+		writer.RawByte(DOUBLE_QUOTE)
+		mapIPStr(ip, writer)
+		writer.RawByte(DOUBLE_QUOTE)
+	}
 	writer.RawByte(END_SQUARE)
 }
 
@@ -347,6 +402,62 @@ func mapPorts(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 	writer.Int64(srcPort)
 	writer.RawByte(COMMA)
 	writer.Int64(dstPort)
+	writer.RawByte(END_SQUARE)
+}
+
+func writeStrField(writer *jwriter.Writer, name string, val string) {
+	writer.RawByte(DOUBLE_QUOTE)
+	writer.RawString(name)
+	writer.RawString(QUOTE_COLON)
+	writer.String(val)
+}
+
+func writeIntField(writer *jwriter.Writer, name string, val int32) {
+	writer.RawByte(DOUBLE_QUOTE)
+	writer.RawString(name)
+	writer.RawString(QUOTE_COLON)
+	writer.Int32(val)
+}
+
+func writeIntArrayField(writer *jwriter.Writer, name string, val *[]int64) {
+	writer.RawByte(DOUBLE_QUOTE)
+	writer.RawString(name)
+	writer.RawString(QUOTE_COLON)
+	mapIPArray(val, writer)
+}
+
+func mapPortList(writer *jwriter.Writer, ports *[]*sfgo.Port) {
+	writer.RawByte(DOUBLE_QUOTE)
+	writer.RawString("ports")
+	writer.RawString(QUOTE_COLON)
+	writer.RawByte(BEGIN_SQUARE)
+	for _, p := range *ports {
+		writeIntField(writer, "port", p.Port)
+		writer.RawByte(COMMA)
+		writeIntField(writer, "targetport", p.TargetPort)
+		writer.RawByte(COMMA)
+		writeIntField(writer, "nodeport", p.NodePort)
+		writer.RawByte(COMMA)
+		writeStrField(writer, "proto", p.Proto)
+	}
+	writer.RawByte(END_SQUARE)
+}
+
+func mapSvcArray(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
+	writer.RawByte(BEGIN_SQUARE)
+        for  _, s := range *r.GetSvcArray(fv.Entry.FlatIndex, fv.Entry.Source) {
+		writer.RawByte('{')
+		writeStrField(writer, "id", s.Id)
+		writer.RawByte(COMMA)
+		writeStrField(writer, "name", s.Name)
+		writer.RawByte(COMMA)
+		writeStrField(writer, "namespace", s.Namespace)
+		writer.RawByte(COMMA)
+		writeIntArrayField(writer, "clusterIP", &s.ClusterIP)
+		writer.RawByte(COMMA)
+		mapPortList(writer, &s.PortList)
+		writer.RawByte(END_CURLY)
+	}
 	writer.RawByte(END_SQUARE)
 }
 
@@ -390,12 +501,19 @@ func MapJSON(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 			case sfgo.FL_NETW_SPORT_INT:
 				mapPorts(fv, writer, r)
 				return
+			case sfgo.POD_HOSTIP_ANY, sfgo.POD_INTERNALIP_ANY:
+	                        ips := r.GetIntArray(fv.Entry.FlatIndex, fv.Entry.Source)
+				mapIPArray(ips, writer)
+				return
+
 			}
 		}
 		v := fv.Entry.Map(r).(string)
 		writer.RawByte(BEGIN_SQUARE)
 		writer.String(v)
 		writer.RawByte(END_SQUARE)
+	case engine.MapArraySvc:
+		mapSvcArray(fv, writer, r)
 	}
 }
 

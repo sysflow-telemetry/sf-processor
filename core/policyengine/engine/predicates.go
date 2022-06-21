@@ -84,7 +84,7 @@ func Any(criteria []Criterion) Criterion {
 // Exists creates a criterion for an existential predicate.
 func Exists(attr string) Criterion {
 	m := Mapper.Map(attr)
-	p := func(r *Record) bool { return reflect.ValueOf(m(r)).IsZero() }
+	p := func(r *Record) bool { return !reflect.ValueOf(m(r)).IsZero() }
 	return Criterion{p}
 }
 

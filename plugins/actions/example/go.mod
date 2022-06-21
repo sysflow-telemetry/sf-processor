@@ -18,7 +18,7 @@
 //
 module github.com/sysflow-telemetry/sf-processor/plugins/actions/example
 
-go 1.17
+go 1.18
 
 require github.com/sysflow-telemetry/sf-processor/core v0.0.0-20220221021811-25c7181c2904
 
@@ -29,6 +29,11 @@ require (
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6 // indirect
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220221182316-8e41f56e373e // indirect
+	github.com/tidwall/gjson v1.14.1 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 )
 
 replace github.com/sysflow-telemetry/sf-processor/core => ../../../core
+
+replace github.com/sysflow-telemetry/sf-apis/go => ../../../../sf-apis/go

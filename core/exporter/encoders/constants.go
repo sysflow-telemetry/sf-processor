@@ -28,6 +28,9 @@ const (
 	FILEF     = "file"
 	FLOW      = "flow"
 	CONTAINER = "container"
+	POD       = "pod"
+	SERVICE   = "service"
+	KE        = "k8s"
 	NODE      = "node"
 	META      = "meta"
 
@@ -38,6 +41,9 @@ const (
 	FILE_STATE
 	FLOW_STATE
 	CONT_STATE
+	POD_STATE
+	SVC_STATE
+	KE_STATE
 	NODE_STATE
 	META_STATE
 )
