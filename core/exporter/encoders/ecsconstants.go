@@ -35,7 +35,7 @@ const (
 	ECS_IMAGE_NAME = "name"
 
 	ECS_HOST_ID = "id"
-	ECS_HOST_IP = "ip"
+        ECS_HOST_IP = "ip"
 
 	ECS_EVENT_KIND     = "kind"
 	ECS_EVENT_CATEGORY = "category"
@@ -78,6 +78,21 @@ const (
 	ECS_ENDPOINT_PACKETS = "packets"
 	ECS_ENDPOINT_PORT    = "port"
 
+	ECS_ORCHESTRATOR_NAMESPACE = "namespace"
+	ECS_ORCHESTRATOR_RESOURCE  = "resource"
+	ECS_RESOURCE_NAME          = "name"
+	ECS_RESOURCE_TYPE          = "type"
+	ECS_ORCHESTRATOR_TYPE      = "type"
+
+	ECS_POD_TS           = "ts"
+	ECS_POD_ID           = "id"
+	ECS_POD_NAME         = "name"
+	ECS_POD_NAMESPACE    = "namespace"
+	ECS_POD_NODENAME     = "nodename"
+	ECS_POD_HOSTIP       = "hostip"
+	ECS_POD_INTERNALIP   = "internalip"
+	ECS_POD_RESTARTCOUNT = "restartcnt"
+
 	ECS_PROC_ARGS_COUNT = "args_count"
 	ECS_PROC_ARGS       = "args"
 	ECS_PROC_CMDLINE    = "command_line"
@@ -93,6 +108,15 @@ const (
 	ECS_SF_FA_ROPS   = "read_ops"
 	ECS_SF_FA_WBYTES = "bytes_written"
 	ECS_SF_FA_WOPS   = "write_ops"
+
+	ECS_SERVICE_ID          = "id"
+	ECS_SERVICE_NAME        = "name"
+	ECS_SERVICE_NAMESPACE   = "namespace"
+	ECS_SERVICE_CLUSTERIP   = "clusterip"
+	ECS_SERVICE_PORT        = "port"
+	ECS_SERVICE_TARGETPORT  = "targetport"
+	ECS_SERVICE_NODEPORT    = "nodeport"
+	ECS_SERVICE_PROTO       = "proto"
 
 	ECS_USER_ID   = "id"
 	ECS_USER_NAME = "name"
@@ -115,6 +139,7 @@ const (
 	ECS_CAT_FILE    = "file"
 	ECS_CAT_NETWORK = "network"
 	ECS_CAT_PROCESS = "process"
+	ECS_CAT_ORCH    = "orchestration"
 )
 
 // ECS type values.
@@ -128,6 +153,7 @@ const (
 	ECS_TYPE_EXIT       = "exit"
 	ECS_TYPE_TSTART     = "thread-start"
 	ECS_TYPE_TEXIT      = "thread-exit"
+	ECS_TYPE_K8S        = "k8s"
 )
 
 // ECS action suffixes that differ from ECS types.

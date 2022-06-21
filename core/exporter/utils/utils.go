@@ -24,6 +24,8 @@ import (
 	"reflect"
 	"time"
 	"unsafe"
+
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
 
 // TrimBoundingQuotes removes bounding quotes from string.
@@ -59,6 +61,15 @@ func ToIsoTimeStr(ts int64) string {
 	tsNs := int64(ts % 1E+9)
 	t := time.Unix(tsSec, tsNs).In(time.UTC)
 	return t.Format(time.RFC3339Nano)
+}
+
+// ToIPStrArray converts an array of int ip values to an ip string array
+func ToIPStrArray(ips *[]int64) []string {
+	ipstrs := make([]string, 0)
+        for _, ip := range *ips {
+		ipstrs = append(ipstrs, sfgo.GetIPStr(int32(ip)))
+        }
+        return ipstrs
 }
 
 // UnsafeBytesToString creates a string based on a bite slice without copying.

@@ -183,7 +183,7 @@
   items: [/root/.oracle_jre_usage, /root/.subversion, /root/.nami]
 
 - list: profile_files
-  items: [".bashrc", ".bash_profile", ".profile"]
+  items: [".bprofile_filesashrc", ".bash_profile", ".profile"]
 
 - list: ld_preload_files
   items: ["/etc/ld.so.preload"]
