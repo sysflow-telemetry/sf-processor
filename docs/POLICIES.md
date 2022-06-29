@@ -3,10 +3,6 @@
 The policy engine adopts and extends the Falco rules definition syntax. Before reading the rest of this section, please go through the [Falco Rules](https://falco.org/docs/rules/) documentation to get familiar with _rule_, _macro_, and _list_ syntax, all of which are supported in our policy engine. Policies are written in one or more `yaml` files, and stored in a directory specified in the pipeline configuration file under the `policies` attribute of the policy engine plugin.  
 
 <p align="center">
-  <img width="100%" src="https://gist.githubusercontent.com/Kattjakt/323e6196c86c2bb35b3931bfe726d4d5/raw/44a08287b23d9f4044ba2b98ba5164470a09470f/github-markdown-alerts_info.svg">
-</p>
-
-<p align="center">
   <img width="100%" src="./policy_note.svg">
 </p>
 
