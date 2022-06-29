@@ -2,6 +2,14 @@
 
 The policy engine adopts and extends the Falco rules definition syntax. Before reading the rest of this section, please go through the [Falco Rules](https://falco.org/docs/rules/) documentation to get familiar with _rule_, _macro_, and _list_ syntax, all of which are supported in our policy engine. Policies are written in one or more `yaml` files, and stored in a directory specified in the pipeline configuration file under the `policies` attribute of the policy engine plugin.  
 
+<p align="center">
+  <img width="100%" src="https://gist.githubusercontent.com/Kattjakt/323e6196c86c2bb35b3931bfe726d4d5/raw/44a08287b23d9f4044ba2b98ba5164470a09470f/github-markdown-alerts_info.svg">
+</p>
+
+<p align="center">
+  <img width="100%" src="./policy_note.svg">
+</p>
+
 *Rules* contain the following fields:
 
 - _rule_: the name of the rule
@@ -70,7 +78,7 @@ type, and comparative Falco attribute name. Our policy engine supports both SysF
 
 | Attributes     | Description       | Values | Falco Attribute |
 |:----------------|:-----------------|:------|----------|
-| sf.type           | Record type       | PE,PF,NF,FF,FE | N/A |
+| sf.type           | Record type       | PE,PF,NF,FF,FE,KE | N/A |
 | sf.opflags        | Operation flags   | [Operation Flags List](https://sysflow.readthedocs.io/en/latest/spec.html#operation-flags): remove `OP_` prefix | evt.type (remapped as falco event types) |
 | sf.ret            | Return code       | int   |  evt.res |
 | sf.ts             | start timestamp(ns)| int64 | evt.time |
@@ -129,10 +137,33 @@ type, and comparative Falco attribute name. Our policy engine supports both SysF
 | sf.container.image | Container image name  | string | container.image |
 | sf.container.type | Container type | CT_DOCKER, CT_LXC, CT_LIBVIRT_LXC, CT_MESOS, CT_RKT, CT_CUSTOM, CT_CRI, CT_CONTAINERD, CT_CRIO, CT_BPM | container.type |
 | sf.container.privileged | Container privilege status | bool | container.privileged |
+| sf.pod.ts         | Pod creation timestamp | int | N/A |
+| sf.pod.id         | Pod id | string | N/A |
+| sf.pod.name       | Pod name | string | N/A |
+| sf.pod.nodename   | Pod node name | string | N/A |
+| sf.pod.namespace  | Pod namespace | string | N/A |
+| sf.pod.restartcnt | Pod restart count | int | N/A |
+| sf.pod.hostip     | Pod host IP addresses | json | N/A |
+| sf.pod.internalip | Pod internal IP addresses| json | N/A |
+| sf.pod.services   | Pod services | json | N/A |
+| sf.ke.action      | Kubernetes event action | K8S_COMPONENT_ADDED, K8S_COMPONENT_MODIFIED, K8S_COMPONENT_DELETED, K8S_COMPONENT_ERROR, K8S_COMPONENTNONEXISTENT, K8S_COMPONENT_UNKNOWN | N/A |
+| sf.ke.kind        | Kubernetes event resource type | K8S_NODES, K8S_NAMESPACES, K8S_PODS, K8S_REPLICATIONCONTROLLERS, K8S_SERVICES, K8S_EVENTS, K8S_REPLICASETS, K8S_DAEMONSETS, K8S_DEPLOYMENT, K8S_UNKNOWN | N/A |
+| sf.ke.message     | Kubernetes event json message | json | N/A |
 | sf.node.id        | Node identifier | string |  N/A |
 | sf.node.ip        | Node IP address | string | N/A |
 | sf.schema.version | SysFlow schema version | string | N/A |
 | sf.version        | SysFlow JSON schema version  | int | N/A |
+
+###$ Jsonpath Expressions
+
+Unlike attributes of the scalar types bool, int(64), and string, attributes of type `json` contain structured information in form of stringified json records. The policy language allows access to subfields inside such json records via [GJSON](github.com/tidwall/gjson) jsonpath expressions. The jsonpath iexporession must be specified as a suffix to the attribute enclosed in square brackets. Examples of such terms are:
+
+```
+sf.pod.services[0.clusterip.0]   - the first cluster IP address of the first service associated with  a pod
+sf.ke.message[items.0.namespace] - the namespace of the first item in a KE message attribute
+```
+
+See the [GJSON path synax](https://github.com/tidwall/gjson#path-syntax) for more details. The result of applying a jsonpath expression to a json attribute is always of type string.
 
 ### Operations
 
