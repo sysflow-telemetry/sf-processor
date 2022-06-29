@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" width="100%" height="200px">
+  <foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml" class="root">
+      <style>
+.container {
+  font-family: Helvetica, Arial;
+
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  color: #999999;
+}
+.container::before {
+  content: "";
+
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.325rem;
+  background-color: #79b8ff40;
+}
+
+.icon {
+  font-size: 2em;
+  margin: 0 0.4em 0 0.5em;
+  transform: translateY(-0.06em);
+}
+
+.code {
+  display: inline-block;
+
+  font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+  font-size: 0.85em;
+  font-weight: 600;
+
+  margin-bottom: -0.2em;
+  padding-top: 0.1em;
+  padding-bottom: 0.1em;
+  padding-right: 0.4em;
+  padding-left: 0.4em;
+
+  border-radius: 0.2em;
+  background: #79b8ff40;
+
+  mix-blend-mode: difference;
+  opacity: 0.9;
+  transform: translateY(-0.06em);
+}
+
+.text {
+  font-size: 1em;
+  margin-right: 0.75em;
+  line-height: 1.3;
+}
+
+.icon,
+.text {
+  mix-blend-mode: exclusion;
+}
+
+@media (max-width: 768px) {
+  .text {
+    font-size: 0.9em;
+  }
+
+  .icon {
+    font-size: 3.8em;
+    margin-left: 0.5em;
+    margin-right: 0.4em;
+  }
+}
+
+@media (max-width: 544px) {
+  .text {
+    font-size: 0.8em;
+  }
+
+  .icon {
+    font-size: 1.5em;
+    margin-left: 0.5em;
+    margin-right: 0.35em;
+  }
+}
+
+@media (max-width: 350px) {
+  .text {
+    font-size: 1em;
+    margin-left: 1em;
+  }
+
+  .icon {
+    display: none;
+  }
+}
+      </style>
+
+      <div class="container">
+        <span class="icon">⚠</span>
+	<span>
+            <p class="text"><strong>Note</strong></p>
+            <p class="text">Prior to release 0.4.0, the <tt>mode</tt> attribute accepted a different set of values with different semantics.
+                <ul>
+                    <li>For old <tt>alert</tt> behavior, use <tt>enrich</tt> mode.</li>
+                    <li>For old <tt>filter</tt> behavior, use <tt>enrich</tt> mode and a policy file with filter rules only.</li>
+                    <li>For old <tt>bypass</tt> behavior, use <tt>enrich</tt> mode and drop the <tt>policies:</tt> key from the configuration.</li>
+                </ul>
+            </p>
+	</span>
+      </div>
+    </div>
+  </foreignObject>
+</svg>
