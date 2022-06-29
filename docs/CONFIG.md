@@ -61,20 +61,19 @@ Channels are modelled as channel objects that have an `In` attribute representin
 
 The policy engine (`"processor": "policyengine"`) plugin is driven by a set of rules. These rules are specified in a YAML which adopts the same syntax as the rules of the [Falco](https://falco.org/docs/rules) project. A policy engine plugin specification may have the following attributes:
 
-- _policies_ (required): The path to the YAML rules specification file. More information on rules can be found in the [Policies](POLICIES.md) section.
+- _policies_ (required for `alert` mode`): The path to the YAML rules specification file. More information on rules can be found in the [Policies](POLICIES.md) section.
 - _mode_ (optional): The mode of the policy engine. Allowed values are:
   - `alert` (default): the policy engine generates rule-based alerts; `alert` is a blocking mode that drops all records that do not match any given rule. If no mode is specified, the policy engine runs in `alert` mode by default.
   - `enrich` for enriching records with additional context from the rule. In contrast to `alert`, this is a non-blocking mode which applies tagging and action enrichments to matching records as defined in the policy file. Non-matching records are passed on "as is".
+<p align="center">
+  <img width="100%" src="./mode_note.svg">
+</p>
 - _monitor_ (optional): Specifies if changes to the policy file(s) should be monitored and updated in the policy engine.
   - `none` (default): no monitor is used.
   - `local`: the processor will monitor for changes in the policies path and update its rule set if changes are detected.
 - _monitor.interval_ (optional): The interval in seconds for updating policies, if a monitor is used. (default: 30 seconds).
 - _concurrency_ (optional); The number of concurrent threads for record processing. (default: 5).
 - _actiondir_ (optional): The path of the directory containing the shared object files for user-defined action plugins. See the section on [User-defined Actions](POLICIES.md#user-defined-actions) for more information.
-
-<p align="center">
-  <img width="100%" src="./mode_note.svg">
-</p>
 
 ### Exporter configuration
 
