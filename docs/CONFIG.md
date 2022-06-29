@@ -50,7 +50,7 @@ The general attributes are as follows:
 - _in_ (required): the input channel (i.e. golang channel) of objects that are passed to the plugin.
 - _out_ (optional): the output channel (i.e. golang channel) for objects that are pushed out of the plugin, and into the next plugin in the pipeline sequence.
 
-Channels are modeled as channel objects that have an `In` attribute representing some golang channel of objects. See [SFChannel](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/processor.go) for an example. The syntax for a channel in the pipeline is `[channel name] [channel type]`.  Where channel type is the label given to the channel type at plugin registration (more on this later), and channel name is a unique identifier for the current channel instance. The name and type of an output channel in one plugin must match that of the name and type of the input channel of the next plugin in the pipeline sequence.
+Channels are modelled as channel objects that have an `In` attribute representing some golang channel of objects. See [SFChannel](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/processor.go) for an example. The syntax for a channel in the pipeline is `[channel name] [channel type]`.  Where channel type is the label given to the channel type at plugin registration (more on this later), and channel name is a unique identifier for the current channel instance. The name and type of an output channel in one plugin must match that of the name and type of the input channel of the next plugin in the pipeline sequence.
 
 >---
 > **NOTE** A plugin has exacly one input channel but it may specify more than one output channels. This allows pipeline definitions that fan out data to more than one receiver plugin similar to a Unix `tee` command. While there must be always one SysFlow reader acting as the entry point of a pipeline, a pipeline configuration may specify policy engines passing data to different exporters or a SysFlow reader passing data to different policy engines. Generally, pipelines form a tree rather being a linear structure.
@@ -65,13 +65,16 @@ The policy engine (`"processor": "policyengine"`) plugin is driven by a set of r
 - _mode_ (optional): The mode of the policy engine. Allowed values are:
   - `alert` (default): the policy engine generates rule-based alerts; `alert` is a blocking mode that drops all records that do not match any given rule. If no mode is specified, the policy engine runs in `alert` mode by default.
   - `enrich` for enriching records with additional context from the rule. In contrast to `alert`, this is a non-blocking mode which applies tagging and action enrichments to matching records as defined in the policy file. Non-matching records are passed on "as is".
-  
 - _monitor_ (optional): Specifies if changes to the policy file(s) should be monitored and updated in the policy engine.
   - `none` (default): no monitor is used.
   - `local`: the processor will monitor for changes in the policies path and update its rule set if changes are detected.
 - _monitor.interval_ (optional): The interval in seconds for updating policies, if a monitor is used. (default: 30 seconds).
 - _concurrency_ (optional); The number of concurrent threads for record processing. (default: 5).
 - _actiondir_ (optional): The path of the directory containing the shared object files for user-defined action plugins. See the section on [User-defined Actions](POLICIES.md#user-defined-actions) for more information.
+
+<p align="center">
+  <img width="100%" src="./mode_note.svg">
+</p>
 
 ### Exporter configuration
 
