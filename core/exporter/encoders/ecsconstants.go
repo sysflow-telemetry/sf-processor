@@ -153,7 +153,8 @@ const (
 	ECS_TYPE_EXIT       = "exit"
 	ECS_TYPE_TSTART     = "thread-start"
 	ECS_TYPE_TEXIT      = "thread-exit"
-	ECS_TYPE_K8S        = "k8s"
+	ECS_TYPE_ERROR      = "error"
+	ECS_TYPE_INFO       = "info"
 )
 
 // ECS action suffixes that differ from ECS types.
