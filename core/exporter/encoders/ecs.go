@@ -30,6 +30,7 @@ import (
 
 	"github.com/cespare/xxhash/v2"
 	"github.com/satta/gommunityid"
+	"github.com/tidwall/gjson"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
@@ -113,11 +114,13 @@ func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 		if engine.Mapper.MapStr(engine.SF_POD_ID)(rec) != sfgo.Zeros.String {
 			ecs.encodeOrchestrator(rec)
 			ecs.encodePod(rec)
-			//ecs.Service      = encodeService(rec)
 		}
 		ecs.Process      = encodeProcess(rec)
 		ecs.User         = encodeUser(rec)
+	} else {
+		ecs.encodeOrchestrator(rec)
 	}
+
 	switch sfType {
 	case sfgo.TyNFStr:
 		ecs.encodeNetworkFlow(rec)
@@ -302,13 +305,36 @@ func (ecs *ECSRecord) encodeProcessEvent(rec *engine.Record) {
 	ecs.Event = encodeEvent(rec, category, eventType, action)
 }
 
+func k8sActionToEventType(rec *engine.Record) string {
+	eventType := ECS_TYPE_INFO
+	am := engine.Mapper.Mappers[engine.SF_K8SE_ACTION]
+	switch sfgo.K8sAction(rec.Fr.Ints[am.Source][am.FlatIndex]) {
+	case sfgo.K8sActionK8S_COMPONENT_ADDED:    eventType = ECS_TYPE_CREATE
+	case sfgo.K8sActionK8S_COMPONENT_DELETED:  eventType = ECS_TYPE_DELETE
+	case sfgo.K8sActionK8S_COMPONENT_MODIFIED: eventType = ECS_TYPE_CHANGE
+	case sfgo.K8sActionK8S_COMPONENT_ERROR:    eventType = ECS_TYPE_ERROR
+	}
+	return eventType
+}
 // encodeK8sEvent populates the ECS representatiom of a KE record
 func (ecs *ECSRecord) encodeK8sEvent(rec *engine.Record) {
         category := ECS_CAT_ORCH
-        eventType := ECS_TYPE_K8S
+        eventType := k8sActionToEventType(rec)
         action := engine.Mapper.MapStr(engine.SF_K8SE_ACTION)(rec)
+
         ecs.Event = encodeEvent(rec, category, eventType, action)
-	ecs.Event[ECS_EVENT_KIND] = engine.Mapper.MapStr(engine.SF_K8SE_KIND)(rec)
+	msgStr := engine.Mapper.MapStr(engine.SF_K8SE_MESSAGE)(rec)
+        ecs.Event[ECS_EVENT_ORIGINAL] = msgStr
+
+	msg := gjson.Parse(msgStr)
+	ecs.Orchestrator = JSONData{
+		ECS_ORCHESTRATOR_NAMESPACE: msg.Get("items.0.namespace").String(),
+		ECS_ORCHESTRATOR_RESOURCE:  JSONData{
+			ECS_RESOURCE_TYPE:  strings.ToLower(msg.Get("kind").String()),
+			ECS_RESOURCE_NAME:  msg.Get("items.0.name").String(),
+		},
+		ECS_ORCHESTRATOR_TYPE:      "kubernetes",
+	}
 }
 
 // encodeOrchestrator creates an ECS orchestrator field.
@@ -514,10 +540,7 @@ func encodeEvent(rec *engine.Record, category string, eventType string, action s
 
 	if sfType == sfgo.TyPEStr || sfType == sfgo.TyFEStr {
 		event[ECS_EVENT_SFRET] = sfRet
-	} else if sfType == sfgo.TyKEStr {
-		event[ECS_EVENT_ORIGINAL] = engine.Mapper.MapStr(engine.SF_K8SE_MESSAGE)(rec)
 	}
-
 	return event
 }
 

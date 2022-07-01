@@ -71,7 +71,7 @@
             "type" : "long"
           },
           "port" : {
-            "type" : "long"
+            "type" : "integer"
           }
         }
       },
@@ -155,6 +155,25 @@
             "norms": false,
             "ignore_above" : 256
           },
+	  "hash" : {
+            "properties" : {
+              "md5" : {
+                "type" : "keyword",
+                "norms": false,
+                "ignore_above": 32
+	      },
+              "sha1" : {
+                "type" : "keyword",
+                "norms": false,
+                "ignore_above": 40
+	      },
+              "sha256" : {
+                "type" : "keyword",
+                "norms": false,
+                "ignore_above": 64
+	      }
+	    }
+	  },
           "name" : {
             "type" : "keyword",
             "norms": false,
@@ -213,6 +232,70 @@
           }
         }
       },
+      "orchestrator": {
+        "properties" : {
+          "namespace" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+          "resource" : {
+            "properties" : {
+              "name" : {
+                "type" : "keyword",
+                "norms": false,
+                "ignore_above" : 256
+              },
+	      "type": {
+                "type" : "keyword",
+                "norms": false,
+                "ignore_above" : 32
+	      }
+            }
+	  },
+	  "type": {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 32
+	  }
+	}
+      },
+      "pod": {
+        "properties" : {
+          "hostip": {
+            "type" : "ip"
+          },
+          "id" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 64
+          },
+          "internalip": {
+            "type" : "ip"
+          },
+          "name" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+          "namespace" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+          "nodename" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+	  "restartcnt": {
+            "type": "integer"
+          },
+  	  "ts": {
+            "type" : "date_nanos"
+          }
+        }
+      },
       "process" : {
         "properties" : {
           "args" : {
@@ -242,6 +325,25 @@
               }
             }
           },
+	  "hash" : {
+            "properties" : {
+              "md5" : {
+                "type" : "keyword",
+                "norms": false,
+                "ignore_above": 32
+	      },
+              "sha1" : {
+                "type" : "keyword",
+                "norms": false,
+                "ignore_above": 40
+	      },
+              "sha256" : {
+                "type" : "keyword",
+                "norms": false,
+                "ignore_above": 64
+	      }
+	    }
+	  },
           "name" : {
             "type" : "keyword",
             "norms": false,
@@ -316,6 +418,42 @@
           }
         }
       },
+      "service": {
+        "properties" : {
+          "clusterip": {
+            "type" : "ip"
+          },
+          "id" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 64
+          },
+          "name" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+          "namespace" : {
+            "type" : "keyword",
+            "norms": false,
+            "ignore_above" : 256
+          },
+          "port" : {
+            "type" : "integer"
+          },
+          "targetport" : {
+            "type" : "integer"
+          },
+          "nodeport" : {
+            "type" : "integer"
+          },
+          "proto" : {
+            "type" : "keyword",
+            "norms" : false,
+            "ignore_above" : 32
+          }
+	}
+      },
       "source" : {
         "properties" : {
           "address" : {
@@ -333,7 +471,7 @@
             "type" : "long"
           },
           "port" : {
-            "type" : "long"
+            "type" : "integer"
           }
         }
       },
