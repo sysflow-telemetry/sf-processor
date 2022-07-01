@@ -94,7 +94,8 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			t.writer.RawByte(COMMA)
 		} else if numFields == 3 {
 			if sftype == sfgo.TyKEStr {
-				if fv.Entry.Section == engine.SectK8sEvt {
+				switch fv.Entry.Section {
+				case engine.SectK8sEvt:
 					if state != KE_STATE {
 						if state != BEGIN_STATE && existed {
 							t.writer.RawString(END_CURLY_COMMA)
@@ -103,6 +104,32 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 						t.writeSectionBegin(KE)
 						t.writeAttribute(fv, 2, rec)
 						state = KE_STATE
+					} else {
+						t.writer.RawByte(COMMA)
+						t.writeAttribute(fv, 2, rec)
+					}
+				case engine.SectNode:
+					if state != NODE_STATE {
+						if state != BEGIN_STATE && existed {
+							t.writer.RawString(END_CURLY_COMMA)
+						}
+						existed = true
+						t.writeSectionBegin(NODE)
+						t.writeAttribute(fv, 2, rec)
+						state = NODE_STATE
+					} else {
+						t.writer.RawByte(COMMA)
+						t.writeAttribute(fv, 2, rec)
+					}
+				case engine.SectMeta:
+					if state != META_STATE {
+						if state != BEGIN_STATE && existed {
+							t.writer.RawString(END_CURLY_COMMA)
+						}
+						existed = true
+						t.writeSectionBegin(META)
+						t.writeAttribute(fv, 2, rec)
+						state = META_STATE
 					} else {
 						t.writer.RawByte(COMMA)
 						t.writeAttribute(fv, 2, rec)

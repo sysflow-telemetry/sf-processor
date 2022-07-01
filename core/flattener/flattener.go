@@ -112,6 +112,7 @@ func (s *Flattener) HandlePod(sf *plugins.CtxSysFlow, cont *sfgo.Pod) error {
 func (s *Flattener) HandleK8sEvt(sf *plugins.CtxSysFlow, ke *sfgo.K8sEvent) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.K8S_EVT
+	s.fillHeader(sf.Header, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.TS_INT] = ke.Ts
 	fr.Strs[sfgo.SYSFLOW_IDX][sfgo.K8SE_MESSAGE_STR] = ke.Message
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.K8SE_KIND_INT] = int64(ke.Kind)
@@ -245,7 +246,7 @@ func (s *Flattener) HandleProcEvt(sf *plugins.CtxSysFlow, pe *sfgo.ProcessEvent)
 	return nil
 }
 
-func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, pod *sfgo.Pod, cont *sfgo.Container, proc *sfgo.Process, file *sfgo.File, fr *sfgo.FlatRecord) {
+func (s *Flattener) fillHeader(hdr *sfgo.SFHeader, fr *sfgo.FlatRecord) {
 	if hdr != nil {
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SFHE_VERSION_INT] = hdr.Version
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SFHE_EXPORTER_STR] = hdr.Exporter
@@ -257,6 +258,10 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, pod *sfgo.Pod, cont *sfgo.C
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SFHE_EXPORTER_STR] = sfgo.Zeros.String
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SFHE_IP_STR] = sfgo.Zeros.String
 	}
+}
+
+func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, pod *sfgo.Pod, cont *sfgo.Container, proc *sfgo.Process, file *sfgo.File, fr *sfgo.FlatRecord) {
+	s.fillHeader(hdr, fr)
 	if cont != nil {
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.CONT_ID_STR] = cont.Id
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.CONT_NAME_STR] = strings.TrimSpace(cont.Name)
