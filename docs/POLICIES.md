@@ -2,10 +2,6 @@
 
 The policy engine adopts and extends the Falco rules definition syntax. Before reading the rest of this section, please go through the [Falco Rules](https://falco.org/docs/rules/) documentation to get familiar with _rule_, _macro_, and _list_ syntax, all of which are supported in our policy engine. Policies are written in one or more `yaml` files, and stored in a directory specified in the pipeline configuration file under the `policies` attribute of the policy engine plugin.  
 
-<p align="center">
-  <img width="100%" src="./policy_note.svg">
-</p>
-
 *Rules* contain the following fields:
 
 - _rule_: the name of the rule
@@ -16,6 +12,8 @@ The policy engine adopts and extends the Falco rules definition syntax. Before r
 - _tags_ (optional): set of labels appended to alert (default: empty).
 - _prefilter_ (optional): list of record types (`sf.type`) to whitelist before applying rule condition (default: empty).
 - _enabled_ (optional): indicates whether the rule is enabled (default: true).
+
+> **NOTE:** The syntax of the policy language changed slighly with the switch to release 0.4.0. For migrating policy files used with prior releases to release 0.4.0 or higher, simply remove all `action: [tag]` lines. As of release 0.4.0, tagging is done automatically. If a rule triggers all tags specified via the _tags_ key will be appended to the record. The _action_ key is reserved for specifying user-defined action plugins.</p>
 
 *Macros* are named conditions and contain the following fields:
 
