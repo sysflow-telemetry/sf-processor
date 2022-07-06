@@ -30,10 +30,7 @@ The pipeline configuration below shows how to configure a pipeline that will rea
 }
 ```
 
->---
-> **NOTE**  This configuration can be found in:  `sf-collector/resources/pipelines/pipeline.syslog.json`
->
->---
+> **NOTE:**  This configuration can be found in:  `sf-collector/resources/pipelines/pipeline.syslog.json`
 
 This pipeline specifies three built-in plugins:
 
@@ -52,28 +49,27 @@ The general attributes are as follows:
 
 Channels are modelled as channel objects that have an `In` attribute representing some golang channel of objects. See [SFChannel](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/processor.go) for an example. The syntax for a channel in the pipeline is `[channel name] [channel type]`.  Where channel type is the label given to the channel type at plugin registration (more on this later), and channel name is a unique identifier for the current channel instance. The name and type of an output channel in one plugin must match that of the name and type of the input channel of the next plugin in the pipeline sequence.
 
->---
-> **NOTE** A plugin has exacly one input channel but it may specify more than one output channels. This allows pipeline definitions that fan out data to more than one receiver plugin similar to a Unix `tee` command. While there must be always one SysFlow reader acting as the entry point of a pipeline, a pipeline configuration may specify policy engines passing data to different exporters or a SysFlow reader passing data to different policy engines. Generally, pipelines form a tree rather being a linear structure.
->
->---
+> **NOTE:** A plugin has exacly one input channel but it may specify more than one output channels. This allows pipeline definitions that fan out data to more than one receiver plugin similar to a Unix `tee` command. While there must be always one SysFlow reader acting as the entry point of a pipeline, a pipeline configuration may specify policy engines passing data to different exporters or a SysFlow reader passing data to different policy engines. Generally, pipelines form a tree rather being a linear structure.
 
 ### Policy engine configuration
 
-The policy engine (`"processor": "policyengine"`) plugin is driven by a set of rules. These rules are specified in a YAML which adopts the same syntax as the rules of the [Falco](https://falco.org/docs/rules) project. A policy engine plugin specification may have the following attributes:
+The policy engine (`"processor": "policyengine"`) plugin is driven by a set of rules. These rules are specified in a YAML file which adopts the same syntax as the rules of the [Falco](https://falco.org/docs/rules) project. A policy engine plugin specification may have the following attributes:
 
 - _policies_ (required for `alert` mode`): The path to the YAML rules specification file. More information on rules can be found in the [Policies](POLICIES.md) section.
 - _mode_ (optional): The mode of the policy engine. Allowed values are:
   - `alert` (default): the policy engine generates rule-based alerts; `alert` is a blocking mode that drops all records that do not match any given rule. If no mode is specified, the policy engine runs in `alert` mode by default.
   - `enrich` for enriching records with additional context from the rule. In contrast to `alert`, this is a non-blocking mode which applies tagging and action enrichments to matching records as defined in the policy file. Non-matching records are passed on "as is".
-<p align="center">
-  <img width="100%" src="./mode_note.svg">
-</p>
 - _monitor_ (optional): Specifies if changes to the policy file(s) should be monitored and updated in the policy engine.
   - `none` (default): no monitor is used.
   - `local`: the processor will monitor for changes in the policies path and update its rule set if changes are detected.
 - _monitor.interval_ (optional): The interval in seconds for updating policies, if a monitor is used. (default: 30 seconds).
 - _concurrency_ (optional); The number of concurrent threads for record processing. (default: 5).
 - _actiondir_ (optional): The path of the directory containing the shared object files for user-defined action plugins. See the section on [User-defined Actions](POLICIES.md#user-defined-actions) for more information.
+
+> **NOTE:** Prior to release 0.4.0, the _mode_ attribute accepted different values with different semantics. You can preserve preserve the behavior of older releases:
+> - For old `alert` behavior, use `enrich` mode.
+> - For old `filter` behavior, use `enrich` mode and a policy file with filter rules only.
+> - For old `bypass` behavior, use `enrich` and drop the _policies_ key from the configuration.
 
 ### Exporter configuration
 
@@ -123,13 +119,14 @@ Data export is done via bulk ingestion. The ingestion can be controlled by some 
 
 The Elastic exporter does not make any assumption on the existence or configuration of the index specified in _es.index_. If the index does not exist, Elastic will automatically create it and apply a default dynamic mapping. It may be beneficial to use an explicit mapping for the ECS data generated by the Elastic exporter. For convinience we provide an [explicit mapping](resources/mappings/ecs_mapping.json) for creating a new tailored index in Elastic. For more information refer to the [Elastic Mapping](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html) reference.
 
+<!--
 #### IBM Findings
 
 Export to IBM Findings API allows adding custom findings to the IBM Cloud Security & Compliance Center (SCC). The mode is enabled via setting the configuration parameter _export_ to `findings`. The _format_ parameter must be set to `occurence` in this case. For export to IBM Findings, the following parameters are used:
 
 - _findings.apikey_ (required): The API key used for the Advisor service instance.
 - _findings.url_ (required): The URL of the Advisor service instance.
-- _findings.accountid_ (required): The acccount ID used for the Advisor service instance.
+- _findings.accountid_ (required): The account ID used for the Advisor service instance.
 - _findings.provider_ (required): Unique ID of the note provider
 - _findings.region_ (required): The cloud region of Advisor service instance.
 - _findings.sqlqueryurl_ (required):
@@ -141,6 +138,7 @@ Export to IBM Findings API allows adding custom findings to the IBM Cloud Securi
 - _findings.pool.maxage_ (woptional): The maximum age of the security findings in the pool in minutes. Default is `1440`.
 
 For more information about inserting custom findings into IBM SCC, refer to [Custom Findings](https://cloud.ibm.com/docs/security-advisor?topic=security-advisor-setup_custom) section of IBM Cloud Security Advisor.
+-->
 
 ### Environment variables
 
