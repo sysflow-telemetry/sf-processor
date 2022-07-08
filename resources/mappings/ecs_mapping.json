@@ -419,6 +419,8 @@
         }
       },
       "service": {
+        "type" : "nested",
+	"include_in_root" : true,
         "properties" : {
           "clusterip": {
             "type" : "ip"
@@ -438,20 +440,26 @@
             "norms": false,
             "ignore_above" : 256
           },
-          "port" : {
-            "type" : "integer"
-          },
-          "targetport" : {
-            "type" : "integer"
-          },
-          "nodeport" : {
-            "type" : "integer"
-          },
-          "proto" : {
-            "type" : "keyword",
-            "norms" : false,
-            "ignore_above" : 32
-          }
+          "ports" : {
+            "type" : "nested",
+	    "include_in_root" : true,
+            "properties" : {
+              "port": {
+                "type" : "integer"
+              },
+              "targetport" : {
+                "type" : "integer"
+              },
+              "nodeport" : {
+                "type" : "integer"
+              },
+              "proto" : {
+                "type" : "keyword",
+                "norms" : false,
+                "ignore_above" : 32
+              }
+            }
+	  }
 	}
       },
       "source" : {
