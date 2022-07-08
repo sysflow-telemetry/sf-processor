@@ -94,13 +94,11 @@ func (s *SysFlowReader) Process(ch interface{}, wg *sync.WaitGroup) {
 		sf.Header = s.hdr
 		switch sf.Rec.UnionType {
 		case sfgo.SF_HEADER:
-			if sf.Rec.SFHeader != nil {
-				s.hdr = sf.Rec.SFHeader
-				s.tables.Reset()
-				if entEnabled {
-					s.hdl.HandleHeader(sf, s.hdr)
-				}
-		        }
+			s.hdr = sf.Rec.SFHeader
+			s.tables.Reset()
+			if entEnabled {
+				s.hdl.HandleHeader(sf, s.hdr)
+			}
 		case sfgo.SF_CONT:
 			cont := sf.Rec.Container
 			s.tables.SetCont(cont.Id, cont)

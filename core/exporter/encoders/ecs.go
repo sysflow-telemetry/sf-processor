@@ -56,7 +56,7 @@ type ECSRecord struct {
 	Container    JSONData `json:"container,omitempty"`
 	Orchestrator JSONData `json:"orchestrator,omitempty"`
 	Pod          JSONData `json:"pod,omitempty"`
-	Service      JSONData `json:"service,omitempty"`
+	Service      []JSONData `json:"service,omitempty"`
 	File         JSONData `json:"file,omitempty"`
 	FileAction   JSONData `json:"sf_file_action,omitempty"`
 	Network      JSONData `json:"network,omitempty"`
@@ -352,13 +352,13 @@ func (ecs *ECSRecord) encodeOrchestrator(rec *engine.Record) {
 // encodePod creates a custom ECS pod field.
 func (ecs *ECSRecord) encodePod(rec *engine.Record) {
 	ecs.Pod = JSONData{
-		ECS_POD_TS: utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_POD_TS)(rec)),
-		ECS_POD_ID: engine.Mapper.MapStr(engine.SF_POD_ID)(rec),
-		ECS_POD_NAME: engine.Mapper.MapStr(engine.SF_POD_NAME)(rec),
-		ECS_POD_NODENAME: engine.Mapper.MapStr(engine.SF_POD_NODENAME)(rec),
-		ECS_POD_NAMESPACE: engine.Mapper.MapStr(engine.SF_POD_NAMESPACE)(rec),
-		ECS_POD_HOSTIP: utils.ToIPStrArray(engine.Mapper.MapIntArray(engine.SF_POD_HOSTIP)(rec)),
-		ECS_POD_INTERNALIP: utils.ToIPStrArray(engine.Mapper.MapIntArray(engine.SF_POD_INTERNALIP)(rec)),
+		ECS_POD_TS:           utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_POD_TS)(rec)),
+		ECS_POD_ID:           engine.Mapper.MapStr(engine.SF_POD_ID)(rec),
+		ECS_POD_NAME:         engine.Mapper.MapStr(engine.SF_POD_NAME)(rec),
+		ECS_POD_NODENAME:     engine.Mapper.MapStr(engine.SF_POD_NODENAME)(rec),
+		ECS_POD_NAMESPACE:    engine.Mapper.MapStr(engine.SF_POD_NAMESPACE)(rec),
+		ECS_POD_HOSTIP:       utils.ToIPStrArray(engine.Mapper.MapIntArray(engine.SF_POD_HOSTIP)(rec)),
+		ECS_POD_INTERNALIP:   utils.ToIPStrArray(engine.Mapper.MapIntArray(engine.SF_POD_INTERNALIP)(rec)),
 		ECS_POD_RESTARTCOUNT: engine.Mapper.MapInt(engine.SF_POD_RESTARTCOUNT)(rec),
 	}
 
@@ -379,61 +379,30 @@ func checkPorts(svcs *[]*sfgo.Service) bool {
 
 // encodeServices creates an ECS service field.
 func (ecs *ECSRecord) encodeService(svcs *[]*sfgo.Service) {
-	ids := make([]string, len(*svcs))
-	names := make([]string, len(*svcs))
-	namespaces := make([]string, len(*svcs))
-	clusterips := make([][]string, len(*svcs))
-
-	var ports       [][]int32
-	var targetports [][]int32
-	var nodeports   [][]int32
-	var protos      [][]string
-
-	hasPorts := checkPorts(svcs)
-        if hasPorts {
-		ports = make([][]int32, len(*svcs))
-		targetports = make([][]int32, len(*svcs))
-		nodeports = make([][]int32, len(*svcs))
-		protos = make([][]string, len(*svcs))
-        }
-
+	ecs.Service = make([]JSONData, len(*svcs))
 	for i, svc := range *svcs {
-		ids[i] = svc.Id
-		names[i] = svc.Name
-		namespaces[i] = svc.Namespace
-		clusterips[i] = utils.ToIPStrArray(&svc.ClusterIP)
-
-		if hasPorts {
-			sports := make([]int32, len(svc.PortList))
-			stports := make([]int32, len(svc.PortList))
-			snports := make([]int32, len(svc.PortList))
-			sprotos := make([]string, len(svc.PortList))
-			for j, p := range svc.PortList {
-				sports[j] = p.Port
-				stports[j] = p.TargetPort
-				snports[j] = p.NodePort
-				sprotos[j] = p.Proto
-			}
-			ports[i] = sports
-			targetports[i] = stports
-			nodeports[i] = snports
-			protos[i] = sprotos
+		ecs.Service[i] = JSONData{
+			ECS_SERVICE_ID:        svc.Id,
+			ECS_SERVICE_NAME:      svc.Name,
+			ECS_SERVICE_NAMESPACE: svc.Namespace,
+			ECS_SERVICE_CLUSTERIP: utils.ToIPStrArray(&svc.ClusterIP),
+			ECS_SERVICE_PORTLIST:  encodePortList(&svc.PortList),
 		}
 	}
+}
 
-	ecs.Service = JSONData{
-		ECS_SERVICE_ID: ids,
-		ECS_SERVICE_NAME: names,
-		ECS_SERVICE_NAMESPACE: namespaces,
-		ECS_SERVICE_CLUSTERIP: clusterips,
+// encodePortList creates a ports field for an ECS service field.
+func encodePortList(pl *[]*sfgo.Port) []JSONData {
+	ports := make([]JSONData, len(*pl))
+	for i, p := range *pl {
+		ports[i] = JSONData{
+			ECS_SERVICE_PORT:       p.Port,
+			ECS_SERVICE_TARGETPORT: p.TargetPort,
+			ECS_SERVICE_NODEPORT:   p.NodePort,
+			ECS_SERVICE_PROTO:      p.Proto,
+		}
 	}
-
-	if hasPorts {
-		ecs.Service[ECS_SERVICE_PORT] = ports
-		ecs.Service[ECS_SERVICE_TARGETPORT] = targetports
-		ecs.Service[ECS_SERVICE_NODEPORT] = nodeports
-		ecs.Service[ECS_SERVICE_PROTO] = protos
-	}
+	return ports
 }
 
 // encodeContainer creates an ECS container field.

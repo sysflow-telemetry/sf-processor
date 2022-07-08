@@ -113,6 +113,7 @@ const (
 	ECS_SERVICE_NAME        = "name"
 	ECS_SERVICE_NAMESPACE   = "namespace"
 	ECS_SERVICE_CLUSTERIP   = "clusterip"
+	ECS_SERVICE_PORTLIST    = "ports"
 	ECS_SERVICE_PORT        = "port"
 	ECS_SERVICE_TARGETPORT  = "targetport"
 	ECS_SERVICE_NODEPORT    = "nodeport"
