@@ -4,6 +4,7 @@
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,6 +28,7 @@ import (
 // SFTables defines thread-safe shared cache for plugins for storing SysFlow entities.
 type SFTables struct {
 	contTable map[string]*sfgo.Container
+	podTable  map[string]*sfgo.Pod
 	// procTable  map[uint64][]*sfgo.Process
 	// fileTable  map[uint64]*sfgo.File
 	// ptreeTable map[uint64][]*sfgo.Process
@@ -44,6 +46,7 @@ func NewSFTables() *SFTables {
 
 func (t *SFTables) new() {
 	t.contTable = make(map[string]*sfgo.Container)
+	t.podTable = make(map[string]*sfgo.Pod)
 	t.procTable = make(map[sfgo.OID][]*sfgo.Process)
 	t.fileTable = make(map[sfgo.FOID]*sfgo.File)
 	t.ptreeTable = make(map[sfgo.OID][]*sfgo.Process)
@@ -66,6 +69,17 @@ func (t *SFTables) GetCont(ID string) (co *sfgo.Container) {
 // SetCont stores a container object in the cache.
 func (t *SFTables) SetCont(ID string, o *sfgo.Container) {
 	t.contTable[ID] = o
+}
+
+// GetPod retrieves a cached pod object by ID.
+func (t *SFTables) GetPod(ID string) (pd *sfgo.Pod) {
+	pd = t.podTable[ID]
+	return
+}
+
+// SetPod stores a pod object in the cache.
+func (t *SFTables) SetPod(ID string, o *sfgo.Pod) {
+	t.podTable[ID] = o
 }
 
 // GetProc retrieves a cached process object by ID.
