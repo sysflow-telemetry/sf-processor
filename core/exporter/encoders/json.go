@@ -314,7 +314,6 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 		t.writer.RawByte(END_SQUARE)
 	}
 
-
 	// Encode tags as a list of record tag context plus all rule tags
 	numTags := len(rtags) + len(rec.Ctx.GetTags())
 	if numTags > 0 {
@@ -472,7 +471,7 @@ func mapPortList(writer *jwriter.Writer, ports *[]*sfgo.Port) {
 
 func mapSvcArray(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 	writer.RawByte(BEGIN_SQUARE)
-        for  _, s := range *r.GetSvcArray(fv.Entry.FlatIndex, fv.Entry.Source) {
+	for _, s := range *r.GetSvcArray(fv.Entry.FlatIndex, fv.Entry.Source) {
 		writer.RawByte('{')
 		writeStrField(writer, "id", s.Id)
 		writer.RawByte(COMMA)
@@ -529,7 +528,7 @@ func MapJSON(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 				mapPorts(fv, writer, r)
 				return
 			case sfgo.POD_HOSTIP_ANY, sfgo.POD_INTERNALIP_ANY:
-	                        ips := r.GetIntArray(fv.Entry.FlatIndex, fv.Entry.Source)
+				ips := r.GetIntArray(fv.Entry.FlatIndex, fv.Entry.Source)
 				mapIPArray(ips, writer)
 				return
 
