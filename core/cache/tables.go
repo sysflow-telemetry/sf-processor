@@ -28,7 +28,7 @@ import (
 // SFTables defines thread-safe shared cache for plugins for storing SysFlow entities.
 type SFTables struct {
 	contTable map[string]*sfgo.Container
-	podTable map[string]*sfgo.Pod
+	podTable  map[string]*sfgo.Pod
 	// procTable  map[uint64][]*sfgo.Process
 	// fileTable  map[uint64]*sfgo.File
 	// ptreeTable map[uint64][]*sfgo.Process
