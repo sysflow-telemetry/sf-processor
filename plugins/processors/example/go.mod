@@ -19,10 +19,10 @@
 //
 module github.com/sysflow-telemetry/sf-processor/plugins/processors/example
 
-go 1.18
+go 1.17
 
 require (
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220221182316-8e41f56e373e
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220720151945-fca5a11be917
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20220221021811-25c7181c2904
 )
 
@@ -33,4 +33,3 @@ require (
 )
 
 replace github.com/sysflow-telemetry/sf-processor/core => ../../../core
-replace github.com/sysflow-telemetry/sf-apis/go => ../../../../sf-apis/go 
