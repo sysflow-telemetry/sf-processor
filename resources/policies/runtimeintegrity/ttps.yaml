@@ -28,10 +28,10 @@
 
 - list: coreutils_mod_binaries
   items: [
-    truncate, who, groups, csplit, expand, printenv, unlink, chcon, 
-    split, whoami, users, stdbuf, unexpand, paste, runcon, env, 
+    truncate, who, groups, csplit, expand, printenv, unlink, chcon,
+    split, whoami, users, stdbuf, unexpand, paste, runcon, env,
     install, logname, pinky, nohup, tty, id, mkfifo, shred,
-    link, chroot, chown, touch, dd, chgrp, chmod, mktemp, mknod, 
+    link, chroot, chown, touch, dd, chgrp, chmod, mktemp, mknod,
     ln, rm, mv, cp, rmdir
     ]
 
@@ -50,30 +50,30 @@
     ]
 
 - list: verify_passwd_binaries
-  items: [ unix_chkpwd ] 
+  items: [ unix_chkpwd ]
 
 - list: create_user_binaries
-  items: [ useradd, newusers ] 
+  items: [ useradd, newusers ]
 
 - list: delete_user_binaries
-  items: [ userdel ] 
+  items: [ userdel ]
 
 - list: modify_user_binaries
-  items: [ usermod ] 
+  items: [ usermod ]
 
 - list: create_grp_binaries
-  items: [ groupadd, newusers ]  
+  items: [ groupadd, newusers ]
 
 - list: delete_group_binaries
-  items: [ groupdel ] 
+  items: [ groupdel ]
 
 - list: modify_grp_binaries
-  items: [ groupmod ] 
+  items: [ groupmod ]
 
 - list: user_util_binaries
   items: [
     shadowconfig, grpck, pwunconv, grpconv, pwck,
-    vipw, pwconv, cppw, 
+    vipw, pwconv, cppw,
     grpunconv, chage, chsh,
     gpasswd, chfn, expiry, vigr, cpgr
     ]
@@ -153,9 +153,9 @@
  - list: init_directories
    items: [/etc/init.d]
 
-- list: history_files 
+- list: history_files
   items: [".bash_history", ".ash_history"]
-  
+
 - list: network_config_files
   items: ['/etc/resolv.conf', '/etc/hosts']
 
@@ -166,47 +166,47 @@
     pam-auth-update, pam-config, spamd, polkit-agent-he, lsattr, file, sosreport,
     scxcimservera, adclient, rtvscand, cockpit-session, userhelper, ossec-syscheckd
     ]
-    
+
 - list: downloader_binaries
   items: [wget, curl]
-  
+
 - list: remote_copy_binaries
   items: [scp, rsync, telnet, ssh, ftp, rcp, sftp]
 
 - list: known_root_files
   items: [/root/.monit.state, /root/.auth_tokens, /root/.bash_history, /root/.ash_history, /root/.aws/credentials,
-          /root/.viminfo.tmp, /root/.lesshst, /root/.bzr.log, /root/.gitconfig.lock, /root/.babel.json, 
-          /root/.localstack, /root/.node_repl_history, /root/.mongorc.js, /root/.dbshell, /root/.augeas/history, 
+          /root/.viminfo.tmp, /root/.lesshst, /root/.bzr.log, /root/.gitconfig.lock, /root/.babel.json,
+          /root/.localstack, /root/.node_repl_history, /root/.mongorc.js, /root/.dbshell, /root/.augeas/history,
           /root/.rnd, /root/.wget-hsts]
 
 - list: known_root_directories
   items: [/root/.oracle_jre_usage, /root/.subversion, /root/.nami]
 
 - list: profile_files
-  items: [".bprofile_filesashrc", ".bash_profile", ".profile"]
+  items: [".bashrc", ".bash_profile", ".profile"]
 
 - list: ld_preload_files
   items: ["/etc/ld.so.preload"]
 
 - list: scheduler_files
-  items: [/etc/crontab] 
+  items: [/etc/crontab]
 
 - list: scheduler_directories
-  items: ["/etc/cron.d", "/etc/cron.daily", "/etc/cron.monthly", "/etc/cron.hourly", "/etc/cron.weekly", 
-          "/usr/lib/cron/tabs", "/var/cron/tabs", "/var/spool/cron/crontabs", "/var/spool/cron"] 
+  items: ["/etc/cron.d", "/etc/cron.daily", "/etc/cron.monthly", "/etc/cron.hourly", "/etc/cron.weekly",
+          "/usr/lib/cron/tabs", "/var/cron/tabs", "/var/spool/cron/crontabs", "/var/spool/cron"]
 
 - list: protected_shell_spawning_binaries
   items: [
     http_server_binaries, db_server_binaries, nosql_server_binaries, mail_binaries,
     fluentd, flanneld, splunkd, consul, smbd, runsv, PM2
     ]
-    
+
 - list: allowed_dev_files
   items: [
     /dev/null, /dev/stdin, /dev/stdout, /dev/stderr,
     /dev/random, /dev/urandom, /dev/console, /dev/kmsg
     ]
-    
+
 - list: mesos_shell_binaries
   items: [mesos-docker-ex, mesos-slave, mesos-health-ch]
 
@@ -218,10 +218,10 @@
 
 - list: log_tools
   items: [logdna, splunk, rsyslog]
-  
+
 - list: log_paths
   items: [/var/, /tmp/nginx-ingress.private]
-  
+
 - list: known_setuid_binaries
   items: [
     sshd, dbus-daemon-lau, ping, ping6, critical-stack-, pmmcli,
@@ -247,7 +247,7 @@
     groupadd, groupdel, addgroup, delgroup, groupmems, groupmod, grpck, grpconv, grpunconv,
     newusers, pwck, pwconv, pwunconv, useradd, userdel, usermod, vigr, vipw, unix_chkpwd
     ]
-    
+
 - list: user_mgmt_binaries
   items: [login_binaries, passwd_binaries, shadowutils_binaries]
 
@@ -279,7 +279,7 @@
   items: [mount, df, tree, find]
 
 - list: net_discovery_cmds
-  items: [netstat, ss, lsof] 
+  items: [netstat, ss, lsof]
 
 - list: keylogger_cmds
   items: [logkeys, lkl]
@@ -323,10 +323,10 @@
   condition: (sf.opflags in (WRITE_SEND) or
              (sf.opflags = OPEN and sf.file.openflags in (O_CREAT)) or
              sed_write)
-  
+
 - macro: open_read
   condition: (sf.file.is_open_read = true or sf.opflags = READ_RECV)
-  
+
 - macro: interactive
   condition: >
     ((sf.proc.aname = sshd and sf.proc.name != sshd) or
@@ -339,7 +339,7 @@
   condition: >
     (sf.file.directory in (system_directories)
      or user_ssh_directory)
-     
+
 - macro: init_dir
   condition: >
     (fd.directory in (init_directories))
@@ -398,7 +398,7 @@
   condition: rename or remove
 
 - macro: bin_dir
-  condition: (sf.file.directory startswith /bin or 
+  condition: (sf.file.directory startswith /bin or
              sf.file.directory startswith /sbin or
              sf.file.directory startswith /usr/bin or
              sf.file.directory startswith /usr/sbin or
@@ -526,7 +526,7 @@
      (sf.ret >= 0))
 
 - macro: possibly_webserver
-  condition: (sf.proc.name pmatch (http_server_binaries) 
+  condition: (sf.proc.name pmatch (http_server_binaries)
               or possibly_parent_java_running_tomcat)
 
 - macro: privileged_execution
@@ -538,7 +538,7 @@
 
 - macro: auth_execution
   condition: sf.proc.exe in (auth_processes)
-  
+
 - macro: entrypoint
   condition: not sf.pproc.pid exists
 
@@ -549,8 +549,8 @@
   condition: sf.pproc.exe = /usr/bin/sudo
 
 - macro: ps_discovery_args
-  condition: (sf.proc.args contains 'e' and sf-process.args contains 'f') or 
-             (sf.proc.args contains 'a' and sf-process.args contains 'u' and sf-process.args contains 'x') 
+  condition: (sf.proc.args contains 'e' and sf-process.args contains 'f') or
+             (sf.proc.args contains 'a' and sf-process.args contains 'u' and sf-process.args contains 'x')
 
 - macro: home_dir_arg
   condition: sf.proc.args endswith '/home' or sf.proc.args endswith '/home/'
@@ -565,40 +565,40 @@
 
 - rule: Interactive shell
   desc: Interactive shell detected
-  condition: interactive and not entrypoint      
+  condition: interactive and not entrypoint
   priority: low
   tags: [mitre:T1059]
-  
+
 - rule: Command and Scripting Interpreter
   desc: any network activity performed by shell interpreters that are not expected to send or receive any network traffic
   condition: sf.proc.name in (shell_binaries)
              and inbound_outbound
              and not login_doing_dns_lookup
-             and not entrypoint 
+             and not entrypoint
   priority: medium
   tags: [mitre:T1041, mitre:T1059]
-  
+
 - rule: Privilege escalation
   desc: Privilege escalation detected
   condition: sf.pproc.uid != 0 and sf.proc.uid = 0 and not entrypoint
   priority: high
   tags: [mitre:T1068]
-  
-- rule: Untrusted read sensitive file 
+
+- rule: Untrusted read sensitive file
   desc: an attempt to read any sensitive file (e.g. files containing user/password/authentication information)
-  condition: sensitive_files 
-             and open_read 
-             and not privileged_execution 
-             and not auth_execution 
-             and sf.proc.name in (coreutils_binaries, user_mgmt_binaries) 
+  condition: sensitive_files
+             and open_read
+             and not privileged_execution
+             and not auth_execution
+             and sf.proc.name in (coreutils_binaries, user_mgmt_binaries)
              and not entrypoint
   priority: medium
   tags: [mitre:T1087]
 
 - rule: Webserver writing unusual file
   desc: Webserver is writing a file other than a log file
-  condition: sf.file.type = f and 
-             open_write and 
+  condition: sf.file.type = f and
+             open_write and
              possibly_webserver and not sf.file.path pmatch (log_paths)
              and not entrypoint
   priority: medium
@@ -607,15 +607,15 @@
 
 - rule: Suspicious process spawned
   desc: Suspicious behavior observed in application spawning another process
-  condition: sf.opflags = EXEC 
-             and sf.proc.exe != sf.pproc.exe 
-             and not allowed_launchers 
+  condition: sf.opflags = EXEC
+             and sf.proc.exe != sf.pproc.exe
+             and not allowed_launchers
              and sf.proc.name in (shell_binaries, compilers, pkg_mgmt_binaries, shell_interpreters, coreutils_mod_binaries)
              and not entrypoint
   priority: low
   tags: [mitre:T1106, mitre:T1574]
   prefilter: [PE]
-  
+
 - rule: Crontab file written
   desc: Crontab file edited
   condition: (sf.file.path in (scheduler_files) and open_write) or
@@ -625,15 +625,15 @@
 
 - rule: Unauthorized installer detected
   desc: Use of package installer detected in container
-  condition: sf.opflags = EXEC and              
-             sf.proc.name pmatch (package_mgmt_binaries, java_package_installer) and container          
+  condition: sf.opflags = EXEC and
+             sf.proc.name pmatch (package_mgmt_binaries, java_package_installer) and container
   priority: medium
   tags: [mitre:T1072]
   prefilter: [PE]
-  
+
 - rule: User/group modified, added or deleted
   desc: User/Group was modified, added or deleted
-  condition: sf.opflags = EXEC and 
+  condition: sf.opflags = EXEC and
              sf.proc.name in (modify_passwd_binaries, create_user_binaries, delete_user_binaries, modify_user_binaries, create_grp_binaries, delete_group_binaries, modify_grp_binaries)
   priority: high
   tags: [mitre:T1098, mitre:T1136]
@@ -641,7 +641,7 @@
 
 - rule: Downloader detected
   desc: Downloader is being run inside the container. Could be downloading something malicious
-  condition: sf.opflags = EXEC and 
+  condition: sf.opflags = EXEC and
              sf.proc.name pmatch (downloader_binaries)
   priority: high
   tags: [mitre:T1105]
@@ -649,27 +649,27 @@
 
 - rule: Password file modified
   desc: Password file was modified
-  condition: sf.file.path pmatch (sys_password_files) and open_write           
+  condition: sf.file.path pmatch (sys_password_files) and open_write
   priority: high
   tags: [mitre:T1098]
 
 - rule: Library preload file modified
   desc: Library preload file modified could indicate a library injection attack
-  condition: sf.file.path pmatch (ld_preload_files) and open_write           
+  condition: sf.file.path pmatch (ld_preload_files) and open_write
   priority: medium
   tags: [mitre:T1547, mitre:T1554]
 
 - rule: Remote copy program detected
   desc: Remote copy is occurring; could be data exfiltration
-  condition: sf.opflags = EXEC and 
+  condition: sf.opflags = EXEC and
              sf.proc.name in (remote_copy_binaries)
   priority: high
   tags: [mitre:T1020]
   prefilter: [PE]
-  
- - rule: Password utilities execution 
+
+ - rule: Password utilities execution
   desc: Password utilities were run in the host system
-  condition: sf.opflags = EXEC and 
+  condition: sf.opflags = EXEC and
              sf.proc.name pmatch (modify_passwd_binaries, verify_passwd_binaries, user_util_binaries)
   priority: high
   tags: [mitre:T1098]
@@ -699,13 +699,13 @@
   priority: medium
   tags: [mitre:T1574]
 
-- rule: Write to init directories 
+- rule: Write to init directories
   desc: an attempt to write to an init directory could indicate a persisted piece of malware
   condition: open_write and init_dir
   priority: medium
   tags: [mitre:T1574]
 
-- rule: Write to scheduler directories 
+- rule: Write to scheduler directories
   desc: an attempt to write to a scheduler directory could indicate a persisted piece of malware
   condition: open_write and scheduler_dir
   priority: medium
@@ -723,8 +723,8 @@
 
 - rule: Write Below RPM/DPKG Database
   desc: an attempt to write to the rpm/dpkg database
-  condition: (sf.file.path startswith /var/lib/rpm or 
-             sf.file.path startswith /var/lib/dpkg) and 
+  condition: (sf.file.path startswith /var/lib/rpm or
+             sf.file.path startswith /var/lib/dpkg) and
              open_write
   priority: medium
   tags: [mitre:T1574]
@@ -748,7 +748,7 @@
   condition: >
     sf.opflags = SETUID
     and (known_user_in_container or not container)
-    and sf.proc.username != root 
+    and sf.proc.username != root
     and not sf.proc.name in (known_setuid_binaries, userexec_binaries, mail_binaries, docker_binaries, nomachine_binaries)
     and not nrpe_becoming_nagios
   priority: medium
@@ -777,7 +777,7 @@
   tags: [mitre:T1543, mitre:T1041]
 
 - rule: Reverse Unix shell started
-  desc: creation of a reverse shell process via nc 
+  desc: creation of a reverse shell process via nc
   condition: sf.opflags = EXEC and
              sf.proc.name in (netcat_cmds) and sf.proc.args pmatch (netcat_shell_args)
   priority: high
@@ -820,7 +820,7 @@
 
 - rule: System Owner/User Discovery
   desc: >
-    attempt to identify the primary user, currently logged in user, set of users 
+    attempt to identify the primary user, currently logged in user, set of users
     that commonly uses a system, or whether a user is actively using the system
   condition: sf.opflags = EXEC and
              sf.proc.name in (user_discovery_cmds)
@@ -865,7 +865,7 @@
   tags: [mitre:T1049]
   prefilter: [PE]
 
-- rule: Shell started by container entry point 
+- rule: Shell started by container entry point
   desc: Container entry point "node" starts shell sub-process
   condition: sf.opflags = EXEC and
              container and sf.pproc.name = node and sf.proc.name in (shell_binaries)
