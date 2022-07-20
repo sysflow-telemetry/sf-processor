@@ -118,8 +118,8 @@ func (s *Flattener) HandleK8sEvt(sf *plugins.CtxSysFlow, ke *sfgo.K8sEvent) erro
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.K8SE_KIND_INT] = int64(ke.Kind)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.K8SE_ACTION_INT] = int64(ke.Action)
 	for _, ch := range s.outCh {
-                ch <- fr
-        }
+		ch <- fr
+	}
 	return nil
 }
 
@@ -142,7 +142,7 @@ func (s *Flattener) HandleNetFlow(sf *plugins.CtxSysFlow, nf *sfgo.NetworkFlow) 
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_TID_INT] = nf.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_OPFLAGS_INT] = int64(nf.OpFlags)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_ENDTS_INT] = nf.EndTs
-	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_SIP_INT] =int64(nf.Sip)
+	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_SIP_INT] = int64(nf.Sip)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_SPORT_INT] = int64(nf.Sport)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_DIP_INT] = int64(nf.Dip)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_DPORT_INT] = int64(nf.Dport)
@@ -381,14 +381,14 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, pod *sfgo.Pod, cont *sfgo.C
 }
 
 func getIPStr(ips *[]int64) string {
-        var sb strings.Builder
-        sb.WriteByte('[')
-        for _, ip := range *ips {
-                sb.WriteByte('"')
-                sb.WriteString(sfgo.GetIPStr(int32(ip)))
-                sb.WriteByte('"')
-        }
-        sb.WriteByte(']')
+	var sb strings.Builder
+	sb.WriteByte('[')
+	for _, ip := range *ips {
+		sb.WriteByte('"')
+		sb.WriteString(sfgo.GetIPStr(int32(ip)))
+		sb.WriteByte('"')
+	}
+	sb.WriteByte(']')
 	return sb.String()
 }
 
