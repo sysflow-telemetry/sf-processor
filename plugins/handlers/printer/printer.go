@@ -79,6 +79,16 @@ func (s *Printer) HandleContainer(sf *plugins.CtxSysFlow, cont *sfgo.Container) 
 	return nil
 }
 
+// HandlePod processes Pod entities.
+func (s *Printer) HandlePod(sf *plugins.CtxSysFlow, cont *sfgo.Pod) error {
+	return nil
+}
+
+// HandleK8sEvt processes K8s Events.
+func (s *Printer) HandleK8sEvt(sf *plugins.CtxSysFlow, ke *sfgo.K8sEvent) error {
+	return nil
+}
+
 // HandleProcess processes Process entities.
 func (s *Printer) HandleProcess(sf *plugins.CtxSysFlow, proc *sfgo.Process) error {
 	return nil
