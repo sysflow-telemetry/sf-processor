@@ -368,15 +368,6 @@ func (ecs *ECSRecord) encodePod(rec *engine.Record) {
 	}
 }
 
-func checkPorts(svcs *[]*sfgo.Service) bool {
-	for _, s := range *svcs {
-		if len(s.PortList) > 0 {
-			return true
-		}
-	}
-	return false
-}
-
 // encodeServices creates an ECS service field.
 func (ecs *ECSRecord) encodeService(svcs *[]*sfgo.Service) {
 	ecs.Service = make([]JSONData, len(*svcs))
