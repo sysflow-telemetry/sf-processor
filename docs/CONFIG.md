@@ -1,6 +1,6 @@
 ## Configuration
 
-The pipeline configuration below shows how to configure a pipeline that will read a sysflow stream and push records to the policy engine, which will trigger alerts using a set of runtime policies stored in a `yaml` file.  An example pipeline with this configuration looks as follows:  
+The pipeline configuration below shows how to configure a pipeline that will read a sysflow stream and push records to the policy engine, which will trigger alerts using a set of runtime policies stored in a `yaml` file.  An example pipeline with this configuration looks as follows:
 
 ```json
 {
@@ -35,7 +35,7 @@ The pipeline configuration below shows how to configure a pipeline that will rea
 This pipeline specifies three built-in plugins:
 
 - [sysflowreader](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/processor/processor.go): is a generic reader plugin that ingests sysflow from the driver, caches entities, and presents sysflow objects to a handler object (i.e., an object that implements the [handler interface](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/plugins/handler.go)) for processing. In this case, we are using the [flattener](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/flattener/flattener.go) handler, but custom handlers are possible.
-- [policyengine](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/policyengine/policyengine.go): is the policy engine, which takes [flattened](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/sfgo/flatrecord.go) (row-oriented) SysFlow records as input and outputs [records](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/policyengine/engine/types.go), which represent alerts, or filtered sysflow records depending on the policy engine's _mode_ (more on this later).  
+- [policyengine](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/policyengine/policyengine.go): is the policy engine, which takes [flattened](https://github.com/sysflow-telemetry/sf-apis/blob/master/go/sfgo/flatrecord.go) (row-oriented) SysFlow records as input and outputs [records](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/policyengine/engine/types.go), which represent alerts, or filtered sysflow records depending on the policy engine's _mode_ (more on this later).
 - [exporter](https://github.com/sysflow-telemetry/sf-processor/blob/master/core/exporter/exporter.go): takes records from the policy engine, and exports them to ElasticSearch, syslog, file, or terminal, in a JSON format or in Elastic Common Schema (ECS) format. Note that custom export plugins can be created to export to other serialization formats and transport protocols.
 
 Each plugin has a set of general attributes that are present in all plugins, and a set of attributes that are custom to the specific plugins. For more details on the specific attributes in this example, see the pipeline configuration [template](https://github.com/sysflow-telemetry/sf-processor/blob/master/driver/pipeline.template.json)
@@ -66,7 +66,7 @@ The policy engine (`"processor": "policyengine"`) plugin is driven by a set of r
 - _concurrency_ (optional); The number of concurrent threads for record processing. (default: 5).
 - _actiondir_ (optional): The path of the directory containing the shared object files for user-defined action plugins. See the section on [User-defined Actions](POLICIES.md#user-defined-actions) for more information.
 
-> **NOTE:** Prior to release 0.4.0, the _mode_ attribute accepted different values with different semantics. You can preserve preserve the behavior of older releases:
+> **NOTE:** Prior to release 0.4.0, the _mode_ attribute accepted different values with different semantics. To preserve the behavior of older releases:
 > - For old `alert` behavior, use `enrich` mode.
 > - For old `filter` behavior, use `enrich` mode and a policy file with filter rules only.
 > - For old `bypass` behavior, use `enrich` and drop the _policies_ key from the configuration.
@@ -113,7 +113,7 @@ Data export is done via bulk ingestion. The ingestion can be controlled by some 
 - _es.username_  (required): The ES username.
 - _es.password_  (required): The password for the specified ES user.
 - _buffer_ (optional) The bulk size as the number of records to be ingested at once. Default is `0` but value of `0` indicates record-by-record ingestion which may be highly inefficient.
-- _es.bulk.numWorkers_ (optional): The number of ingestion workers used in parallel. Default is `0` which means that the exporter uses as many workers as there are cores in the machine. 
+- _es.bulk.numWorkers_ (optional): The number of ingestion workers used in parallel. Default is `0` which means that the exporter uses as many workers as there are cores in the machine.
 - _es.bulk.flashBuffer_ (optional): The size in bytes of the flush buffer for ingestion. It should be large enough to hold one bulk (the number of records specified in _buffer_), otherwise the bulk is broken into smaller chunks. Default is `5e+6`.
 - _es.bulk.flushTimeout_ (optional): The flush buffer time threshold. Valid values are golang duration strings. Default is `30s`.
 
@@ -133,7 +133,7 @@ Export to IBM Findings API allows adding custom findings to the IBM Cloud Securi
 - _findings.sqlquerycrn_ (required):
 - _findings.s3region_ (required):
 - _findings.s3bucket_ (required):
-- _findings.path_ (required): 
+- _findings.path_ (required):
 - _findings.pool.capacity_ (optional): The capacity of the findings pool, Default is `250`.
 - _findings.pool.maxage_ (woptional): The maximum age of the security findings in the pool in minutes. Default is `1440`.
 
@@ -145,7 +145,7 @@ For more information about inserting custom findings into IBM SCC, refer to [Cus
 It is possible to override any of the custom attributes of a plugin using an environment variable. This is especially useful when operating the processor as a container, where you may have to deploy the processor to multiple nodes, and have attributes that change per node. If an environment variable is set, it overrides the setting inside the config file. The environment variables must follow the following structure:
 
 - Environment variables must follow the naming schema `<PLUGIN NAME>_<CONFIG ATTRIBUTE NAME>`
-- The plugin name inside the pipeline configuration file must be all lower case.  
+- The plugin name inside the pipeline configuration file must be all lower case.
 
 For example, to set the alert mode inside the policy engine, the following environment variable is set:
 

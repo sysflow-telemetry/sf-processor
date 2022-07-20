@@ -1,6 +1,6 @@
 ## Policy Language
 
-The policy engine adopts and extends the Falco rules definition syntax. Before reading the rest of this section, please go through the [Falco Rules](https://falco.org/docs/rules/) documentation to get familiar with _rule_, _macro_, and _list_ syntax, all of which are supported in our policy engine. Policies are written in one or more `yaml` files, and stored in a directory specified in the pipeline configuration file under the `policies` attribute of the policy engine plugin.  
+The policy engine adopts and extends the Falco rules definition syntax. Before reading the rest of this section, please go through the [Falco Rules](https://falco.org/docs/rules/) documentation to get familiar with _rule_, _macro_, and _list_ syntax, all of which are supported in our policy engine. Policies are written in one or more `yaml` files, and stored in a directory specified in the pipeline configuration file under the `policies` attribute of the policy engine plugin.
 
 *Rules* contain the following fields:
 
@@ -109,7 +109,7 @@ type, and comparative Falco attribute name. Our policy engine supports both SysF
 | sf.file.newpath   | New file path (used in some FileEvents) | string | N/A |
 | sf.file.name      | File name (qo) | string | fd.filename |
 | sf.file.directory | File directory (qo) | string | fd.directory |
-| sf.file.type      | File type | char 'f': file, 4: IPv4, 6: IPv6, 'u': unix socket, 'p': pipe, 'e': eventfd, 's': signalfd, 'l': eventpoll, 'i': inotify, 'o': unknown. | fd.typechar |  
+| sf.file.type      | File type | char 'f': file, 4: IPv4, 6: IPv6, 'u': unix socket, 'p': pipe, 'e': eventfd, 's': signalfd, 'l': eventpoll, 'i': inotify, 'o': unknown. | fd.typechar |
 | sf.file.is_open_write | File open with write flag (qo) | bool | evt.is_open_write |
 | sf.file.is_open_read | File open with read flag (qo) | bool | evt.is_open_read |
 | sf.file.openflags | File open flags | int | evt.args |
@@ -150,7 +150,7 @@ type, and comparative Falco attribute name. Our policy engine supports both SysF
 
 ###$ Jsonpath Expressions
 
-Unlike attributes of the scalar types bool, int(64), and string, attributes of type `json` contain structured information in form of stringified json records. The policy language allows access to subfields inside such json records via [GJSON](github.com/tidwall/gjson) jsonpath expressions. The jsonpath iexporession must be specified as a suffix to the attribute enclosed in square brackets. Examples of such terms are:
+Unlike attributes of the scalar types bool, int(64), and string, attributes of type `json` contain structured information in form of stringified json records. The policy language allows access to subfields inside such json records via [GJSON](github.com/tidwall/gjson) jsonpath expressions. The jsonpath expression must be specified as a suffix to the attribute enclosed in square brackets. Examples of such terms are:
 
 ```
 sf.pod.services[0.clusterip.0]   - the first cluster IP address of the first service associated with  a pod
@@ -167,11 +167,11 @@ The policy language supports the following operations:
 |:----------|:------------|:--------|
 | A and B | Returns true if both statements are true | sf.pproc.name=bash and sf.pproc.cmdline contains echo |
 | A or B | Returns true if one of the statements are true | sf.file.path = "/etc/passwd" or sf.file.path = "/etc/shadow" |
-| not A | Returns true if the statement isn't true | not sf.pproc.exe = /usr/local/sbin/runc | 
+| not A | Returns true if the statement isn't true | not sf.pproc.exe = /usr/local/sbin/runc |
 | A = B| Returns true if A exactly matches B.  Note, if B is a list, A only has to exact match one element of the list.  If B is a list, it must be explicit.  It cannot be a variable.  If B is a variable use `in` instead. | sf.file.path = ["/etc/passwd", "/etc/shadow"] |
 | A != B| Returns true if A is not equal to B.  Note, if B is a list, A only has to be not equal to one element of the list. If B is a list, it must be explicit.  It cannot be a variable. | sf.file.path != "/etc/passwd"|
 | A < B |  Returns true if A is less than B.  Note, if B is a list, A only has to be less than one element in the list. If B is a list, it must be explicit.  It cannot be a variable. | sf.flow.wops < 1000 |
-| A <= B |  Returns true if A is less than or equal to B.  Note, if B is a list, A only has to be less than or equal to one element in the list. If B is a list, it must be explicit.  It cannot be a variable. | sf.flow.wops <= 1000 | 
+| A <= B |  Returns true if A is less than or equal to B.  Note, if B is a list, A only has to be less than or equal to one element in the list. If B is a list, it must be explicit.  It cannot be a variable. | sf.flow.wops <= 1000 |
 | A > B |  Returns true if A is greater than B.  Note, if B is a list, A only has to be greater than one element in the list. If B is a list, it must be explicit.  It cannot be a variable. | sf.flow.wops > 1000 |
 | A >= B |  Returns true if A is greater than or equal to B.  Note, if B is a list, A only has to be greater than or equal to one element in the list. If B is a list, it must be explicit.  It cannot be a variable. | sf.flow.wops >= 1000 |
 | A in B |  Returns true if value A is an exact match to one of the elements in list B. Note: B must be a list.  Note: () can be used on B to merge multiple list objects into one list. | sf.proc.exe in (bin_binaries, usr_bin_binaries) |
