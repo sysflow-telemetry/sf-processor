@@ -57,8 +57,8 @@ func Max64(x, y int64) int64 {
 
 // ToIsoTimeStr converts a unix time value in ns to UTC time and returns an RFC3399 string
 func ToIsoTimeStr(ts int64) string {
-	tsSec := int64(ts / 1E+9)
-	tsNs := int64(ts % 1E+9)
+	tsSec := int64(ts / 1e+9)
+	tsNs := int64(ts % 1e+9)
 	t := time.Unix(tsSec, tsNs).In(time.UTC)
 	return t.Format(time.RFC3339Nano)
 }
@@ -66,10 +66,10 @@ func ToIsoTimeStr(ts int64) string {
 // ToIPStrArray converts an array of int ip values to an ip string array
 func ToIPStrArray(ips *[]int64) []string {
 	ipstrs := make([]string, 0)
-        for _, ip := range *ips {
+	for _, ip := range *ips {
 		ipstrs = append(ipstrs, sfgo.GetIPStr(int32(ip)))
-        }
-        return ipstrs
+	}
+	return ipstrs
 }
 
 // UnsafeBytesToString creates a string based on a bite slice without copying.

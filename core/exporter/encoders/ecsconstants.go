@@ -35,7 +35,7 @@ const (
 	ECS_IMAGE_NAME = "name"
 
 	ECS_HOST_ID = "id"
-        ECS_HOST_IP = "ip"
+	ECS_HOST_IP = "ip"
 
 	ECS_EVENT_KIND     = "kind"
 	ECS_EVENT_CATEGORY = "category"
@@ -109,15 +109,15 @@ const (
 	ECS_SF_FA_WBYTES = "bytes_written"
 	ECS_SF_FA_WOPS   = "write_ops"
 
-	ECS_SERVICE_ID          = "id"
-	ECS_SERVICE_NAME        = "name"
-	ECS_SERVICE_NAMESPACE   = "namespace"
-	ECS_SERVICE_CLUSTERIP   = "clusterip"
-	ECS_SERVICE_PORTLIST    = "ports"
-	ECS_SERVICE_PORT        = "port"
-	ECS_SERVICE_TARGETPORT  = "targetport"
-	ECS_SERVICE_NODEPORT    = "nodeport"
-	ECS_SERVICE_PROTO       = "proto"
+	ECS_SERVICE_ID         = "id"
+	ECS_SERVICE_NAME       = "name"
+	ECS_SERVICE_NAMESPACE  = "namespace"
+	ECS_SERVICE_CLUSTERIP  = "clusterip"
+	ECS_SERVICE_PORTLIST   = "ports"
+	ECS_SERVICE_PORT       = "port"
+	ECS_SERVICE_TARGETPORT = "targetport"
+	ECS_SERVICE_NODEPORT   = "nodeport"
+	ECS_SERVICE_PROTO      = "proto"
 
 	ECS_USER_ID   = "id"
 	ECS_USER_NAME = "name"
