@@ -21,6 +21,7 @@
 package encoders
 
 import (
+	"encoding/binary"
 	"fmt"
 	"net"
 	"path"
@@ -34,6 +35,7 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
+	"github.com/tidwall/gjson"
 )
 
 // JSONData is a map to serialize data to JSON.
@@ -50,17 +52,20 @@ type ECSRecord struct {
 	Ecs struct {
 		Version string `json:"version,omitempty"`
 	} `json:"ecs,omitempty"`
-	Event       JSONData `json:"event"`
-	Container   JSONData `json:"container"`
-	Host        JSONData `json:"host,omitempty"`
-	File        JSONData `json:"file,omitempty"`
-	FileAction  JSONData `json:"sf_file_action,omitempty"`
-	Network     JSONData `json:"network,omitempty"`
-	Source      JSONData `json:"source,omitempty"`
-	Destination JSONData `json:"destination,omitempty"`
-	Process     JSONData `json:"process"`
-	User        JSONData `json:"user"`
-	Tags        []string `json:"tags,omitempty"`
+	Event        JSONData   `json:"event"`
+	Host         JSONData   `json:"host"`
+	Container    JSONData   `json:"container,omitempty"`
+	Orchestrator JSONData   `json:"orchestrator,omitempty"`
+	Pod          JSONData   `json:"pod,omitempty"`
+	Service      []JSONData `json:"service,omitempty"`
+	File         JSONData   `json:"file,omitempty"`
+	FileAction   JSONData   `json:"sf_file_action,omitempty"`
+	Network      JSONData   `json:"network,omitempty"`
+	Source       JSONData   `json:"source,omitempty"`
+	Destination  JSONData   `json:"destination,omitempty"`
+	Process      JSONData   `json:"process,omitempty"`
+	User         JSONData   `json:"user,omitempty"`
+	Tags         []string   `json:"tags,omitempty"`
 }
 
 // ECSEncoder implements an ECS encoder for telemetry records.
@@ -95,11 +100,8 @@ func (t *ECSEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error
 // Encodes a telemetry record into an ECS representation.
 func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 	ecs := &ECSRecord{
-		ID:        encodeID(rec),
-		Container: encodeContainer(rec),
-		Host:      encodeHost(rec),
-		Process:   encodeProcess(rec),
-		User:      encodeUser(rec),
+		ID:   encodeID(rec),
+		Host: encodeHost(rec),
 	}
 	ecs.Agent.Version = t.config.Version
 	ecs.Agent.Type = ECS_AGENT_TYPE
@@ -108,6 +110,18 @@ func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 
 	// encode specific record components
 	sfType := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
+	if sfType != sfgo.TyKEStr {
+		ecs.Container = encodeContainer(rec)
+		if engine.Mapper.MapStr(engine.SF_POD_ID)(rec) != sfgo.Zeros.String {
+			ecs.encodeOrchestrator(rec)
+			ecs.encodePod(rec)
+		}
+		ecs.Process = encodeProcess(rec)
+		ecs.User = encodeUser(rec)
+	} else {
+		ecs.encodeOrchestrator(rec)
+	}
+
 	switch sfType {
 	case sfgo.TyNFStr:
 		ecs.encodeNetworkFlow(rec)
@@ -117,6 +131,8 @@ func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 		ecs.encodeFileEvent(rec)
 	case sfgo.TyPEStr:
 		ecs.encodeProcessEvent(rec)
+	case sfgo.TyKEStr:
+		ecs.encodeK8sEvent(rec)
 	}
 
 	// encode tags and policy information
@@ -140,29 +156,45 @@ func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 	return ecs
 }
 
+var byteInt64 []byte = make([]byte, 8)
+
 // encodeID returns the ECS document identifier.
 func encodeID(rec *engine.Record) string {
 	h := xxhash.New()
 	t := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
 	h.Write([]byte(engine.Mapper.MapStr(engine.SF_NODE_ID)(rec)))
 	h.Write([]byte(engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(rec)))
-	h.Write([]byte(engine.Mapper.MapStr(engine.SF_TS)(rec)))
-	h.Write([]byte(engine.Mapper.MapStr(engine.SF_PROC_TID)(rec)))
-	h.Write([]byte(engine.Mapper.MapStr(engine.SF_PROC_CREATETS)(rec)))
-	h.Write([]byte(t))
+	binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.TS_INT, sfgo.SYSFLOW_SRC)))
+	h.Write(byteInt64)
+	binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.TID_INT, sfgo.SYSFLOW_SRC)))
+	h.Write(byteInt64)
+	binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.PROC_OID_CREATETS_INT, sfgo.SYSFLOW_SRC)))
+	h.Write(byteInt64)
+	binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.EV_PROC_OPFLAGS_INT, sfgo.SYSFLOW_SRC)))
+	h.Write(byteInt64)
 	switch t {
 	case sfgo.TyFFStr, sfgo.TyFEStr:
 		h.Write([]byte(engine.Mapper.MapStr(engine.SF_FILE_OID)(rec)))
 	case sfgo.TyNFStr:
-		h.Write([]byte(engine.Mapper.MapStr(engine.SF_NET_SIP)(rec)))
-		h.Write([]byte(engine.Mapper.MapStr(engine.SF_NET_SPORT)(rec)))
-		h.Write([]byte(engine.Mapper.MapStr(engine.SF_NET_DIP)(rec)))
-		h.Write([]byte(engine.Mapper.MapStr(engine.SF_NET_DPORT)(rec)))
-		h.Write([]byte(engine.Mapper.MapStr(engine.SF_NET_PROTO)(rec)))
+		binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.FL_NETW_SIP_INT, sfgo.SYSFLOW_SRC)))
+		h.Write(byteInt64)
+		binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.FL_NETW_SPORT_INT, sfgo.SYSFLOW_SRC)))
+		h.Write(byteInt64)
+		binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.FL_NETW_DIP_INT, sfgo.SYSFLOW_SRC)))
+		h.Write(byteInt64)
+		binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.FL_NETW_DPORT_INT, sfgo.SYSFLOW_SRC)))
+		h.Write(byteInt64)
+		binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.FL_NETW_PROTO_INT, sfgo.SYSFLOW_SRC)))
+		h.Write(byteInt64)
+	case sfgo.TyKEStr:
+		binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.K8SE_ACTION_INT, sfgo.SYSFLOW_SRC)))
+		h.Write(byteInt64)
+		binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.K8SE_KIND_INT, sfgo.SYSFLOW_SRC)))
+		h.Write(byteInt64)
+		h.Write([]byte(engine.Mapper.MapStr(engine.SF_K8SE_MESSAGE)(rec)))
 	}
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
-
 
 // encodeNetworkFlow populates the ECS representatiom of a NetworkFlow record.
 func (ecs *ECSRecord) encodeNetworkFlow(rec *engine.Record) {
@@ -287,6 +319,102 @@ func (ecs *ECSRecord) encodeProcessEvent(rec *engine.Record) {
 	ecs.Event = encodeEvent(rec, category, eventType, action)
 }
 
+func k8sActionToEventType(rec *engine.Record) string {
+	eventType := ECS_TYPE_INFO
+	am := engine.Mapper.Mappers[engine.SF_K8SE_ACTION]
+	switch sfgo.K8sAction(rec.Fr.Ints[am.Source][am.FlatIndex]) {
+	case sfgo.K8sActionK8S_COMPONENT_ADDED:
+		eventType = ECS_TYPE_CREATE
+	case sfgo.K8sActionK8S_COMPONENT_DELETED:
+		eventType = ECS_TYPE_DELETE
+	case sfgo.K8sActionK8S_COMPONENT_MODIFIED:
+		eventType = ECS_TYPE_CHANGE
+	case sfgo.K8sActionK8S_COMPONENT_ERROR:
+		eventType = ECS_TYPE_ERROR
+	}
+	return eventType
+}
+
+// encodeK8sEvent populates the ECS representatiom of a KE record
+func (ecs *ECSRecord) encodeK8sEvent(rec *engine.Record) {
+	category := ECS_CAT_ORCH
+	eventType := k8sActionToEventType(rec)
+	action := engine.Mapper.MapStr(engine.SF_K8SE_ACTION)(rec)
+
+	ecs.Event = encodeEvent(rec, category, eventType, action)
+	msgStr := engine.Mapper.MapStr(engine.SF_K8SE_MESSAGE)(rec)
+	ecs.Event[ECS_EVENT_ORIGINAL] = msgStr
+
+	msg := gjson.Parse(msgStr)
+	ecs.Orchestrator = JSONData{
+		ECS_ORCHESTRATOR_NAMESPACE: msg.Get("items.0.namespace").String(),
+		ECS_ORCHESTRATOR_RESOURCE: JSONData{
+			ECS_RESOURCE_TYPE: strings.ToLower(msg.Get("kind").String()),
+			ECS_RESOURCE_NAME: msg.Get("items.0.name").String(),
+		},
+		ECS_ORCHESTRATOR_TYPE: "kubernetes",
+	}
+}
+
+// encodeOrchestrator creates an ECS orchestrator field.
+func (ecs *ECSRecord) encodeOrchestrator(rec *engine.Record) {
+	ecs.Orchestrator = JSONData{
+		ECS_ORCHESTRATOR_NAMESPACE: engine.Mapper.MapStr(engine.SF_POD_NAMESPACE)(rec),
+		ECS_ORCHESTRATOR_RESOURCE: JSONData{
+			ECS_RESOURCE_TYPE: "pod",
+			ECS_RESOURCE_NAME: engine.Mapper.MapStr(engine.SF_POD_NAME)(rec),
+		},
+		ECS_ORCHESTRATOR_TYPE: "kubernetes",
+	}
+}
+
+// encodePod creates a custom ECS pod field.
+func (ecs *ECSRecord) encodePod(rec *engine.Record) {
+	ecs.Pod = JSONData{
+		ECS_POD_TS:           utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_POD_TS)(rec)),
+		ECS_POD_ID:           engine.Mapper.MapStr(engine.SF_POD_ID)(rec),
+		ECS_POD_NAME:         engine.Mapper.MapStr(engine.SF_POD_NAME)(rec),
+		ECS_POD_NODENAME:     engine.Mapper.MapStr(engine.SF_POD_NODENAME)(rec),
+		ECS_POD_NAMESPACE:    engine.Mapper.MapStr(engine.SF_POD_NAMESPACE)(rec),
+		ECS_POD_HOSTIP:       utils.ToIPStrArray(engine.Mapper.MapIntArray(engine.SF_POD_HOSTIP)(rec)),
+		ECS_POD_INTERNALIP:   utils.ToIPStrArray(engine.Mapper.MapIntArray(engine.SF_POD_INTERNALIP)(rec)),
+		ECS_POD_RESTARTCOUNT: engine.Mapper.MapInt(engine.SF_POD_RESTARTCOUNT)(rec),
+	}
+
+	services := engine.Mapper.MapSvcArray(engine.SF_POD_SERVICES)(rec)
+	if services != sfgo.Zeros.Any && len(*services) > 0 {
+		ecs.encodeService(services)
+	}
+}
+
+// encodeServices creates an ECS service field.
+func (ecs *ECSRecord) encodeService(svcs *[]*sfgo.Service) {
+	ecs.Service = make([]JSONData, len(*svcs))
+	for i, svc := range *svcs {
+		ecs.Service[i] = JSONData{
+			ECS_SERVICE_ID:        svc.Id,
+			ECS_SERVICE_NAME:      svc.Name,
+			ECS_SERVICE_NAMESPACE: svc.Namespace,
+			ECS_SERVICE_CLUSTERIP: utils.ToIPStrArray(&svc.ClusterIP),
+			ECS_SERVICE_PORTLIST:  encodePortList(&svc.PortList),
+		}
+	}
+}
+
+// encodePortList creates a ports field for an ECS service field.
+func encodePortList(pl *[]*sfgo.Port) []JSONData {
+	ports := make([]JSONData, len(*pl))
+	for i, p := range *pl {
+		ports[i] = JSONData{
+			ECS_SERVICE_PORT:       p.Port,
+			ECS_SERVICE_TARGETPORT: p.TargetPort,
+			ECS_SERVICE_NODEPORT:   p.NodePort,
+			ECS_SERVICE_PROTO:      p.Proto,
+		}
+	}
+	return ports
+}
+
 // encodeContainer creates an ECS container field.
 func encodeContainer(rec *engine.Record) JSONData {
 	var container JSONData
@@ -312,7 +440,7 @@ func encodeContainer(rec *engine.Record) JSONData {
 
 // encodeHost creates the ECS host field
 func encodeHost(rec *engine.Record) JSONData {
-        return JSONData{
+	return JSONData{
 		ECS_HOST_ID: engine.Mapper.MapStr(engine.SF_NODE_ID)(rec),
 		ECS_HOST_IP: engine.Mapper.MapStr(engine.SF_NODE_IP)(rec),
 	}
@@ -373,13 +501,10 @@ func encodeEvent(rec *engine.Record, category string, eventType string, action s
 	sfType := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
 	sfRet := engine.Mapper.MapInt(engine.SF_RET)(rec)
 
-	// TODO: use JSONEncoder if we want the original
-	//orig, _ := json.Marshal(rec)
 	event := JSONData{
 		ECS_EVENT_CATEGORY: category,
 		ECS_EVENT_TYPE:     eventType,
 		ECS_EVENT_ACTION:   action,
-		//ECS_EVENT_ORIGINAL: string(orig),
 		ECS_EVENT_SFTYPE:   sfType,
 		ECS_EVENT_START:    utils.ToIsoTimeStr(start),
 		ECS_EVENT_END:      utils.ToIsoTimeStr(end),
@@ -395,7 +520,6 @@ func encodeEvent(rec *engine.Record, category string, eventType string, action s
 	if sfType == sfgo.TyPEStr || sfType == sfgo.TyFEStr {
 		event[ECS_EVENT_SFRET] = sfRet
 	}
-
 	return event
 }
 

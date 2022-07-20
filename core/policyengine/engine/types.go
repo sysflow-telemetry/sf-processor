@@ -130,6 +130,32 @@ func (r Record) GetInt(attr sfgo.Attribute, src sfgo.Source) int64 {
 	return sfgo.Zeros.Int64
 }
 
+// GetIntArray returns an integer array ptr value from internal flat record.
+func (r Record) GetIntArray(attr sfgo.Attribute, src sfgo.Source) *[]int64 {
+	for idx, s := range r.Fr.Sources {
+		if s == src {
+			if v, ok := r.Fr.Anys[idx][attr].(*[]int64); ok {
+				return v
+			}
+			return nil
+		}
+	}
+	return nil
+}
+
+// GetSvcArray returns a service array ptr value from internal flat record.
+func (r Record) GetSvcArray(attr sfgo.Attribute, src sfgo.Source) *[]*sfgo.Service {
+	for idx, s := range r.Fr.Sources {
+		if s == src {
+			if v, ok := r.Fr.Anys[idx][attr].(*[]*sfgo.Service); ok {
+				return v
+			}
+			return nil
+		}
+	}
+	return nil
+}
+
 // GetStr returns a string value from internal flat record.
 func (r Record) GetStr(attr sfgo.Attribute, src sfgo.Source) string {
 	for idx, s := range r.Fr.Sources {
@@ -216,6 +242,10 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 			}
 			return strings.Join(s, LISTSEP)
 		}
+	}
+	switch attr {
+	case PProcUID, PProcGID, PProcTTY, PProcEntry:
+		return sfgo.Zeros.Int64
 	}
 	return sfgo.Zeros.String
 }
