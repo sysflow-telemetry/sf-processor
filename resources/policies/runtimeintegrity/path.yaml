@@ -1,0 +1,21 @@
+- rule: New pod in namespace robot-shop
+  desc: Detect new pod in namespace robot-shop
+  condition: sf.ke.kind = 'K8S_PODS' and sf.ke.action = 'K8S_COMPONENT_ADDED' and sf.ke.message[items.0.namespace] = 'robot-shop'
+  priority: high
+  actions: [podname]
+  prefilter: [KE]
+
+#- rule: Service extract
+#  desc: Extract json path from service list as a test
+#  condition: sf.pod.services[0.clusterip.0] = '10.109.218.161'
+#  priority: high
+#  tags: [found_clusterip_in_services]
+#  prefilter: [PE]
+
+#- rule: IP extract
+#  desc: IP extraction test
+#  condition: sf.pod.internalip[0] = '192.168.59.100'
+#  priority: high
+#  tags: [found_internalip]
+#  prefilter: [NF]
+

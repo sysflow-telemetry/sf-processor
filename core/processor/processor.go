@@ -4,6 +4,7 @@
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -107,6 +108,14 @@ func (s *SysFlowProcessor) Process(ch interface{}, wg *sync.WaitGroup) {
 		case sfgo.SF_CONT:
 			if entEnabled {
 				s.hdl.HandleContainer(sf, sf.Container)
+			}
+		case sfgo.SF_POD:
+			if entEnabled {
+				s.hdl.HandlePod(sf, sf.Pod)
+			}
+		case sfgo.SF_K8S_EVT:
+			if entEnabled {
+				s.hdl.HandleK8sEvt(sf, sf.K8sEvent)
 			}
 		case sfgo.SF_PROCESS:
 			if entEnabled {

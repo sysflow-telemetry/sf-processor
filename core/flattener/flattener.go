@@ -4,6 +4,7 @@
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
 // Teryl Taylor <terylt@ibm.com>
+// Andreas Schade <san@zurich.ibm.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +23,7 @@ package flattener
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"strings"
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
@@ -101,6 +103,25 @@ func (s *Flattener) HandleContainer(sf *plugins.CtxSysFlow, cont *sfgo.Container
 	return nil
 }
 
+// HandlePod processes Pod entities.
+func (s *Flattener) HandlePod(sf *plugins.CtxSysFlow, cont *sfgo.Pod) error {
+	return nil
+}
+
+// HandleK8sEvt processes K8s Events.
+func (s *Flattener) HandleK8sEvt(sf *plugins.CtxSysFlow, ke *sfgo.K8sEvent) error {
+	fr := newFlatRecord()
+	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.K8S_EVT
+	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.TS_INT] = ke.Ts
+	fr.Strs[sfgo.SYSFLOW_IDX][sfgo.K8SE_MESSAGE_STR] = ke.Message
+	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.K8SE_KIND_INT] = int64(ke.Kind)
+	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.K8SE_ACTION_INT] = int64(ke.Action)
+	for _, ch := range s.outCh {
+                ch <- fr
+        }
+	return nil
+}
+
 // HandleProcess processes Process entities.
 func (s *Flattener) HandleProcess(sf *plugins.CtxSysFlow, proc *sfgo.Process) error {
 	return nil
@@ -115,12 +136,12 @@ func (s *Flattener) HandleFile(sf *plugins.CtxSysFlow, file *sfgo.File) error {
 func (s *Flattener) HandleNetFlow(sf *plugins.CtxSysFlow, nf *sfgo.NetworkFlow) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.NET_FLOW
-	s.fillEntities(sf.Header, sf.Container, sf.Process, nil, fr)
+	s.fillEntities(sf.Header, sf.Pod, sf.Container, sf.Process, nil, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_TS_INT] = nf.Ts
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_TID_INT] = nf.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_OPFLAGS_INT] = int64(nf.OpFlags)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_ENDTS_INT] = nf.EndTs
-	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_SIP_INT] = int64(nf.Sip)
+	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_SIP_INT] =int64(nf.Sip)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_SPORT_INT] = int64(nf.Sport)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_DIP_INT] = int64(nf.Dip)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_DPORT_INT] = int64(nf.Dport)
@@ -142,7 +163,7 @@ func (s *Flattener) HandleNetFlow(sf *plugins.CtxSysFlow, nf *sfgo.NetworkFlow) 
 func (s *Flattener) HandleFileFlow(sf *plugins.CtxSysFlow, ff *sfgo.FileFlow) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.FILE_FLOW
-	s.fillEntities(sf.Header, sf.Container, sf.Process, sf.File, fr)
+	s.fillEntities(sf.Header, sf.Pod, sf.Container, sf.Process, sf.File, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_TS_INT] = ff.Ts
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_TID_INT] = ff.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_OPFLAGS_INT] = int64(ff.OpFlags)
@@ -184,7 +205,7 @@ func (s *Flattener) HandleFileEvt(sf *plugins.CtxSysFlow, fe *sfgo.FileEvent) er
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SEC_FILE_OID_STR] = sfgo.Zeros.String
 	}
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.FILE_EVT
-	s.fillEntities(sf.Header, sf.Container, sf.Process, sf.File, fr)
+	s.fillEntities(sf.Header, sf.Pod, sf.Container, sf.Process, sf.File, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_TS_INT] = fe.Ts
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_TID_INT] = fe.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_OPFLAGS_INT] = int64(fe.OpFlags)
@@ -211,7 +232,7 @@ func (s *Flattener) HandleProcFlow(sf *plugins.CtxSysFlow, pf *sfgo.ProcessFlow)
 func (s *Flattener) HandleProcEvt(sf *plugins.CtxSysFlow, pe *sfgo.ProcessEvent) error {
 	fr := newFlatRecord()
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] = sfgo.PROC_EVT
-	s.fillEntities(sf.Header, sf.Container, sf.Process, nil, fr)
+	s.fillEntities(sf.Header, sf.Pod, sf.Container, sf.Process, nil, fr)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_TS_INT] = pe.Ts
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_TID_INT] = pe.Tid
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_OPFLAGS_INT] = int64(pe.OpFlags)
@@ -224,7 +245,7 @@ func (s *Flattener) HandleProcEvt(sf *plugins.CtxSysFlow, pe *sfgo.ProcessEvent)
 	return nil
 }
 
-func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc *sfgo.Process, file *sfgo.File, fr *sfgo.FlatRecord) {
+func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, pod *sfgo.Pod, cont *sfgo.Container, proc *sfgo.Process, file *sfgo.File, fr *sfgo.FlatRecord) {
 	if hdr != nil {
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.SFHE_VERSION_INT] = hdr.Version
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.SFHE_EXPORTER_STR] = hdr.Exporter
@@ -254,7 +275,33 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.CONT_IMAGEID_STR] = sfgo.Zeros.String
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.CONT_TYPE_INT] = sfgo.Zeros.Int64
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.CONT_PRIVILEGED_INT] = sfgo.Zeros.Int64
-
+	}
+	if pod != nil {
+		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.POD_TS_INT] = pod.Ts
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_ID_STR] = pod.Id
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_NAME_STR] = strings.TrimSpace(pod.Name)
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_NODENAME_STR] = strings.TrimSpace(pod.NodeName)
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_NAMESPACE_STR] = strings.TrimSpace(pod.Namespace)
+		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.POD_RESTARTCOUNT_INT] = pod.RestartCount
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_HOSTIP_STR] = getIPStr(&pod.HostIP)
+		fr.Anys[sfgo.SYSFLOW_IDX][sfgo.POD_HOSTIP_ANY] = &pod.HostIP
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_INTERNALIP_STR] = getIPStr(&pod.InternalIP)
+		fr.Anys[sfgo.SYSFLOW_IDX][sfgo.POD_INTERNALIP_ANY] = &pod.InternalIP
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_SERVICES_STR] = getJSONStr(&pod.Services)
+		fr.Anys[sfgo.SYSFLOW_IDX][sfgo.POD_SERVICES_ANY] = &pod.Services
+	} else {
+		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.POD_TS_INT] = sfgo.Zeros.Int64
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_ID_STR] = sfgo.Zeros.String
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_NAME_STR] = sfgo.Zeros.String
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_NODENAME_STR] = sfgo.Zeros.String
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_NAMESPACE_STR] = sfgo.Zeros.String
+		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.POD_RESTARTCOUNT_INT] = sfgo.Zeros.Int64
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_HOSTIP_STR] = sfgo.Zeros.String
+		fr.Anys[sfgo.SYSFLOW_IDX][sfgo.POD_HOSTIP_ANY] = sfgo.Zeros.Any
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_INTERNALIP_STR] = sfgo.Zeros.String
+		fr.Anys[sfgo.SYSFLOW_IDX][sfgo.POD_INTERNALIP_ANY] = sfgo.Zeros.Any
+		fr.Strs[sfgo.SYSFLOW_IDX][sfgo.POD_SERVICES_STR] = sfgo.Zeros.String
+		fr.Anys[sfgo.SYSFLOW_IDX][sfgo.POD_SERVICES_ANY] = sfgo.Zeros.Any
 	}
 	if proc != nil {
 		fr.Ints[sfgo.SYSFLOW_IDX][sfgo.PROC_STATE_INT] = int64(proc.State)
@@ -328,6 +375,23 @@ func (s *Flattener) fillEntities(hdr *sfgo.SFHeader, cont *sfgo.Container, proc 
 	}
 }
 
+func getIPStr(ips *[]int64) string {
+        var sb strings.Builder
+        sb.WriteByte('[')
+        for _, ip := range *ips {
+                sb.WriteByte('"')
+                sb.WriteString(sfgo.GetIPStr(int32(ip)))
+                sb.WriteByte('"')
+        }
+        sb.WriteByte(']')
+	return sb.String()
+}
+
+func getJSONStr(s *[]*sfgo.Service) string {
+	b, _ := json.Marshal(s)
+	return string(b)
+}
+
 func getOIDStr(bs []byte) string {
 	return hex.EncodeToString(bs)
 }
@@ -337,8 +401,10 @@ func newFlatRecord() *sfgo.FlatRecord {
 	fr.Sources = make([]sfgo.Source, 1)
 	fr.Ints = make([][]int64, 1)
 	fr.Strs = make([][]string, 1)
+	fr.Anys = make([][]interface{}, 1)
 	fr.Sources[sfgo.SYSFLOW_IDX] = sfgo.SYSFLOW_SRC
 	fr.Ints[sfgo.SYSFLOW_IDX] = make([]int64, sfgo.INT_ARRAY_SIZE)
 	fr.Strs[sfgo.SYSFLOW_IDX] = make([]string, sfgo.STR_ARRAY_SIZE)
+	fr.Anys[sfgo.SYSFLOW_IDX] = make([]interface{}, sfgo.ANY_ARRAY_SIZE)
 	return fr
 }
