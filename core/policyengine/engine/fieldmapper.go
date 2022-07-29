@@ -179,7 +179,14 @@ func (m FieldMapper) MapStr(attr string) StrFieldMap {
 			}
 			return trimBoundingQuotes(v)
 		} else if v, ok := o.(int64); ok {
+			if baseattr == SF_PROC_TTY || baseattr == SF_PROC_ENTRY {
+				return strconv.FormatBool(v != 0)
+			}
 			return strconv.FormatInt(v, 10)
+		} else if v, ok := o.(int32); ok { // sf.pproc.* int fields
+			return strconv.FormatInt(int64(v), 10)
+		} else if v, ok := o.(bool); ok { // sf.pproc.tty, sf.pproc.entry field
+			return strconv.FormatBool(v)
 		}
 
 		return sfgo.Zeros.String
