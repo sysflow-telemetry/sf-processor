@@ -122,8 +122,13 @@ func (m FieldMapper) MapStr(attr string) StrFieldMap {
 		if v, ok := m.Map(attr)(r).(string); ok {
 			return trimBoundingQuotes(v)
 		} else if v, ok := m.Map(attr)(r).(int64); ok {
+			if attr == SF_PROC_TTY || attr == SF_PROC_ENTRY {
+				return strconv.FormatBool(v != 0)
+			}
 			return strconv.FormatInt(v, 10)
-		} else if v, ok := m.Map(attr)(r).(bool); ok {
+		} else if v, ok := m.Map(attr)(r).(int32); ok { // sf.pproc.* int fields
+			return strconv.FormatInt(int64(v), 10)
+		} else if v, ok := m.Map(attr)(r).(bool); ok { // sf.pproc.tty, sf.pproc.entry field
 			return strconv.FormatBool(v)
 		}
 		return sfgo.Zeros.String
