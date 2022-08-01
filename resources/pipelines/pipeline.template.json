@@ -5,7 +5,9 @@
       "processor": "sysflowreader",
       "handler": "flattener",
       "in": "sysflow sysflowchan",
-      "out": "flat flattenerchan"
+      "out": "flat flattenerchan",
+      "filter.enabled": "on|off (default: off)",
+      "filter.maxage": "time decay in minutes (default: 24H)"
      },
      {
       "processor": "policyengine",
@@ -21,8 +23,8 @@
      {
       "processor": "exporter",
       "in": "evt eventchan",
-      "export": "terminal|file|syslog|es|findings|null (default: terminal)",            
-      "format": "json|ecs|occurrence",   
+      "export": "terminal|file|syslog|es|findings|null (default: terminal)",
+      "format": "json|ecs|occurrence",
       "buffer": "event aggregation buffer (default: 0)",
       "vault.secrets": "true|false",
       "vault.path": "/run/secrets (default)",
@@ -31,7 +33,7 @@
       "syslog.tag": "rsyslog tag (default: sysflow)",
       "syslog.source": "rsyslog source hostname (default: hostname)",
       "syslog.host": "rsyslog host (default: localhost)",
-      "syslog.port": "ryslog port (default: 514)",    
+      "syslog.port": "ryslog port (default: 514)",
       "es.addresses": "ip1,ip2,... (comma-separated list)",
       "es.index": "elastic index (default: sysflow)",
       "es.username": "elastic username (do not set it if reading from secret vault)",
@@ -44,12 +46,12 @@
       "findings.accountid": "findings API account ID",
       "findings.provider": "findings API provider",
       "findings.note": "findings API node ID",
-      "findings.sqlqueryurl": "SQL Query URL (default: https://us.sql-query.cloud.ibm.com/sqlquery)", 
-      "findings.sqlquerycrn": "SQL Query instance crn", 
-      "findings.region": "findings API region", 
-      "findings.path": "findings events path (default: /mnt/occurrences)", 
+      "findings.sqlqueryurl": "SQL Query URL (default: https://us.sql-query.cloud.ibm.com/sqlquery)",
+      "findings.sqlquerycrn": "SQL Query instance crn",
+      "findings.region": "findings API region",
+      "findings.path": "findings events path (default: /mnt/occurrences)",
       "findings.pool.capacity": "findings event pool capacity (default: 250)",
-      "findings.pool.maxage": "findings event pool age limit in minutes (default: 1440)"   
-     }   
+      "findings.pool.maxage": "findings event pool age limit in minutes (default: 1440)"
+     }
    ]
 }
