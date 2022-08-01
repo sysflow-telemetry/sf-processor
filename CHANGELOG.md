@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Bump UBI to 8.6-855
+- Update reference to sf-apis
 
 ### Fixed
 

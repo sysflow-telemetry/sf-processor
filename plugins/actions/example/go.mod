@@ -28,7 +28,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6 // indirect
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220221182316-8e41f56e373e // indirect
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220411204240-a9a765e36d94 // indirect
 )
 
 replace github.com/sysflow-telemetry/sf-processor/core => ../../../core

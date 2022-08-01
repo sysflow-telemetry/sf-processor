@@ -22,7 +22,7 @@ module github.com/sysflow-telemetry/sf-processor/plugins/processors/example
 go 1.17
 
 require (
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220221182316-8e41f56e373e
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220411204240-a9a765e36d94
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20220221021811-25c7181c2904
 )
 
