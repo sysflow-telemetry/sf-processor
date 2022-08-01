@@ -15,6 +15,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.4.4] - 2022-08-01
+
+### Fixed
+
+- Fix exists predicate
+- Fix handling of integers and booleans in MatStr function
+
 ## [0.4.3] - 2022-06-21
 
 ### Changed
@@ -137,7 +144,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - First release of SysFlow Processor.
 
-[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.3...HEAD
+[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.4...HEAD
+[0.4.4]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.3...0.4.4
 [0.4.3]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.2...0.4.3
 [0.4.2]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.1...0.4.2
 [0.4.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.0...0.4.1
