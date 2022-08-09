@@ -173,9 +173,6 @@ func (m FieldMapper) MapStr(attr string) StrFieldMap {
 		if v, ok := o.(string); ok {
 			if isPathExp && v != "" && jsonpath != "" {
 				return gjson.Get(v, jsonpath).String()
-				//res := gjson.Get(v, jsonpath).String()
-				//logger.Trace.Printf("%s[%s] = %s", baseattr, jsonpath, res)
-				//return res
 			}
 			return trimBoundingQuotes(v)
 		} else if v, ok := o.(int64); ok {

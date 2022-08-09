@@ -48,7 +48,9 @@ func NewFlattenerChan(size int) interface{} {
 
 // Flattener defines the main class for the flatterner plugin.
 type Flattener struct {
-	outCh []chan *sfgo.FlatRecord
+	config Config
+	filter *Filter
+	outCh  []chan *sfgo.FlatRecord
 }
 
 // NewFlattener creates a new Flattener instance.
@@ -68,6 +70,11 @@ func (s *Flattener) RegisterHandler(hc plugins.SFHandlerCache) {
 
 // Init initializes the handler with a configuration map.
 func (s *Flattener) Init(conf map[string]interface{}) error {
+	s.config, _ = CreateConfig(conf) // no err check, assuming defaults
+	if s.config.FilterOnOff.Enabled() {
+		s.filter = NewFilter(s.config.FilterMaxAge)
+		logger.Info.Printf("Initialized rate limiter with %s time decay", s.config.FilterMaxAge)
+	}
 	return nil
 }
 
@@ -80,6 +87,16 @@ func (s *Flattener) IsEntityEnabled() bool {
 func (s *Flattener) SetOutChan(chObj []interface{}) {
 	for _, ch := range chObj {
 		s.outCh = append(s.outCh, ch.(*FlatChannel).In)
+	}
+}
+
+// out sends a record to every output channel in the plugin.
+func (s *Flattener) out(fr *sfgo.FlatRecord) {
+	if s.config.FilterOnOff.Enabled() && s.filter != nil && s.filter.TestAndAdd(semanticHash(fr)) {
+		return
+	}
+	for _, c := range s.outCh {
+		c <- fr
 	}
 }
 
@@ -154,9 +171,7 @@ func (s *Flattener) HandleNetFlow(sf *plugins.CtxSysFlow, nf *sfgo.NetworkFlow) 
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_NETW_NUMWSENDBYTES_INT] = nf.NumWSendBytes
 	fr.Ptree = sf.PTree
 	fr.GraphletID = sf.GraphletID
-	for _, ch := range s.outCh {
-		ch <- fr
-	}
+	s.out(fr)
 	return nil
 }
 
@@ -177,9 +192,7 @@ func (s *Flattener) HandleFileFlow(sf *plugins.CtxSysFlow, ff *sfgo.FileFlow) er
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.FL_FILE_NUMWSENDBYTES_INT] = ff.NumWSendBytes
 	fr.Ptree = sf.PTree
 	fr.GraphletID = sf.GraphletID
-	for _, ch := range s.outCh {
-		ch <- fr
-	}
+	s.out(fr)
 	return nil
 }
 
@@ -213,9 +226,7 @@ func (s *Flattener) HandleFileEvt(sf *plugins.CtxSysFlow, fe *sfgo.FileEvent) er
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_FILE_RET_INT] = int64(fe.Ret)
 	fr.Ptree = sf.PTree
 	fr.GraphletID = sf.GraphletID
-	for _, ch := range s.outCh {
-		ch <- fr
-	}
+	s.out(fr)
 	return nil
 }
 
@@ -240,9 +251,7 @@ func (s *Flattener) HandleProcEvt(sf *plugins.CtxSysFlow, pe *sfgo.ProcessEvent)
 	fr.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_RET_INT] = int64(pe.Ret)
 	fr.Ptree = sf.PTree
 	fr.GraphletID = sf.GraphletID
-	for _, ch := range s.outCh {
-		ch <- fr
-	}
+	s.out(fr)
 	return nil
 }
 
