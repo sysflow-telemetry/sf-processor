@@ -15,16 +15,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-## [0.5.0] - 2022-08-21
+## [0.5.0] - 2022-10-17
 
 ### Added
 
 - Add support for k8s pod and event objects
 - Add jsonpath expression support for policy engine
 
+### Changed
+
+- Bumped UBI version to 8.6-943.1665521450
+
 ### Fixed
 
 - Fix bug in exists predicate
+- Fix `open_read` and `open_write` macros in ttps.yaml
 
 ## [0.4.4] - 2022-08-01
 
@@ -164,8 +169,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - First release of SysFlow Processor.
 
-[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.5.0-rc1...HEAD
-[0.5.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.4...0.5.0-rc1
+[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.5.0...HEAD
+[0.5.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.4...0.5.0
 [0.4.4]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.3...0.4.4
 [0.4.3]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.2...0.4.3
 [0.4.2]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.1...0.4.2
