@@ -311,6 +311,12 @@
 - list: stop_cmds
   items: [stop, disable, off]
 
+- list: write_send
+  items: [WRITE, SEND]
+
+- list: read_recv
+  items: [READ, RECV]
+
 ###### Macros ###################
 
 - macro: sed_write
@@ -320,12 +326,12 @@
   condition: sf.opflags = RENAME
 
 - macro: open_write
-  condition: (sf.opflags in (WRITE_SEND) or
-             (sf.opflags = OPEN and sf.file.openflags in (O_CREAT)) or
+  condition: (sf.opflags in (write_send) or
+             (sf.opflags = OPEN and sf.file.openflags in (CREAT)) or
              sed_write)
 
 - macro: open_read
-  condition: (sf.file.is_open_read = true or sf.opflags = READ_RECV)
+  condition: (sf.file.is_open_read = true or sf.opflags = read_recv)
 
 - macro: interactive
   condition: >
