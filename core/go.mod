@@ -20,7 +20,7 @@
 //
 module github.com/sysflow-telemetry/sf-processor/core
 
-go 1.17
+go 1.19
 
 require (
 	github.com/IBM/go-sdk-core/v5 v5.9.2
@@ -38,7 +38,7 @@ require (
 	github.com/satta/gommunityid v0.0.0-20210315182841-1cdcb73ce408
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570
 	github.com/stretchr/testify v1.7.0
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220720151945-fca5a11be917
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20221212152705-23115987ecd0
 	github.com/tidwall/gjson v1.14.1
 )
 

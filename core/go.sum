@@ -188,6 +188,8 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220720151945-fca5a11be917 h1:8CcXMnjU5TxCXDRxRQnWvon3VsA47lVe4WaAuxBuJus=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220720151945-fca5a11be917/go.mod h1:hK3FNloWIvlioheWODPJcA3TOxJbxMafoUezq3ZNCww=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20221212152705-23115987ecd0 h1:OwfynxzCK1yMjxDQdTRvc01GszQ6xVG0BTJrvhz+pQA=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20221212152705-23115987ecd0/go.mod h1:eo1ATE056Rqb9LhE4LA/0Y2AHfV//1zdCw0py4/S5HM=
 github.com/tidwall/gjson v1.14.1 h1:iymTbGkQBhveq21bEvAQ81I0LEBork8BFe1CUZXdyuo=
 github.com/tidwall/gjson v1.14.1/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
 github.com/tidwall/match v1.1.1 h1:+Ho715JplO36QYgwN9PGYNhgZvoUSc9X2c80KVTi+GA=
