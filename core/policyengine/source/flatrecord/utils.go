@@ -17,24 +17,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package engine implements a rules engine for telemetry records.
-package engine
+// Package flatrecord implements a flatten record source for the rules compilers.
+package flatrecord
 
 import (
 	"fmt"
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
-
-func trimBoundingQuotes(s string) string {
-	if len(s) > 0 && (s[0] == '"' || s[0] == '\'') {
-		s = s[1:]
-	}
-	if len(s) > 0 && (s[len(s)-1] == '"' || s[len(s)-1] == '\'') {
-		s = s[:len(s)-1]
-	}
-	return s
-}
 
 func parseSymPath(idx sfgo.Source, attr sfgo.Attribute, r *Record) (string, string) {
 	orig := r.GetStr(attr, idx)

@@ -18,8 +18,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package engine implements a rules engine for telemetry records.
-package engine
+// Package flatrecord implements a flatten record source for the rules policy.
+package flatrecord
 
 import (
 	"path/filepath"
@@ -27,57 +27,9 @@ import (
 	"strings"
 
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/common"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 )
-
-// EnrichmentTag denotes the type for enrichment tags.
-type EnrichmentTag interface{}
-
-// Priority denotes the type for rule priority.
-type Priority int
-
-// Priority enumeration.
-const (
-	Low Priority = iota
-	Medium
-	High
-)
-
-// String returns the string representation of a priority instance.
-func (p Priority) String() string {
-	return [...]string{"low", "medium", "high"}[p]
-}
-
-// Rule type
-type Rule struct {
-	Name      string
-	Desc      string
-	condition Criterion
-	Actions   []string
-	Tags      []EnrichmentTag
-	Priority  Priority
-	Prefilter []string
-	Enabled   bool
-}
-
-func (s Rule) isApplicable(r *Record) bool {
-	if len(s.Prefilter) == 0 {
-		return true
-	}
-	rtype := Mapper.MapStr(SF_TYPE)(r)
-	for _, pf := range s.Prefilter {
-		if rtype == pf {
-			return true
-		}
-	}
-	return false
-}
-
-// Filter type
-type Filter struct {
-	Name      string
-	condition Criterion
-	Enabled   bool
-}
 
 // Record type
 type Record struct {
@@ -85,18 +37,12 @@ type Record struct {
 	Ctx Context
 }
 
-
 // NewRecord creates a new Record isntance.
 func NewRecord(fr sfgo.FlatRecord) *Record {
 	var r = new(Record)
 	r.Fr = fr
 	r.Ctx = make(Context, 4)
 	return r
-}
-
-// RecordChannel type
-type RecordChannel struct {
-	In chan *Record
 }
 
 // RecAttribute denotes a record attribute enumeration.
@@ -209,7 +155,7 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 		case PProcCmdLine:
 			if len(ptree) > 1 {
 				if len(ptree[1].ExeArgs) > 0 {
-					return ptree[1].Exe + SPACE + ptree[1].ExeArgs
+					return ptree[1].Exe + common.SPACE + ptree[1].ExeArgs
 				}
 				return ptree[1].Exe
 			}
@@ -218,29 +164,29 @@ func (r Record) GetCachedValue(ID sfgo.OID, attr RecAttribute) interface{} {
 			for _, p := range ptree {
 				s = append(s, filepath.Base(p.Exe))
 			}
-			return strings.Join(s, LISTSEP)
+			return strings.Join(s, common.LISTSEP)
 		case ProcAExe:
 			var s []string
 			for _, p := range ptree {
 				s = append(s, p.Exe)
 			}
-			return strings.Join(s, LISTSEP)
+			return strings.Join(s, common.LISTSEP)
 		case ProcACmdLine:
 			var s []string
 			for _, p := range ptree {
 				if len(p.ExeArgs) > 0 {
-					s = append(s, p.Exe+SPACE+p.ExeArgs)
+					s = append(s, p.Exe+common.SPACE+p.ExeArgs)
 				} else {
 					s = append(s, p.Exe)
 				}
 			}
-			return strings.Join(s, LISTSEP)
+			return strings.Join(s, common.LISTSEP)
 		case ProcAPID:
 			var s []string
 			for _, p := range ptree {
 				s = append(s, strconv.FormatInt(p.Oid.Hpid, 10))
 			}
-			return strings.Join(s, LISTSEP)
+			return strings.Join(s, common.LISTSEP)
 		}
 	}
 	switch attr {
@@ -276,17 +222,17 @@ func (s Context) SetAlert(isAlert bool) {
 }
 
 // AddRule adds a rule instance to the set of rules matching a record.
-func (s Context) AddRule(r Rule) {
+func (s Context) AddRule(r policy.Rule[*Record]) {
 	if s[ruleCtxKey] == nil {
-		s[ruleCtxKey] = make([]Rule, 0)
+		s[ruleCtxKey] = make([]policy.Rule[*Record], 0)
 	}
-	s[ruleCtxKey] = append(s[ruleCtxKey].([]Rule), r)
+	s[ruleCtxKey] = append(s[ruleCtxKey].([]policy.Rule[*Record]), r)
 }
 
 // GetRules retrieves the list of stored rules associated with a record context.
-func (s Context) GetRules() []Rule {
+func (s Context) GetRules() []policy.Rule[*Record] {
 	if s[ruleCtxKey] != nil {
-		return s[ruleCtxKey].([]Rule)
+		return s[ruleCtxKey].([]policy.Rule[*Record])
 	}
 	return nil
 }
@@ -340,8 +286,7 @@ const (
 )
 
 type HashSet struct {
-	Md5    string  `json:"md5,omitempty"`
-	Sha1   string  `json:"sha1,omitempty"`
-	Sha256 string  `json:"sha256,omitempty"`
+	Md5    string `json:"md5,omitempty"`
+	Sha1   string `json:"sha1,omitempty"`
+	Sha256 string `json:"sha256,omitempty"`
 }
-

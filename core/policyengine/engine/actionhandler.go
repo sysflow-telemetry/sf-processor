@@ -24,32 +24,48 @@ import (
 
 	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 )
 
 // Prototype of an action function
-type ActionFunc func(r *Record) error
+type ActionFunc[R any] func(r R) error
 
-type ActionMap map[string]ActionFunc
+type ActionMap[R any] map[string]ActionFunc[R]
 
 // Action interface for user-defined actions
-type Action interface {
+type Action[R any] interface {
 	GetName() string
-	GetFunc() ActionFunc
+	GetFunc() ActionFunc[R]
 }
 
 const ActionSym = "Action"
 
-// Registers an action function
-func registerAction(reg ActionMap, name string, f ActionFunc) {
-	if _, ok := reg[name]; ok {
-		logger.Warn.Println("Re-declaration of action '" + name + "'")
-	}
-	reg[name] = f
+type ActionHandler[R any] struct {
+	// Map of registered actions
+	BuiltInActions     ActionMap[R]
+	UserDefinedActions ActionMap[R]
+}
+
+func NewActionHandler[R any](conf Config) *ActionHandler[R] {
+	ah := new(ActionHandler[R])
+
+	// Register built-in actions
+	ah.registerBuiltIns()
+
+	// Load user-defined actions
+	ah.loadUserActions(conf.ActionDir)
+
+	return ah
+}
+
+// Registers built-in actions
+func (ah *ActionHandler[R]) registerBuiltIns() {
+	ah.BuiltInActions = make(ActionMap[R])
 }
 
 // LoadActions loads user-defined actions from path
-func (ah *ActionHandler) loadUserActions(dir string) {
-	ah.UserDefinedActions = make(ActionMap)
+func (ah *ActionHandler[R]) loadUserActions(dir string) {
+	ah.UserDefinedActions = make(ActionMap[R])
 	if paths, err := ioutils.ListFilePaths(dir, ".so"); err == nil {
 		var plug *plugin.Plugin
 		for _, path := range paths {
@@ -63,39 +79,25 @@ func (ah *ActionHandler) loadUserActions(dir string) {
 				logger.Error.Println(err.Error())
 				continue
 			}
-			action, ok := sym.(Action)
+			action, ok := sym.(Action[R])
 			if !ok {
 				logger.Error.Println("Action symbol loaded from " + path + " must implement Action interface")
 				continue
 			}
 
+			// Registers an action function
 			name := action.GetName()
 			logger.Info.Println("Registering user-defined action '" + name + "'")
-			registerAction(ah.UserDefinedActions, name, action.GetFunc())
+			if _, ok := ah.UserDefinedActions[name]; ok {
+				logger.Warn.Println("Re-declaration of action '" + name + "'")
+			}
+			ah.UserDefinedActions[name] = action.GetFunc()
 		}
 	}
 }
 
-type ActionHandler struct {
-	// Map of registered actions
-	BuiltInActions     ActionMap
-	UserDefinedActions ActionMap
-}
-
-func NewActionHandler(conf Config) *ActionHandler {
-	ah := new(ActionHandler)
-
-	// Register built-in actions
-	ah.registerBuiltIns()
-
-	// Load user-defined actions
-	ah.loadUserActions(conf.ActionDir)
-
-	return ah
-}
-
 // CheckActions checks whether actions rules definitions have known implementations.
-func (ah *ActionHandler) CheckActions(rules []Rule) {
+func (ah *ActionHandler[R]) CheckActions(rules []policy.Rule[R]) {
 	for _, r := range rules {
 		for _, a := range r.Actions {
 			if _, ok := ah.BuiltInActions[a]; !ok {
@@ -108,7 +110,7 @@ func (ah *ActionHandler) CheckActions(rules []Rule) {
 }
 
 // HandleAction handles actions defined in rule.
-func (ah *ActionHandler) HandleActions(rule Rule, r *Record) {
+func (ah *ActionHandler[R]) HandleActions(rule policy.Rule[R], r R) {
 	for _, a := range rule.Actions {
 		action, ok := ah.BuiltInActions[a]
 		if !ok {
@@ -121,9 +123,4 @@ func (ah *ActionHandler) HandleActions(rule Rule, r *Record) {
 			logger.Error.Println("Error in action: " + err.Error())
 		}
 	}
-}
-
-// Registers built-in actions
-func (ah *ActionHandler) registerBuiltIns() {
-	ah.BuiltInActions = make(ActionMap)
 }
