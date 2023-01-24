@@ -17,8 +17,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package engine implements a rules engine for telemetry records.
-package engine
+// Package flatrecord implements a flatten record source for the rules engine.
+package flatrecord
 
 import (
 	"fmt"
@@ -30,6 +30,7 @@ import (
 	"github.com/cespare/xxhash/v2"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/common"
 	"github.com/tidwall/gjson"
 )
 
@@ -174,7 +175,7 @@ func (m FieldMapper) MapStr(attr string) StrFieldMap {
 			if isPathExp && v != "" && jsonpath != "" {
 				return gjson.Get(v, jsonpath).String()
 			}
-			return trimBoundingQuotes(v)
+			return common.TrimBoundingQuotes(v)
 		} else if v, ok := o.(int64); ok {
 			if baseattr == SF_PROC_TTY || baseattr == SF_PROC_ENTRY {
 				return strconv.FormatBool(v != 0)
@@ -260,10 +261,11 @@ func getMappers() map[string]*FieldEntry {
 
 // getExportedMappers defines all mappers for exported attributes.
 // A FieldEntry defines a mapped attribute for the policy engine.
-// 		Map: mapping function
-//		FlatIndex: index in the flat record structure
-//		Type: mapping function return type; if "MapSpecial*", the function modifies the input data
-// 		Source: source field in the flat record structure
+//
+//	Map: mapping function
+//	FlatIndex: index in the flat record structure
+//	Type: mapping function return type; if "MapSpecial*", the function modifies the input data
+//	Source: source field in the flat record structure
 func getExportedMappers() map[string]*FieldEntry {
 	return map[string]*FieldEntry{
 		// SysFlow
@@ -535,7 +537,7 @@ func mapJoin(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
 		var join string = r.GetStr(attrs[0], src)
 		for _, attr := range attrs[1:] {
-			join += SPACE + r.GetStr(attr, src)
+			join += common.SPACE + r.GetStr(attr, src)
 		}
 		return join
 	}
@@ -552,7 +554,7 @@ func mapOpFlags(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
 		opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT, src)
 		rtype, _ := sfgo.ParseRecordType(r.GetInt(sfgo.SF_REC_TYPE, src))
-		return strings.Join(sfgo.GetOpFlags(int32(opflags), rtype), LISTSEP)
+		return strings.Join(sfgo.GetOpFlags(int32(opflags), rtype), common.LISTSEP)
 	}
 }
 
@@ -561,7 +563,7 @@ func mapEvtType(src sfgo.Source) FieldMap {
 	return func(r *Record) interface{} {
 		opflags := r.GetInt(sfgo.EV_PROC_OPFLAGS_INT, src)
 		rtype, _ := sfgo.ParseRecordType(r.GetInt(sfgo.SF_REC_TYPE, src))
-		return strings.Join(sfgo.GetEvtTypes(int32(opflags), rtype), LISTSEP)
+		return strings.Join(sfgo.GetEvtTypes(int32(opflags), rtype), common.LISTSEP)
 	}
 }
 
@@ -653,7 +655,7 @@ func mapIsOpenRead(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 
 func mapOpenFlags(src sfgo.Source, attr sfgo.Attribute) FieldMap {
 	return func(r *Record) interface{} {
-		return strings.Join(sfgo.GetOpenFlags(r.GetInt(attr, src)), LISTSEP)
+		return strings.Join(sfgo.GetOpenFlags(r.GetInt(attr, src)), common.LISTSEP)
 	}
 }
 
@@ -670,7 +672,7 @@ func mapPort(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 		for _, attr := range attrs {
 			ports = append(ports, strconv.FormatInt(r.GetInt(attr, src), 10))
 		}
-		return strings.Join(ports, LISTSEP)
+		return strings.Join(ports, common.LISTSEP)
 	}
 }
 
@@ -680,7 +682,7 @@ func mapIP(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 		for _, attr := range attrs {
 			ips = append(ips, sfgo.GetIPStr(int32(r.GetInt(attr, src))))
 		}
-		return strings.Join(ips, LISTSEP)
+		return strings.Join(ips, common.LISTSEP)
 	}
 }
 
@@ -721,7 +723,7 @@ func mapOID(src sfgo.Source, attrs ...sfgo.Attribute) FieldMap {
 
 func mapConsts(consts ...string) FieldMap {
 	return func(r *Record) interface{} {
-		return strings.Join(consts, LISTSEP)
+		return strings.Join(consts, common.LISTSEP)
 	}
 }
 

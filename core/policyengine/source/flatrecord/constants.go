@@ -17,29 +17,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package engine implements a rules engine for telemetry records.
-package engine
-
-// Parsing constants.
-const (
-	LISTSEP string = ","
-	EMPTY   string = ""
-	QUOTE   string = "\""
-	SPACE   string = " "
-)
-
-// Falco priority values.
-const (
-	FPriorityEmergency     = "emergency"
-	FPriorityAlert         = "alert"
-	FPriorityCritical      = "critical"
-	FPriorityError         = "error"
-	FPriorityWarning       = "warning"
-	FPriorityNotice        = "notice"
-	FPriorityInfo          = "info"
-	FPriorityInformational = "informational"
-	FPriorityDebug         = "debug"
-)
+// Package flatrecord implements a rules engine based on falco rules.
+package flatrecord
 
 // SysFlow attribute names.
 const (
@@ -150,7 +129,7 @@ const (
 	EXT_PROC_SIGNED_INT              = "ext.proc.signed"
 )
 
-//extension file attributes
+// extension file attributes
 const (
 	EXT_FILE_SHA1_HASH_STR        = "ext.file.sha1"
 	EXT_FILE_MD5_HASH_STR         = "ext.file.md5"
