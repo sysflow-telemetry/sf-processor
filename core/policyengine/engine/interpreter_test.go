@@ -17,32 +17,35 @@
 // limitations under the License.
 package engine
 
-// import (
-// 	"os"
-// 	"testing"
+import (
+	"os"
+	"testing"
 
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
-// 	"github.com/sysflow-telemetry/sf-apis/go/logger"
-// )
+	"github.com/stretchr/testify/assert"
+	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/falco"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
+)
 
-// var pi *PolicyInterpreter
+var pi *PolicyInterpreter[*flatrecord.Record]
 
-// func SetupInterpreter(m *testing.M) {
-// 	pi = NewPolicyInterpreter(Config{}, nil)
-// 	os.Exit(m.Run())
-// }
+func SetupInterpreter(m *testing.M) {
+	pc := falco.NewPolicyCompiler(flatrecord.NewOperations())
+	pi = NewPolicyInterpreter(Config{}, pc, nil, nil, nil)
+	os.Exit(m.Run())
+}
 
-// func TestCompile(t *testing.T) {
-// 	logger.Trace.Println("Running test compile")
-// 	paths, err := ioutils.ListFilePaths("../../../resources/policies/tests", ".yaml")
-// 	assert.NoError(t, err)
-// 	assert.NoError(t, pi.Compile(paths...))
-// }
+func TestCompile(t *testing.T) {
+	logger.Trace.Println("Running test compile")
+	paths, err := ioutils.ListFilePaths("../../../resources/policies/tests", ".yaml")
+	assert.NoError(t, err)
+	assert.NoError(t, pi.Compile(paths...))
+}
 
-// func TestCompileDist(t *testing.T) {
-// 	logger.Trace.Println("Running test compile")
-// 	paths, err := ioutils.ListFilePaths("../../../resources/policies/distribution/filter.yaml", ".yaml")
-// 	assert.NoError(t, err)
-// 	assert.NoError(t, pi.Compile(paths...))
-// }
+func TestCompileDist(t *testing.T) {
+	logger.Trace.Println("Running test compile")
+	paths, err := ioutils.ListFilePaths("../../../resources/policies/distribution/filter.yaml", ".yaml")
+	assert.NoError(t, err)
+	assert.NoError(t, pi.Compile(paths...))
+}

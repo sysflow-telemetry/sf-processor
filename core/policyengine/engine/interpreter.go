@@ -38,7 +38,7 @@ type PolicyInterpreter[R any] struct {
 	pc policy.PolicyCompiler[R]
 
 	// Prefilter
-	prefilter Prefilter[R]
+	prefilter source.Prefilter[R]
 
 	// Record contextualizer
 	ctx source.Contextualizer[R]
@@ -65,13 +65,15 @@ type PolicyInterpreter[R any] struct {
 }
 
 // NewPolicyInterpreter constructs a new interpreter instance.
-func NewPolicyInterpreter[R any](conf Config, out func(R)) *PolicyInterpreter[R] {
+func NewPolicyInterpreter[R any](conf Config, pc policy.PolicyCompiler[R], pf source.Prefilter[R], ctx source.Contextualizer[R], out func(R)) *PolicyInterpreter[R] {
 	pi := new(PolicyInterpreter[R])
-	// pi.pc = should we concretize compiler and operations object in configuration object? or in policy engine?
-	// pi.prefilter = ...
-	// pi.ctx = ...
-	//pc := falco.NewPolicyCompiler(flatrecord.NewOperations())
-	//pi.pc = pc
+	pi.pc = pc
+	if pi.prefilter = pf; pf == nil {
+		pi.prefilter = source.NewDefaultPrefilter[R]()
+	}
+	if pi.ctx = ctx; ctx == nil {
+		pi.ctx = source.NewDefaultContextualizer[R]()
+	}
 	pi.mode = conf.Mode
 	pi.concurrency = conf.Concurrency
 	pi.rules = make([]policy.Rule[R], 0)
@@ -134,7 +136,9 @@ func (pi *PolicyInterpreter[R]) worker() {
 		// Apply rules
 		for _, rule := range pi.rules {
 			if rule.Enabled && pi.prefilter.IsApplicable(r, rule) && rule.Condition.Eval(r) {
-				pi.ctx.AddRules(r, rule)
+				if pi.ctx != nil {
+					pi.ctx.AddRules(r, rule)
+				}
 				pi.ah.HandleActions(rule, r)
 				match = true
 			}

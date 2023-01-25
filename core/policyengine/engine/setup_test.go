@@ -17,15 +17,15 @@
 // limitations under the License.
 package engine
 
-// import (
-// 	"os"
-// 	"testing"
+import (
+	"os"
+	"testing"
 
-// 	"github.com/sysflow-telemetry/sf-apis/go/logger"
-// )
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
+)
 
-// func TestMain(m *testing.M) {
-// 	logger.InitLoggers(logger.TRACE)
-// 	SetupInterpreter(m)
-// 	os.Exit(m.Run())
-// }
+func TestMain(m *testing.M) {
+	logger.InitLoggers(logger.TRACE)
+	SetupInterpreter(m)
+	os.Exit(m.Run())
+}

@@ -12,6 +12,7 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/falco/lang/errorhandler"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/falco/lang/parser"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
 )
 
 // Regular expression for parsing lists.
@@ -22,7 +23,7 @@ type PolicyCompiler[R any] struct {
 	*parser.BaseSfplListener
 
 	// Operations
-	ops policy.Operations[R]
+	ops source.Operations[R]
 
 	// Parsed rule and filter object maps
 	rules   []policy.Rule[R]
@@ -34,7 +35,7 @@ type PolicyCompiler[R any] struct {
 }
 
 // NewPolicyCompiler constructs a new compiler instance.
-func NewPolicyCompiler[R any](ops policy.Operations[R]) policy.PolicyCompiler[R] {
+func NewPolicyCompiler[R any](ops source.Operations[R]) policy.PolicyCompiler[R] {
 	pc := new(PolicyCompiler[R])
 	pc.ops = ops
 	pc.rules = make([]policy.Rule[R], 0)
