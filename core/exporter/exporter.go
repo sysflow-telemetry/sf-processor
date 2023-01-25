@@ -30,7 +30,8 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/encoders"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/transports"
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
 )
 
 const (
@@ -45,7 +46,7 @@ type Exporter struct {
 	config    commons.Config
 	encoder   encoders.Encoder
 	transport transports.TransportProtocol
-	recs      []*engine.Record
+	recs      []*flatrecord.Record
 	counter   int
 }
 
@@ -132,7 +133,7 @@ func (s *Exporter) Process(ch []interface{}, wg *sync.WaitGroup) {
 		logger.Error.Println("Exporter only supports a single input channel at this time")
 		return
 	}
-	cha := ch[0].(*engine.RecordChannel)
+	cha := ch[0].(*source.RecordChannel[*flatrecord.Record])
 	record := cha.In
 	defer wg.Done()
 

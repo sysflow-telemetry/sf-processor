@@ -20,68 +20,43 @@
 // Package policy implements input policy translation for the rules engine.
 package policy
 
-// func TestNot(t *testing.T) {
-// 	c := False
-// 	var r *Record
-// 	assert.Equal(t, true, c.Not().Eval(r))
-// }
+import (
+	"testing"
 
-// func TestAnd(t *testing.T) {
-// 	c := False
-// 	var r *Record
-// 	assert.Equal(t, false, c.And(c).Eval(r))
-// 	assert.Equal(t, false, c.And(c.Not()).Eval(r))
-// 	assert.Equal(t, false, c.Not().And(c).Eval(r))
-// 	assert.Equal(t, true, c.Not().And(c.Not()).Eval(r))
-// }
+	"github.com/stretchr/testify/assert"
+)
 
-// func TestOr(t *testing.T) {
-// 	c := False
-// 	var r *Record
-// 	assert.Equal(t, false, c.Or(c).Eval(r))
-// 	assert.Equal(t, true, c.Or(c.Not()).Eval(r))
-// 	assert.Equal(t, true, c.Not().Or(c).Eval(r))
-// 	assert.Equal(t, true, c.Not().Or(c.Not()).Eval(r))
-// }
+func TestNot(t *testing.T) {
+	c := False[any]()
+	assert.Equal(t, true, c.Not().Eval(nil))
+}
 
-// func TestAll(t *testing.T) {
-// 	var r *Record
-// 	assert.Equal(t, true, All([]Criterion{True, True}).Eval(r))
-// 	assert.Equal(t, false, All([]Criterion{True, False}).Eval(r))
-// 	assert.Equal(t, false, All([]Criterion{False, True}).Eval(r))
-// 	assert.Equal(t, false, All([]Criterion{False, False}).Eval(r))
-// }
+func TestAnd(t *testing.T) {
+	c := False[any]()
+	assert.Equal(t, false, c.And(c).Eval(nil))
+	assert.Equal(t, false, c.And(c.Not()).Eval(nil))
+	assert.Equal(t, false, c.Not().And(c).Eval(nil))
+	assert.Equal(t, true, c.Not().And(c.Not()).Eval(nil))
+}
 
-// func TestAny(t *testing.T) {
-// 	var r *Record
-// 	assert.Equal(t, true, Any([]Criterion{True, True}).Eval(r))
-// 	assert.Equal(t, true, Any([]Criterion{True, False}).Eval(r))
-// 	assert.Equal(t, true, Any([]Criterion{False, True}).Eval(r))
-// 	assert.Equal(t, false, Any([]Criterion{False, False}).Eval(r))
-// }
+func TestOr(t *testing.T) {
+	c := False[any]()
+	assert.Equal(t, false, c.Or(c).Eval(nil))
+	assert.Equal(t, true, c.Or(c.Not()).Eval(nil))
+	assert.Equal(t, true, c.Not().Or(c).Eval(nil))
+	assert.Equal(t, true, c.Not().Or(c.Not()).Eval(nil))
+}
 
-// func TestEq(t *testing.T) {
-// 	r := NewRecord(sfgo.FlatRecord{})
-// 	assert.Equal(t, false, Eq("0", "1").Eval(r))
-// 	assert.Equal(t, true, Eq("0", "0").Eval(r))
-// 	assert.Equal(t, true, Eq("sf.proc.gid", "0").Eval(r))
-// 	assert.Equal(t, true, Eq("sf.proc.uid", "0").Eval(r))
-// 	assert.Equal(t, true, Eq("sf.proc.exe", "").Eval(r))
-// 	assert.Equal(t, true, Eq("sf.pproc.gid", "0").Eval(r))
-// 	assert.Equal(t, true, Eq("sf.pproc.uid", "0").Eval(r))
-// 	assert.Equal(t, true, Eq("sf.pproc.exe", "").Eval(r))
-// 	// Privilege escalation condition
-// 	assert.Equal(t, false, Eq("sf.pproc.uid", "0").And(Eq("sf.proc.gid", "0")).And(Exists("sf.pproc.gid").Not().Not()).Eval(r))
-// }
+func TestAll(t *testing.T) {
+	assert.Equal(t, true, All([]Criterion[any]{True[any](), True[any]()}).Eval(nil))
+	assert.Equal(t, false, All([]Criterion[any]{True[any](), False[any]()}).Eval(nil))
+	assert.Equal(t, false, All([]Criterion[any]{False[any](), True[any]()}).Eval(nil))
+	assert.Equal(t, false, All([]Criterion[any]{False[any](), False[any]()}).Eval(nil))
+}
 
-// func TestExists(t *testing.T) {
-// 	r := NewRecord(sfgo.FlatRecord{})
-// 	assert.Equal(t, false, Exists("").Eval(r))
-// 	assert.Equal(t, true, Exists("0").Eval(r))
-// 	assert.Equal(t, false, Exists("sf.proc.gid").Eval(r))
-// 	assert.Equal(t, false, Exists("sf.proc.uid").Eval(r))
-// 	assert.Equal(t, false, Exists("sf.proc.exe").Eval(r))
-// 	assert.Equal(t, false, Exists("sf.pproc.gid").Eval(r))
-// 	assert.Equal(t, false, Exists("sf.pproc.uid").Eval(r))
-// 	assert.Equal(t, false, Exists("sf.pproc.exe").Eval(r))
-// }
+func TestAny(t *testing.T) {
+	assert.Equal(t, true, Any([]Criterion[any]{True[any](), True[any]()}).Eval(nil))
+	assert.Equal(t, true, Any([]Criterion[any]{True[any](), False[any]()}).Eval(nil))
+	assert.Equal(t, true, Any([]Criterion[any]{False[any](), True[any]()}).Eval(nil))
+	assert.Equal(t, false, Any([]Criterion[any]{False[any](), False[any]()}).Eval(nil))
+}

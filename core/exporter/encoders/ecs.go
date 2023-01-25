@@ -34,7 +34,8 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
 	"github.com/tidwall/gjson"
 )
 
@@ -88,7 +89,7 @@ func (t *ECSEncoder) Register(codecs map[commons.Format]EncoderFactory) {
 }
 
 // Encode encodes telemetry records into an ECS representation.
-func (t *ECSEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
+func (t *ECSEncoder) Encode(recs []*flatrecord.Record) ([]commons.EncodedData, error) {
 	t.batch = t.batch[:0]
 	for _, rec := range recs {
 		ecs := t.encode(rec)
@@ -98,7 +99,7 @@ func (t *ECSEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error
 }
 
 // Encodes a telemetry record into an ECS representation.
-func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
+func (t *ECSEncoder) encode(rec *flatrecord.Record) *ECSRecord {
 	ecs := &ECSRecord{
 		ID:   encodeID(rec),
 		Host: encodeHost(rec),
@@ -106,13 +107,13 @@ func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 	ecs.Agent.Version = t.config.Version
 	ecs.Agent.Type = ECS_AGENT_TYPE
 	ecs.Ecs.Version = t.config.EcsVersion
-	ecs.Ts = utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_TS)(rec))
+	ecs.Ts = utils.ToIsoTimeStr(flatrecord.Mapper.MapInt(flatrecord.SF_TS)(rec))
 
 	// encode specific record components
-	sfType := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
+	sfType := flatrecord.Mapper.MapStr(flatrecord.SF_TYPE)(rec)
 	if sfType != sfgo.TyKEStr {
 		ecs.Container = encodeContainer(rec)
-		if engine.Mapper.MapStr(engine.SF_POD_ID)(rec) != sfgo.Zeros.String {
+		if flatrecord.Mapper.MapStr(flatrecord.SF_POD_ID)(rec) != sfgo.Zeros.String {
 			ecs.encodeOrchestrator(rec)
 			ecs.encodePod(rec)
 		}
@@ -140,7 +141,7 @@ func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 	rules := rec.Ctx.GetRules()
 	if len(rules) > 0 {
 		reasons := make([]string, 0)
-		priority := int(engine.Low)
+		priority := int(policy.Low)
 		for _, r := range rules {
 			reasons = append(reasons, r.Name)
 			tags = append(tags, extracTags(r.Tags)...)
@@ -159,11 +160,11 @@ func (t *ECSEncoder) encode(rec *engine.Record) *ECSRecord {
 var byteInt64 []byte = make([]byte, 8)
 
 // encodeID returns the ECS document identifier.
-func encodeID(rec *engine.Record) string {
+func encodeID(rec *flatrecord.Record) string {
 	h := xxhash.New()
-	t := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
-	h.Write([]byte(engine.Mapper.MapStr(engine.SF_NODE_ID)(rec)))
-	h.Write([]byte(engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(rec)))
+	t := flatrecord.Mapper.MapStr(flatrecord.SF_TYPE)(rec)
+	h.Write([]byte(flatrecord.Mapper.MapStr(flatrecord.SF_NODE_ID)(rec)))
+	h.Write([]byte(flatrecord.Mapper.MapStr(flatrecord.SF_CONTAINER_ID)(rec)))
 	binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.TS_INT, sfgo.SYSFLOW_SRC)))
 	h.Write(byteInt64)
 	binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.TID_INT, sfgo.SYSFLOW_SRC)))
@@ -174,7 +175,7 @@ func encodeID(rec *engine.Record) string {
 	h.Write(byteInt64)
 	switch t {
 	case sfgo.TyFFStr, sfgo.TyFEStr:
-		h.Write([]byte(engine.Mapper.MapStr(engine.SF_FILE_OID)(rec)))
+		h.Write([]byte(flatrecord.Mapper.MapStr(flatrecord.SF_FILE_OID)(rec)))
 	case sfgo.TyNFStr:
 		binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.FL_NETW_SIP_INT, sfgo.SYSFLOW_SRC)))
 		h.Write(byteInt64)
@@ -191,22 +192,22 @@ func encodeID(rec *engine.Record) string {
 		h.Write(byteInt64)
 		binary.LittleEndian.PutUint64(byteInt64, uint64(rec.GetInt(sfgo.K8SE_KIND_INT, sfgo.SYSFLOW_SRC)))
 		h.Write(byteInt64)
-		h.Write([]byte(engine.Mapper.MapStr(engine.SF_K8SE_MESSAGE)(rec)))
+		h.Write([]byte(flatrecord.Mapper.MapStr(flatrecord.SF_K8SE_MESSAGE)(rec)))
 	}
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 // encodeNetworkFlow populates the ECS representatiom of a NetworkFlow record.
-func (ecs *ECSRecord) encodeNetworkFlow(rec *engine.Record) {
-	rbytes := engine.Mapper.MapInt(engine.SF_FLOW_RBYTES)(rec)
-	rops := engine.Mapper.MapInt(engine.SF_FLOW_ROPS)(rec)
-	wbytes := engine.Mapper.MapInt(engine.SF_FLOW_WBYTES)(rec)
-	wops := engine.Mapper.MapInt(engine.SF_FLOW_WOPS)(rec)
-	sip := engine.Mapper.MapStr(engine.SF_NET_SIP)(rec)
-	dip := engine.Mapper.MapStr(engine.SF_NET_DIP)(rec)
-	sport := engine.Mapper.MapInt(engine.SF_NET_SPORT)(rec)
-	dport := engine.Mapper.MapInt(engine.SF_NET_DPORT)(rec)
-	proto := engine.Mapper.MapInt(engine.SF_NET_PROTO)(rec)
+func (ecs *ECSRecord) encodeNetworkFlow(rec *flatrecord.Record) {
+	rbytes := flatrecord.Mapper.MapInt(flatrecord.SF_FLOW_RBYTES)(rec)
+	rops := flatrecord.Mapper.MapInt(flatrecord.SF_FLOW_ROPS)(rec)
+	wbytes := flatrecord.Mapper.MapInt(flatrecord.SF_FLOW_WBYTES)(rec)
+	wops := flatrecord.Mapper.MapInt(flatrecord.SF_FLOW_WOPS)(rec)
+	sip := flatrecord.Mapper.MapStr(flatrecord.SF_NET_SIP)(rec)
+	dip := flatrecord.Mapper.MapStr(flatrecord.SF_NET_DIP)(rec)
+	sport := flatrecord.Mapper.MapInt(flatrecord.SF_NET_SPORT)(rec)
+	dport := flatrecord.Mapper.MapInt(flatrecord.SF_NET_DPORT)(rec)
+	proto := flatrecord.Mapper.MapInt(flatrecord.SF_NET_PROTO)(rec)
 
 	cid, _ := gommunityid.GetCommunityIDByVersion(1, 0)
 	ft := gommunityid.MakeFlowTuple(net.ParseIP(sip), net.ParseIP(dip), uint16(sport), uint16(dport), uint8(proto))
@@ -236,12 +237,12 @@ func (ecs *ECSRecord) encodeNetworkFlow(rec *engine.Record) {
 }
 
 // encodeFileFlow populates the ECS representatiom of a FF record
-func (ecs *ECSRecord) encodeFileFlow(rec *engine.Record) {
+func (ecs *ECSRecord) encodeFileFlow(rec *flatrecord.Record) {
 	opFlags := rec.GetInt(sfgo.EV_PROC_OPFLAGS_INT, sfgo.SYSFLOW_SRC)
-	rbytes := engine.Mapper.MapInt(engine.SF_FLOW_RBYTES)(rec)
-	rops := engine.Mapper.MapInt(engine.SF_FLOW_ROPS)(rec)
-	wbytes := engine.Mapper.MapInt(engine.SF_FLOW_WBYTES)(rec)
-	wops := engine.Mapper.MapInt(engine.SF_FLOW_WOPS)(rec)
+	rbytes := flatrecord.Mapper.MapInt(flatrecord.SF_FLOW_RBYTES)(rec)
+	rops := flatrecord.Mapper.MapInt(flatrecord.SF_FLOW_ROPS)(rec)
+	wbytes := flatrecord.Mapper.MapInt(flatrecord.SF_FLOW_WBYTES)(rec)
+	wops := flatrecord.Mapper.MapInt(flatrecord.SF_FLOW_WOPS)(rec)
 	category := ECS_CAT_FILE
 	eventType := ECS_TYPE_ACCESS
 	action := category + "-" + eventType
@@ -265,9 +266,9 @@ func (ecs *ECSRecord) encodeFileFlow(rec *engine.Record) {
 }
 
 // encodeFileEvent populates the ECS representatiom of a FE record
-func (ecs *ECSRecord) encodeFileEvent(rec *engine.Record) {
+func (ecs *ECSRecord) encodeFileEvent(rec *flatrecord.Record) {
 	opFlags := rec.GetInt(sfgo.EV_PROC_OPFLAGS_INT, sfgo.SYSFLOW_SRC)
-	targetPath := engine.Mapper.MapStr(engine.SF_FILE_NEWPATH)(rec)
+	targetPath := flatrecord.Mapper.MapStr(flatrecord.SF_FILE_NEWPATH)(rec)
 	ecs.File = encodeFile(rec)
 	category := ECS_CAT_FILE
 	eventType := ECS_TYPE_CHANGE
@@ -294,10 +295,10 @@ func (ecs *ECSRecord) encodeFileEvent(rec *engine.Record) {
 }
 
 // encodeProcessEvent populates the ECS representatiom of a PE record
-func (ecs *ECSRecord) encodeProcessEvent(rec *engine.Record) {
+func (ecs *ECSRecord) encodeProcessEvent(rec *flatrecord.Record) {
 	opFlags := rec.GetInt(sfgo.EV_PROC_OPFLAGS_INT, sfgo.SYSFLOW_SRC)
-	pid := engine.Mapper.MapInt(engine.SF_PROC_PID)(rec)
-	tid := engine.Mapper.MapInt(engine.SF_PROC_TID)(rec)
+	pid := flatrecord.Mapper.MapInt(flatrecord.SF_PROC_PID)(rec)
+	tid := flatrecord.Mapper.MapInt(flatrecord.SF_PROC_TID)(rec)
 	category := ECS_CAT_PROCESS
 	eventType := ECS_TYPE_START
 
@@ -319,9 +320,9 @@ func (ecs *ECSRecord) encodeProcessEvent(rec *engine.Record) {
 	ecs.Event = encodeEvent(rec, category, eventType, action)
 }
 
-func k8sActionToEventType(rec *engine.Record) string {
+func k8sActionToEventType(rec *flatrecord.Record) string {
 	eventType := ECS_TYPE_INFO
-	am := engine.Mapper.Mappers[engine.SF_K8SE_ACTION]
+	am := flatrecord.Mapper.Mappers[flatrecord.SF_K8SE_ACTION]
 	switch sfgo.K8sAction(rec.Fr.Ints[am.Source][am.FlatIndex]) {
 	case sfgo.K8sActionK8S_COMPONENT_ADDED:
 		eventType = ECS_TYPE_CREATE
@@ -336,13 +337,13 @@ func k8sActionToEventType(rec *engine.Record) string {
 }
 
 // encodeK8sEvent populates the ECS representatiom of a KE record
-func (ecs *ECSRecord) encodeK8sEvent(rec *engine.Record) {
+func (ecs *ECSRecord) encodeK8sEvent(rec *flatrecord.Record) {
 	category := ECS_CAT_ORCH
 	eventType := k8sActionToEventType(rec)
-	action := engine.Mapper.MapStr(engine.SF_K8SE_ACTION)(rec)
+	action := flatrecord.Mapper.MapStr(flatrecord.SF_K8SE_ACTION)(rec)
 
 	ecs.Event = encodeEvent(rec, category, eventType, action)
-	msgStr := engine.Mapper.MapStr(engine.SF_K8SE_MESSAGE)(rec)
+	msgStr := flatrecord.Mapper.MapStr(flatrecord.SF_K8SE_MESSAGE)(rec)
 	ecs.Event[ECS_EVENT_ORIGINAL] = msgStr
 
 	msg := gjson.Parse(msgStr)
@@ -357,31 +358,31 @@ func (ecs *ECSRecord) encodeK8sEvent(rec *engine.Record) {
 }
 
 // encodeOrchestrator creates an ECS orchestrator field.
-func (ecs *ECSRecord) encodeOrchestrator(rec *engine.Record) {
+func (ecs *ECSRecord) encodeOrchestrator(rec *flatrecord.Record) {
 	ecs.Orchestrator = JSONData{
-		ECS_ORCHESTRATOR_NAMESPACE: engine.Mapper.MapStr(engine.SF_POD_NAMESPACE)(rec),
+		ECS_ORCHESTRATOR_NAMESPACE: flatrecord.Mapper.MapStr(flatrecord.SF_POD_NAMESPACE)(rec),
 		ECS_ORCHESTRATOR_RESOURCE: JSONData{
 			ECS_RESOURCE_TYPE: "pod",
-			ECS_RESOURCE_NAME: engine.Mapper.MapStr(engine.SF_POD_NAME)(rec),
+			ECS_RESOURCE_NAME: flatrecord.Mapper.MapStr(flatrecord.SF_POD_NAME)(rec),
 		},
 		ECS_ORCHESTRATOR_TYPE: "kubernetes",
 	}
 }
 
 // encodePod creates a custom ECS pod field.
-func (ecs *ECSRecord) encodePod(rec *engine.Record) {
+func (ecs *ECSRecord) encodePod(rec *flatrecord.Record) {
 	ecs.Pod = JSONData{
-		ECS_POD_TS:           utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_POD_TS)(rec)),
-		ECS_POD_ID:           engine.Mapper.MapStr(engine.SF_POD_ID)(rec),
-		ECS_POD_NAME:         engine.Mapper.MapStr(engine.SF_POD_NAME)(rec),
-		ECS_POD_NODENAME:     engine.Mapper.MapStr(engine.SF_POD_NODENAME)(rec),
-		ECS_POD_NAMESPACE:    engine.Mapper.MapStr(engine.SF_POD_NAMESPACE)(rec),
-		ECS_POD_HOSTIP:       utils.ToIPStrArray(engine.Mapper.MapIntArray(engine.SF_POD_HOSTIP)(rec)),
-		ECS_POD_INTERNALIP:   utils.ToIPStrArray(engine.Mapper.MapIntArray(engine.SF_POD_INTERNALIP)(rec)),
-		ECS_POD_RESTARTCOUNT: engine.Mapper.MapInt(engine.SF_POD_RESTARTCOUNT)(rec),
+		ECS_POD_TS:           utils.ToIsoTimeStr(flatrecord.Mapper.MapInt(flatrecord.SF_POD_TS)(rec)),
+		ECS_POD_ID:           flatrecord.Mapper.MapStr(flatrecord.SF_POD_ID)(rec),
+		ECS_POD_NAME:         flatrecord.Mapper.MapStr(flatrecord.SF_POD_NAME)(rec),
+		ECS_POD_NODENAME:     flatrecord.Mapper.MapStr(flatrecord.SF_POD_NODENAME)(rec),
+		ECS_POD_NAMESPACE:    flatrecord.Mapper.MapStr(flatrecord.SF_POD_NAMESPACE)(rec),
+		ECS_POD_HOSTIP:       utils.ToIPStrArray(flatrecord.Mapper.MapIntArray(flatrecord.SF_POD_HOSTIP)(rec)),
+		ECS_POD_INTERNALIP:   utils.ToIPStrArray(flatrecord.Mapper.MapIntArray(flatrecord.SF_POD_INTERNALIP)(rec)),
+		ECS_POD_RESTARTCOUNT: flatrecord.Mapper.MapInt(flatrecord.SF_POD_RESTARTCOUNT)(rec),
 	}
 
-	services := engine.Mapper.MapSvcArray(engine.SF_POD_SERVICES)(rec)
+	services := flatrecord.Mapper.MapSvcArray(flatrecord.SF_POD_SERVICES)(rec)
 	if services != sfgo.Zeros.Any && len(*services) > 0 {
 		ecs.encodeService(services)
 	}
@@ -416,21 +417,21 @@ func encodePortList(pl *[]*sfgo.Port) []JSONData {
 }
 
 // encodeContainer creates an ECS container field.
-func encodeContainer(rec *engine.Record) JSONData {
+func encodeContainer(rec *flatrecord.Record) JSONData {
 	var container JSONData
-	cid := engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(rec)
+	cid := flatrecord.Mapper.MapStr(flatrecord.SF_CONTAINER_ID)(rec)
 	if cid != sfgo.Zeros.String {
 		container = JSONData{
 			ECS_CONTAINER_ID:      cid,
-			ECS_CONTAINER_RUNTIME: engine.Mapper.MapStr(engine.SF_CONTAINER_TYPE)(rec),
-			ECS_CONTAINER_PRIV:    engine.Mapper.MapInt(engine.SF_CONTAINER_PRIVILEGED)(rec) != 0,
-			ECS_CONTAINER_NAME:    engine.Mapper.MapStr(engine.SF_CONTAINER_NAME)(rec),
+			ECS_CONTAINER_RUNTIME: flatrecord.Mapper.MapStr(flatrecord.SF_CONTAINER_TYPE)(rec),
+			ECS_CONTAINER_PRIV:    flatrecord.Mapper.MapInt(flatrecord.SF_CONTAINER_PRIVILEGED)(rec) != 0,
+			ECS_CONTAINER_NAME:    flatrecord.Mapper.MapStr(flatrecord.SF_CONTAINER_NAME)(rec),
 		}
-		imageid := engine.Mapper.MapStr(engine.SF_CONTAINER_IMAGEID)(rec)
+		imageid := flatrecord.Mapper.MapStr(flatrecord.SF_CONTAINER_IMAGEID)(rec)
 		if imageid != sfgo.Zeros.String {
 			image := JSONData{
 				ECS_IMAGE_ID:   imageid,
-				ECS_IMAGE_NAME: engine.Mapper.MapStr(engine.SF_CONTAINER_IMAGE)(rec),
+				ECS_IMAGE_NAME: flatrecord.Mapper.MapStr(flatrecord.SF_CONTAINER_IMAGE)(rec),
 			}
 			container[ECS_IMAGE] = image
 		}
@@ -439,26 +440,26 @@ func encodeContainer(rec *engine.Record) JSONData {
 }
 
 // encodeHost creates the ECS host field
-func encodeHost(rec *engine.Record) JSONData {
+func encodeHost(rec *flatrecord.Record) JSONData {
 	return JSONData{
-		ECS_HOST_ID: engine.Mapper.MapStr(engine.SF_NODE_ID)(rec),
-		ECS_HOST_IP: engine.Mapper.MapStr(engine.SF_NODE_IP)(rec),
+		ECS_HOST_ID: flatrecord.Mapper.MapStr(flatrecord.SF_NODE_ID)(rec),
+		ECS_HOST_IP: flatrecord.Mapper.MapStr(flatrecord.SF_NODE_IP)(rec),
 	}
 }
 
 // encodeUser creates an ECS user field using user and group of the actual process.
-func encodeUser(rec *engine.Record) JSONData {
-	gname := engine.Mapper.MapStr(engine.SF_PROC_GROUP)(rec)
+func encodeUser(rec *flatrecord.Record) JSONData {
+	gname := flatrecord.Mapper.MapStr(flatrecord.SF_PROC_GROUP)(rec)
 	group := JSONData{
-		ECS_GROUP_ID: engine.Mapper.MapInt(engine.SF_PROC_GID)(rec),
+		ECS_GROUP_ID: flatrecord.Mapper.MapInt(flatrecord.SF_PROC_GID)(rec),
 	}
 	if gname != sfgo.Zeros.String {
 		group[ECS_GROUP_NAME] = gname
 	}
-	uname := engine.Mapper.MapStr(engine.SF_PROC_USER)(rec)
+	uname := flatrecord.Mapper.MapStr(flatrecord.SF_PROC_USER)(rec)
 	user := JSONData{
 		ECS_GROUP:   group,
-		ECS_USER_ID: engine.Mapper.MapInt(engine.SF_PROC_UID)(rec),
+		ECS_USER_ID: flatrecord.Mapper.MapInt(flatrecord.SF_PROC_UID)(rec),
 	}
 	if uname != sfgo.Zeros.String {
 		user[ECS_USER_NAME] = uname
@@ -467,24 +468,24 @@ func encodeUser(rec *engine.Record) JSONData {
 }
 
 // encodeProcess creates an ECS process field including the nested parent process.
-func encodeProcess(rec *engine.Record) JSONData {
-	exe := engine.Mapper.MapStr(engine.SF_PROC_EXE)(rec)
+func encodeProcess(rec *flatrecord.Record) JSONData {
+	exe := flatrecord.Mapper.MapStr(flatrecord.SF_PROC_EXE)(rec)
 	process := JSONData{
 		ECS_PROC_EXE:     exe,
-		ECS_PROC_ARGS:    engine.Mapper.MapStr(engine.SF_PROC_ARGS)(rec),
-		ECS_PROC_CMDLINE: engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(rec),
-		ECS_PROC_PID:     engine.Mapper.MapInt(engine.SF_PROC_PID)(rec),
-		ECS_PROC_START:   utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_PROC_CREATETS)(rec)),
+		ECS_PROC_ARGS:    flatrecord.Mapper.MapStr(flatrecord.SF_PROC_ARGS)(rec),
+		ECS_PROC_CMDLINE: flatrecord.Mapper.MapStr(flatrecord.SF_PROC_CMDLINE)(rec),
+		ECS_PROC_PID:     flatrecord.Mapper.MapInt(flatrecord.SF_PROC_PID)(rec),
+		ECS_PROC_START:   utils.ToIsoTimeStr(flatrecord.Mapper.MapInt(flatrecord.SF_PROC_CREATETS)(rec)),
 		ECS_PROC_NAME:    path.Base(exe),
-		ECS_PROC_THREAD:  JSONData{ECS_PROC_TID: engine.Mapper.MapInt(engine.SF_PROC_TID)(rec)},
+		ECS_PROC_THREAD:  JSONData{ECS_PROC_TID: flatrecord.Mapper.MapInt(flatrecord.SF_PROC_TID)(rec)},
 	}
-	pexe := engine.Mapper.MapStr(engine.SF_PPROC_EXE)(rec)
+	pexe := flatrecord.Mapper.MapStr(flatrecord.SF_PPROC_EXE)(rec)
 	parent := JSONData{
 		ECS_PROC_EXE:     pexe,
-		ECS_PROC_ARGS:    engine.Mapper.MapStr(engine.SF_PPROC_ARGS)(rec),
-		ECS_PROC_CMDLINE: engine.Mapper.MapStr(engine.SF_PPROC_CMDLINE)(rec),
-		ECS_PROC_PID:     engine.Mapper.MapInt(engine.SF_PPROC_PID)(rec),
-		ECS_PROC_START:   utils.ToIsoTimeStr(engine.Mapper.MapInt(engine.SF_PPROC_CREATETS)(rec)),
+		ECS_PROC_ARGS:    flatrecord.Mapper.MapStr(flatrecord.SF_PPROC_ARGS)(rec),
+		ECS_PROC_CMDLINE: flatrecord.Mapper.MapStr(flatrecord.SF_PPROC_CMDLINE)(rec),
+		ECS_PROC_PID:     flatrecord.Mapper.MapInt(flatrecord.SF_PPROC_PID)(rec),
+		ECS_PROC_START:   utils.ToIsoTimeStr(flatrecord.Mapper.MapInt(flatrecord.SF_PPROC_CREATETS)(rec)),
 		ECS_PROC_NAME:    path.Base(pexe),
 	}
 	process[ECS_PROC_PARENT] = parent
@@ -492,14 +493,14 @@ func encodeProcess(rec *engine.Record) JSONData {
 }
 
 // encodeEvent creates the central ECS event field and sets the classification attributes
-func encodeEvent(rec *engine.Record, category string, eventType string, action string) JSONData {
-	start := engine.Mapper.MapInt(engine.SF_TS)(rec)
-	end := engine.Mapper.MapInt(engine.SF_ENDTS)(rec)
+func encodeEvent(rec *flatrecord.Record, category string, eventType string, action string) JSONData {
+	start := flatrecord.Mapper.MapInt(flatrecord.SF_TS)(rec)
+	end := flatrecord.Mapper.MapInt(flatrecord.SF_ENDTS)(rec)
 	if end == sfgo.Zeros.Int64 {
 		end = start
 	}
-	sfType := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
-	sfRet := engine.Mapper.MapInt(engine.SF_RET)(rec)
+	sfType := flatrecord.Mapper.MapStr(flatrecord.SF_TYPE)(rec)
+	sfRet := flatrecord.Mapper.MapInt(flatrecord.SF_RET)(rec)
 
 	event := JSONData{
 		ECS_EVENT_CATEGORY: category,
@@ -524,12 +525,12 @@ func encodeEvent(rec *engine.Record, category string, eventType string, action s
 }
 
 // encodeFile creates an ECS file field
-func encodeFile(rec *engine.Record) JSONData {
+func encodeFile(rec *flatrecord.Record) JSONData {
 	opFlags := rec.GetInt(sfgo.EV_PROC_OPFLAGS_INT, sfgo.SYSFLOW_SRC)
-	ft := engine.Mapper.MapStr(engine.SF_FILE_TYPE)(rec)
-	fpath := engine.Mapper.MapStr(engine.SF_FILE_PATH)(rec)
-	fd := engine.Mapper.MapInt(engine.SF_FILE_FD)(rec)
-	pid := engine.Mapper.MapInt(engine.SF_PROC_PID)(rec)
+	ft := flatrecord.Mapper.MapStr(flatrecord.SF_FILE_TYPE)(rec)
+	fpath := flatrecord.Mapper.MapStr(flatrecord.SF_FILE_PATH)(rec)
+	fd := flatrecord.Mapper.MapInt(flatrecord.SF_FILE_FD)(rec)
+	pid := flatrecord.Mapper.MapInt(flatrecord.SF_PROC_PID)(rec)
 
 	fileType := encodeFileType(ft)
 	if opFlags&sfgo.OP_SYMLINK == sfgo.OP_SYMLINK {
@@ -577,7 +578,7 @@ func encodeFileType(ft string) string {
 	return fileType
 }
 
-func extracTags(tags []engine.EnrichmentTag) []string {
+func extracTags(tags []policy.EnrichmentTag) []string {
 	s := make([]string, 0)
 	for _, v := range tags {
 		switch v := v.(type) {
