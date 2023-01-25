@@ -36,9 +36,9 @@ type PolicyMonitor[R any] interface {
 }
 
 // NewPolicyMonitor creates a new policy monitor based on the engine configuration.
-func NewPolicyMonitor[R any](config engine.Config, out func(R)) (PolicyMonitor[R], error) {
+func NewPolicyMonitor[R any](config engine.Config, createInter func() (*engine.PolicyInterpreter[R], error), out func(R)) (PolicyMonitor[R], error) {
 	if config.Monitor == engine.LocalType {
-		return NewLocalPolicyMonitor(config, out)
+		return NewLocalPolicyMonitor(config, createInter, out)
 	}
 	return nil, errors.New("Policy monitor of type: " + config.Monitor.String() + " is not supported.")
 }

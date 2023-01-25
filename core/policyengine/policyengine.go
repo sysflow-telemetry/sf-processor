@@ -33,6 +33,7 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/flattener"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/monitor"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/falco"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
 )
@@ -94,7 +95,7 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) (err error) {
 			return
 		}
 	} else {
-		s.policyMonitor, err = monitor.NewPolicyMonitor[*flatrecord.Record](s.config, s.out)
+		s.policyMonitor, err = monitor.NewPolicyMonitor(s.config, s.createPolicyInterpreter, s.out)
 		if err != nil {
 			logger.Error.Printf("Unable to load policy monitor %s, %v", s.config.Monitor.String(), err)
 			return
@@ -170,7 +171,8 @@ func (s *PolicyEngine) createPolicyInterpreter() (*engine.PolicyInterpreter[*fla
 		return nil, errors.New("no policy files with extension .yaml found in path: " + dir)
 	}
 	logger.Info.Println("Creating policy interpreter")
-	pi := engine.NewPolicyInterpreter(s.config, s.out)
+	pc := falco.NewPolicyCompiler(flatrecord.NewOperations())
+	pi := engine.NewPolicyInterpreter(s.config, pc, nil, nil, s.out) // TODO: add pf and ctx
 	err = pi.Compile(paths...)
 	if err != nil {
 		return nil, err

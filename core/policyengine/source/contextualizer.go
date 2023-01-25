@@ -15,19 +15,21 @@ type Contextualizer[R any] interface {
 	GetTags(r R) []string
 }
 
-// // A prototype for an engine that uses the contextualizer
-// type Engine[R any] struct {
-// 	ctx Contextualizer[R]
-// }
+// DefaultContextualizer is a default contextualizer object.
+type DefaultContextualizer[R any] struct{}
 
-// func NewEngine[R any](c Contextualizer[R]) *Engine[R] {
-// 	return &Engine[R]{c}
-// }
+func NewDefaultContextualizer[R any]() Contextualizer[R] {
+	return &DefaultContextualizer[R]{}
+}
 
-// func (s *Engine[R]) Test() {}
+// AddRule adds one or more rules matching a record.
+func (s *DefaultContextualizer[R]) AddRules(r R, rules ...policy.Rule[R]) {}
 
-// // A consumer that uses the engine (our Processor plugin, for example)
-// func consumer() {
-// 	e := NewEngine[*flatrecord.Record](&flatrecord.Contextualizer{})
-// 	e.Test()
-// }
+// GetRules retrieves the list of stored rules associated with a record.
+func (s *DefaultContextualizer[R]) GetRules(r R) []policy.Rule[R] { return nil }
+
+// Adds one or more tags to a record.
+func (s *DefaultContextualizer[R]) AddTags(r R, tags ...string) {}
+
+// GetTags retrieves the list of tags associated with a record.
+func (s *DefaultContextualizer[R]) GetTags(r R) []string { return nil }

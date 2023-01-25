@@ -27,11 +27,12 @@ import (
 
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/common"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
 )
 
 type Operations struct{}
 
-func NewOperations() policy.Operations[*Record] {
+func NewOperations() source.Operations[*Record] {
 	return &Operations{}
 }
 

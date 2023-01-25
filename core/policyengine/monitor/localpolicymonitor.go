@@ -38,19 +38,20 @@ import (
 // LocalPolicyMonitor is an object that monitors the local policy file
 // directory for changes and compiles a new policy engine if changes occur.
 type LocalPolicyMonitor[R any] struct {
-	config    engine.Config
-	interChan chan *engine.PolicyInterpreter[R]
-	watcher   *fsnotify.Watcher
-	started   bool
-	done      chan bool
-	policies  map[string][]byte
-	out       func(R)
+	config      engine.Config
+	interChan   chan *engine.PolicyInterpreter[R]
+	watcher     *fsnotify.Watcher
+	started     bool
+	done        chan bool
+	policies    map[string][]byte
+	createInter func() (*engine.PolicyInterpreter[R], error)
+	out         func(R)
 }
 
 // NewLocalPolicyMonitor returns a new policy monitor object given an engine configuration.
-func NewLocalPolicyMonitor[R any](config engine.Config, out func(R)) (PolicyMonitor[R], error) {
+func NewLocalPolicyMonitor[R any](config engine.Config, createInter func() (*engine.PolicyInterpreter[R], error), out func(R)) (PolicyMonitor[R], error) {
 	lpm := &LocalPolicyMonitor[R]{config: config, interChan: make(chan *engine.PolicyInterpreter[R], 10), started: false,
-		done: make(chan bool), policies: make(map[string][]byte), out: out}
+		done: make(chan bool), policies: make(map[string][]byte), createInter: createInter, out: out}
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		logger.Error.Printf("Unable to create policy watcher object %v", err)
@@ -214,11 +215,9 @@ func (p *LocalPolicyMonitor[R]) CheckForPolicyUpdate() error {
 		return errors.New("no policy files with extension .yaml found in policy directory: " + p.config.PoliciesPath)
 	}
 	logger.Info.Println("Creating new policy interpreter")
-	pi := engine.NewPolicyInterpreter[R](p.config, p.out)
-	logger.Info.Println("Attempting to compile new policy")
-	err = pi.Compile(paths...)
+	pi, err := p.createInter()
 	if err != nil {
-		logger.Error.Printf("Unable to compile policy files in directory %s. Not using new policy files. %v", p.config.PoliciesPath, err)
+		logger.Error.Printf("Unable to create a new policy interpreter using policy files in directory %s. Not using new policy files. %v", p.config.PoliciesPath, err)
 		return err
 	}
 	select {
