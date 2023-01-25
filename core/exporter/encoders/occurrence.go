@@ -40,7 +40,7 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/encoders/avro/occurrence/event"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
 )
 
 // EventPool contains an event slice with metadata annotations.
@@ -193,7 +193,7 @@ func (epw *EventPoolWriter) Cleanup() error {
 // Event is an event associated with an occurrence, used as context for the occurrence.
 type Event struct {
 	*event.Event
-	Record *engine.Record
+	Record *flatrecord.Record
 }
 
 // getExportFileName returns the name of the file where the event should be exported.
@@ -283,7 +283,7 @@ func (oe *OccurrenceEncoder) Register(codecs map[commons.Format]EncoderFactory) 
 }
 
 // Encodes a telemetry record into an occurrence representation.
-func (oe *OccurrenceEncoder) encode(rec *engine.Record) (data commons.EncodedData, err error) {
+func (oe *OccurrenceEncoder) encode(rec *flatrecord.Record) (data commons.EncodedData, err error) {
 	if e, ep, alert := oe.addEvent(rec); alert {
 		data = oe.createOccurrence(e, ep)
 	}
@@ -291,7 +291,7 @@ func (oe *OccurrenceEncoder) encode(rec *engine.Record) (data commons.EncodedDat
 }
 
 // Encode encodes telemetry records into an occurrence representation.
-func (oe *OccurrenceEncoder) Encode(recs []*engine.Record) ([]commons.EncodedData, error) {
+func (oe *OccurrenceEncoder) Encode(recs []*flatrecord.Record) ([]commons.EncodedData, error) {
 	oe.batch = oe.batch[:0]
 	for _, r := range recs {
 		if data, _ := oe.encode(r); data != nil {
@@ -302,8 +302,8 @@ func (oe *OccurrenceEncoder) Encode(recs []*engine.Record) ([]commons.EncodedDat
 }
 
 // addEvent adds a record to export queue.
-func (oe *OccurrenceEncoder) addEvent(r *engine.Record) (e *Event, ep *EventPool, alert bool) {
-	cid := engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(r)
+func (oe *OccurrenceEncoder) addEvent(r *flatrecord.Record) (e *Event, ep *EventPool, alert bool) {
+	cid := flatrecord.Mapper.MapStr(flatrecord.SF_CONTAINER_ID)(r)
 	ep = oe.getEventPool(cid)
 
 	// record the event pool state prior to adding a new event
@@ -368,8 +368,8 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 	oc.ID = fmt.Sprintf(noteIDStrFmt, ep.CID, time.Now().UTC().UnixNano()/1000)
 	envStr := e.getEnvDescription(oe.config.FindingsS3Prefix, oe.config.ClusterID)
 	if ep.CID != sfgo.Zeros.String {
-		oc.ResName = fmt.Sprintf("%s:%s [%s]", ep.CID, engine.Mapper.MapStr(engine.SF_CONTAINER_NAME)(e.Record), envStr)
-		oc.ResType = engine.Mapper.MapStr(engine.SF_CONTAINER_TYPE)(e.Record)
+		oc.ResName = fmt.Sprintf("%s:%s [%s]", ep.CID, flatrecord.Mapper.MapStr(flatrecord.SF_CONTAINER_NAME)(e.Record), envStr)
+		oc.ResType = flatrecord.Mapper.MapStr(flatrecord.SF_CONTAINER_TYPE)(e.Record)
 	} else {
 		oc.ResName = fmt.Sprintf("%s [%s]", hostType, envStr)
 		oc.ResType = hostType
@@ -381,19 +381,19 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 	var detStr string
 	switch e.Record.GetInt(sfgo.SF_REC_TYPE, sfgo.SYSFLOW_SRC) {
 	case sfgo.PROC_EVT:
-		proc := engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(e.Record)
-		pproc := engine.Mapper.MapStr(engine.SF_PPROC_CMDLINE)(e.Record)
+		proc := flatrecord.Mapper.MapStr(flatrecord.SF_PROC_CMDLINE)(e.Record)
+		pproc := flatrecord.Mapper.MapStr(flatrecord.SF_PPROC_CMDLINE)(e.Record)
 		detStr = fmt.Sprintf(peStrFmt, pproc, proc)
 	case sfgo.FILE_EVT:
-		proc := engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(e.Record)
+		proc := flatrecord.Mapper.MapStr(flatrecord.SF_PROC_CMDLINE)(e.Record)
 		path := oe.formatResource(e.Record)
 		detStr = fmt.Sprintf(feStrFmt, proc, path)
 	case sfgo.FILE_FLOW:
-		proc := engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(e.Record)
+		proc := flatrecord.Mapper.MapStr(flatrecord.SF_PROC_CMDLINE)(e.Record)
 		path := oe.formatResource(e.Record)
 		detStr = fmt.Sprintf(ffStrFmt, proc, path)
 	case sfgo.NET_FLOW:
-		proc := engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(e.Record)
+		proc := flatrecord.Mapper.MapStr(flatrecord.SF_PROC_CMDLINE)(e.Record)
 		conn := oe.formatResource(e.Record)
 		detStr = fmt.Sprintf(nfStrFmt, proc, conn)
 	}
@@ -414,7 +414,7 @@ func (oe *OccurrenceEncoder) createOccurrence(e *Event, ep *EventPool) *Occurren
 }
 
 // summarizePolicy extracts a summary of rules applied to a record.
-func (oe *OccurrenceEncoder) summarizePolicy(r *engine.Record) (rnames []string, tags []string, severity Severity) {
+func (oe *OccurrenceEncoder) summarizePolicy(r *flatrecord.Record) (rnames []string, tags []string, severity Severity) {
 	tags = append(tags, r.Ctx.GetTags()...)
 	for _, r := range r.Ctx.GetRules() {
 		rnames = append(rnames, r.Name)
@@ -432,51 +432,51 @@ func (oe *OccurrenceEncoder) summarizePolicy(r *engine.Record) (rnames []string,
 }
 
 // encodeEvent maps a record into an event that can be associated with an occurrence.
-func (oe *OccurrenceEncoder) encodeEvent(r *engine.Record) *Event {
+func (oe *OccurrenceEncoder) encodeEvent(r *flatrecord.Record) *Event {
 	rnames, tags, severity := oe.summarizePolicy(r)
 	e := &Event{Record: r, Event: event.NewEvent()}
-	e.Ts = engine.Mapper.MapInt(engine.SF_TS)(r)
+	e.Ts = flatrecord.Mapper.MapInt(flatrecord.SF_TS)(r)
 	e.Description = strings.Join(rnames, listSep)
 	e.Severity = severity.String()
 	e.ClusterID = oe.config.ClusterID
-	e.NodeID = engine.Mapper.MapStr(engine.SF_NODE_ID)(r)
-	e.NodeIP = engine.Mapper.MapStr(engine.SF_NODE_IP)(r)
-	e.ContainerID = engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(r)
-	e.RecordType = engine.Mapper.MapStr(engine.SF_TYPE)(r)
-	e.OpFlags = engine.Mapper.MapStr(engine.SF_OPFLAGS)(r)
-	e.PProcCmd = engine.Mapper.MapStr(engine.SF_PPROC_CMDLINE)(r)
-	e.PProcPID = engine.Mapper.MapInt(engine.SF_PPROC_PID)(r)
-	e.ProcCmd = engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(r)
-	e.ProcPID = engine.Mapper.MapInt(engine.SF_PROC_PID)(r)
+	e.NodeID = flatrecord.Mapper.MapStr(flatrecord.SF_NODE_ID)(r)
+	e.NodeIP = flatrecord.Mapper.MapStr(flatrecord.SF_NODE_IP)(r)
+	e.ContainerID = flatrecord.Mapper.MapStr(flatrecord.SF_CONTAINER_ID)(r)
+	e.RecordType = flatrecord.Mapper.MapStr(flatrecord.SF_TYPE)(r)
+	e.OpFlags = flatrecord.Mapper.MapStr(flatrecord.SF_OPFLAGS)(r)
+	e.PProcCmd = flatrecord.Mapper.MapStr(flatrecord.SF_PPROC_CMDLINE)(r)
+	e.PProcPID = flatrecord.Mapper.MapInt(flatrecord.SF_PPROC_PID)(r)
+	e.ProcCmd = flatrecord.Mapper.MapStr(flatrecord.SF_PROC_CMDLINE)(r)
+	e.ProcPID = flatrecord.Mapper.MapInt(flatrecord.SF_PROC_PID)(r)
 	e.Resource = oe.formatResource(r)
 	e.Tags = strings.Join(tags, listSep)
-	e.Trace = engine.Mapper.MapStr(engine.SF_TRACENAME)(r)
+	e.Trace = flatrecord.Mapper.MapStr(flatrecord.SF_TRACENAME)(r)
 	return e
 }
 
 // formatResource formats a file or network resource.
-func (oe *OccurrenceEncoder) formatResource(r *engine.Record) (res string) {
+func (oe *OccurrenceEncoder) formatResource(r *flatrecord.Record) (res string) {
 	switch r.GetInt(sfgo.SF_REC_TYPE, sfgo.SYSFLOW_SRC) {
 	case sfgo.FILE_EVT, sfgo.FILE_FLOW:
-		return engine.Mapper.MapStr(engine.SF_FILE_PATH)(r)
+		return flatrecord.Mapper.MapStr(flatrecord.SF_FILE_PATH)(r)
 	case sfgo.NET_FLOW:
-		sip := engine.Mapper.MapStr(engine.SF_NET_SIP)(r)
-		sport := engine.Mapper.MapInt(engine.SF_NET_SPORT)(r)
-		dip := engine.Mapper.MapStr(engine.SF_NET_DIP)(r)
-		dport := engine.Mapper.MapInt(engine.SF_NET_DPORT)(r)
+		sip := flatrecord.Mapper.MapStr(flatrecord.SF_NET_SIP)(r)
+		sport := flatrecord.Mapper.MapInt(flatrecord.SF_NET_SPORT)(r)
+		dip := flatrecord.Mapper.MapStr(flatrecord.SF_NET_DIP)(r)
+		dport := flatrecord.Mapper.MapInt(flatrecord.SF_NET_DPORT)(r)
 		return fmt.Sprintf(connStrFmt, sip, sport, dip, dport)
 	}
 	return
 }
 
 // semanticHash computes a hash value over record attributes denoting the semantics of the record (used in the bloom filter).
-func (oe *OccurrenceEncoder) semanticHash(r *engine.Record) hash.Hash64 {
+func (oe *OccurrenceEncoder) semanticHash(r *flatrecord.Record) hash.Hash64 {
 	h := xxhash.New()
-	h.Write([]byte(engine.Mapper.MapStr(engine.SF_PROC_CMDLINE)(r)))
-	h.Write([]byte(engine.Mapper.MapStr(engine.SF_PROC_UID)(r)))
-	h.Write([]byte(engine.Mapper.MapStr(engine.SF_FILE_OID)(r)))
-	h.Write([]byte(engine.Mapper.MapStr(engine.SF_OPFLAGS)(r)))
-	h.Write([]byte(engine.Mapper.MapStr(engine.SF_PROC_TTY)(r)))
+	h.Write([]byte(flatrecord.Mapper.MapStr(flatrecord.SF_PROC_CMDLINE)(r)))
+	h.Write([]byte(flatrecord.Mapper.MapStr(flatrecord.SF_PROC_UID)(r)))
+	h.Write([]byte(flatrecord.Mapper.MapStr(flatrecord.SF_FILE_OID)(r)))
+	h.Write([]byte(flatrecord.Mapper.MapStr(flatrecord.SF_OPFLAGS)(r)))
+	h.Write([]byte(flatrecord.Mapper.MapStr(flatrecord.SF_PROC_TTY)(r)))
 	return h
 }
 
