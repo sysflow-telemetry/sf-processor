@@ -49,4 +49,6 @@ type Operations[R any] interface {
 	In(attr string, list []string) policy.Criterion[R]
 	// PMatch creates a criterion for a list-pattern-matching predicate.
 	PMatch(attr string, list []string) policy.Criterion[R]
+	// RegExp creates a criterion for a regular-expression predicate.
+	RegExp(attr string, re string) policy.Criterion[R]
 }
