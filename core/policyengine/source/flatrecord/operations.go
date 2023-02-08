@@ -142,6 +142,11 @@ func (op *Operations) PMatch(attr string, list []string) policy.Criterion[*Recor
 	return policy.Criterion[*Record]{Pred: p}
 }
 
+// RegExp creates a criterion for a regular-expression predicate.
+func (op *Operations) RegExp(attr string, re string) policy.Criterion[*Record] {
+	return policy.False[*Record]()
+}
+
 // operator type.
 type operator func(string, string) bool
 
