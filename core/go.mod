@@ -43,7 +43,9 @@ require (
 )
 
 require (
+	github.com/alecthomas/participle v0.7.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
+	github.com/bradleyjkemp/sigma-go v0.5.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-openapi/errors v0.19.8 // indirect
 	github.com/go-openapi/strfmt v0.21.1 // indirect
@@ -66,5 +68,5 @@ require (
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/linkedin/goavro.v1 v1.0.5 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
