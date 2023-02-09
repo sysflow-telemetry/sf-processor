@@ -2,6 +2,9 @@ package sigma
 
 import (
 	"io/ioutil"
+	"os"
+	"path"
+	"strings"
 
 	"github.com/bradleyjkemp/sigma-go"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
@@ -21,20 +24,24 @@ type PolicyCompiler[R any] struct {
 
 	// Intermediate rule and rule config objects parsed by the Sigma parser
 	sigmaRules  []sigma.Rule
-	sigmaConfig []sigma.Config
+	sigmaConfig sigma.Config
+
+	// Sigma config path
+	configPath string
 }
 
 // NewPolicyCompiler constructs a new compiler instance.
-func NewPolicyCompiler[R any](ops source.Operations[R]) policy.PolicyCompiler[R] {
+func NewPolicyCompiler[R any](ops source.Operations[R], configPath string) policy.PolicyCompiler[R] {
 	pc := new(PolicyCompiler[R])
 	pc.ops = ops
 	pc.transformer = source.NewTransformer()
 	pc.rules = make([]policy.Rule[R], 0)
+	pc.configPath = configPath
 	return pc
 }
 
 // Compile parses and interprets an input policy defined in path.
-func (pc *PolicyCompiler[R]) compile(rulePaths []string, configPaths []string) error {
+func (pc *PolicyCompiler[R]) compile(rulePaths []string, configPath string) error {
 	// Read Sigma rules
 	for _, path := range rulePaths {
 		contents, err := ioutil.ReadFile(path)
@@ -43,84 +50,138 @@ func (pc *PolicyCompiler[R]) compile(rulePaths []string, configPaths []string) e
 		}
 		rule, err := sigma.ParseRule(contents)
 		if err != nil {
-			// ignore parsing errors
+			logger.Error.Printf("Could not parse input rule ")
 			continue
 		}
 		pc.sigmaRules = append(pc.sigmaRules, rule)
 	}
 
-	// Read Sigma configs
-	for _, path := range configPaths {
-		contents, err := ioutil.ReadFile(path)
+	// Read Sigma config
+	if p, err := os.Stat(configPath); err == nil && !p.IsDir() {
+		contents, err := ioutil.ReadFile(configPath)
 		if err != nil {
 			return err
 		}
-		config, err := sigma.ParseConfig(contents)
+		pc.sigmaConfig, err = sigma.ParseConfig(contents)
 		if err != nil {
-			// ignore parsing errors
-			continue
+			return err
 		}
-		pc.sigmaConfig = append(pc.sigmaConfig, config)
 	}
 
 	// Translate the sigma rules into criterion objects
 	for _, rule := range pc.sigmaRules {
 		for _, conditions := range rule.Detection.Conditions {
-			pc.visitSearchExpression(conditions.Search, rule.Detection.Searches)
+			logger.Trace.Println("Parsing rule ", rule.ID)
+			r := policy.Rule[R]{
+				Name:      rule.ID,
+				Desc:      rule.Description,
+				Condition: pc.visitSearchExpression(conditions.Search, rule.Detection.Searches),
+				Actions:   nil,
+				Tags:      pc.getTags(rule),
+				Priority:  pc.getPriority(rule),
+				Prefilter: nil,
+				Enabled:   true,
+			}
+			pc.rules = append(pc.rules, r)
 		}
 	}
-
-	// errFound := false
-
-	// if errFound {
-	// 	return errors.New("errors found during compilation of policies. check logs for detail")
-	// }
 
 	return nil
 }
 
 // Compile parses a set of input policies defined in paths.
 func (pc *PolicyCompiler[R]) Compile(paths ...string) ([]policy.Rule[R], []policy.Filter[R], error) {
-	// Perhaps pass in the config object to expose separate paths for rules and config? recursive reading.
-	pc.compile(nil, nil)
-	return nil, nil, nil
+	if err := pc.compile(paths, pc.configPath); err != nil {
+		return nil, nil, err
+	}
+	return pc.rules, nil, nil
+}
+
+func (pc *PolicyCompiler[R]) getTags(rule sigma.Rule) []policy.EnrichmentTag {
+	tags := make([]policy.EnrichmentTag, len(rule.Tags))
+	for i, v := range rule.Tags {
+		tags[i] = v
+	}
+	return tags
+}
+
+func (pc *PolicyCompiler[R]) getPriority(rule sigma.Rule) policy.Priority {
+	switch strings.ToLower(rule.Level) {
+	case policy.Informational.String():
+		return policy.Informational
+	case policy.Low.String():
+		return policy.Low
+	case policy.Medium.String():
+		return policy.Medium
+	case policy.High.String():
+		return policy.High
+	case policy.Critical.String():
+		return policy.Critical
+	}
+	return policy.Informational
 }
 
 func (pc *PolicyCompiler[R]) visitSearchExpression(condition sigma.SearchExpr, searches map[string]sigma.Search) policy.Criterion[R] {
 	switch c := condition.(type) {
+
 	case sigma.SearchIdentifier:
-		// base case
+		if search, ok := searches[c.Name]; ok {
+			return pc.visitSearch(search)
+		}
 		return policy.False[R]()
 
 	case sigma.And:
-		var andPreds []policy.Criterion[R]
+		var preds []policy.Criterion[R]
 		for _, expr := range c {
-			andPreds = append(andPreds, pc.visitSearchExpression(expr, searches))
+			preds = append(preds, pc.visitSearchExpression(expr, searches))
 		}
-		return policy.All(andPreds)
+		return policy.All(preds)
 
 	case sigma.Or:
-		var orPreds []policy.Criterion[R]
+		var preds []policy.Criterion[R]
 		for _, expr := range c {
-			orPreds = append(orPreds, pc.visitSearchExpression(expr, searches))
+			preds = append(preds, pc.visitSearchExpression(expr, searches))
 		}
-		return policy.Any(orPreds)
+		return policy.Any(preds)
 
 	case sigma.Not:
 		return pc.visitSearchExpression(c, searches).Not()
 
 	case sigma.OneOfThem:
-		var orPreds []policy.Criterion[R]
+		var preds []policy.Criterion[R]
 		for _, search := range searches {
-			orPreds = append(orPreds, pc.visitSearch(search))
+			preds = append(preds, pc.visitSearch(search))
 		}
-		return policy.Any(orPreds)
+		return policy.Any(preds)
+
 	case sigma.OneOfPattern:
+		var preds []policy.Criterion[R]
+		for name, search := range searches {
+			matchesPattern, _ := path.Match(c.Pattern, name)
+			if matchesPattern {
+				preds = append(preds, pc.visitSearch(search))
+			}
+		}
+		return policy.Any(preds)
+
 	case sigma.AllOfThem:
+		var preds []policy.Criterion[R]
+		for _, search := range searches {
+			preds = append(preds, pc.visitSearch(search))
+		}
+		return policy.All(preds)
+
 	case sigma.AllOfPattern:
-		break
+		var preds []policy.Criterion[R]
+		for name, search := range searches {
+			matchesPattern, _ := path.Match(c.Pattern, name)
+			if matchesPattern {
+				preds = append(preds, pc.visitSearch(search))
+			}
+		}
+		return policy.All(preds)
 	}
-	return policy.True[R]()
+	return policy.False[R]()
 }
 
 func (pc *PolicyCompiler[R]) visitSearch(search sigma.Search) policy.Criterion[R] {
@@ -169,6 +230,16 @@ func (pc *PolicyCompiler[R]) visitSearch(search sigma.Search) policy.Criterion[R
 
 func (pc *PolicyCompiler[R]) visitTerm(ops []FieldModifier, attr string, value string) policy.Criterion[R] {
 	var opPreds []policy.Criterion[R]
+
+	// check if field mappers should be applied
+	if pc.sigmaConfig.FieldMappings != nil {
+		if mattr, ok := pc.sigmaConfig.FieldMappings[attr]; ok {
+			// TBD: expand the search in case attr maps to multiple target names?
+			attr = mattr.TargetNames[0]
+		}
+	}
+
+	// build predicate expression
 	if len(ops) == 0 {
 		opPreds = append(opPreds, pc.ops.Eq(attr, value))
 	} else {
@@ -182,42 +253,19 @@ func (pc *PolicyCompiler[R]) visitTerm(ops []FieldModifier, attr string, value s
 				opPreds = append(opPreds, pc.ops.StartsWith(attr, value))
 			case RegExp:
 				opPreds = append(opPreds, pc.ops.StartsWith(attr, value))
+			case Lt:
+				opPreds = append(opPreds, pc.ops.Lt(attr, value))
+			case Lte:
+				opPreds = append(opPreds, pc.ops.LEq(attr, value))
+			case Gt:
+				opPreds = append(opPreds, pc.ops.Gt(attr, value))
+			case Gte:
+				opPreds = append(opPreds, pc.ops.GEq(attr, value))
 			default:
 				logger.Error.Printf("Unsupported operator %s", op)
 			}
 		}
 	}
+
 	return policy.All(opPreds)
 }
-
-// 	for name := range rule.Detection.Searches {
-// 		// it's not possible for this call to error because the search expression parser won't allow this to contain invalid expressions
-// 		matchesPattern, _ := path.Match(s.Pattern, name)
-// 		if !matchesPattern {
-// 			continue
-// 		}
-// 		if rule.visitSearchExpression(sigma.SearchIdentifier{Name: name}, searchResults) {
-// 			return true
-// 		}
-// 	}
-// 	return false
-
-//
-// 	for name := range rule.Detection.Searches {
-// 		if !rule.visitSearchExpression(sigma.SearchIdentifier{Name: name}, searchResults) {
-// 			return false
-// 		}
-// 	}
-// 	return true
-
-//
-// 	for name := range rule.Detection.Searches {
-// 		// it's not possible for this call to error because the search expression parser won't allow this to contain invalid expressions
-// 		matchesPattern, _ := path.Match(s.Pattern, name)
-// 		if !matchesPattern {
-// 			continue
-// 		}
-// 		if !rule.visitSearchExpression(sigma.SearchIdentifier{Name: name}, searchResults) {
-// 			return false
-// 		}
-// 	}

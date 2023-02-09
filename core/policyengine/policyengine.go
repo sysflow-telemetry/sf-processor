@@ -33,7 +33,9 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/flattener"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/monitor"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/falco"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/sigma"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
 )
@@ -162,22 +164,38 @@ func (s *PolicyEngine) Process(ch []interface{}, wg *sync.WaitGroup) {
 // Creates a policy interpreter from configuration.
 func (s *PolicyEngine) createPolicyInterpreter() (*engine.PolicyInterpreter[*flatrecord.Record], error) {
 	dir := s.config.PoliciesPath
+
+	// check  policies
 	logger.Info.Println("Loading policies from: ", dir)
-	paths, err := ioutils.ListFilePaths(dir, ".yaml")
+	paths, err := ioutils.ListFilePaths(dir, ".yaml", ".yml")
 	if err != nil {
 		return nil, err
 	}
 	if len(paths) == 0 {
-		return nil, errors.New("no policy files with extension .yaml found in path: " + dir)
+		return nil, errors.New("no policy files with extension .yaml or .yml found in path: " + dir)
 	}
-	logger.Info.Println("Creating policy interpreter")
-	pc := falco.NewPolicyCompiler(flatrecord.NewOperations())
-	pi := engine.NewPolicyInterpreter(s.config, pc, nil, nil, s.out) // TODO: add pf and ctx
+
+	// build interpreter
+	logger.Info.Printf("Creating %s policy interpreter", s.config.Language.String())
+	var pc policy.PolicyCompiler[*flatrecord.Record]
+	if s.config.Language == engine.Falco {
+		pc = falco.NewPolicyCompiler(flatrecord.NewOperations())
+	} else {
+		pc = sigma.NewPolicyCompiler(flatrecord.NewOperations(), s.config.ConfigPath)
+	}
+	pf := flatrecord.NewPrefilter()
+	ctx := flatrecord.NewContextualizer()
+	pi := engine.NewPolicyInterpreter(s.config, pc, pf, ctx, s.out)
+
+	// compile policies
 	err = pi.Compile(paths...)
 	if err != nil {
 		return nil, err
 	}
+
+	// start workers
 	pi.StartWorkers()
+
 	return pi, nil
 }
 

@@ -23,20 +23,21 @@ package policy
 // EnrichmentTag denotes the type for enrichment tags.
 type EnrichmentTag interface{}
 
-// TODO: consider moving the priority const definitions to the falco and sigma packages, if a one to one mapping to the languages priority is desired.
 // Priority denotes the type for rule priority.
 type Priority int
 
 // Priority enumeration.
 const (
-	Low Priority = iota
+	Informational Priority = iota
+	Low
 	Medium
 	High
+	Critical
 )
 
 // String returns the string representation of a priority instance.
 func (p Priority) String() string {
-	return [...]string{"low", "medium", "high"}[p]
+	return [...]string{"informational", "low", "medium", "high", "critical"}[p]
 }
 
 // Rule type

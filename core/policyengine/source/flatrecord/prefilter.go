@@ -13,7 +13,7 @@ func NewPrefilter() source.Prefilter[*Record] {
 }
 
 func (s *Prefilter) IsApplicable(r *Record, rule policy.Rule[*Record]) bool {
-	if len(rule.Prefilter) == 0 {
+	if rule.Prefilter == nil || len(rule.Prefilter) == 0 {
 		return true
 	}
 	rtype := Mapper.MapStr(SF_TYPE)(r)
