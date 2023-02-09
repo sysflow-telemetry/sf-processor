@@ -1,7 +1,6 @@
 package sigma
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -44,7 +43,7 @@ func NewPolicyCompiler[R any](ops source.Operations[R], configPath string) polic
 func (pc *PolicyCompiler[R]) compile(rulePaths []string, configPath string) error {
 	// Read Sigma rules
 	for _, path := range rulePaths {
-		contents, err := ioutil.ReadFile(path)
+		contents, err := os.ReadFile(path)
 		if err != nil {
 			return err
 		}
@@ -58,7 +57,7 @@ func (pc *PolicyCompiler[R]) compile(rulePaths []string, configPath string) erro
 
 	// Read Sigma config
 	if p, err := os.Stat(configPath); err == nil && !p.IsDir() {
-		contents, err := ioutil.ReadFile(configPath)
+		contents, err := os.ReadFile(configPath)
 		if err != nil {
 			return err
 		}
@@ -231,36 +230,35 @@ func (pc *PolicyCompiler[R]) visitSearch(search sigma.Search) policy.Criterion[R
 func (pc *PolicyCompiler[R]) visitTerm(ops []FieldModifier, attr string, value string) policy.Criterion[R] {
 	var opPreds []policy.Criterion[R]
 
-	// check if field mappers should be applied
+	// apply field mappings
 	if pc.sigmaConfig.FieldMappings != nil {
 		if mattr, ok := pc.sigmaConfig.FieldMappings[attr]; ok {
-			// TBD: expand the search in case attr maps to multiple target names?
 			attr = mattr.TargetNames[0]
 		}
 	}
 
 	// build predicate expression
 	if len(ops) == 0 {
-		opPreds = append(opPreds, pc.ops.Eq(attr, value))
+		opPreds = append(opPreds, pc.ops.CompareStr(attr, value, source.Ops.IEq))
 	} else {
 		for _, op := range ops {
 			switch op {
 			case Contains:
-				opPreds = append(opPreds, pc.ops.Contains(attr, value))
+				opPreds = append(opPreds, pc.ops.CompareStr(attr, value, source.Ops.IContains))
 			case StartsWith:
-				opPreds = append(opPreds, pc.ops.StartsWith(attr, value))
+				opPreds = append(opPreds, pc.ops.CompareStr(attr, value, source.Ops.IStartswith))
 			case EndsWith:
-				opPreds = append(opPreds, pc.ops.StartsWith(attr, value))
+				opPreds = append(opPreds, pc.ops.CompareStr(attr, value, source.Ops.IEndswith))
 			case RegExp:
-				opPreds = append(opPreds, pc.ops.StartsWith(attr, value))
+				opPreds = append(opPreds, pc.ops.RegExp(attr, value))
 			case Lt:
-				opPreds = append(opPreds, pc.ops.Lt(attr, value))
+				opPreds = append(opPreds, pc.ops.CompareInt(attr, value, source.Ops.Lt))
 			case Lte:
-				opPreds = append(opPreds, pc.ops.LEq(attr, value))
+				opPreds = append(opPreds, pc.ops.CompareInt(attr, value, source.Ops.LEq))
 			case Gt:
-				opPreds = append(opPreds, pc.ops.Gt(attr, value))
+				opPreds = append(opPreds, pc.ops.CompareInt(attr, value, source.Ops.Gt))
 			case Gte:
-				opPreds = append(opPreds, pc.ops.GEq(attr, value))
+				opPreds = append(opPreds, pc.ops.CompareInt(attr, value, source.Ops.GEq))
 			default:
 				logger.Error.Printf("Unsupported operator %s", op)
 			}

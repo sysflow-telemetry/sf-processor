@@ -25,30 +25,14 @@ import "github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 type Operations[R any] interface {
 	// Exists creates a criterion for an existential predicate.
 	Exists(attr string) policy.Criterion[R]
-	// Eq creates a criterion for an equal predicate.
-	Eq(lattr string, rattr string) policy.Criterion[R]
-	// NEq creates a criterion for a not-equal predicate.
-	NEq(lattr string, rattr string) policy.Criterion[R]
-	// GEq creates a criterion for a greater-or-equal predicate.
-	GEq(lattr string, rattr string) policy.Criterion[R]
-	// Gt creates a criterion for a greater-than predicate.
-	Gt(lattr string, rattr string) policy.Criterion[R]
-	// LEq creates a criterion for a lower-or-equal predicate.
-	LEq(lattr string, rattr string) policy.Criterion[R]
-	// Lt creates a criterion for a lower-than predicate.
-	Lt(lattr string, rattr string) policy.Criterion[R]
-	// StartsWith creates a criterion for a starts-with predicate.
-	StartsWith(lattr string, rattr string) policy.Criterion[R]
-	// EndsWith creates a criterion for a ends-with predicate.
-	EndsWith(lattr string, rattr string) policy.Criterion[R]
-	// Contains creates a criterion for a contains predicate.
-	Contains(lattr string, rattr string) policy.Criterion[R]
-	// IContains creates a criterion for a case-insensitive contains predicate.
-	IContains(lattr string, rattr string) policy.Criterion[R]
-	// In creates a criterion for a list-inclusion predicate.
-	In(attr string, list []string) policy.Criterion[R]
-	// PMatch creates a criterion for a list-pattern-matching predicate.
-	PMatch(attr string, list []string) policy.Criterion[R]
+	// CompareStr creates a criterion for a binary predicate over strings.
+	CompareStr(lattr string, rattr string, op Operator[string]) policy.Criterion[R]
+	// CompareInt creates a criterion for a binary predicate over integers.
+	CompareInt(lattr string, rattr string, op Operator[int64]) policy.Criterion[R]
+	// FoldAny creates a disjunctive criterion for a binary predicate over a list of strings.
+	FoldAny(attr string, list []string, op Operator[string]) policy.Criterion[R]
+	// FoldAll creates a conjunctive criterion for a binary predicate over a list of strings.
+	FoldAll(attr string, list []string, op Operator[string]) policy.Criterion[R]
 	// RegExp creates a criterion for a regular-expression predicate.
 	RegExp(attr string, re string) policy.Criterion[R]
 }
