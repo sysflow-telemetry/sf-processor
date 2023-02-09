@@ -99,6 +99,9 @@ func (ah *ActionHandler[R]) loadUserActions(dir string) {
 // CheckActions checks whether actions rules definitions have known implementations.
 func (ah *ActionHandler[R]) CheckActions(rules []policy.Rule[R]) {
 	for _, r := range rules {
+		if r.Actions == nil {
+			continue
+		}
 		for _, a := range r.Actions {
 			if _, ok := ah.BuiltInActions[a]; !ok {
 				if _, ok = ah.UserDefinedActions[a]; !ok {
@@ -111,6 +114,9 @@ func (ah *ActionHandler[R]) CheckActions(rules []policy.Rule[R]) {
 
 // HandleAction handles actions defined in rule.
 func (ah *ActionHandler[R]) HandleActions(rule policy.Rule[R], r R) {
+	if rule.Actions == nil {
+		return
+	}
 	for _, a := range rule.Actions {
 		action, ok := ah.BuiltInActions[a]
 		if !ok {

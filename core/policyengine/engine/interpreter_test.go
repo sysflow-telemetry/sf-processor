@@ -25,6 +25,7 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/falco"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/sigma"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
 )
 
@@ -48,4 +49,14 @@ func TestCompileDist(t *testing.T) {
 	paths, err := ioutils.ListFilePaths("../../../resources/policies/distribution/filter.yaml", ".yaml")
 	assert.NoError(t, err)
 	assert.NoError(t, pi.Compile(paths...))
+}
+
+func TestCompileSigma(t *testing.T) {
+	logger.Trace.Println("Running test compile")
+	pc := sigma.NewPolicyCompiler(flatrecord.NewOperations(), "../../../resources/policies/sigma/config/sysflow.yml")
+	pi = NewPolicyInterpreter(Config{}, pc, nil, nil, nil)
+	paths, err := ioutils.ListFilePaths("../../../resources/policies/sigma/rules/linux/process_creation/proc_creation_lnx_webshell_detection.yml", ".yml")
+	assert.NoError(t, err)
+	assert.NoError(t, pi.Compile(paths...))
+	t.Logf("Rules: %d\n", len(pi.rules))
 }

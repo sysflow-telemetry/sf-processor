@@ -222,11 +222,13 @@ func (s Context) SetAlert(isAlert bool) {
 }
 
 // AddRule adds a rule instance to the set of rules matching a record.
-func (s Context) AddRule(r policy.Rule[*Record]) {
+func (s Context) AddRules(rules ...policy.Rule[*Record]) {
 	if s[ruleCtxKey] == nil {
 		s[ruleCtxKey] = make([]policy.Rule[*Record], 0)
 	}
-	s[ruleCtxKey] = append(s[ruleCtxKey].([]policy.Rule[*Record]), r)
+	for _, r := range rules {
+		s[ruleCtxKey] = append(s[ruleCtxKey].([]policy.Rule[*Record]), r)
+	}
 }
 
 // GetRules retrieves the list of stored rules associated with a record context.
@@ -243,11 +245,13 @@ func (s Context) SetTags(tags []string) {
 }
 
 // Adds tags to context object.
-func (s Context) AddTag(tag string) {
+func (s Context) AddTags(tags ...string) {
 	if s[tagCtxKey] == nil {
 		s[tagCtxKey] = make([]string, 0)
 	}
-	s[tagCtxKey] = append(s[tagCtxKey].([]string), tag)
+	for _, tag := range tags {
+		s[tagCtxKey] = append(s[tagCtxKey].([]string), tag)
+	}
 }
 
 // GetTags retrieves hashes from context object.

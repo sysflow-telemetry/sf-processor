@@ -28,6 +28,7 @@ require (
 	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91
 	github.com/actgardner/gogen-avro/v7 v7.3.1
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0
+	github.com/bradleyjkemp/sigma-go v0.5.1
 	github.com/cespare/xxhash/v2 v2.1.2
 	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae
 	github.com/fsnotify/fsnotify v1.5.1
@@ -38,14 +39,13 @@ require (
 	github.com/satta/gommunityid v0.0.0-20210315182841-1cdcb73ce408
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570
 	github.com/stretchr/testify v1.7.0
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20221212152705-23115987ecd0
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230209021054-13b1c526bda2
 	github.com/tidwall/gjson v1.14.1
 )
 
 require (
 	github.com/alecthomas/participle v0.7.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
-	github.com/bradleyjkemp/sigma-go v0.5.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-openapi/errors v0.19.8 // indirect
 	github.com/go-openapi/strfmt v0.21.1 // indirect

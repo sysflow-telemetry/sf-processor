@@ -26,7 +26,7 @@ require (
 	github.com/actgardner/gogen-avro/v7 v7.3.1
 	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/spf13/viper v1.10.1
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20221212152705-23115987ecd0
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230209021054-13b1c526bda2
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20220221021811-25c7181c2904
 )
 
@@ -34,8 +34,10 @@ require (
 	github.com/IBM/go-sdk-core/v5 v5.9.2 // indirect
 	github.com/IBM/scc-go-sdk/v3 v3.1.5 // indirect
 	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91 // indirect
+	github.com/alecthomas/participle v0.7.1 // indirect
 	github.com/antlr/antlr4 v0.0.0-20200417160354-8c50731894e0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
+	github.com/bradleyjkemp/sigma-go v0.5.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210427093042-01613f93a7ae // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
@@ -75,6 +77,7 @@ require (
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 replace github.com/sysflow-telemetry/sf-processor/core => ../core
