@@ -312,25 +312,25 @@ func (pc *PolicyCompiler[R]) visitTerm(ctx parser.ITermContext) policy.Criterion
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		rop := termCtx.Atom(1).(*parser.AtomContext).GetText()
 		if opCtx.CONTAINS() != nil {
-			return pc.ops.Contains(lop, rop)
+			return pc.ops.CompareStr(lop, rop, source.Ops.Contains)
 		} else if opCtx.ICONTAINS() != nil {
-			return pc.ops.IContains(lop, rop)
+			return pc.ops.CompareStr(lop, rop, source.Ops.IContains)
 		} else if opCtx.STARTSWITH() != nil {
-			return pc.ops.StartsWith(lop, rop)
+			return pc.ops.CompareStr(lop, rop, source.Ops.Startswith)
 		} else if opCtx.ENDSWITH() != nil {
-			return pc.ops.EndsWith(lop, rop)
+			return pc.ops.CompareStr(lop, rop, source.Ops.Endswith)
 		} else if opCtx.EQ() != nil {
-			return pc.ops.Eq(lop, rop)
+			return pc.ops.CompareStr(lop, rop, source.Ops.Eq)
 		} else if opCtx.NEQ() != nil {
-			return pc.ops.NEq(lop, rop)
+			return pc.ops.CompareStr(lop, rop, source.Ops.NEq)
 		} else if opCtx.GT() != nil {
-			return pc.ops.Gt(lop, rop)
+			return pc.ops.CompareInt(lop, rop, source.Ops.Gt)
 		} else if opCtx.GE() != nil {
-			return pc.ops.GEq(lop, rop)
+			return pc.ops.CompareInt(lop, rop, source.Ops.GEq)
 		} else if opCtx.LT() != nil {
-			return pc.ops.Lt(lop, rop)
+			return pc.ops.CompareInt(lop, rop, source.Ops.Lt)
 		} else if opCtx.LE() != nil {
-			return pc.ops.LEq(lop, rop)
+			return pc.ops.CompareInt(lop, rop, source.Ops.LEq)
 		}
 		logger.Error.Println("Unrecognized binary operator ", opCtx.GetText())
 	} else if termCtx.Expression() != nil {
@@ -338,11 +338,11 @@ func (pc *PolicyCompiler[R]) visitTerm(ctx parser.ITermContext) policy.Criterion
 	} else if termCtx.IN() != nil {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		rop := termCtx.AllAtom()[1:]
-		return pc.ops.In(lop, pc.extractListFromAtoms(rop))
+		return pc.ops.FoldAny(lop, pc.extractListFromAtoms(rop), source.Ops.Eq)
 	} else if termCtx.PMATCH() != nil {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		rop := termCtx.AllAtom()[1:]
-		return pc.ops.PMatch(lop, pc.extractListFromAtoms(rop))
+		return pc.ops.FoldAny(lop, pc.extractListFromAtoms(rop), source.Ops.Contains)
 	} else {
 		logger.Warn.Println("Unrecognized term ", termCtx.GetText())
 	}

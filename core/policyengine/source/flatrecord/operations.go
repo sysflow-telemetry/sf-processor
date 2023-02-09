@@ -21,7 +21,6 @@
 package flatrecord
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -43,83 +42,28 @@ func (op *Operations) Exists(attr string) policy.Criterion[*Record] {
 	return policy.Criterion[*Record]{Pred: p}
 }
 
-// Eq creates a criterion for an equality predicate.
-func (op *Operations) Eq(lattr string, rattr string) policy.Criterion[*Record] {
+// CompareStr creates a criterion for a binary predicate over strings.
+func (op *Operations) CompareStr(lattr string, rattr string, operator source.Operator[string]) policy.Criterion[*Record] {
 	ml := Mapper.MapStr(lattr)
 	mr := Mapper.MapStr(rattr)
-	p := func(r *Record) bool { return eval(ml(r), mr(r), ops.eq) }
+	p := func(r *Record) bool { return compareStr(ml(r), mr(r), operator) }
 	return policy.Criterion[*Record]{Pred: p}
 }
 
-// NEq creates a criterion for an inequality predicate.
-func (op *Operations) NEq(lattr string, rattr string) policy.Criterion[*Record] {
-	return op.Eq(lattr, rattr).Not()
-}
-
-// Ge creates a criterion for a greater-or-equal predicate.
-func (op *Operations) GEq(lattr string, rattr string) policy.Criterion[*Record] {
+// CompareInt creates a criterion for a binary predicate over integers.
+func (op *Operations) CompareInt(lattr string, rattr string, operator source.Operator[int64]) policy.Criterion[*Record] {
 	ml := Mapper.MapInt(lattr)
 	mr := Mapper.MapInt(rattr)
-	p := func(r *Record) bool { return ml(r) >= mr(r) }
+	p := func(r *Record) bool { return compareInt(ml(r), mr(r), operator) }
 	return policy.Criterion[*Record]{Pred: p}
 }
 
-// Gt creates a criterion for a greater-than predicate.
-func (op *Operations) Gt(lattr string, rattr string) policy.Criterion[*Record] {
-	ml := Mapper.MapInt(lattr)
-	mr := Mapper.MapInt(rattr)
-	p := func(r *Record) bool { return ml(r) > mr(r) }
-	return policy.Criterion[*Record]{Pred: p}
-}
-
-// Le creates a criterion for a lower-or-equal predicate.
-func (op *Operations) LEq(lattr string, rattr string) policy.Criterion[*Record] {
-	return op.Gt(lattr, rattr).Not()
-}
-
-// Lt creates a criterion for a lower-than predicate.
-func (op *Operations) Lt(lattr string, rattr string) policy.Criterion[*Record] {
-	return op.GEq(lattr, rattr).Not()
-}
-
-// StartsWith creates a criterion for a starts-with predicate.
-func (op *Operations) StartsWith(lattr string, rattr string) policy.Criterion[*Record] {
-	ml := Mapper.MapStr(lattr)
-	mr := Mapper.MapStr(rattr)
-	p := func(r *Record) bool { return eval(ml(r), mr(r), ops.startswith) }
-	return policy.Criterion[*Record]{Pred: p}
-}
-
-// EndsWith creates a criterion for a ends-with predicate.
-func (op *Operations) EndsWith(lattr string, rattr string) policy.Criterion[*Record] {
-	ml := Mapper.MapStr(lattr)
-	mr := Mapper.MapStr(rattr)
-	p := func(r *Record) bool { return eval(ml(r), mr(r), ops.endswith) }
-	return policy.Criterion[*Record]{Pred: p}
-}
-
-// Contains creates a criterion for a contains predicate.
-func (op *Operations) Contains(lattr string, rattr string) policy.Criterion[*Record] {
-	ml := Mapper.MapStr(lattr)
-	mr := Mapper.MapStr(rattr)
-	p := func(r *Record) bool { return eval(ml(r), mr(r), ops.contains) }
-	return policy.Criterion[*Record]{Pred: p}
-}
-
-// IContains creates a criterion for a case-insensitive contains predicate.
-func (op *Operations) IContains(lattr string, rattr string) policy.Criterion[*Record] {
-	ml := Mapper.MapStr(lattr)
-	mr := Mapper.MapStr(rattr)
-	p := func(r *Record) bool { return eval(ml(r), mr(r), ops.icontains) }
-	return policy.Criterion[*Record]{Pred: p}
-}
-
-// In creates a criterion for a list-inclusion predicate.
-func (op *Operations) In(attr string, list []string) policy.Criterion[*Record] {
+// FoldAny creates a disjunctive criterion for a binary predicate over a list of strings.
+func (op *Operations) FoldAny(attr string, list []string, operator source.Operator[string]) policy.Criterion[*Record] {
 	m := Mapper.MapStr(attr)
 	p := func(r *Record) bool {
 		for _, v := range list {
-			if eval(m(r), v, ops.eq) {
+			if compareStr(m(r), v, operator) {
 				return true
 			}
 		}
@@ -128,16 +72,16 @@ func (op *Operations) In(attr string, list []string) policy.Criterion[*Record] {
 	return policy.Criterion[*Record]{Pred: p}
 }
 
-// PMatch creates a criterion for a list-pattern-matching predicate.
-func (op *Operations) PMatch(attr string, list []string) policy.Criterion[*Record] {
+// FoldAll creates a conjunctive criterion for a binary predicate over a list of strings.
+func (op *Operations) FoldAll(attr string, list []string, operator source.Operator[string]) policy.Criterion[*Record] {
 	m := Mapper.MapStr(attr)
 	p := func(r *Record) bool {
 		for _, v := range list {
-			if eval(m(r), v, ops.contains) {
-				return true
+			if !compareStr(m(r), v, operator) {
+				return false
 			}
 		}
-		return false
+		return true
 	}
 	return policy.Criterion[*Record]{Pred: p}
 }
@@ -147,31 +91,10 @@ func (op *Operations) RegExp(attr string, re string) policy.Criterion[*Record] {
 	return policy.False[*Record]()
 }
 
-// operator type.
-type operator func(string, string) bool
-
-// operators struct.
-type operators struct {
-	eq         operator
-	contains   operator
-	icontains  operator
-	startswith operator
-	endswith   operator
-}
-
-// ops defines boolean comparison operators over strings.
-var ops = operators{
-	eq:         func(l string, r string) bool { return l == r },
-	contains:   func(l string, r string) bool { return strings.Contains(l, r) },
-	icontains:  func(l string, r string) bool { return strings.Contains(strings.ToLower(l), strings.ToLower(r)) },
-	startswith: func(l string, r string) bool { return strings.HasPrefix(l, r) },
-	endswith:   func(l string, r string) bool { return strings.HasSuffix(l, r) },
-}
-
-// Eval evaluates a boolean operator over two predicates.
-func eval(l interface{}, r interface{}, op operator) bool {
-	lattrs := strings.Split(fmt.Sprintf("%v", l), common.LISTSEP)
-	rattrs := strings.Split(fmt.Sprintf("%v", r), common.LISTSEP)
+// compareStr compares two string values based on an operator.
+func compareStr(l string, r string, op source.Operator[string]) bool {
+	lattrs := strings.Split(l, common.LISTSEP)
+	rattrs := strings.Split(r, common.LISTSEP)
 	for _, lattr := range lattrs {
 		for _, rattr := range rattrs {
 			if op(lattr, rattr) {
@@ -180,4 +103,9 @@ func eval(l interface{}, r interface{}, op operator) bool {
 		}
 	}
 	return false
+}
+
+// compareInt compares two int64 values based on an operator.
+func compareInt(l int64, r int64, op source.Operator[int64]) bool {
+	return op(l, r)
 }
