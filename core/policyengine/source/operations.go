@@ -25,14 +25,12 @@ import "github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 type Operations[R any] interface {
 	// Exists creates a criterion for an existential predicate.
 	Exists(attr string) policy.Criterion[R]
-	// CompareStr creates a criterion for a binary predicate over strings.
-	CompareStr(lattr string, rattr string, op Operator[string]) policy.Criterion[R]
-	// CompareInt creates a criterion for a binary predicate over integers.
-	CompareInt(lattr string, rattr string, op Operator[int64]) policy.Criterion[R]
+	// Compare creates a criterion for a binary predicate.
+	Compare(lattr string, rattr string, op Operator) policy.Criterion[R]
 	// FoldAny creates a disjunctive criterion for a binary predicate over a list of strings.
-	FoldAny(attr string, list []string, op Operator[string]) policy.Criterion[R]
+	FoldAny(attr string, list []string, op Operator) policy.Criterion[R]
 	// FoldAll creates a conjunctive criterion for a binary predicate over a list of strings.
-	FoldAll(attr string, list []string, op Operator[string]) policy.Criterion[R]
+	FoldAll(attr string, list []string, op Operator) policy.Criterion[R]
 	// RegExp creates a criterion for a regular-expression predicate.
 	RegExp(attr string, re string) policy.Criterion[R]
 }

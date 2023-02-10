@@ -20,46 +20,79 @@
 package source
 
 import (
+	"errors"
 	"strings"
 
 	"golang.org/x/exp/constraints"
 )
 
-// Operator type.
-type Operator[T constraints.Ordered] func(T, T) bool
+// Operator enum type.
+type Operator int32
 
-// operators struct.
-type Operators struct {
-	Eq          Operator[string]
-	IEq         Operator[string]
-	NEq         Operator[string]
-	INEq        Operator[string]
-	Contains    Operator[string]
-	IContains   Operator[string]
-	Startswith  Operator[string]
-	IStartswith Operator[string]
-	Endswith    Operator[string]
-	IEndswith   Operator[string]
-	Lt          Operator[int64]
-	LEq         Operator[int64]
-	Gt          Operator[int64]
-	GEq         Operator[int64]
+// Operator enums.
+const (
+	Eq Operator = iota
+	IEq
+	Contains
+	IContains
+	Startswith
+	IStartswith
+	Endswith
+	IEndswith
+	Lt
+	LEq
+	Gt
+	GEq
+)
+
+// Operator function type.
+type OpFunc[T constraints.Ordered | ~bool] func(T, T) bool
+
+// Operator functions over strings.
+type StrOps struct{}
+
+func (StrOps) OpFunc(op Operator) (OpFunc[string], error) {
+	switch op {
+	case Eq:
+		return func(l string, r string) bool { return l == r }, nil
+	case IEq:
+		return func(l string, r string) bool { return strings.EqualFold(l, r) }, nil
+	case Contains:
+		return func(l string, r string) bool { return strings.Contains(l, r) }, nil
+	case IContains:
+		return func(l string, r string) bool { return strings.Contains(strings.ToLower(l), strings.ToLower(r)) }, nil
+	case Startswith:
+		return func(l string, r string) bool { return strings.HasPrefix(l, r) }, nil
+	case IStartswith:
+		return func(l string, r string) bool { return strings.HasPrefix(strings.ToLower(l), strings.ToLower(r)) }, nil
+	case Endswith:
+		return func(l string, r string) bool { return strings.HasSuffix(l, r) }, nil
+	case IEndswith:
+		return func(l string, r string) bool { return strings.HasSuffix(strings.ToLower(l), strings.ToLower(r)) }, nil
+	}
+	return nil, errors.New("not a string operator")
 }
 
-// Ops defines boolean comparison operators.
-var Ops = Operators{
-	Eq:          func(l string, r string) bool { return l == r },
-	IEq:         func(l string, r string) bool { return strings.EqualFold(l, r) },
-	NEq:         func(l string, r string) bool { return l != r },
-	INEq:        func(l string, r string) bool { return !strings.EqualFold(l, r) },
-	Contains:    func(l string, r string) bool { return strings.Contains(l, r) },
-	IContains:   func(l string, r string) bool { return strings.Contains(strings.ToLower(l), strings.ToLower(r)) },
-	Startswith:  func(l string, r string) bool { return strings.HasPrefix(l, r) },
-	IStartswith: func(l string, r string) bool { return strings.HasPrefix(strings.ToLower(l), strings.ToLower(r)) },
-	Endswith:    func(l string, r string) bool { return strings.HasSuffix(l, r) },
-	IEndswith:   func(l string, r string) bool { return strings.HasSuffix(strings.ToLower(l), strings.ToLower(r)) },
-	Lt:          func(l int64, r int64) bool { return l < r },
-	LEq:         func(l int64, r int64) bool { return l <= r },
-	Gt:          func(l int64, r int64) bool { return l > r },
-	GEq:         func(l int64, r int64) bool { return l >= r },
+// Operator functions over booleans.
+type BoolOps struct{}
+
+func (op BoolOps) Eq(l bool, r bool) bool { return l == r }
+
+// Operator functions over integers.
+type IntOps[T constraints.Integer] struct{}
+
+func (IntOps[T]) OpFunc(op Operator) (OpFunc[T], error) {
+	switch op {
+	case Eq:
+		return func(l T, r T) bool { return l == r }, nil
+	case Lt:
+		return func(l T, r T) bool { return l < r }, nil
+	case LEq:
+		return func(l T, r T) bool { return l <= r }, nil
+	case Gt:
+		return func(l T, r T) bool { return l > r }, nil
+	case GEq:
+		return func(l T, r T) bool { return l >= r }, nil
+	}
+	return nil, errors.New("not an integer operator")
 }

@@ -239,26 +239,26 @@ func (pc *PolicyCompiler[R]) visitTerm(ops []FieldModifier, attr string, value s
 
 	// build predicate expression
 	if len(ops) == 0 {
-		opPreds = append(opPreds, pc.ops.CompareStr(attr, value, source.Ops.IEq))
+		opPreds = append(opPreds, pc.ops.Compare(attr, value, source.IEq))
 	} else {
 		for _, op := range ops {
 			switch op {
 			case Contains:
-				opPreds = append(opPreds, pc.ops.CompareStr(attr, value, source.Ops.IContains))
+				opPreds = append(opPreds, pc.ops.Compare(attr, value, source.IContains))
 			case StartsWith:
-				opPreds = append(opPreds, pc.ops.CompareStr(attr, value, source.Ops.IStartswith))
+				opPreds = append(opPreds, pc.ops.Compare(attr, value, source.IStartswith))
 			case EndsWith:
-				opPreds = append(opPreds, pc.ops.CompareStr(attr, value, source.Ops.IEndswith))
+				opPreds = append(opPreds, pc.ops.Compare(attr, value, source.IEndswith))
 			case RegExp:
 				opPreds = append(opPreds, pc.ops.RegExp(attr, value))
 			case Lt:
-				opPreds = append(opPreds, pc.ops.CompareInt(attr, value, source.Ops.Lt))
+				opPreds = append(opPreds, pc.ops.Compare(attr, value, source.Lt))
 			case Lte:
-				opPreds = append(opPreds, pc.ops.CompareInt(attr, value, source.Ops.LEq))
+				opPreds = append(opPreds, pc.ops.Compare(attr, value, source.LEq))
 			case Gt:
-				opPreds = append(opPreds, pc.ops.CompareInt(attr, value, source.Ops.Gt))
+				opPreds = append(opPreds, pc.ops.Compare(attr, value, source.Gt))
 			case Gte:
-				opPreds = append(opPreds, pc.ops.CompareInt(attr, value, source.Ops.GEq))
+				opPreds = append(opPreds, pc.ops.Compare(attr, value, source.GEq))
 			default:
 				logger.Error.Printf("Unsupported operator %s", op)
 			}
