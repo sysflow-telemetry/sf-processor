@@ -16,7 +16,7 @@ type PolicyCompiler[R any] struct {
 	ops source.Operations[R]
 
 	// Transformer
-	transformer *source.Transformer
+	transformer *Transformer
 
 	// Compiled rule objects
 	rules []policy.Rule[R]
@@ -33,7 +33,7 @@ type PolicyCompiler[R any] struct {
 func NewPolicyCompiler[R any](ops source.Operations[R], configPath string) policy.PolicyCompiler[R] {
 	pc := new(PolicyCompiler[R])
 	pc.ops = ops
-	pc.transformer = source.NewTransformer()
+	pc.transformer = NewTransformer()
 	pc.rules = make([]policy.Rule[R], 0)
 	pc.configPath = configPath
 	return pc
@@ -184,12 +184,18 @@ func (pc *PolicyCompiler[R]) visitSearchExpression(condition sigma.SearchExpr, s
 }
 
 func (pc *PolicyCompiler[R]) visitSearch(search sigma.Search) policy.Criterion[R] {
+
+	if len(search.Keywords) > 0 {
+		logger.Warn.Println("Keyword search is not supported. Use field selectors instead.")
+		return policy.False[R]()
+	}
+
 	var matcherPreds []policy.Criterion[R]
 	for _, eventMatcher := range search.EventMatchers {
 		for _, fieldMatcher := range eventMatcher {
 			var fieldPreds policy.Criterion[R]
 			allValuesMustMatch := false
-			var transformers []source.TransformerFlags
+			var transformers []TransformerFlags
 			var comparators []FieldModifier
 			for _, modifier := range fieldMatcher.Modifiers {
 				m := FieldModifier(modifier)
@@ -208,7 +214,10 @@ func (pc *PolicyCompiler[R]) visitSearch(search sigma.Search) policy.Criterion[R
 				if len(transformers) > 0 {
 					var tPreds []policy.Criterion[R]
 					for _, t := range transformers {
-						tPreds = append(tPreds, pc.visitTerm(comparators, fieldMatcher.Field, pc.transformer.TransformToString([]byte(value), t)))
+						values, _ := pc.transformer.Transform(value, t)
+						for _, v := range values {
+							tPreds = append(tPreds, pc.visitTerm(comparators, fieldMatcher.Field, v))
+						}
 					}
 					valuePreds = append(valuePreds, policy.Any(tPreds))
 				} else {
@@ -223,7 +232,6 @@ func (pc *PolicyCompiler[R]) visitSearch(search sigma.Search) policy.Criterion[R
 			matcherPreds = append(matcherPreds, fieldPreds)
 		}
 	}
-	// TODO: check if Any is the appropriate predicate here
 	return policy.Any(matcherPreds)
 }
 

@@ -26,13 +26,11 @@ import (
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/falco/lang/parser"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
 )
 
 // PolicyInterpreter defines a rules engine for SysFlow data streams.
 type PolicyInterpreter[R any] struct {
-	*parser.BaseSfplListener
 
 	// Input policy language compiler
 	pc policy.PolicyCompiler[R]

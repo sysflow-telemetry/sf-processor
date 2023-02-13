@@ -1,9 +1,5 @@
 package sigma
 
-import (
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
-)
-
 // FieldModifier type.
 type FieldModifier string
 
@@ -30,7 +26,7 @@ const (
 	Wide         FieldModifier = "wide"
 	WinDash      FieldModifier = "windash"
 	RegExp       FieldModifier = "re"
-	Cidr         FieldModifier = "cidr"
+	CIDR         FieldModifier = "cidr"
 )
 
 var exists = struct{}{}
@@ -45,15 +41,15 @@ var ComparatorsMap = map[FieldModifier]struct{}{
 	Gte:        exists,
 }
 
-var TransformersMap = map[FieldModifier][]source.TransformerFlags{
-	Base64:       []source.TransformerFlags{source.Base64Flag},
-	Base64Offset: []source.TransformerFlags{source.Base64Flag, source.Base64Offset1Flag, source.Base64Offset2Flag},
-	UTF16:        []source.TransformerFlags{source.UTF16BEFlag.Set(source.UTF16BOMFlag)},
-	UTF16LE:      []source.TransformerFlags{source.UTF16LEFlag},
-	UTF16BE:      []source.TransformerFlags{source.UTF16BEFlag},
-	Wide:         []source.TransformerFlags{source.UTF16LEFlag},
-	WinDash:      []source.TransformerFlags{source.NoFlags, source.WinDashFlag},
-	Cidr:         []source.TransformerFlags{source.CIDRFlag},
+var TransformersMap = map[FieldModifier][]TransformerFlags{
+	Base64:       {Base64Flag},
+	Base64Offset: {Base64OffsetFlag},
+	UTF16:        {NoFlags},
+	UTF16LE:      {NoFlags},
+	UTF16BE:      {NoFlags},
+	Wide:         {NoFlags},
+	WinDash:      {NoFlags, WinDashFlag},
+	CIDR:         {CIDRFlag},
 }
 
 func (s FieldModifier) IsComparator() bool {
