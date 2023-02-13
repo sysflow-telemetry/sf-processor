@@ -25,7 +25,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/sysflow-telemetry/sf-apis/go/logger"
+	"github.com/pkg/errors"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/common"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
@@ -41,14 +41,14 @@ func NewOperations() source.Operations[*Record] {
 }
 
 // Exists creates a criterion for an existential predicate.
-func (op *Operations) Exists(attr string) policy.Criterion[*Record] {
+func (op *Operations) Exists(attr string) (policy.Criterion[*Record], error) {
 	m := Mapper.Map(attr)
 	p := func(r *Record) bool { return !reflect.ValueOf(m(r)).IsZero() }
-	return policy.Criterion[*Record]{Pred: p}
+	return policy.Criterion[*Record]{Pred: p}, nil
 }
 
 // Compare creates a criterion for a binary predicate.
-func (op *Operations) Compare(lattr string, rattr string, operator source.Operator) policy.Criterion[*Record] {
+func (op *Operations) Compare(lattr string, rattr string, operator source.Operator) (policy.Criterion[*Record], error) {
 	switch operator {
 	case source.Lt, source.LEq, source.Gt, source.GEq:
 		return op.compareInt(lattr, rattr, operator)
@@ -57,25 +57,25 @@ func (op *Operations) Compare(lattr string, rattr string, operator source.Operat
 }
 
 // compareStr creates a criterion for a binary predicate over strings.
-func (op *Operations) compareStr(lattr string, rattr string, operator source.Operator) policy.Criterion[*Record] {
+func (op *Operations) compareStr(lattr string, rattr string, operator source.Operator) (policy.Criterion[*Record], error) {
 	ml := Mapper.MapStr(lattr)
 	mr := Mapper.MapStr(rattr)
 	o, _ := op.strOps.OpFunc(operator)
 	p := func(r *Record) bool { return compareStr(ml(r), mr(r), o) }
-	return policy.Criterion[*Record]{Pred: p}
+	return policy.Criterion[*Record]{Pred: p}, nil
 }
 
 // compareInt creates a criterion for a binary predicate over integers.
-func (op *Operations) compareInt(lattr string, rattr string, operator source.Operator) policy.Criterion[*Record] {
+func (op *Operations) compareInt(lattr string, rattr string, operator source.Operator) (policy.Criterion[*Record], error) {
 	ml := Mapper.MapInt(lattr)
 	mr := Mapper.MapInt(rattr)
 	o, _ := op.intOps.OpFunc(operator)
 	p := func(r *Record) bool { return compareInt(ml(r), mr(r), o) }
-	return policy.Criterion[*Record]{Pred: p}
+	return policy.Criterion[*Record]{Pred: p}, nil
 }
 
 // FoldAny creates a disjunctive criterion for a binary predicate over a list of strings.
-func (op *Operations) FoldAny(attr string, list []string, operator source.Operator) policy.Criterion[*Record] {
+func (op *Operations) FoldAny(attr string, list []string, operator source.Operator) (policy.Criterion[*Record], error) {
 	m := Mapper.MapStr(attr)
 	o, _ := op.strOps.OpFunc(operator)
 	p := func(r *Record) bool {
@@ -86,11 +86,11 @@ func (op *Operations) FoldAny(attr string, list []string, operator source.Operat
 		}
 		return false
 	}
-	return policy.Criterion[*Record]{Pred: p}
+	return policy.Criterion[*Record]{Pred: p}, nil
 }
 
 // FoldAll creates a conjunctive criterion for a binary predicate over a list of strings.
-func (op *Operations) FoldAll(attr string, list []string, operator source.Operator) policy.Criterion[*Record] {
+func (op *Operations) FoldAll(attr string, list []string, operator source.Operator) (policy.Criterion[*Record], error) {
 	m := Mapper.MapStr(attr)
 	o, _ := op.strOps.OpFunc(operator)
 	p := func(r *Record) bool {
@@ -101,20 +101,19 @@ func (op *Operations) FoldAll(attr string, list []string, operator source.Operat
 		}
 		return true
 	}
-	return policy.Criterion[*Record]{Pred: p}
+	return policy.Criterion[*Record]{Pred: p}, nil
 }
 
 // RegExp creates a criterion for a regular-expression predicate.
-func (op *Operations) RegExp(attr string, re string) policy.Criterion[*Record] {
+func (op *Operations) RegExp(attr string, re string) (policy.Criterion[*Record], error) {
 	m := Mapper.MapStr(attr)
 	if regexp, err := regexp.Compile(re); err == nil {
 		p := func(r *Record) bool {
 			return regexp.FindString(m(r)) != ""
 		}
-		return policy.Criterion[*Record]{Pred: p}
+		return policy.Criterion[*Record]{Pred: p}, nil
 	}
-	logger.Error.Println("Could not compile regular expression ", re)
-	return policy.False[*Record]()
+	return policy.False[*Record](), errors.Errorf("could not compile regular expression ", re)
 }
 
 // compareStr compares two string values based on an operator.

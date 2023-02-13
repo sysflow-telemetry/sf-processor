@@ -20,6 +20,8 @@
 // Package policy implements input policy translation for the rules engine.
 package policy
 
+import "github.com/sysflow-telemetry/sf-apis/go/logger"
+
 // Predicate defines the type of a functional predicate.
 type Predicate[R any] func(R) bool
 
@@ -73,4 +75,12 @@ func Any[R any](criteria []Criterion[R]) Criterion[R] {
 		any = any.Or(c)
 	}
 	return any
+}
+
+// First accepts a (Criterion[R], error) tuple and returns the Criterio[R], stopping execution if err is not nil.
+func First[R any, T Criterion[R]](pred T, err error) T {
+	if err != nil {
+		logger.Error.Fatalln("Caught error during predicate compilation: ", err)
+	}
+	return pred
 }

@@ -406,6 +406,8 @@ github.com/subosito/gotenv v1.4.2 h1:X1TuBLAMDFbaTAChgCBLu3DU3UPyELpnF2jjJ2cz/S8
 github.com/subosito/gotenv v1.4.2/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNGqEflhK0=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230209021054-13b1c526bda2 h1:e9HpeaC8ceCz9M5EKOGbBE+WGfcONfVCa0MS0Z39cvc=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230209021054-13b1c526bda2/go.mod h1:eo1ATE056Rqb9LhE4LA/0Y2AHfV//1zdCw0py4/S5HM=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230213025119-faaf3336095c h1:huQV5XQvVMhlqXNdvk3A9xVk4Jv/XVCa9oQzYFtndws=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230213025119-faaf3336095c/go.mod h1:eo1ATE056Rqb9LhE4LA/0Y2AHfV//1zdCw0py4/S5HM=
 github.com/tidwall/gjson v1.14.1 h1:iymTbGkQBhveq21bEvAQ81I0LEBork8BFe1CUZXdyuo=
 github.com/tidwall/gjson v1.14.1/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
 github.com/tidwall/gjson v1.14.4 h1:uo0p8EbA09J7RQaflQ1aBRffTR7xedD2bcIVSYxLnkM=

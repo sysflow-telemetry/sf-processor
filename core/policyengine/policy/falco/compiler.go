@@ -305,32 +305,32 @@ func (pc *PolicyCompiler[R]) visitTerm(ctx parser.ITermContext) policy.Criterion
 	} else if opCtx, ok := termCtx.Unary_operator().(*parser.Unary_operatorContext); ok {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		if opCtx.EXISTS() != nil {
-			return pc.ops.Exists(lop)
+			return policy.First(pc.ops.Exists(lop))
 		}
 		logger.Error.Println("Unrecognized unary operator ", opCtx.GetText())
 	} else if opCtx, ok := termCtx.Binary_operator().(*parser.Binary_operatorContext); ok {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		rop := termCtx.Atom(1).(*parser.AtomContext).GetText()
 		if opCtx.CONTAINS() != nil {
-			return pc.ops.Compare(lop, rop, source.Contains)
+			return policy.First(pc.ops.Compare(lop, rop, source.Contains))
 		} else if opCtx.ICONTAINS() != nil {
-			return pc.ops.Compare(lop, rop, source.IContains)
+			return policy.First(pc.ops.Compare(lop, rop, source.IContains))
 		} else if opCtx.STARTSWITH() != nil {
-			return pc.ops.Compare(lop, rop, source.Startswith)
+			return policy.First(pc.ops.Compare(lop, rop, source.Startswith))
 		} else if opCtx.ENDSWITH() != nil {
-			return pc.ops.Compare(lop, rop, source.Endswith)
+			return policy.First(pc.ops.Compare(lop, rop, source.Endswith))
 		} else if opCtx.EQ() != nil {
-			return pc.ops.Compare(lop, rop, source.Eq)
+			return policy.First(pc.ops.Compare(lop, rop, source.Eq))
 		} else if opCtx.NEQ() != nil {
-			return pc.ops.Compare(lop, rop, source.Eq).Not()
+			return policy.First(pc.ops.Compare(lop, rop, source.Eq)).Not()
 		} else if opCtx.GT() != nil {
-			return pc.ops.Compare(lop, rop, source.Gt)
+			return policy.First(pc.ops.Compare(lop, rop, source.Gt))
 		} else if opCtx.GE() != nil {
-			return pc.ops.Compare(lop, rop, source.GEq)
+			return policy.First(pc.ops.Compare(lop, rop, source.GEq))
 		} else if opCtx.LT() != nil {
-			return pc.ops.Compare(lop, rop, source.Lt)
+			return policy.First(pc.ops.Compare(lop, rop, source.Lt))
 		} else if opCtx.LE() != nil {
-			return pc.ops.Compare(lop, rop, source.LEq)
+			return policy.First(pc.ops.Compare(lop, rop, source.LEq))
 		}
 		logger.Error.Println("Unrecognized binary operator ", opCtx.GetText())
 	} else if termCtx.Expression() != nil {
@@ -338,11 +338,11 @@ func (pc *PolicyCompiler[R]) visitTerm(ctx parser.ITermContext) policy.Criterion
 	} else if termCtx.IN() != nil {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		rop := termCtx.AllAtom()[1:]
-		return pc.ops.FoldAny(lop, pc.extractListFromAtoms(rop), source.Eq)
+		return policy.First(pc.ops.FoldAny(lop, pc.extractListFromAtoms(rop), source.Eq))
 	} else if termCtx.PMATCH() != nil {
 		lop := termCtx.Atom(0).(*parser.AtomContext).GetText()
 		rop := termCtx.AllAtom()[1:]
-		return pc.ops.FoldAny(lop, pc.extractListFromAtoms(rop), source.Contains)
+		return policy.First(pc.ops.FoldAny(lop, pc.extractListFromAtoms(rop), source.Contains))
 	} else {
 		logger.Warn.Println("Unrecognized term ", termCtx.GetText())
 	}
