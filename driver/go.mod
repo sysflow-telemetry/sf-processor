@@ -26,7 +26,7 @@ require (
 	github.com/actgardner/gogen-avro/v7 v7.3.1
 	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/spf13/viper v1.10.1
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230209021054-13b1c526bda2
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230213025119-faaf3336095c
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20220221021811-25c7181c2904
 )
 
