@@ -22,8 +22,10 @@ package flatrecord
 
 import (
 	"reflect"
+	"regexp"
 	"strings"
 
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/common"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
@@ -104,6 +106,14 @@ func (op *Operations) FoldAll(attr string, list []string, operator source.Operat
 
 // RegExp creates a criterion for a regular-expression predicate.
 func (op *Operations) RegExp(attr string, re string) policy.Criterion[*Record] {
+	m := Mapper.MapStr(attr)
+	if regexp, err := regexp.Compile(re); err == nil {
+		p := func(r *Record) bool {
+			return regexp.FindString(m(r)) != ""
+		}
+		return policy.Criterion[*Record]{Pred: p}
+	}
+	logger.Error.Println("Could not compile regular expression ", re)
 	return policy.False[*Record]()
 }
 
