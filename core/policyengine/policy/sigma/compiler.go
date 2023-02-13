@@ -70,7 +70,7 @@ func (pc *PolicyCompiler[R]) compile(rulePaths []string, configPath string) erro
 	// Translate the sigma rules into criterion objects
 	for _, rule := range pc.sigmaRules {
 		for _, conditions := range rule.Detection.Conditions {
-			logger.Trace.Println("Parsing rule ", rule.ID)
+			logger.Trace.Println("Parsing rule ", rule.ID, rule.Title)
 			r := policy.Rule[R]{
 				Name:      rule.ID,
 				Desc:      rule.Description,
@@ -121,6 +121,7 @@ func (pc *PolicyCompiler[R]) getPriority(rule sigma.Rule) policy.Priority {
 }
 
 func (pc *PolicyCompiler[R]) visitSearchExpression(condition sigma.SearchExpr, searches map[string]sigma.Search) policy.Criterion[R] {
+
 	switch c := condition.(type) {
 
 	case sigma.SearchIdentifier:
@@ -130,6 +131,7 @@ func (pc *PolicyCompiler[R]) visitSearchExpression(condition sigma.SearchExpr, s
 		return policy.False[R]()
 
 	case sigma.And:
+		logger.Trace.Printf("%v", c)
 		var preds []policy.Criterion[R]
 		for _, expr := range c {
 			preds = append(preds, pc.visitSearchExpression(expr, searches))
@@ -144,7 +146,7 @@ func (pc *PolicyCompiler[R]) visitSearchExpression(condition sigma.SearchExpr, s
 		return policy.Any(preds)
 
 	case sigma.Not:
-		return pc.visitSearchExpression(c, searches).Not()
+		return pc.visitSearchExpression(c.Expr, searches).Not()
 
 	case sigma.OneOfThem:
 		var preds []policy.Criterion[R]

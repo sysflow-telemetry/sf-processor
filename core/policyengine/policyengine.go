@@ -167,7 +167,7 @@ func (s *PolicyEngine) createPolicyInterpreter() (*engine.PolicyInterpreter[*fla
 
 	// check  policies
 	logger.Info.Println("Loading policies from: ", dir)
-	paths, err := ioutils.ListFilePaths(dir, ".yaml", ".yml")
+	paths, err := ioutils.ListRecursiveFilePaths(dir, ".yaml", ".yml")
 	if err != nil {
 		return nil, err
 	}
