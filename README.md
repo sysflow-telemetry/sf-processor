@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/github/workflow/status/sysflow-telemetry/sf-processor/ci)](https://github.com/sysflow-telemetry/sf-processor/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/sysflow-telemetry/sf-processor/ci.yaml?branch=master)](https://github.com/sysflow-telemetry/sf-processor/actions)
 [![Docker Pulls](https://img.shields.io/docker/pulls/sysflowtelemetry/sf-processor)](https://hub.docker.com/r/sysflowtelemetry/sf-processor)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/sysflow-telemetry/sf-processor)
 [![Documentation Status](https://readthedocs.org/projects/sysflow/badge/?version=latest)](https://sysflow.readthedocs.io/en/latest/?badge=latest)
