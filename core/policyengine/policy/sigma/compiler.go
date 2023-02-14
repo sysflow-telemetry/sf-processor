@@ -234,7 +234,7 @@ func (pc *PolicyCompiler[R]) visitSearch(search sigma.Search) policy.Criterion[R
 			matcherPreds = append(matcherPreds, fieldPreds)
 		}
 	}
-	return policy.Any(matcherPreds)
+	return policy.All(matcherPreds)
 }
 
 func (pc *PolicyCompiler[R]) visitTerm(ops []FieldModifier, attr string, value string) policy.Criterion[R] {
