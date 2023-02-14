@@ -1,6 +1,7 @@
 package sigma
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -54,7 +55,7 @@ func (pc *PolicyCompiler[R]) compile(rulePaths []string, configPath string) erro
 		}
 		pc.sigmaRules = append(pc.sigmaRules, rule)
 	}
-
+	fmt.Println("XXXX: read rules")
 	// Read Sigma config
 	if p, err := os.Stat(configPath); err == nil && !p.IsDir() {
 		contents, err := os.ReadFile(configPath)
@@ -66,7 +67,7 @@ func (pc *PolicyCompiler[R]) compile(rulePaths []string, configPath string) erro
 			return err
 		}
 	}
-
+	fmt.Println("XXXX: read config")
 	// Translate the sigma rules into criterion objects
 	for _, rule := range pc.sigmaRules {
 		for _, conditions := range rule.Detection.Conditions {
@@ -90,6 +91,7 @@ func (pc *PolicyCompiler[R]) compile(rulePaths []string, configPath string) erro
 
 // Compile parses a set of input policies defined in paths.
 func (pc *PolicyCompiler[R]) Compile(paths ...string) ([]policy.Rule[R], []policy.Filter[R], error) {
+	fmt.Println("XXXX: compiling rules")
 	if err := pc.compile(paths, pc.configPath); err != nil {
 		return nil, nil, err
 	}
@@ -131,7 +133,6 @@ func (pc *PolicyCompiler[R]) visitSearchExpression(condition sigma.SearchExpr, s
 		return policy.False[R]()
 
 	case sigma.And:
-		logger.Trace.Printf("%v", c)
 		var preds []policy.Criterion[R]
 		for _, expr := range c {
 			preds = append(preds, pc.visitSearchExpression(expr, searches))
