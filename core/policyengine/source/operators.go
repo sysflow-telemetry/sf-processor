@@ -45,6 +45,10 @@ const (
 	GEq
 )
 
+func (s Operator) String() string {
+	return [...]string{"Eq", "IEq", "Contains", "IContains", "Startswith", "IStartswith", "Endswith", "IEndswith", "Lt", "LEq", "Gt", "GEq"}[s]
+}
+
 // Operator function type.
 type OpFunc[T constraints.Ordered | ~bool] func(T, T) bool
 
