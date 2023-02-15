@@ -33,6 +33,7 @@ const (
 	DOUBLE_QUOTE      = '"'
 	QUOTE_COLON       = "\":"
 	QUOTE_COLON_CURLY = "\":{"
+	BEGIN_CURLY		  = '{'
 	END_CURLY_COMMA   = "},"
 	END_CURLY         = '}'
 	END_SQUARE        = ']'
