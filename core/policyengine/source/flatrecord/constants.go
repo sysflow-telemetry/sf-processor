@@ -17,7 +17,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package flatrecord implements a rules engine based on falco rules.
+// Package flatrecord implements a flatrecord source for the policy compilers.
 package flatrecord
 
 // SysFlow attribute names.

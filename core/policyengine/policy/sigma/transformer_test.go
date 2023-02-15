@@ -17,6 +17,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package sigma implements a frontend for Sigma rules engine.
 package sigma
 
 import (
