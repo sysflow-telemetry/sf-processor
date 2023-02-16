@@ -80,3 +80,18 @@ pull:
 up: 
 	sudo docker-compose -f docker-compose.yml up
 
+.PHONY: plugins
+plugins:
+	@for dir in `find plugins -type d`; do \
+	    if [ -f $${dir}/Makefile ]; then \
+	        $(MAKE) -C $${dir}; \
+            fi; \
+	done
+
+.PHONY: clean-plugins
+clean-plugins:
+	@for dir in `find plugins -type d`; do \
+            if [ -f $${dir}/Makefile ]; then \
+                $(MAKE) -C $${dir} clean; \
+            fi; \
+        done
