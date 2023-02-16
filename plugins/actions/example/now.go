@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
 )
 
 type MyAction struct{}
@@ -31,12 +32,12 @@ func (a *MyAction) GetName() string {
 	return "now"
 }
 
-func (a *MyAction) GetFunc() engine.ActionFunc {
+func (a *MyAction) GetFunc() engine.ActionFunc[*flatrecord.Record] {
 	return addMyTag
 }
 
-func addMyTag(r *engine.Record) error {
-	r.Ctx.AddTag("now_in_nanos:" + strconv.FormatInt(time.Now().UnixNano(), 10))
+func addMyTag(r *flatrecord.Record) error {
+	r.Ctx.AddTags("now_in_nanos:" + strconv.FormatInt(time.Now().UnixNano(), 10))
 	return nil
 }
 
