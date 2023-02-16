@@ -88,10 +88,3 @@ plugins:
             fi; \
 	done
 
-.PHONY: clean-plugins
-clean-plugins:
-	@for dir in `find plugins -type d`; do \
-            if [ -f $${dir}/Makefile ]; then \
-                $(MAKE) -C $${dir} clean; \
-            fi; \
-        done
