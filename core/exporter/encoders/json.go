@@ -466,7 +466,7 @@ func mapPortList(writer *jwriter.Writer, ports *[]*sfgo.Port) {
 		writeIntField(writer, "nodeport", p.NodePort)
 		writer.RawByte(COMMA)
 		writeStrField(writer, "proto", p.Proto)
-		if i < len(*ports) {
+		if (i + 1) < len(*ports) {
 			writer.RawString(END_CURLY_COMMA)
 		} else {
 			writer.RawByte(END_CURLY)
