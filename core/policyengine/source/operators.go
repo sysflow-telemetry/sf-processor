@@ -101,3 +101,51 @@ func (IntOps[T]) OpFunc(op Operator) (OpFunc[T], error) {
 	}
 	return nil, errors.New("not an integer operator")
 }
+
+// Operator function type for slices.
+type SliceOpFunc[T constraints.Ordered | ~bool] func([]T, []T) bool
+
+// Operator functions over slices.
+type SliceOps[T constraints.Ordered] struct{}
+
+func (SliceOps[T]) OpFunc(op Operator) (SliceOpFunc[T], error) {
+	switch op {
+	case Eq:
+		return func(l []T, r []T) bool {
+			if len(l) != len(r) {
+				return false
+			}
+			for i, avalue := range l {
+				if avalue != r[i] {
+					return false
+				}
+			}
+			return true
+		}, nil
+	}
+	return nil, errors.New("not a slice operator")
+}
+
+// Operator for byte slices.
+type ByteSliceOps SliceOps[byte]
+
+// Operator function type for IPv6 structure - i.e. length 16 byte array.
+type IPv6OpFunc[T ~uint8] func([16]uint8, [16]uint8) bool
+
+// Operator functions over IPv6.
+type IPv6Ops struct{}
+
+func (IPv6Ops) OpFunc(op Operator) (IPv6OpFunc[uint8], error) {
+	switch op {
+	case Eq:
+		return func(l [16]uint8, r [16]uint8) bool {
+			for i, avalue := range l {
+				if avalue != r[i] {
+					return false
+				}
+			}
+			return true
+		}, nil
+	}
+	return nil, errors.New("not an array operator")
+}
