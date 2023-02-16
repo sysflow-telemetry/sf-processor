@@ -17,6 +17,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package source implements a backend for policy compilers.
 package source
 
 import "github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
