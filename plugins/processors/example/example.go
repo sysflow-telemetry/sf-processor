@@ -59,20 +59,22 @@ func (s *Example) Register(pc plugins.SFPluginCache) {
 }
 
 // Process implements the main interface of the plugin.
-func (s *Example) Process(ch interface{}, wg *sync.WaitGroup) {
-	cha := ch.(*flattener.FlatChannel)
-	record := cha.In
-	logger.Trace.Println("Example channel capacity:", cap(record))
-	defer wg.Done()
-	logger.Trace.Println("Starting Example")
-	for {
-		fc, ok := <-record
-		if !ok {
-			logger.Trace.Println("Channel closed. Shutting down.")
-			break
-		}
-		if fc.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] == sfgo.PROC_EVT {
-			logger.Info.Printf("Process Event: %s, %d", fc.Strs[sfgo.SYSFLOW_IDX][sfgo.PROC_EXE_STR], fc.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_TID_INT])
+func (s *Example) Process(ch []interface{}, wg *sync.WaitGroup) {
+	for _, chi := range ch {
+		cha := chi.(*flattener.FlatChannel)
+		record := cha.In
+		logger.Trace.Println("Example channel capacity:", cap(record))
+		defer wg.Done()
+		logger.Trace.Println("Starting Example")
+		for {
+			fc, ok := <-record
+			if !ok {
+				logger.Trace.Println("Channel closed. Shutting down.")
+				break
+			}
+			if fc.Ints[sfgo.SYSFLOW_IDX][sfgo.SF_REC_TYPE] == sfgo.PROC_EVT {
+				logger.Info.Printf("Process Event: %s, %d", fc.Strs[sfgo.SYSFLOW_IDX][sfgo.PROC_EXE_STR], fc.Ints[sfgo.SYSFLOW_IDX][sfgo.EV_PROC_TID_INT])
+			}
 		}
 	}
 	logger.Trace.Println("Exiting Example")

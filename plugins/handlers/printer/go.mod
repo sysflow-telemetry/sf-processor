@@ -19,7 +19,7 @@
 //
 module github.com/sysflow-telemetry/sf-processor/plugins/handlers/printer
 
-go 1.17
+go 1.19
 
 require github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220720151945-fca5a11be917
 
