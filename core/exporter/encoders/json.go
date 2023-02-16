@@ -457,7 +457,8 @@ func mapPortList(writer *jwriter.Writer, ports *[]*sfgo.Port) {
 	writer.RawString("ports")
 	writer.RawString(QUOTE_COLON)
 	writer.RawByte(BEGIN_SQUARE)
-	for _, p := range *ports {
+	for i, p := range *ports {
+		writer.RawByte(BEGIN_CURLY)
 		writeIntField(writer, "port", p.Port)
 		writer.RawByte(COMMA)
 		writeIntField(writer, "targetport", p.TargetPort)
@@ -465,6 +466,11 @@ func mapPortList(writer *jwriter.Writer, ports *[]*sfgo.Port) {
 		writeIntField(writer, "nodeport", p.NodePort)
 		writer.RawByte(COMMA)
 		writeStrField(writer, "proto", p.Proto)
+		if i<len(*ports){
+			writer.RawByte(END_CURLY_COMMA)
+		}else{
+			writer.RawByte(END_CURLY)
+		}
 	}
 	writer.RawByte(END_SQUARE)
 }
