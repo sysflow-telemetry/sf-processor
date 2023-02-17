@@ -33,12 +33,12 @@ import (
 
 // Record type
 type Record struct {
-	Fr  sfgo.FlatRecord
+	Fr  *sfgo.FlatRecord
 	Ctx Context
 }
 
 // NewRecord creates a new Record isntance.
-func NewRecord(fr sfgo.FlatRecord) *Record {
+func NewRecord(fr *sfgo.FlatRecord) *Record {
 	var r = new(Record)
 	r.Fr = fr
 	r.Ctx = make(Context, 4)
