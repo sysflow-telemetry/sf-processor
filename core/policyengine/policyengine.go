@@ -30,14 +30,13 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.com/sysflow-telemetry/sf-processor/core/flattener"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/monitor"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/falco"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/sigma"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/common"
 )
 
 const (
@@ -47,15 +46,15 @@ const (
 
 // PolicyEngine defines a driver for the Policy Engine plugin.
 type PolicyEngine struct {
-	pi            *engine.PolicyInterpreter[*flatrecord.Record]
-	outCh         []chan *flatrecord.Record
+	pi            *engine.PolicyInterpreter[*common.Record]
+	outCh         []chan *common.Record
 	config        engine.Config
-	policyMonitor monitor.PolicyMonitor[*flatrecord.Record]
+	policyMonitor monitor.PolicyMonitor[*common.Record]
 }
 
 // NewEventChan creates a new event record channel instance.
 func NewEventChan(size int) interface{} {
-	return &source.RecordChannel[*flatrecord.Record]{In: make(chan *flatrecord.Record, size)}
+	return &source.RecordChannel[*common.Record]{In: make(chan *common.Record, size)}
 }
 
 // NewPolicyEngine constructs a new Policy Engine plugin.
@@ -122,7 +121,7 @@ func (s *PolicyEngine) Process(ch []interface{}, wg *sync.WaitGroup) {
 		logger.Error.Println("Policy Engine only supports a single input channel at this time")
 		return
 	}
-	in := ch[0].(*flattener.FlatChannel).In
+	in := ch[0].(*common.Channel).In
 	defer wg.Done()
 	logger.Trace.Println("Starting policy engine with capacity: ", cap(in))
 
@@ -133,7 +132,7 @@ func (s *PolicyEngine) Process(ch []interface{}, wg *sync.WaitGroup) {
 	for {
 		if fc, ok := <-in; ok {
 			if s.pi == nil {
-				s.out(flatrecord.NewRecord(*fc))
+				s.bypassPolicyEngine(fc)
 				continue
 			}
 			if s.policyMonitor != nil {
@@ -153,7 +152,7 @@ func (s *PolicyEngine) Process(ch []interface{}, wg *sync.WaitGroup) {
 				}
 			}
 			// Process record in interpreter's worker pool
-			s.pi.ProcessAsync(flatrecord.NewRecord(*fc))
+			s.processAsync(fc)
 		} else {
 			logger.Trace.Println("Input channel closed. Shutting down.")
 			break
@@ -162,7 +161,7 @@ func (s *PolicyEngine) Process(ch []interface{}, wg *sync.WaitGroup) {
 }
 
 // Creates a policy interpreter from configuration.
-func (s *PolicyEngine) createPolicyInterpreter() (*engine.PolicyInterpreter[*flatrecord.Record], error) {
+func (s *PolicyEngine) createPolicyInterpreter() (*engine.PolicyInterpreter[*common.Record], error) {
 	dir := s.config.PoliciesPath
 
 	// check  policies
@@ -177,14 +176,14 @@ func (s *PolicyEngine) createPolicyInterpreter() (*engine.PolicyInterpreter[*fla
 
 	// build interpreter
 	logger.Info.Printf("Creating %s policy interpreter", s.config.Language.String())
-	var pc policy.PolicyCompiler[*flatrecord.Record]
+	var pc policy.PolicyCompiler[*common.Record]
 	if s.config.Language == engine.Falco {
-		pc = falco.NewPolicyCompiler(flatrecord.NewOperations())
+		pc = falco.NewPolicyCompiler(common.NewOperations())
 	} else {
-		pc = sigma.NewPolicyCompiler(flatrecord.NewOperations(), s.config.ConfigPath)
+		pc = sigma.NewPolicyCompiler(common.NewOperations(), s.config.ConfigPath)
 	}
-	pf := flatrecord.NewPrefilter()
-	ctx := flatrecord.NewContextualizer()
+	pf := common.NewPrefilter()
+	ctx := common.NewContextualizer()
 	pi := engine.NewPolicyInterpreter(s.config, pc, pf, ctx, s.out)
 
 	// compile policies
@@ -200,7 +199,7 @@ func (s *PolicyEngine) createPolicyInterpreter() (*engine.PolicyInterpreter[*fla
 }
 
 // out sends a record to every output channel in the plugin.
-func (s *PolicyEngine) out(r *flatrecord.Record) {
+func (s *PolicyEngine) out(r *common.Record) {
 	for _, c := range s.outCh {
 		c <- r
 	}
@@ -209,7 +208,7 @@ func (s *PolicyEngine) out(r *flatrecord.Record) {
 // SetOutChan sets the output channel of the plugin.
 func (s *PolicyEngine) SetOutChan(ch []interface{}) {
 	for _, c := range ch {
-		s.outCh = append(s.outCh, (c.(*source.RecordChannel[*flatrecord.Record])).In)
+		s.outCh = append(s.outCh, (c.(*source.RecordChannel[*common.Record])).In)
 	}
 }
 
