@@ -13,6 +13,11 @@ logsources:
 fieldmappings:
     Image: sf.proc.exe
     CommandLine: sf.proc.cmdline
-    ParentImage: sf.pproc.exe
-    ParentCommandLine: sf.pproc.cmdline
-    
+    ProcessId: sf.proc.pid
+    ParentImage: sf.proc.aexe
+    ParentCommandLine: sf.proc.acmdline
+    ParentProcessId: sf.pproc.pid
+    CurrentDirectory: sf.proc.cwd
+    User: sf.proc.user
+    DestinationIp: sf.net.dip
+    TargetFilename: sf.file.path    

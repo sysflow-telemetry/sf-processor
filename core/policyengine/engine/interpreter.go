@@ -104,6 +104,7 @@ func (pi *PolicyInterpreter[R]) Compile(paths ...string) (err error) {
 	if pi.rules, pi.filters, err = pi.pc.Compile(paths...); err != nil {
 		return err
 	}
+	logger.Info.Printf("Policy engine loaded %d rules and %d prefilters", len(pi.rules), len(pi.filters))
 	pi.ah.CheckActions(pi.rules)
 	return nil
 }
