@@ -39,7 +39,7 @@ require (
 	github.com/satta/gommunityid v0.0.0-20210315182841-1cdcb73ce408
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570
 	github.com/stretchr/testify v1.7.0
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230213025119-faaf3336095c
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230222025549-ace3972c88de
 	github.com/tidwall/gjson v1.14.1
 )
 
@@ -59,6 +59,7 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
+	github.com/paulbellamy/ratecounter v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect

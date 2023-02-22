@@ -22,8 +22,11 @@
 package engine
 
 import (
+	"math/rand"
 	"sync"
+	"time"
 
+	"github.com/paulbellamy/ratecounter"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
@@ -60,6 +63,13 @@ type PolicyInterpreter[R any] struct {
 
 	// Action Handler
 	ah *ActionHandler[R]
+
+	// Rate counter
+	rc       *ratecounter.RateCounter
+	lastRcTs time.Time
+
+	// Benchmark
+	benchRulesSampleSize int
 }
 
 // NewPolicyInterpreter constructs a new interpreter instance.
@@ -78,6 +88,13 @@ func NewPolicyInterpreter[R any](conf Config, pc policy.PolicyCompiler[R], pf so
 	pi.filters = make([]policy.Filter[R], 0)
 	pi.out = out
 	pi.ah = NewActionHandler[R](conf)
+
+	// This should only be used for benchmarking the engine
+	if logger.IsEnabled(logger.Perf) {
+		pi.benchRulesSampleSize = conf.BenchRulesSambleSize
+		pi.rc = ratecounter.NewRateCounter(1 * time.Second)
+		pi.lastRcTs = time.Now()
+	}
 	return pi
 }
 
@@ -104,6 +121,9 @@ func (pi *PolicyInterpreter[R]) Compile(paths ...string) (err error) {
 	if pi.rules, pi.filters, err = pi.pc.Compile(paths...); err != nil {
 		return err
 	}
+	if logger.IsEnabled(logger.Perf) && pi.benchRulesSampleSize > 0 {
+		pi.rules = pi.sampleRules(pi.benchRulesSampleSize)
+	}
 	logger.Info.Printf("Policy engine loaded %d rules and %d prefilters", len(pi.rules), len(pi.filters))
 	pi.ah.CheckActions(pi.rules)
 	return nil
@@ -112,6 +132,10 @@ func (pi *PolicyInterpreter[R]) Compile(paths ...string) (err error) {
 // ProcessAsync queues the record for processing in the worker pool.
 func (pi *PolicyInterpreter[R]) ProcessAsync(r R) {
 	pi.workerCh <- r
+	if logger.IsEnabled(logger.Perf) && time.Since(pi.lastRcTs) > (15*time.Second) {
+		logger.Perf.Println("Policy engine rate (events/sec): ", pi.rc.Rate())
+		pi.lastRcTs = time.Now()
+	}
 }
 
 // Asynchronous worker thread: apply all compiled policies, enrich matching records, and send records downstream.
@@ -124,7 +148,12 @@ func (pi *PolicyInterpreter[R]) worker() {
 			break
 		}
 
-		// Drop record if any drop rule applied.
+		// Increment rate counter
+		if logger.IsEnabled(logger.Perf) {
+			pi.rc.Incr(1)
+		}
+
+		// Drop record if any drop rule applied
 		if pi.evalFilters(r) {
 			continue
 		}
@@ -159,4 +188,15 @@ func (pi *PolicyInterpreter[R]) evalFilters(r R) bool {
 		}
 	}
 	return false
+}
+
+// sampleRules is used in performance benchmarks to randomly sample a subset of rules.
+func (pi *PolicyInterpreter[R]) sampleRules(n int) []policy.Rule[R] {
+	rand.Seed(time.Now().Unix())
+	permutation := rand.Perm(len(pi.rules))
+	rules := make([]policy.Rule[R], 0)
+	for i := 0; i < n && i < len(pi.rules); i++ {
+		rules = append(rules, pi.rules[permutation[i]])
+	}
+	return rules
 }

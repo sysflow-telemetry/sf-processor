@@ -24,7 +24,8 @@
 package common
 
 import (
-	"github.com/sysflow-telemetry/sf-processor/core/flattener"
+	"github.com/sysflow-telemetry/sf-apis/go/plugins"
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
 )
 
@@ -37,7 +38,7 @@ type Record = flatrecord.Record
 
 // Channel is the backend specific channel wrapper object used to send data
 // to the policy engine
-type Channel = flattener.FlatChannel
+type Channel = plugins.Channel[*sfgo.FlatRecord]
 
 // NewOperations specifies a constructor for the backend specific operations
 // object used with the policy engine

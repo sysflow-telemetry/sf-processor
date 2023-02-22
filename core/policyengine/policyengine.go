@@ -35,7 +35,6 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/falco"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/sigma"
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/common"
 )
 
@@ -54,7 +53,7 @@ type PolicyEngine struct {
 
 // NewEventChan creates a new event record channel instance.
 func NewEventChan(size int) interface{} {
-	return &source.RecordChannel[*common.Record]{In: make(chan *common.Record, size)}
+	return &plugins.Channel[*common.Record]{In: make(chan *common.Record, size)}
 }
 
 // NewPolicyEngine constructs a new Policy Engine plugin.
@@ -129,6 +128,7 @@ func (s *PolicyEngine) Process(ch []interface{}, wg *sync.WaitGroup) {
 	start := time.Now()
 	expiration := start.Add(s.config.MonitorInterval)
 
+	lastPerfTs := time.Now()
 	for {
 		if fc, ok := <-in; ok {
 			if s.pi == nil {
@@ -150,6 +150,11 @@ func (s *PolicyEngine) Process(ch []interface{}, wg *sync.WaitGroup) {
 					}
 					expiration = now.Add(s.config.MonitorInterval)
 				}
+			}
+			// Log the number of queued input elements
+			if logger.IsEnabled(logger.Perf) && time.Since(lastPerfTs) > 15*time.Second {
+				logger.Perf.Printf("Policy engine input channel queue: %d", len(in))
+				lastPerfTs = time.Now()
 			}
 			// Process record in interpreter's worker pool
 			s.processAsync(fc)
@@ -208,7 +213,7 @@ func (s *PolicyEngine) out(r *common.Record) {
 // SetOutChan sets the output channel of the plugin.
 func (s *PolicyEngine) SetOutChan(ch []interface{}) {
 	for _, c := range ch {
-		s.outCh = append(s.outCh, (c.(*source.RecordChannel[*common.Record])).In)
+		s.outCh = append(s.outCh, (c.(*plugins.Channel[*common.Record])).In)
 	}
 }
 
