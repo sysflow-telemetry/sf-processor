@@ -28,32 +28,34 @@ import (
 
 // Configuration keys.
 const (
-	PoliciesConfigKey    string = "policies"
-	ConfigKey            string = "config"
-	LanguageKey          string = "language"
-	ModeConfigKey        string = "mode"
-	VersionKey           string = "version"
-	JSONSchemaVersionKey string = "jsonschemaversion"
-	BuildNumberKey       string = "buildnumber"
-	MonitorKey           string = "monitor"
-	MonitorIntervalKey   string = "monitor.interval"
-	ConcurrencyKey       string = "concurrency"
-	ActionDirKey         string = "actiondir"
+	PoliciesConfigKey       string = "policies"
+	ConfigKey               string = "config"
+	LanguageKey             string = "language"
+	ModeConfigKey           string = "mode"
+	VersionKey              string = "version"
+	JSONSchemaVersionKey    string = "jsonschemaversion"
+	BuildNumberKey          string = "buildnumber"
+	MonitorKey              string = "monitor"
+	MonitorIntervalKey      string = "monitor.interval"
+	ConcurrencyKey          string = "concurrency"
+	ActionDirKey            string = "actiondir"
+	BenchRulesSambleSizeKey string = "bench.rulessamplesize"
 )
 
 // Config defines a configuration object for the engine.
 type Config struct {
-	PoliciesPath      string
-	ConfigPath        string
-	Language          Language
-	Mode              Mode
-	Version           string
-	JSONSchemaVersion string
-	BuildNumber       string
-	Monitor           MonitorType
-	MonitorInterval   time.Duration
-	Concurrency       int
-	ActionDir         string
+	PoliciesPath         string
+	ConfigPath           string
+	Language             Language
+	Mode                 Mode
+	Version              string
+	JSONSchemaVersion    string
+	BuildNumber          string
+	Monitor              MonitorType
+	MonitorInterval      time.Duration
+	Concurrency          int
+	ActionDir            string
+	BenchRulesSambleSize int
 }
 
 // CreateConfig creates a new config object from config dictionary.
@@ -97,6 +99,9 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 	}
 	if v, ok := conf[ActionDirKey].(string); ok {
 		c.ActionDir = v
+	}
+	if v, ok := conf[BenchRulesSambleSizeKey].(string); ok {
+		c.BenchRulesSambleSize, err = strconv.Atoi(v)
 	}
 	return c, err
 }
