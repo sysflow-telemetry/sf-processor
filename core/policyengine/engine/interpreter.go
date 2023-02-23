@@ -22,7 +22,6 @@
 package engine
 
 import (
-	"math/rand"
 	"sync"
 	"time"
 
@@ -38,14 +37,14 @@ type PolicyInterpreter[R any] struct {
 	// Input policy language compiler
 	pc policy.PolicyCompiler[R]
 
+	// Configuration
+	config Config
+
 	// Prefilter
 	prefilter source.Prefilter[R]
 
 	// Record contextualizer
 	ctx source.Contextualizer[R]
-
-	// Mode of the policy interpreter
-	mode Mode
 
 	// Parsed rule and filter object maps
 	rules   []policy.Rule[R]
@@ -67,9 +66,6 @@ type PolicyInterpreter[R any] struct {
 	// Rate counter
 	rc       *ratecounter.RateCounter
 	lastRcTs time.Time
-
-	// Benchmark
-	benchRulesSampleSize int
 }
 
 // NewPolicyInterpreter constructs a new interpreter instance.
@@ -82,7 +78,7 @@ func NewPolicyInterpreter[R any](conf Config, pc policy.PolicyCompiler[R], pf so
 	if pi.ctx = ctx; ctx == nil {
 		pi.ctx = source.NewDefaultContextualizer[R]()
 	}
-	pi.mode = conf.Mode
+	pi.config = conf
 	pi.concurrency = conf.Concurrency
 	pi.rules = make([]policy.Rule[R], 0)
 	pi.filters = make([]policy.Filter[R], 0)
@@ -91,7 +87,6 @@ func NewPolicyInterpreter[R any](conf Config, pc policy.PolicyCompiler[R], pf so
 
 	// This should only be used for benchmarking the engine
 	if logger.IsEnabled(logger.Perf) {
-		pi.benchRulesSampleSize = conf.BenchRulesSambleSize
 		pi.rc = ratecounter.NewRateCounter(1 * time.Second)
 		pi.lastRcTs = time.Now()
 	}
@@ -121,8 +116,16 @@ func (pi *PolicyInterpreter[R]) Compile(paths ...string) (err error) {
 	if pi.rules, pi.filters, err = pi.pc.Compile(paths...); err != nil {
 		return err
 	}
-	if logger.IsEnabled(logger.Perf) && pi.benchRulesSampleSize > 0 {
-		pi.rules = pi.sampleRules(pi.benchRulesSampleSize)
+	if logger.IsEnabled(logger.Perf) {
+		if pi.config.BenchRuleIndex >= 0 && pi.config.BenchRuleIndex < len(pi.rules) {
+			pi.rules = append(make([]policy.Rule[R], 0), pi.rules[pi.config.BenchRuleIndex])
+		} else if pi.config.BenchRulesetSize >= 0 && pi.config.BenchRulesetSize <= len(pi.rules) {
+			pi.rules = append(make([]policy.Rule[R], 0), pi.rules[:pi.config.BenchRulesetSize]...)
+		}
+		logger.Perf.Printf("Benchmarking %d rule(s)", len(pi.rules))
+		for _, r := range pi.rules {
+			logger.Perf.Printf("Rule Name: %s, Description: %-50s", r.Name, r.Desc)
+		}
 	}
 	logger.Info.Printf("Policy engine loaded %d rules and %d prefilters", len(pi.rules), len(pi.filters))
 	pi.ah.CheckActions(pi.rules)
@@ -159,7 +162,7 @@ func (pi *PolicyInterpreter[R]) worker() {
 		}
 
 		// Enrich mode is non-blocking: Push record even if no rule matches
-		match := (pi.mode == EnrichMode)
+		match := (pi.config.Mode == EnrichMode)
 
 		// Apply rules
 		for _, rule := range pi.rules {
@@ -191,12 +194,12 @@ func (pi *PolicyInterpreter[R]) evalFilters(r R) bool {
 }
 
 // sampleRules is used in performance benchmarks to randomly sample a subset of rules.
-func (pi *PolicyInterpreter[R]) sampleRules(n int) []policy.Rule[R] {
-	rand.Seed(time.Now().Unix())
-	permutation := rand.Perm(len(pi.rules))
-	rules := make([]policy.Rule[R], 0)
-	for i := 0; i < n && i < len(pi.rules); i++ {
-		rules = append(rules, pi.rules[permutation[i]])
-	}
-	return rules
-}
+// func (pi *PolicyInterpreter[R]) sampleRules(n int) []policy.Rule[R] {
+// 	rand.Seed(time.Now().Unix())
+// 	permutation := rand.Perm(len(pi.rules))
+// 	rules := make([]policy.Rule[R], 0)
+// 	for i := 0; i < n && i < len(pi.rules); i++ {
+// 		rules = append(rules, pi.rules[permutation[i]])
+// 	}
+// 	return rules
+// }
