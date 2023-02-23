@@ -28,39 +28,41 @@ import (
 
 // Configuration keys.
 const (
-	PoliciesConfigKey       string = "policies"
-	ConfigKey               string = "config"
-	LanguageKey             string = "language"
-	ModeConfigKey           string = "mode"
-	VersionKey              string = "version"
-	JSONSchemaVersionKey    string = "jsonschemaversion"
-	BuildNumberKey          string = "buildnumber"
-	MonitorKey              string = "monitor"
-	MonitorIntervalKey      string = "monitor.interval"
-	ConcurrencyKey          string = "concurrency"
-	ActionDirKey            string = "actiondir"
-	BenchRulesSambleSizeKey string = "bench.rulessamplesize"
+	PoliciesConfigKey    string = "policies"
+	ConfigKey            string = "config"
+	LanguageKey          string = "language"
+	ModeConfigKey        string = "mode"
+	VersionKey           string = "version"
+	JSONSchemaVersionKey string = "jsonschemaversion"
+	BuildNumberKey       string = "buildnumber"
+	MonitorKey           string = "monitor"
+	MonitorIntervalKey   string = "monitor.interval"
+	ConcurrencyKey       string = "concurrency"
+	ActionDirKey         string = "actiondir"
+	BenchRulesetSizeKey  string = "bench.rulesetsize"
+	BenchRuleIndexKey    string = "bench.ruleindex"
 )
 
 // Config defines a configuration object for the engine.
 type Config struct {
-	PoliciesPath         string
-	ConfigPath           string
-	Language             Language
-	Mode                 Mode
-	Version              string
-	JSONSchemaVersion    string
-	BuildNumber          string
-	Monitor              MonitorType
-	MonitorInterval      time.Duration
-	Concurrency          int
-	ActionDir            string
-	BenchRulesSambleSize int
+	PoliciesPath      string
+	ConfigPath        string
+	Language          Language
+	Mode              Mode
+	Version           string
+	JSONSchemaVersion string
+	BuildNumber       string
+	Monitor           MonitorType
+	MonitorInterval   time.Duration
+	Concurrency       int
+	ActionDir         string
+	BenchRulesetSize  int
+	BenchRuleIndex    int
 }
 
 // CreateConfig creates a new config object from config dictionary.
 func CreateConfig(conf map[string]interface{}) (Config, error) {
-	var c Config = Config{Mode: AlertMode, Concurrency: 5, Monitor: NoneType, MonitorInterval: 30 * time.Second, ActionDir: "../resources/actions", Language: Falco} // default values
+	var c Config = Config{Mode: AlertMode, Concurrency: 5, Monitor: NoneType, MonitorInterval: 30 * time.Second, ActionDir: "../resources/actions", Language: Falco, BenchRulesetSize: -1, BenchRuleIndex: -1} // default values
 	var err error
 
 	if v, ok := conf[PoliciesConfigKey].(string); ok {
@@ -100,8 +102,11 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 	if v, ok := conf[ActionDirKey].(string); ok {
 		c.ActionDir = v
 	}
-	if v, ok := conf[BenchRulesSambleSizeKey].(string); ok {
-		c.BenchRulesSambleSize, err = strconv.Atoi(v)
+	if v, ok := conf[BenchRulesetSizeKey].(string); ok {
+		c.BenchRulesetSize, err = strconv.Atoi(v)
+	}
+	if v, ok := conf[BenchRuleIndexKey].(string); ok {
+		c.BenchRuleIndex, err = strconv.Atoi(v)
 	}
 	return c, err
 }
