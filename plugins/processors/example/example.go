@@ -59,8 +59,8 @@ func (s *Example) Register(pc plugins.SFPluginCache) {
 }
 
 // Process implements the main interface of the plugin.
-func (s *Example) Process(ch interface{}, wg *sync.WaitGroup) {
-	cha := ch.(*flattener.FlatChannel)
+func (s *Example) Process(ch []interface{}, wg *sync.WaitGroup) {
+	cha := ch[0].(*flattener.FlatChannel)
 	record := cha.In
 	logger.Trace.Println("Example channel capacity:", cap(record))
 	defer wg.Done()
