@@ -100,7 +100,7 @@ If the _export_ parameter is set to `syslog`, output to syslog is enabled and th
 - _syslog.tag_ (optional): The tag used for each Sysflow record in syslog. Default is `SysFlow`.
 - _syslog.source_ (optional): If set adds a hostname to the syslog header.
 - _syslog.host_ (optional): The hostname of the sysflow server. Default is `localhost`.
-- _syslog.port_ (optional): The port pf the syslow server. Default is `514`.
+- _syslog.port_ (optional): The port of the syslow server. Default is `514`.
 
 #### ElasticSearch
 
