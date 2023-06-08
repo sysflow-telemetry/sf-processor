@@ -26,7 +26,7 @@
 	[docker hub](https://hub.docker.com/u/sysflowtelemetry) | [GHCR](https://github.com/orgs/sysflow-telemetry/packages)
 
 -	**Binary packages**:
-	[deb](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.5.0/sfprocessor-0.5.0-x86_64.deb) | [rpm](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.5.0/sfprocessor-0.5.0-x86_64.rpm) | [tgz](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.5.0/sfprocessor-0.5.0-x86_64.tar.gz)
+	[deb](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.5.1/sfprocessor-0.5.1-x86_64.deb) | [rpm](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.5.1/sfprocessor-0.5.1-x86_64.rpm) | [tgz](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.5.1/sfprocessor-0.5.1-x86_64.tar.gz)
 
 # What is SysFlow?
 
