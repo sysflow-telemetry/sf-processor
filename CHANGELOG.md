@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-## [0.5.1] - 2023-05-30
+## [0.5.1] - 2023-06-07
 
 ### Added
 
@@ -23,8 +23,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
-- Bumped UBI version to 8.7-1090
-- Bump sf-apis to 0.5.1-rc4
+- Bumped UBI version to 8.8-854
+- Bump sf-apis to 0.5.1
 
 ### Fixed
 
