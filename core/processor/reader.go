@@ -77,9 +77,13 @@ func (s *SysFlowReader) Init(conf map[string]interface{}) (err error) {
 }
 
 // Process implements the main processor method of the plugin.
-func (s *SysFlowReader) Process(ch interface{}, wg *sync.WaitGroup) {
+func (s *SysFlowReader) Process(ch []interface{}, wg *sync.WaitGroup) {
 	entEnabled := s.hdl.IsEntityEnabled()
-	cha := ch.(*plugins.SFChannel)
+	if len(ch) != 1 {
+		logger.Error.Println("SysFlow Reader only supports a single input channel at this time")
+		return
+	}
+	cha := ch[0].(*plugins.SFChannel)
 	record := cha.In
 	defer wg.Done()
 	logger.Trace.Println("Starting SysFlow Reader...")

@@ -28,7 +28,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6 // indirect
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220720151945-fca5a11be917 // indirect
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230404030540-37e5fa8614fc // indirect
 	github.com/tidwall/gjson v1.14.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect

@@ -23,6 +23,8 @@
 driver/driver
 driver/sfprocessor
 driver/test.sh
+driver/*.perf
+driver/*.pprof
 *.pdf
 *.prof
 *.vlog
