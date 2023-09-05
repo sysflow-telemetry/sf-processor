@@ -113,7 +113,7 @@ func (op *Operations) RegExp(attr string, re string) (policy.Criterion[*Record],
 		}
 		return policy.Criterion[*Record]{Pred: p}, nil
 	}
-	return policy.False[*Record](), errors.Errorf("could not compile regular expression ", re)
+	return policy.False[*Record](), errors.Errorf("could not compile regular expression %s", re)
 }
 
 // compareStr compares two string values based on an operator.

@@ -41,7 +41,7 @@ jobs:
         with:
           version: v1.51.1
           working-directory: core
-          args: --disable=errcheck
+          args: --disable=errcheck --build-tags=flatrecord
   lint-driver:
     needs: lint-core
     runs-on: ubuntu-latest

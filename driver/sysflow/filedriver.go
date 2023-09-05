@@ -23,7 +23,7 @@ package sysflow
 import (
 	"bufio"
 	"errors"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"time"
 
@@ -45,9 +45,9 @@ func getFiles(filename string) ([]string, error) {
 		return nil, err
 	} else if fi.IsDir() {
 		logger.Trace.Println("File is a directory")
-		var files []os.FileInfo
+		var files []fs.DirEntry
 		var err error
-		if files, err = ioutil.ReadDir(filename); err != nil {
+		if files, err = os.ReadDir(filename); err != nil {
 			return nil, err
 		}
 		for _, file := range files {
