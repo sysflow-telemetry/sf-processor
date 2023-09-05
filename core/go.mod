@@ -40,7 +40,7 @@ require (
 	github.com/satta/gommunityid v0.0.0-20210315182841-1cdcb73ce408
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570
 	github.com/stretchr/testify v1.7.0
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230222025549-ace3972c88de
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230905191833-17e4c751b04c
 	github.com/tidwall/gjson v1.14.1
 	golang.org/x/exp v0.0.0-20230206171751-46f607a40771
 )

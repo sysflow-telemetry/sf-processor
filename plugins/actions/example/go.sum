@@ -22,6 +22,8 @@ github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230213025119-faaf3336095c h1:huQV5XQvVMhlqXNdvk3A9xVk4Jv/XVCa9oQzYFtndws=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230213025119-faaf3336095c/go.mod h1:eo1ATE056Rqb9LhE4LA/0Y2AHfV//1zdCw0py4/S5HM=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230905191833-17e4c751b04c h1:5BCJMIuiysHlYJe+nr/203cqIS6cpTIssbUD8v88VOU=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230905191833-17e4c751b04c/go.mod h1:eo1ATE056Rqb9LhE4LA/0Y2AHfV//1zdCw0py4/S5HM=
 github.com/tidwall/gjson v1.14.1 h1:iymTbGkQBhveq21bEvAQ81I0LEBork8BFe1CUZXdyuo=
 github.com/tidwall/gjson v1.14.1/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
 github.com/tidwall/match v1.1.1 h1:+Ho715JplO36QYgwN9PGYNhgZvoUSc9X2c80KVTi+GA=
