@@ -169,8 +169,8 @@ jobs:
         id: tag_name
         shell: bash
         run: |
-          GHREF=${GITHUB_REF#refs/tags/}; echo ::set-output name=current_version::${GHREF%-*}
-          echo ::set-output name=current_tag::${GITHUB_REF#refs/tags/}
+          GHREF=${GITHUB_REF#refs/tags/}; echo "CURRENT_VERSION=${GHREF%%-*}" >> $GITHUB_ENV
+          echo "CURRENT_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
       - name: Build Release Assets
         id: build_release_assets
         shell: bash
@@ -184,14 +184,14 @@ jobs:
         id: changelog_reader
         uses: mindsers/changelog-reader-action@v2
         with:
-          version: ${{ steps.tag_name.outputs.current_version }}
+          version: ${{ env.CURRENT_VERSION }}
           path: ./CHANGELOG.md
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           body: ${{ steps.changelog_reader.outputs.changes }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: contains(steps.tag_name.outputs.current_version, '-rc')
+          prerelease: ( contains(env.CURRENT_VERSION, '-rc') || contains(env.CURRENT_VERSION, '-alpha') || contains(env.CURRENT_VERSION, '-beta') )
           draft: true
           files: |
             ${{ steps.build_release_assets.outputs.deb }}

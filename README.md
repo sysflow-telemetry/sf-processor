@@ -6,7 +6,7 @@
 
 # Supported tags and respective `Dockerfile` links
 
--	[`0.5.0`, `latest`](https://github.com/sysflow-telemetry/sf-processor/blob/0.5.0/Dockerfile), [`edge`](https://github.com/sysflow-telemetry/sf-processor/blob/master/Dockerfile), [`dev`](https://github.com/sysflow-telemetry/sf-processor/blob/dev/Dockerfile)
+-	[`0.5.1`, `latest`](https://github.com/sysflow-telemetry/sf-processor/blob/0.5.1/Dockerfile), [`edge`](https://github.com/sysflow-telemetry/sf-processor/blob/master/Dockerfile), [`dev`](https://github.com/sysflow-telemetry/sf-processor/blob/dev/Dockerfile)
 
 # Quick reference
 
@@ -26,7 +26,7 @@
 	[docker hub](https://hub.docker.com/u/sysflowtelemetry) | [GHCR](https://github.com/orgs/sysflow-telemetry/packages)
 
 -	**Binary packages**:
-	[deb](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.5.0/sfprocessor-0.5.0-x86_64.deb) | [rpm](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.5.0/sfprocessor-0.5.0-x86_64.rpm) | [tgz](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.5.0/sfprocessor-0.5.0-x86_64.tar.gz)
+	[deb](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.5.1/sfprocessor-0.5.1-x86_64.deb) | [rpm](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.5.1/sfprocessor-0.5.1-x86_64.rpm) | [tgz](https://github.com/sysflow-telemetry/sf-processor/releases/tag/0.5.1/sfprocessor-0.5.1-x86_64.tar.gz)
 
 # What is SysFlow?
 
