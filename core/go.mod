@@ -35,12 +35,14 @@ require (
 	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/mailru/easyjson v0.7.6
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
+	github.com/paulbellamy/ratecounter v0.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/satta/gommunityid v0.0.0-20210315182841-1cdcb73ce408
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570
 	github.com/stretchr/testify v1.7.0
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230222025549-ace3972c88de
 	github.com/tidwall/gjson v1.14.1
+	golang.org/x/exp v0.0.0-20230206171751-46f607a40771
 )
 
 require (
@@ -59,13 +61,11 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
-	github.com/paulbellamy/ratecounter v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	go.mongodb.org/mongo-driver v1.7.5 // indirect
-	golang.org/x/exp v0.0.0-20230206171751-46f607a40771 // indirect
 	golang.org/x/net v0.0.0-20220114011407-0dd24b26b47d // indirect
 	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
