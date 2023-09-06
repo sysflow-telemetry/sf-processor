@@ -72,6 +72,23 @@ jobs:
         run: |
           echo "UBI_VERSION=$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)" >> $GITHUB_ENV
       - name: Docker meta
+        id: meta_builder
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ env.PLUGIN_BUILDER_DOCKER_REGISTRY_REPOSITORY }}
+            ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder            
+          tags: |
+            type=edge,branch=master
+            type=ref,event=branch
+            type=match,pattern=^\d.\d.\d$
+            type=ref,event=pr
+            type=sha,prefix=
+            type=sha,format=long,prefix=
+          labels: |
+            org.opencontainers.image.documentation=https://sysflow.readthedocs.io/
+            org.opencontainers.image.vendor=SysFlow          
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
@@ -81,11 +98,13 @@ jobs:
           tags: |
             type=edge,branch=master
             type=ref,event=branch
-            type=ref,event=tag
+            type=match,pattern=^\d.\d.\d$
             type=ref,event=pr
+            type=sha,prefix=
+            type=sha,format=long,prefix=
           labels: |
             org.opencontainers.image.documentation=https://sysflow.readthedocs.io/
-            org.opencontainers.image.vendor=SysFlow
+            org.opencontainers.image.vendor=SysFlow      
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -118,8 +137,8 @@ jobs:
           tags: |
             ${{ env.PLUGIN_BUILDER_DOCKER_REGISTRY_REPOSITORY }}:${{ env.BRANCH }}
             ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ env.BRANCH }}
-          target: base
-          labels: "${{ steps.meta.outputs.labels }}"
+          target: "${{ steps.meta_builder.outputs.tags }}"
+          labels: "${{ steps.meta_builder.outputs.labels }}"
           build-args: |
             BUILD_NUMBER=${{ env.SHA_SHORT }}
             VERSION=${{ env.BRANCH }}
