@@ -23,13 +23,16 @@ package sysflow
 import (
 	"bufio"
 	"errors"
-	"io/ioutil"
+	"io/fs"
 	"os"
+	"time"
 
 	"github.com/linkedin/goavro"
+	"github.com/paulbellamy/ratecounter"
 	"github.com/sysflow-telemetry/sf-apis/go/converter"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
+	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 )
 
 const (
@@ -42,9 +45,9 @@ func getFiles(filename string) ([]string, error) {
 		return nil, err
 	} else if fi.IsDir() {
 		logger.Trace.Println("File is a directory")
-		var files []os.FileInfo
+		var files []fs.DirEntry
 		var err error
-		if files, err = ioutil.ReadDir(filename); err != nil {
+		if files, err = os.ReadDir(filename); err != nil {
 			return nil, err
 		}
 		for _, file := range files {
@@ -68,6 +71,10 @@ type FileDriver struct {
 	pipeline plugins.SFPipeline
 	config   map[string]interface{}
 	file     *os.File
+
+	// Rate counter
+	rc       *ratecounter.RateCounter
+	lastRcTs time.Time
 }
 
 // NewFileDriver creates a new file driver object
@@ -89,6 +96,10 @@ func (s *FileDriver) Register(pc plugins.SFPluginCache) {
 func (s *FileDriver) Init(pipeline plugins.SFPipeline, config map[string]interface{}) error {
 	s.pipeline = pipeline
 	s.config = config
+	if logger.IsEnabled(logger.Perf) {
+		s.rc = ratecounter.NewRateCounter(1 * time.Second)
+		s.lastRcTs = time.Now()
+	}
 	return nil
 }
 
@@ -112,7 +123,7 @@ func (s *FileDriver) Run(path string, running *bool) error {
 			configpath = v
 		}
 	}
-	sfChannel := channel.(*plugins.SFChannel)
+	sfChannel := channel.(*plugins.Channel[*sfgo.SysFlow])
 	records := sfChannel.In
 
 	logger.Trace.Println("Loading file: ", path)
@@ -147,6 +158,15 @@ func (s *FileDriver) Run(path string, running *bool) error {
 				break
 			}
 			records <- sfobjcvter.ConvertToSysFlow(datum)
+
+			// Increment rate counter
+			if logger.IsEnabled(logger.Perf) {
+				s.rc.Incr(1)
+				if time.Since(s.lastRcTs) > (15 * time.Second) {
+					logger.Perf.Println("File driver rate (events/sec): ", s.rc.Rate())
+					s.lastRcTs = time.Now()
+				}
+			}
 		}
 		s.file.Close()
 		if !*running {
