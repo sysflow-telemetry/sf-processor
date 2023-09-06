@@ -1,0 +1,23 @@
+title: SysFlow field mapping
+order: 1
+backends:
+  - sf-processor
+
+logsources:
+    sysflow:
+      product: linux
+      service: sysflow
+      conditions:
+         event.provider: sysflow
+   
+fieldmappings:
+    Image: sf.proc.exe
+    CommandLine: sf.proc.cmdline
+    ProcessId: sf.proc.pid
+    ParentImage: sf.proc.aexe
+    ParentCommandLine: sf.proc.acmdline
+    ParentProcessId: sf.pproc.pid
+    CurrentDirectory: sf.proc.cwd
+    User: sf.proc.user
+    DestinationIp: sf.net.dip
+    TargetFilename: sf.file.path    
