@@ -29,6 +29,8 @@ import (
 // Configuration keys.
 const (
 	PoliciesConfigKey    string = "policies"
+	ConfigKey            string = "config"
+	LanguageKey          string = "language"
 	ModeConfigKey        string = "mode"
 	VersionKey           string = "version"
 	JSONSchemaVersionKey string = "jsonschemaversion"
@@ -37,11 +39,15 @@ const (
 	MonitorIntervalKey   string = "monitor.interval"
 	ConcurrencyKey       string = "concurrency"
 	ActionDirKey         string = "actiondir"
+	BenchRulesetSizeKey  string = "bench.rulesetsize"
+	BenchRuleIndexKey    string = "bench.ruleindex"
 )
 
 // Config defines a configuration object for the engine.
 type Config struct {
 	PoliciesPath      string
+	ConfigPath        string
+	Language          Language
 	Mode              Mode
 	Version           string
 	JSONSchemaVersion string
@@ -50,15 +56,23 @@ type Config struct {
 	MonitorInterval   time.Duration
 	Concurrency       int
 	ActionDir         string
+	BenchRulesetSize  int
+	BenchRuleIndex    int
 }
 
 // CreateConfig creates a new config object from config dictionary.
 func CreateConfig(conf map[string]interface{}) (Config, error) {
-	var c Config = Config{Mode: AlertMode, Concurrency: 5, Monitor: NoneType, MonitorInterval: 30 * time.Second, ActionDir: "../resources/actions"} // default values
+	var c Config = Config{Mode: AlertMode, Concurrency: 5, Monitor: NoneType, MonitorInterval: 30 * time.Second, ActionDir: "../resources/actions", Language: Falco, BenchRulesetSize: -1, BenchRuleIndex: -1} // default values
 	var err error
 
 	if v, ok := conf[PoliciesConfigKey].(string); ok {
 		c.PoliciesPath = v
+	}
+	if v, ok := conf[ConfigKey].(string); ok {
+		c.ConfigPath = v
+	}
+	if v, ok := conf[LanguageKey].(string); ok {
+		c.Language = parseLanguage(v)
 	}
 	if v, ok := conf[ModeConfigKey].(string); ok {
 		c.Mode = parseModeConfig(v)
@@ -87,6 +101,12 @@ func CreateConfig(conf map[string]interface{}) (Config, error) {
 	}
 	if v, ok := conf[ActionDirKey].(string); ok {
 		c.ActionDir = v
+	}
+	if v, ok := conf[BenchRulesetSizeKey].(string); ok {
+		c.BenchRulesetSize, err = strconv.Atoi(v)
+	}
+	if v, ok := conf[BenchRuleIndexKey].(string); ok {
+		c.BenchRuleIndex, err = strconv.Atoi(v)
 	}
 	return c, err
 }
@@ -135,4 +155,27 @@ func parseMonitorType(s string) MonitorType {
 		return LocalType
 	}
 	return NoneType
+}
+
+// Language defines a policy language.
+type Language uint32
+
+// Language types.
+const (
+	Falco Language = iota
+	Sigma
+)
+
+func (s Language) String() string {
+	return [...]string{"falco", "sigma"}[s]
+}
+
+func parseLanguage(s string) Language {
+	if Falco.String() == s {
+		return Falco
+	}
+	if Sigma.String() == s {
+		return Sigma
+	}
+	return Falco
 }

@@ -92,7 +92,7 @@ func (s *StreamingDriver) Run(path string, running *bool) error {
 			return errors.New("out tag does not exist in driver configuration for driver " + fileDriverName)
 		}
 	}
-	sfChannel := channel.(*plugins.SFChannel)
+	sfChannel := channel.(*plugins.Channel[*sfgo.SysFlow])
 
 	records := sfChannel.In
 	if err := os.RemoveAll(path); err != nil {

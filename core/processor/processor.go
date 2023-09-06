@@ -57,7 +57,7 @@ func (s *SysFlowProcessor) GetName() string {
 
 // NewCtxSysFlowChan creates a new processor channel instance.
 func NewCtxSysFlowChan(size int) interface{} {
-	return &plugins.CtxSFChannel{In: make(chan *plugins.CtxSysFlow, size)}
+	return &plugins.Channel[*plugins.CtxSysFlow]{In: make(chan *plugins.CtxSysFlow, size)}
 }
 
 // Register registers plugin to plugin cache.
@@ -94,7 +94,7 @@ func (s *SysFlowProcessor) Process(ch []interface{}, wg *sync.WaitGroup) {
 		logger.Error.Println("SysFlow Processor only supports a single input channel at this time")
 		return
 	}
-	cha := ch[0].(*plugins.CtxSFChannel)
+	cha := ch[0].(*plugins.Channel[*plugins.CtxSysFlow])
 	record := cha.In
 	defer wg.Done()
 	logger.Trace.Println("Starting SysFlow Processor...")

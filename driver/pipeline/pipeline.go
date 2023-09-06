@@ -274,9 +274,9 @@ func (pl *Pipeline) GetDriverConfig(driverName string) map[string]interface{} {
 
 // Print outputs summary information about the loaded pipeline
 func (pl *Pipeline) Print() {
-	logger.Trace.Printf("Loaded %d stages\n", len(pl.processors))
-	logger.Trace.Printf("Loaded %d channels\n", len(pl.channels))
-	logger.Trace.Printf("Loaded %d handlers\n", len(pl.handlers))
+	logger.Trace.Printf("Loaded %d stages", len(pl.processors))
+	logger.Trace.Printf("Loaded %d handlers", len(pl.handlers))
+	logger.Trace.Printf("Loaded %d channels", len(pl.channels))
 }
 
 // Wait calls on pipeline's waitgroup
@@ -300,7 +300,7 @@ func (pl *Pipeline) test() {
 		for _, prc := range pl.processors {
 			if tprc, ok := prc.(plugins.SFTestableProcessor); ok {
 				if _, err := tprc.Test(); err != nil {
-					logger.Error.Printf("Health checks for plugin %s failed: %v\n", prc.GetName(), err)
+					logger.Error.Printf("Health checks for plugin %s failed: %v", prc.GetName(), err)
 					c <- err
 					return
 				}

@@ -3,7 +3,6 @@ package encoders_test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -83,7 +82,7 @@ func TestGoavroEventSerialization(t *testing.T) {
 	fw, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	assert.NoError(t, err)
 
-	buf, err := ioutil.ReadFile("./avro/occurrence/avsc/Event.avsc")
+	buf, err := os.ReadFile("./avro/occurrence/avsc/Event.avsc")
 	assert.NoError(t, err)
 	codec, err := goavro.NewCodec(string(buf))
 	assert.NoError(t, err)

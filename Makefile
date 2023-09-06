@@ -12,10 +12,10 @@ include ./makefile.manifest.inc
 # Basic go commands
 PATH=$(shell printenv PATH):/usr/local/go/bin
 GOCMD=go
-GOBUILD=$(GOCMD) build -trimpath -tags exclude_graphdriver_btrfs
+GOBUILD=$(GOCMD) build -trimpath -tags "exclude_graphdriver_btrfs flatrecord"
 GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test -tags exclude_graphdriver_btrfs
-GOGET=$(GOCMD) get -tags exclude_graphdriver_btrfs
+GOTEST=$(GOCMD) test -tags "exclude_graphdriver_btrfs flatrecord"
+GOGET=$(GOCMD) get -tags "exclude_graphdriver_btrfs flatrecord"
 BIN=sfprocessor
 OUTPUT=$(BIN)
 SRC=./driver
@@ -79,4 +79,12 @@ pull:
 .PHONY: up
 up: 
 	sudo docker-compose -f docker-compose.yml up
+
+.PHONY: plugins
+plugins:
+	@for dir in `find plugins -type d`; do \
+	    if [ -f $${dir}/Makefile ]; then \
+	        $(MAKE) -C $${dir}; \
+            fi; \
+	done
 
