@@ -127,7 +127,7 @@ jobs:
         shell: bash
         run: |          
           echo "UBI_VERSION=$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)" >> $GITHUB_ENV
-          echo "BRANCH=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
+          echo "BRANCH=$(echo ${GITHUB_REF##refs/*/})" >> $GITHUB_ENV          
           echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Build and push plugin builder image
         id: docker_plugin_builder
@@ -149,7 +149,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: "${{ steps.meta.outputs.tags }}"
           labels: "${{ steps.meta.outputs.labels }}"
-          cache-from: type=registry,ref=ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ env.BRANCH }}
+          cache-from: type=registry,ref=ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ env.SHA_SHORT }}
           build-args: |
             BUILD_NUMBER=${{ env.SHA_SHORT }}
             VERSION=${{ env.BRANCH }}
