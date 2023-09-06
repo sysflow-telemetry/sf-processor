@@ -134,10 +134,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            ${{ env.PLUGIN_BUILDER_DOCKER_REGISTRY_REPOSITORY }}:${{ env.BRANCH }}
-            ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ env.BRANCH }}
-          target: "${{ steps.meta_builder.outputs.tags }}"
+          target: base
+          tags: "${{ steps.meta_builder.outputs.tags }}"          
           labels: "${{ steps.meta_builder.outputs.labels }}"
           build-args: |
             BUILD_NUMBER=${{ env.SHA_SHORT }}
