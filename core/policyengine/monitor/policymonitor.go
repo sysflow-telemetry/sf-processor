@@ -28,17 +28,17 @@ import (
 
 // PolicyMonitor is an interface representing policy monitor objects.
 // Currently the interface supports a local directory policy monitor.
-type PolicyMonitor interface {
-	GetInterpreterChan() chan *engine.PolicyInterpreter
+type PolicyMonitor[R any] interface {
+	GetInterpreterChan() chan *engine.PolicyInterpreter[R]
 	StartMonitor() error
 	StopMonitor() error
 	CheckForPolicyUpdate() error
 }
 
 // NewPolicyMonitor creates a new policy monitor based on the engine configuration.
-func NewPolicyMonitor(config engine.Config, out func(*engine.Record)) (PolicyMonitor, error) {
+func NewPolicyMonitor[R any](config engine.Config, createInter func() (*engine.PolicyInterpreter[R], error), out func(R)) (PolicyMonitor[R], error) {
 	if config.Monitor == engine.LocalType {
-		return NewLocalPolicyMonitor(config, out)
+		return NewLocalPolicyMonitor(config, createInter, out)
 	}
 	return nil, errors.New("Policy monitor of type: " + config.Monitor.String() + " is not supported.")
 }

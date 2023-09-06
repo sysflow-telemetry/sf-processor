@@ -36,14 +36,9 @@ const (
 	channelName string = "flattenerchan"
 )
 
-// FlatChannel defines a multi-source flat channel
-type FlatChannel struct {
-	In chan *sfgo.FlatRecord
-}
-
 // NewFlattenerChan creates a new channel with given capacity.
 func NewFlattenerChan(size int) interface{} {
-	return &FlatChannel{In: make(chan *sfgo.FlatRecord, size)}
+	return &plugins.Channel[*sfgo.FlatRecord]{In: make(chan *sfgo.FlatRecord, size)}
 }
 
 // Flattener defines the main class for the flatterner plugin.
@@ -86,7 +81,7 @@ func (s *Flattener) IsEntityEnabled() bool {
 // SetOutChan sets the plugin output channel.
 func (s *Flattener) SetOutChan(chObj []interface{}) {
 	for _, ch := range chObj {
-		s.outCh = append(s.outCh, ch.(*FlatChannel).In)
+		s.outCh = append(s.outCh, ch.(*plugins.Channel[*sfgo.FlatRecord]).In)
 	}
 }
 

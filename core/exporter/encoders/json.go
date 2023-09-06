@@ -31,13 +31,13 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/utils"
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
 )
 
 // JSONEncoder is a JSON encoder.
 type JSONEncoder struct {
 	config     commons.Config
-	fieldCache []*engine.FieldValue
+	fieldCache []*flatrecord.FieldValue
 	writer     *jwriter.Writer
 	buf        []byte
 	batch      []commons.EncodedData
@@ -46,7 +46,7 @@ type JSONEncoder struct {
 // NewJSONEncoder instantiates a JSON encoder.
 func NewJSONEncoder(config commons.Config) Encoder {
 	return &JSONEncoder{
-		fieldCache: engine.FieldValues,
+		fieldCache: flatrecord.FieldValues,
 		config:     config,
 		writer:     &jwriter.Writer{},
 		buf:        make([]byte, 0, BUFFER_SIZE),
@@ -59,7 +59,7 @@ func (t *JSONEncoder) Register(codecs map[commons.Format]EncoderFactory) {
 }
 
 // Encode encodes telemetry records into a JSON representation.
-func (t *JSONEncoder) Encode(recs []*engine.Record) (data []commons.EncodedData, err error) {
+func (t *JSONEncoder) Encode(recs []*flatrecord.Record) (data []commons.EncodedData, err error) {
 	t.batch = t.batch[:0]
 	for _, rec := range recs {
 		var j commons.EncodedData
@@ -72,18 +72,18 @@ func (t *JSONEncoder) Encode(recs []*engine.Record) (data []commons.EncodedData,
 }
 
 // Encodes a telemetry record into a JSON representation.
-func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
+func (t *JSONEncoder) encode(rec *flatrecord.Record) (commons.EncodedData, error) {
 	t.writer.RawString(VERSION_STR)
 	t.writer.RawString(t.config.JSONSchemaVersion)
 	t.writer.RawByte(COMMA)
 	state := BEGIN_STATE
-	sftype := engine.Mapper.MapStr(engine.SF_TYPE)(rec)
+	sftype := flatrecord.Mapper.MapStr(flatrecord.SF_TYPE)(rec)
 
-	pprocID := engine.Mapper.MapInt(engine.SF_PPROC_PID)(rec)
+	pprocID := flatrecord.Mapper.MapInt(flatrecord.SF_PPROC_PID)(rec)
 	pprocExists := !reflect.ValueOf(pprocID).IsZero()
-	ct := engine.Mapper.MapStr(engine.SF_CONTAINER_ID)(rec)
+	ct := flatrecord.Mapper.MapStr(flatrecord.SF_CONTAINER_ID)(rec)
 	ctExists := !reflect.ValueOf(ct).IsZero()
-	pd := engine.Mapper.MapStr(engine.SF_POD_ID)(rec)
+	pd := flatrecord.Mapper.MapStr(flatrecord.SF_POD_ID)(rec)
 	pdExists := !reflect.ValueOf(pd).IsZero()
 	existed := true
 
@@ -95,7 +95,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 		} else if numFields == 3 {
 			if sftype == sfgo.TyKEStr {
 				switch fv.Entry.Section {
-				case engine.SectK8sEvt:
+				case flatrecord.SectK8sEvt:
 					if state != KE_STATE {
 						if state != BEGIN_STATE && existed {
 							t.writer.RawString(END_CURLY_COMMA)
@@ -108,7 +108,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 						t.writer.RawByte(COMMA)
 						t.writeAttribute(fv, 2, rec)
 					}
-				case engine.SectNode:
+				case flatrecord.SectNode:
 					if state != NODE_STATE {
 						if state != BEGIN_STATE && existed {
 							t.writer.RawString(END_CURLY_COMMA)
@@ -121,7 +121,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 						t.writer.RawByte(COMMA)
 						t.writeAttribute(fv, 2, rec)
 					}
-				case engine.SectMeta:
+				case flatrecord.SectMeta:
 					if state != META_STATE {
 						if state != BEGIN_STATE && existed {
 							t.writer.RawString(END_CURLY_COMMA)
@@ -139,7 +139,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 			}
 
 			switch fv.Entry.Section {
-			case engine.SectProc:
+			case flatrecord.SectProc:
 				if state != PROC_STATE {
 					if state != BEGIN_STATE && existed {
 						t.writer.RawString(END_CURLY_COMMA)
@@ -152,7 +152,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 					t.writer.RawByte(COMMA)
 					t.writeAttribute(fv, 2, rec)
 				}
-			case engine.SectPProc:
+			case flatrecord.SectPProc:
 				if state != PPROC_STATE {
 					if state != BEGIN_STATE && existed {
 						t.writer.RawString(END_CURLY_COMMA)
@@ -169,7 +169,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 					t.writer.RawByte(COMMA)
 					t.writeAttribute(fv, 2, rec)
 				}
-			case engine.SectNet:
+			case flatrecord.SectNet:
 				if state != NET_STATE {
 					if state != BEGIN_STATE && existed {
 						t.writer.RawString(END_CURLY_COMMA)
@@ -186,7 +186,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 					t.writer.RawByte(COMMA)
 					t.writeAttribute(fv, 2, rec)
 				}
-			case engine.SectFile:
+			case flatrecord.SectFile:
 				if state != FILE_STATE {
 					if state != BEGIN_STATE && existed {
 						t.writer.RawString(END_CURLY_COMMA)
@@ -203,7 +203,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 					t.writer.RawByte(COMMA)
 					t.writeAttribute(fv, 2, rec)
 				}
-			case engine.SectFlow:
+			case flatrecord.SectFlow:
 				if state != FLOW_STATE {
 					if state != BEGIN_STATE && existed {
 						t.writer.RawString(END_CURLY_COMMA)
@@ -220,7 +220,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 					t.writer.RawByte(COMMA)
 					t.writeAttribute(fv, 2, rec)
 				}
-			case engine.SectCont:
+			case flatrecord.SectCont:
 				if state != CONT_STATE {
 					if state != BEGIN_STATE && existed {
 						t.writer.RawString(END_CURLY_COMMA)
@@ -237,7 +237,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 					t.writer.RawByte(COMMA)
 					t.writeAttribute(fv, 2, rec)
 				}
-			case engine.SectPod:
+			case flatrecord.SectPod:
 				if state != POD_STATE {
 					if state != BEGIN_STATE && existed {
 						t.writer.RawString(END_CURLY_COMMA)
@@ -254,7 +254,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 					t.writer.RawByte(COMMA)
 					t.writeAttribute(fv, 2, rec)
 				}
-			case engine.SectNode:
+			case flatrecord.SectNode:
 				if state != NODE_STATE {
 					if state != BEGIN_STATE && existed {
 						t.writer.RawString(END_CURLY_COMMA)
@@ -267,7 +267,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 					t.writer.RawByte(COMMA)
 					t.writeAttribute(fv, 2, rec)
 				}
-			case engine.SectMeta:
+			case flatrecord.SectMeta:
 				if state != META_STATE {
 					if state != BEGIN_STATE && existed {
 						t.writer.RawString(END_CURLY_COMMA)
@@ -342,7 +342,7 @@ func (t *JSONEncoder) encode(rec *engine.Record) (commons.EncodedData, error) {
 	return t.writer.BuildBytes()
 }
 
-func (t *JSONEncoder) writeAttribute(fv *engine.FieldValue, fieldID int, rec *engine.Record) {
+func (t *JSONEncoder) writeAttribute(fv *flatrecord.FieldValue, fieldID int, rec *flatrecord.Record) {
 	t.writer.RawByte(DOUBLE_QUOTE)
 	name := fv.FieldSects[fieldID]
 	if strings.HasSuffix(name, "+") {
@@ -360,7 +360,7 @@ func (t *JSONEncoder) writeSectionBegin(section string) {
 	t.writer.RawString(QUOTE_COLON_CURLY)
 }
 
-func mapOpFlags(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
+func mapOpFlags(fv *flatrecord.FieldValue, writer *jwriter.Writer, r *flatrecord.Record) {
 	opflags := r.GetInt(fv.Entry.FlatIndex, fv.Entry.Source)
 	rtype, _ := sfgo.ParseRecordType(r.GetInt(sfgo.SF_REC_TYPE, fv.Entry.Source))
 	flags := sfgo.GetOpFlags(int32(opflags), rtype)
@@ -392,7 +392,7 @@ func mapIPStr(ip int64, w *jwriter.Writer) {
 	w.Int64(ip >> 24 & 0xFF)
 }
 
-func mapIPs(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
+func mapIPs(fv *flatrecord.FieldValue, writer *jwriter.Writer, r *flatrecord.Record) {
 	srcIP := r.GetInt(sfgo.FL_NETW_SIP_INT, fv.Entry.Source)
 	dstIP := r.GetInt(sfgo.FL_NETW_DIP_INT, fv.Entry.Source)
 	writer.RawByte(BEGIN_SQUARE)
@@ -416,12 +416,12 @@ func mapIPArray(ips *[]int64, writer *jwriter.Writer) {
 	writer.RawByte(END_SQUARE)
 }
 
-func mapOpenFlags(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
+func mapOpenFlags(fv *flatrecord.FieldValue, writer *jwriter.Writer, r *flatrecord.Record) {
 	flags := sfgo.GetOpenFlags(r.GetInt(fv.Entry.FlatIndex, fv.Entry.Source))
 	mapStrArray(writer, flags)
 }
 
-func mapPorts(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
+func mapPorts(fv *flatrecord.FieldValue, writer *jwriter.Writer, r *flatrecord.Record) {
 	srcPort := r.GetInt(sfgo.FL_NETW_SPORT_INT, fv.Entry.Source)
 	dstPort := r.GetInt(sfgo.FL_NETW_DPORT_INT, fv.Entry.Source)
 	writer.RawByte(BEGIN_SQUARE)
@@ -475,7 +475,7 @@ func mapPortList(writer *jwriter.Writer, ports *[]*sfgo.Port) {
 	writer.RawByte(END_SQUARE)
 }
 
-func mapSvcArray(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
+func mapSvcArray(fv *flatrecord.FieldValue, writer *jwriter.Writer, r *flatrecord.Record) {
 	writer.RawByte(BEGIN_SQUARE)
 	for _, s := range *r.GetSvcArray(fv.Entry.FlatIndex, fv.Entry.Source) {
 		writer.RawByte('{')
@@ -494,29 +494,29 @@ func mapSvcArray(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record
 }
 
 // MapJSON writes a SysFlow attribute to a JSON stream.
-func MapJSON(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
+func MapJSON(fv *flatrecord.FieldValue, writer *jwriter.Writer, r *flatrecord.Record) {
 	switch fv.Entry.FlatIndex {
-	case engine.A_IDS, engine.PARENT_IDS:
+	case flatrecord.A_IDS, flatrecord.PARENT_IDS:
 		oid := sfgo.OID{CreateTS: r.GetInt(sfgo.PROC_OID_CREATETS_INT, fv.Entry.Source), Hpid: r.GetInt(sfgo.PROC_OID_HPID_INT, fv.Entry.Source)}
 		setCachedValueToJSON(r, oid, fv.Entry.AuxAttr, writer)
 		return
 	}
 	switch fv.Entry.Type {
-	case engine.MapStrVal:
+	case flatrecord.MapStrVal:
 		v := r.GetStr(fv.Entry.FlatIndex, fv.Entry.Source)
 		writer.String(utils.TrimBoundingQuotes(v))
-	case engine.MapIntVal:
+	case flatrecord.MapIntVal:
 		writer.Int64(r.GetInt(fv.Entry.FlatIndex, fv.Entry.Source))
-	case engine.MapBoolVal:
+	case flatrecord.MapBoolVal:
 		writer.Bool(r.GetInt(fv.Entry.FlatIndex, fv.Entry.Source) == 1)
-	case engine.MapSpecialStr:
+	case flatrecord.MapSpecialStr:
 		v := fv.Entry.Map(r).(string)
 		writer.String(utils.TrimBoundingQuotes(v))
-	case engine.MapSpecialInt:
+	case flatrecord.MapSpecialInt:
 		writer.Int64(fv.Entry.Map(r).(int64))
-	case engine.MapSpecialBool:
+	case flatrecord.MapSpecialBool:
 		writer.Bool(fv.Entry.Map(r).(bool))
-	case engine.MapArrayStr, engine.MapArrayInt:
+	case flatrecord.MapArrayStr, flatrecord.MapArrayInt:
 		if fv.Entry.Source == sfgo.SYSFLOW_SRC {
 			switch fv.Entry.FlatIndex {
 			case sfgo.EV_PROC_OPFLAGS_INT:
@@ -544,70 +544,70 @@ func MapJSON(fv *engine.FieldValue, writer *jwriter.Writer, r *engine.Record) {
 		writer.RawByte(BEGIN_SQUARE)
 		writer.String(v)
 		writer.RawByte(END_SQUARE)
-	case engine.MapArraySvc:
+	case flatrecord.MapArraySvc:
 		mapSvcArray(fv, writer, r)
 	}
 }
 
 // setCachedValueToJSON sets the value of attr from cache for process ID to a JSON writer.
-func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribute, writer *jwriter.Writer) {
+func setCachedValueToJSON(r *flatrecord.Record, ID sfgo.OID, attr flatrecord.RecAttribute, writer *jwriter.Writer) {
 	if ptree := r.Fr.Ptree; ptree != nil {
 		switch attr {
-		case engine.PProcName:
+		case flatrecord.PProcName:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(filepath.Base(ptree[1].Exe)))
 			} else {
 				writer.String(EMPTY_STRING)
 			}
-		case engine.PProcExe:
+		case flatrecord.PProcExe:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(ptree[1].Exe))
 			} else {
 				writer.String(EMPTY_STRING)
 			}
-		case engine.PProcArgs:
+		case flatrecord.PProcArgs:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(ptree[1].ExeArgs))
 			} else {
 				writer.String(EMPTY_STRING)
 			}
-		case engine.PProcUID:
+		case flatrecord.PProcUID:
 			if len(ptree) > 1 {
 				writer.Int64(int64(ptree[1].Uid))
 			} else {
 				writer.Int64(sfgo.Zeros.Int64)
 			}
-		case engine.PProcUser:
+		case flatrecord.PProcUser:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(ptree[1].UserName))
 			} else {
 				writer.String(EMPTY_STRING)
 			}
-		case engine.PProcGID:
+		case flatrecord.PProcGID:
 			if len(ptree) > 1 {
 				writer.Int64(int64(ptree[1].Gid))
 			} else {
 				writer.Int64(sfgo.Zeros.Int64)
 			}
-		case engine.PProcGroup:
+		case flatrecord.PProcGroup:
 			if len(ptree) > 1 {
 				writer.String(utils.TrimBoundingQuotes(ptree[1].GroupName))
 			} else {
 				writer.String(EMPTY_STRING)
 			}
-		case engine.PProcTTY:
+		case flatrecord.PProcTTY:
 			if len(ptree) > 1 {
 				writer.Bool(ptree[1].Tty)
 			} else {
 				writer.Bool(false)
 			}
-		case engine.PProcEntry:
+		case flatrecord.PProcEntry:
 			if len(ptree) > 1 {
 				writer.Bool(ptree[1].Entry)
 			} else {
 				writer.Bool(false)
 			}
-		case engine.PProcCmdLine:
+		case flatrecord.PProcCmdLine:
 			if len(ptree) > 1 {
 				exe := utils.TrimBoundingQuotes(ptree[1].Exe)
 				exeArgs := utils.TrimBoundingQuotes(ptree[1].ExeArgs)
@@ -621,7 +621,7 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 			} else {
 				writer.String(EMPTY_STRING)
 			}
-		case engine.ProcAName:
+		case flatrecord.ProcAName:
 			l := len(ptree)
 			writer.RawByte(BEGIN_SQUARE)
 			for i, p := range ptree {
@@ -631,7 +631,7 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 				}
 			}
 			writer.RawByte(END_SQUARE)
-		case engine.ProcAExe:
+		case flatrecord.ProcAExe:
 			l := len(ptree)
 			writer.RawByte(BEGIN_SQUARE)
 			for i, p := range ptree {
@@ -641,7 +641,7 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 				}
 			}
 			writer.RawByte(END_SQUARE)
-		case engine.ProcACmdLine:
+		case flatrecord.ProcACmdLine:
 			l := len(ptree)
 			writer.RawByte(BEGIN_SQUARE)
 			for i, p := range ptree {
@@ -659,7 +659,7 @@ func setCachedValueToJSON(r *engine.Record, ID sfgo.OID, attr engine.RecAttribut
 				}
 			}
 			writer.RawByte(END_SQUARE)
-		case engine.ProcAPID:
+		case flatrecord.ProcAPID:
 			l := len(ptree)
 			writer.RawByte(BEGIN_SQUARE)
 			for i, p := range ptree {

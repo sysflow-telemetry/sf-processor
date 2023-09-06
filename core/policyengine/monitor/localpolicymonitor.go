@@ -37,20 +37,21 @@ import (
 
 // LocalPolicyMonitor is an object that monitors the local policy file
 // directory for changes and compiles a new policy engine if changes occur.
-type LocalPolicyMonitor struct {
-	config    engine.Config
-	interChan chan *engine.PolicyInterpreter
-	watcher   *fsnotify.Watcher
-	started   bool
-	done      chan bool
-	policies  map[string][]byte
-	out       func(*engine.Record)
+type LocalPolicyMonitor[R any] struct {
+	config      engine.Config
+	interChan   chan *engine.PolicyInterpreter[R]
+	watcher     *fsnotify.Watcher
+	started     bool
+	done        chan bool
+	policies    map[string][]byte
+	createInter func() (*engine.PolicyInterpreter[R], error)
+	out         func(R)
 }
 
 // NewLocalPolicyMonitor returns a new policy monitor object given an engine configuration.
-func NewLocalPolicyMonitor(config engine.Config, out func(*engine.Record)) (PolicyMonitor, error) {
-	lpm := &LocalPolicyMonitor{config: config, interChan: make(chan *engine.PolicyInterpreter, 10), started: false,
-		done: make(chan bool), policies: make(map[string][]byte), out: out}
+func NewLocalPolicyMonitor[R any](config engine.Config, createInter func() (*engine.PolicyInterpreter[R], error), out func(R)) (PolicyMonitor[R], error) {
+	lpm := &LocalPolicyMonitor[R]{config: config, interChan: make(chan *engine.PolicyInterpreter[R], 10), started: false,
+		done: make(chan bool), policies: make(map[string][]byte), createInter: createInter, out: out}
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		logger.Error.Printf("Unable to create policy watcher object %v", err)
@@ -66,11 +67,11 @@ func NewLocalPolicyMonitor(config engine.Config, out func(*engine.Record)) (Poli
 
 // GetInterpreterChan returns a channel of the policy engine after they have been built.
 // This channel can be checked for policy engines that are ready to be used.
-func (p *LocalPolicyMonitor) GetInterpreterChan() chan *engine.PolicyInterpreter {
+func (p *LocalPolicyMonitor[R]) GetInterpreterChan() chan *engine.PolicyInterpreter[R] {
 	return p.interChan
 }
 
-func (p *LocalPolicyMonitor) dequeueFileEvents() int {
+func (p *LocalPolicyMonitor[R]) dequeueFileEvents() int {
 	count := 0
 	i := 0
 	for i < 1000 {
@@ -114,7 +115,7 @@ func checksum(path string) ([]byte, error) {
 	return h.Sum(nil), nil
 }
 
-func (p *LocalPolicyMonitor) calculateChecksum() (bool, []string, error) {
+func (p *LocalPolicyMonitor[R]) calculateChecksum() (bool, []string, error) {
 	paths, err := ioutils.ListFilePaths(p.config.PoliciesPath, ".yaml")
 	if err != nil {
 		return false, nil, err
@@ -149,7 +150,7 @@ func (p *LocalPolicyMonitor) calculateChecksum() (bool, []string, error) {
 }
 
 // StartMonitor starts a thread to monitor the local policy directory.
-func (p *LocalPolicyMonitor) StartMonitor() error {
+func (p *LocalPolicyMonitor[R]) StartMonitor() error {
 	if p.started {
 		return nil
 	}
@@ -198,14 +199,14 @@ func (p *LocalPolicyMonitor) StartMonitor() error {
 }
 
 // StopMonitor sends a signal to exit the monitor thread.
-func (p *LocalPolicyMonitor) StopMonitor() error {
+func (p *LocalPolicyMonitor[R]) StopMonitor() error {
 	p.started = false
 	p.done <- true
 	return nil
 }
 
 // CheckForPolicyUpdate creates a new policy engine based on updated policies.
-func (p *LocalPolicyMonitor) CheckForPolicyUpdate() error {
+func (p *LocalPolicyMonitor[R]) CheckForPolicyUpdate() error {
 	paths, err := ioutils.ListFilePaths(p.config.PoliciesPath, ".yaml")
 	if err != nil {
 		return err
@@ -214,11 +215,9 @@ func (p *LocalPolicyMonitor) CheckForPolicyUpdate() error {
 		return errors.New("no policy files with extension .yaml found in policy directory: " + p.config.PoliciesPath)
 	}
 	logger.Info.Println("Creating new policy interpreter")
-	pi := engine.NewPolicyInterpreter(p.config, p.out)
-	logger.Info.Println("Attempting to compile new policy")
-	err = pi.Compile(paths...)
+	pi, err := p.createInter()
 	if err != nil {
-		logger.Error.Printf("Unable to compile policy files in directory %s. Not using new policy files. %v", p.config.PoliciesPath, err)
+		logger.Error.Printf("Unable to create a new policy interpreter using policy files in directory %s. Not using new policy files. %v", p.config.PoliciesPath, err)
 		return err
 	}
 	select {
