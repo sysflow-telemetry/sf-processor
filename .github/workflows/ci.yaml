@@ -106,25 +106,25 @@ jobs:
       - name: Set build args
         id: args
         shell: bash
-        run: |
-          echo "##[set-output name=ubi_version;]$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)"
-          echo "##[set-output name=branch;]$(echo ${GITHUB_REF##refs/*/})"
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: |          
+          echo "UBI_VERSION=$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)" >> $GITHUB_ENV
+          echo "BRANCH=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
+          echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Build and push plugin builder image
         id: docker_plugin_builder
         uses: docker/build-push-action@v2
         with:
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ${{ env.PLUGIN_BUILDER_DOCKER_REGISTRY_REPOSITORY }}:${{ steps.args.outputs.branch }}
-            ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ steps.args.outputs.branch }}
+            ${{ env.PLUGIN_BUILDER_DOCKER_REGISTRY_REPOSITORY }}:${{ env.BRANCH }}
+            ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ env.BRANCH }}
           target: base
           labels: "${{ steps.meta.outputs.labels }}"
           build-args: |
-            BUILD_NUMBER=${{ steps.args.outputs.sha_short }}
-            VERSION=${{ steps.args.outputs.branch }}
-            RELEASE=${{ steps.args.outputs.sha_short }}
-            UBI_VER=${{ steps.args.outputs.ubi_version }}
+            BUILD_NUMBER=${{ env.SHA_SHORT }}
+            VERSION=${{ env.BRANCH }}
+            RELEASE=${{ env.SHA_SHORT }}
+            UBI_VER=${{ env.UBI_VERSION }}
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
@@ -132,12 +132,12 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: "${{ steps.meta.outputs.tags }}"
           labels: "${{ steps.meta.outputs.labels }}"
-          cache-from: type=registry,ref=ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ steps.args.outputs.branch }}
+          cache-from: type=registry,ref=ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ env.BRANCH }}
           build-args: |
-            BUILD_NUMBER=${{ steps.args.outputs.sha_short }}
-            VERSION=${{ steps.args.outputs.branch }}
-            RELEASE=${{ steps.args.outputs.sha_short }}
-            UBI_VER=${{ steps.args.outputs.ubi_version }}
+            BUILD_NUMBER=${{ env.SHA_SHORT }}
+            VERSION=${{ env.BRANCH }}
+            RELEASE=${{ env.SHA_SHORT }}
+            UBI_VER=${{ env.UBI_VERSION }}
       - name: push README to Dockerhub
         uses: christian-korneck/update-container-description-action@v1
         if: ${{ github.ref == 'refs/heads/master' && github.event_name != 'pull_request' }}
@@ -175,11 +175,11 @@ jobs:
         id: build_release_assets
         shell: bash
         run: |
-          docker pull ${{ env.DOCKER_REGISTRY_REPOSITORY }}:${{ steps.tag_name.outputs.current_tag }}
+          docker pull ${{ env.DOCKER_REGISTRY_REPOSITORY }}:${{ env.CURRENT_TAG }}
           make package
-          echo "##[set-output name=deb;] $(ls ${{ github.workspace }}/scripts/cpack/*.deb)"
-          echo "##[set-output name=rpm;] $(ls ${{ github.workspace }}/scripts/cpack/*.rpm)"
-          echo "##[set-output name=targz;] $(ls ${{ github.workspace }}/scripts/cpack/*.tar.gz)"
+          echo "DEB=$(ls ${{ github.workspace }}/scripts/cpack/*.deb)" >> $GITHUB_ENV
+          echo "RPM=$(ls ${{ github.workspace }}/scripts/cpack/*.rpm)" >> $GITHUB_ENV
+          echo "TARGZ=$(ls ${{ github.workspace }}/scripts/cpack/*.tar.gz)" >> $GITHUB_ENV          
       - name: Get Changelog Entry
         id: changelog_reader
         uses: mindsers/changelog-reader-action@v2
@@ -194,6 +194,6 @@ jobs:
           prerelease: ( contains(env.CURRENT_VERSION, '-rc') || contains(env.CURRENT_VERSION, '-alpha') || contains(env.CURRENT_VERSION, '-beta') )
           draft: true
           files: |
-            ${{ steps.build_release_assets.outputs.deb }}
-            ${{ steps.build_release_assets.outputs.rpm }}
-            ${{ steps.build_release_assets.outputs.targz }}
+            ${{ env.DEB }}
+            ${{ env.RPM }}
+            ${{ env.TARGZ }}
