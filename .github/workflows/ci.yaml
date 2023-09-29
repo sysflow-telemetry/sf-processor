@@ -188,11 +188,13 @@ jobs:
         run: |
           GHREF=${GITHUB_REF#refs/tags/}; echo "CURRENT_VERSION=${GHREF%%-*}" >> $GITHUB_ENV
           echo "CURRENT_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Build Release Assets
         id: build_release_assets
         shell: bash
         run: |
-          docker pull ${{ env.DOCKER_REGISTRY_REPOSITORY }}:${{ env.CURRENT_TAG }}
+          docker pull ${{ env.DOCKER_REGISTRY_REPOSITORY }}:${{ env.SHA_SHORT }}
+          docker tag ${{ env.DOCKER_REGISTRY_REPOSITORY }}:${{ env.SHA_SHORT }} ${{ env.DOCKER_REGISTRY_REPOSITORY }}:${{ env.CURRENT_TAG }}
           make package
           echo "DEB=$(ls ${{ github.workspace }}/scripts/cpack/*.deb)" >> $GITHUB_ENV
           echo "RPM=$(ls ${{ github.workspace }}/scripts/cpack/*.rpm)" >> $GITHUB_ENV
