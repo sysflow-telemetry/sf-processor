@@ -15,6 +15,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2023-09-30
+
+### Added
+
+- Experimental Sigma rules support
+- Multi-language rules engine support
+
+### Changed
+
+- Bumped UBI version to 9.2-755
+- Bump sf-apis to 0.6.0
+
 ## [0.5.1] - 2023-06-07
 
 ### Added
@@ -185,7 +197,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - First release of SysFlow Processor.
 
-[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.5.1...HEAD
+[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.6.0...HEAD
+[0.6.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.5.1...0.6.0
 [0.5.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.4...0.5.0
 [0.4.4]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.3...0.4.4
