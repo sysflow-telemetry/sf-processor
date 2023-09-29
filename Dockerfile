@@ -58,7 +58,7 @@ RUN cd ${SRC_ROOT} && \
 #-----------------------
 # Stage: runtime
 #-----------------------
-FROM registry.access.redhat.com/ubi8/ubi:${UBI_VER} AS runtime
+FROM registry.access.redhat.com/ubi9/ubi:${UBI_VER} AS runtime
 
 # Environment and build args
 ARG VERSION=dev
