@@ -21,7 +21,7 @@
 # Stage: base
 #-----------------------
 ARG UBI_VER
-FROM registry.access.redhat.com/ubi8/ubi:${UBI_VER} AS base
+FROM registry.access.redhat.com/ubi9/ubi:${UBI_VER} AS base
 
 # Environment and build args
 ARG VERSION=dev
