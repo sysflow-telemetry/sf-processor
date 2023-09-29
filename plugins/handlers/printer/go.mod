@@ -21,7 +21,7 @@ module github.com/sysflow-telemetry/sf-processor/plugins/handlers/printer
 
 go 1.19
 
-require github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230404030540-37e5fa8614fc
+require github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230929141246-bc28a59e1300
 
 require (
 	github.com/actgardner/gogen-avro/v7 v7.3.1 // indirect

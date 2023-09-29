@@ -29,7 +29,7 @@ require (
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6 // indirect
 	github.com/paulbellamy/ratecounter v0.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230905191833-17e4c751b04c // indirect
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230929141246-bc28a59e1300 // indirect
 	github.com/tidwall/gjson v1.14.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect

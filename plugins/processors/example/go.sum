@@ -19,6 +19,8 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230905191833-17e4c751b04c h1:5BCJMIuiysHlYJe+nr/203cqIS6cpTIssbUD8v88VOU=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230905191833-17e4c751b04c/go.mod h1:eo1ATE056Rqb9LhE4LA/0Y2AHfV//1zdCw0py4/S5HM=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230929141246-bc28a59e1300 h1:ZxzwimQe2R4kYorqS33/l+m/+SXWMzPn1cLtpA1ExA0=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230929141246-bc28a59e1300/go.mod h1:rvE0WXuIQmACykrVpAKxP5Crf/7KvZplUTULATmAuf4=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
