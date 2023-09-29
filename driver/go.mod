@@ -27,7 +27,7 @@ require (
 	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/paulbellamy/ratecounter v0.2.0
 	github.com/spf13/viper v1.10.1
-	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230905191833-17e4c751b04c
+	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230929141246-bc28a59e1300
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20220221021811-25c7181c2904
 )
 
@@ -75,7 +75,7 @@ require (
 	golang.org/x/exp v0.0.0-20230206171751-46f607a40771 // indirect
 	golang.org/x/net v0.0.0-20220114011407-0dd24b26b47d // indirect
 	golang.org/x/sys v0.1.0 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

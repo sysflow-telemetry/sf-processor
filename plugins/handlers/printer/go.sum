@@ -20,6 +20,8 @@ github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220720151945-fca5a11be917 h1:8C
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20220720151945-fca5a11be917/go.mod h1:hK3FNloWIvlioheWODPJcA3TOxJbxMafoUezq3ZNCww=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230404030540-37e5fa8614fc h1:3+lsQOjaTym5jHq3X2q/NwrCLVD0BHnNqfvR7mky44Y=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230404030540-37e5fa8614fc/go.mod h1:hK3FNloWIvlioheWODPJcA3TOxJbxMafoUezq3ZNCww=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230929141246-bc28a59e1300 h1:ZxzwimQe2R4kYorqS33/l+m/+SXWMzPn1cLtpA1ExA0=
+github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230929141246-bc28a59e1300/go.mod h1:rvE0WXuIQmACykrVpAKxP5Crf/7KvZplUTULATmAuf4=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=

@@ -21,7 +21,7 @@ module github.com/sysflow-telemetry/sf-processor/plugins/processors/example
 
 go 1.19
 
-require github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230905191833-17e4c751b04c
+require github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230929141246-bc28a59e1300
 
 require (
 	github.com/actgardner/gogen-avro/v7 v7.3.1 // indirect
