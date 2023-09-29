@@ -73,9 +73,9 @@ require (
 	github.com/tidwall/pretty v1.2.0 // indirect
 	go.mongodb.org/mongo-driver v1.7.5 // indirect
 	golang.org/x/exp v0.0.0-20230206171751-46f607a40771 // indirect
-	golang.org/x/net v0.0.0-20220114011407-0dd24b26b47d // indirect
-	golang.org/x/sys v0.1.0 // indirect
-	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
