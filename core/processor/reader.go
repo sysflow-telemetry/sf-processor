@@ -58,7 +58,7 @@ func (s *SysFlowReader) GetName() string {
 
 // NewSysFlowChan creates a new processor channel instance.
 func NewSysFlowChan(size int) interface{} {
-	return &plugins.SFChannel{In: make(chan *sfgo.SysFlow, size)}
+	return &plugins.Channel[*sfgo.SysFlow]{In: make(chan *sfgo.SysFlow, size)}
 }
 
 // Register registers plugin to plugin cache.
@@ -77,9 +77,13 @@ func (s *SysFlowReader) Init(conf map[string]interface{}) (err error) {
 }
 
 // Process implements the main processor method of the plugin.
-func (s *SysFlowReader) Process(ch interface{}, wg *sync.WaitGroup) {
+func (s *SysFlowReader) Process(ch []interface{}, wg *sync.WaitGroup) {
 	entEnabled := s.hdl.IsEntityEnabled()
-	cha := ch.(*plugins.SFChannel)
+	if len(ch) != 1 {
+		logger.Error.Println("SysFlow Reader only supports a single input channel at this time")
+		return
+	}
+	cha := ch[0].(*plugins.Channel[*sfgo.SysFlow])
 	record := cha.In
 	defer wg.Done()
 	logger.Trace.Println("Starting SysFlow Reader...")
@@ -190,8 +194,8 @@ func (s *SysFlowReader) getPodFromCont(cont *sfgo.Container) *sfgo.Pod {
 func (s *SysFlowReader) getPodContAndProc(oid *sfgo.OID) (*sfgo.Pod, *sfgo.Container, *sfgo.Process, []*sfgo.Process) {
 	if p := s.tables.GetProc(*oid); p != nil {
 		ptree := s.tables.GetPtree(*oid)
-		c     := s.getContFromProc(p)
-		pd    := s.getPodFromCont(c)
+		c := s.getContFromProc(p)
+		pd := s.getPodFromCont(c)
 		return pd, c, p, ptree
 	}
 	logger.Error.Println("No process object for ID: ", *oid)

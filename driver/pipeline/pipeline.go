@@ -33,7 +33,7 @@ import (
 // Pipeline represents a loaded plugin pipeline
 type Pipeline struct {
 	wg          *sync.WaitGroup
-	driver      plugins.SFDriver
+	drivers     []plugins.SFDriver
 	processors  []plugins.SFProcessor
 	channels    []interface{}
 	handlers    []plugins.SFHandler
@@ -91,13 +91,32 @@ func (pl *Pipeline) Load(driverName string) error {
 		logger.Error.Println("Unable to load dynamic driver: ", err)
 		return err
 	}
-	if pl.driver, err = pl.pluginCache.GetDriver(driverName); err != nil {
-		logger.Error.Println("Unable to load driver: ", err)
-		return err
+	if len(driverName) > 0 {
+		var driver plugins.SFDriver
+		if driver, err = pl.pluginCache.GetDriver(driverName); err != nil {
+			logger.Error.Println("Unable to load driver: ", err)
+			return err
+		}
+		pl.drivers = append(pl.drivers, driver)
+	} else {
+		for _, d := range conf.Drivers {
+			if val, ok := d[DrivConfig].(string); ok {
+				var driver plugins.SFDriver
+				if driver, err = pl.pluginCache.GetDriver(val); err != nil {
+					logger.Error.Println("Unable to load driver: ", val, err)
+					return err
+				}
+				logger.Trace.Println("Loading driver: " + driver.GetName())
+				pl.drivers = append(pl.drivers, driver)
+			}
+		}
 	}
-	var in interface{}
-	var out interface{}
+	if len(pl.drivers) == 0 {
+		return errors.New("No drivers configured on command line or in pipeline config")
+	}
 	for _, p := range conf.Pipeline {
+		var out interface{}
+		var inChannels []interface{}
 		var prc plugins.SFProcessor
 		if val, ok := p[ProcConfig].(string); ok {
 			prc, err = pl.pluginCache.GetProcessor(pl.pluginDir, val)
@@ -116,15 +135,32 @@ func (pl *Pipeline) Load(driverName string) error {
 			logger.Error.Println("processor tag must exist in plugin config")
 			return err
 		}
-		if v, o := p[InChanConfig].(string); o {
-			in, err = pl.pluginCache.GetChan(v, ChanSize)
-			if err != nil {
-				logger.Error.Println(err)
-				return err
+		if v, o := p[InChanConfig]; o {
+			switch t := v.(type) {
+			case []interface{}:
+				for _, channel := range t {
+					in, err := pl.pluginCache.GetChan(channel.(string), ChanSize)
+					if err != nil {
+						logger.Error.Println(err)
+						return err
+					}
+					inChannels = append(inChannels, in)
+					chp := fmt.Sprintf("%T", in)
+					pl.channels = append(pl.channels, in)
+					logger.Trace.Println(chp)
+
+				}
+			case string:
+				in, err := pl.pluginCache.GetChan(t, ChanSize)
+				if err != nil {
+					logger.Error.Println(err)
+					return err
+				}
+				pl.channels = append(pl.channels, in)
+				inChannels = append(inChannels, in)
+				chp := fmt.Sprintf("%T", in)
+				logger.Trace.Println(chp)
 			}
-			pl.channels = append(pl.channels, in)
-			chp := fmt.Sprintf("%T", in)
-			logger.Trace.Println(chp)
 		} else {
 			logger.Error.Println("in tag must exist in plugin config")
 			return errors.New("in tag must exist in plugin config")
@@ -159,7 +195,7 @@ func (pl *Pipeline) Load(driverName string) error {
 		}
 		pl.processors = append(pl.processors, prc)
 		pl.wg.Add(1)
-		go pl.process(prc, in)
+		go pl.process(prc, inChannels)
 	}
 	pl.test()
 	return nil
@@ -168,19 +204,29 @@ func (pl *Pipeline) Load(driverName string) error {
 // Init initializes the pipeline
 func (pl *Pipeline) Init(path string) error {
 	logger.Info.Println("Starting the processing pipeline")
+	numDrivers := len(pl.drivers)
 	// initialize driver
-	err := pl.driver.Init(pl)
-	if err != nil {
-		logger.Error.Println("Driver initialization error: " + err.Error())
-		return err
-	}
-	// start processing
-	pl.running = true
-	err = pl.driver.Run(path, &(pl.running))
-	if err != nil {
-		pl.running = false
-		logger.Error.Println("Cannot start the driver: " + err.Error())
-		return err
+	for i, d := range pl.drivers {
+		conf := pl.GetDriverConfig(d.GetName())
+		logger.Trace.Println("Initializing Driver with config", d.GetName())
+		err := d.Init(pl, conf)
+		if err != nil {
+			logger.Error.Println("Driver initialization error: " + err.Error())
+			return err
+		}
+		// start processing
+		pl.running = true
+		logger.Trace.Println("Calling Run on driver", d.GetName())
+		if i == (numDrivers - 1) {
+			err = d.Run(path, &(pl.running))
+			if err != nil {
+				pl.running = false
+				logger.Error.Println("Cannot start the driver: " + err.Error())
+				return err
+			}
+		} else {
+			go d.Run(path, &(pl.running))
+		}
 	}
 	return nil
 }
@@ -189,7 +235,9 @@ func (pl *Pipeline) Init(path string) error {
 func (pl *Pipeline) Shutdown() error {
 	logger.Info.Println("Stopping the processing pipeline")
 	pl.running = false
-	pl.driver.Cleanup()
+	for _, d := range pl.drivers {
+		d.Cleanup()
+	}
 	return nil
 }
 
@@ -201,11 +249,34 @@ func (pl *Pipeline) GetRootChannel() interface{} {
 	return nil
 }
 
+// GetChannel returns a channel given a "<id> <type>" string
+func (pl *Pipeline) GetChannel(channel string) (interface{}, error) {
+	return pl.pluginCache.GetChan(channel, ChanSize)
+}
+
+// GetDriverConfig returns a driver configuration from the pipeline.json
+// given a driver name
+func (pl *Pipeline) GetDriverConfig(driverName string) map[string]interface{} {
+	conf, err := pl.pluginCache.GetConfig()
+	if err != nil {
+		logger.Error.Println("Unable to load pipeline config: ", err)
+		return nil
+	}
+	for _, d := range conf.Drivers {
+		if val, ok := d[DrivConfig].(string); ok {
+			if val == driverName {
+				return d
+			}
+		}
+	}
+	return nil
+}
+
 // Print outputs summary information about the loaded pipeline
 func (pl *Pipeline) Print() {
-	logger.Trace.Printf("Loaded %d stages\n", len(pl.processors))
-	logger.Trace.Printf("Loaded %d channels\n", len(pl.channels))
-	logger.Trace.Printf("Loaded %d handlers\n", len(pl.handlers))
+	logger.Trace.Printf("Loaded %d stages", len(pl.processors))
+	logger.Trace.Printf("Loaded %d handlers", len(pl.handlers))
+	logger.Trace.Printf("Loaded %d channels", len(pl.channels))
 }
 
 // Wait calls on pipeline's waitgroup
@@ -214,7 +285,7 @@ func (pl *Pipeline) Wait() {
 }
 
 // Proxy function for handling transparent cleanup of resources
-func (pl *Pipeline) process(prc plugins.SFProcessor, in interface{}) {
+func (pl *Pipeline) process(prc plugins.SFProcessor, in []interface{}) {
 	prc.Process(in, pl.wg)
 	prc.Cleanup()
 }
@@ -229,7 +300,7 @@ func (pl *Pipeline) test() {
 		for _, prc := range pl.processors {
 			if tprc, ok := prc.(plugins.SFTestableProcessor); ok {
 				if _, err := tprc.Test(); err != nil {
-					logger.Error.Printf("Health checks for plugin %s failed: %v\n", prc.GetName(), err)
+					logger.Error.Printf("Health checks for plugin %s failed: %v", prc.GetName(), err)
 					c <- err
 					return
 				}

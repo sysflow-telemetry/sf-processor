@@ -1,4 +1,3 @@
-//
 // Copyright (C) 2020 IBM Corporation.
 //
 // Authors:
@@ -9,14 +8,13 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package main
 
 import (
@@ -58,12 +56,13 @@ func run() int {
 	initSigTerm()
 
 	// setup arg parsing
-	inputType := flag.String("driver", "file", fmt.Sprintf("Driver name {file|socket|<custom>}"))
+	inputType := flag.String("driver", "", fmt.Sprintf("Driver name {file|socket|<custom>}"))
 	cpuprofile := flag.String("cpuprofile", "", "Write cpu profile to `file`")
 	memprofile := flag.String("memprofile", "", "Write memory profile to `file`")
 	traceprofile := flag.String("traceprofile", "", "Write trace profile to `file`")
 	configFile := flag.String("config", "pipeline.json", "Path to pipeline configuration file")
 	logLevel := flag.String("log", "info", "Log level {trace|info|warn|error|health|quiet}")
+	perflog := flag.Bool("perflog", false, "Enable performance logging")
 	driverDir := flag.String("driverdir", pipeline.DriverDir, "Dynamic driver directory")
 	pluginDir := flag.String("plugdir", pipeline.PluginDir, "Dynamic plugins directory")
 	test := flag.Bool("test", false, "Test pipeline configuration")
@@ -72,7 +71,7 @@ func run() int {
 	flag.Usage = func() {
 		fmt.Println(`Usage: sfprocessor [-version
 		   |-test [-log <value>] [-config <value>] [-driverdir <value>] [-plugdir <value>]]
-		   |[-driver <value>] [-log <value>] [-config <value>] [-driverdir <value>] [-plugdir <value>] [-cpuprofile <value>] [-memprofile <value>] [-traceprofile <value>] path]`)
+		   |[-driver <value>] [-log <value>] [-perflog] [-config <value>] [-driverdir <value>] [-plugdir <value>] [-cpuprofile <value>] [-memprofile <value>] [-traceprofile <value>] path]`)
 		fmt.Println()
 		fmt.Println("Positional arguments:")
 		fmt.Println("  path string\n\tInput path")
@@ -98,8 +97,9 @@ func run() int {
 		return 0
 	}
 
-	// initialize logger
+	// initialize loggers
 	logger.InitLoggers(logger.GetLogLevelFromValue(*logLevel))
+	logger.SetPerfLogger(*perflog)
 
 	// CPU profiling
 	if *cpuprofile != "" {

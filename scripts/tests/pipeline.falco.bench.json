@@ -1,0 +1,24 @@
+{
+  "pipeline":[
+    {
+     "processor": "sysflowreader",
+     "handler": "flattener",
+     "in": "sysflow sysflowchan",
+     "out": "flat flattenerchan"
+    },
+    {
+     "processor": "policyengine",
+     "in": "flat flattenerchan",
+     "out": "evt eventchan",
+     "policies": "../../resources/policies/runtimeintegrity/ttps.yaml", 
+     "mode": "alert",
+     "concurrency": 10     
+    },
+    {
+     "processor": "exporter",
+     "in": "evt eventchan",
+     "export": "null",
+     "format": "json"
+    }
+  ]
+}

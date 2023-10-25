@@ -35,13 +35,13 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: 1.19
       - name: Lint core module
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.47.1
+          version: v1.51.1
           working-directory: core
-          args: --disable=errcheck
+          args: --disable=errcheck --build-tags=flatrecord
   lint-driver:
     needs: lint-core
     runs-on: ubuntu-latest
@@ -51,11 +51,11 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: 1.19
       - name: Lint driver module
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.47.1
+          version: v1.51.1
           working-directory: driver
           args: --disable=errcheck
   docker:
@@ -66,14 +66,31 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Read manifest
         shell: bash
         run: |
           echo "UBI_VERSION=$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)" >> $GITHUB_ENV
       - name: Docker meta
+        id: meta_builder
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ env.PLUGIN_BUILDER_DOCKER_REGISTRY_REPOSITORY }}
+            ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder            
+          tags: |
+            type=edge,branch=master
+            type=ref,event=branch
+            type=match,pattern=^\d.\d.\d$
+            type=ref,event=pr
+            type=sha,prefix=
+            type=sha,format=long,prefix=
+          labels: |
+            org.opencontainers.image.documentation=https://sysflow.readthedocs.io/
+            org.opencontainers.image.vendor=SysFlow          
+      - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: |
             ${{ env.DOCKER_REGISTRY_REPOSITORY }}
@@ -81,23 +98,25 @@ jobs:
           tags: |
             type=edge,branch=master
             type=ref,event=branch
-            type=ref,event=tag
+            type=match,pattern=^\d.\d.\d$
             type=ref,event=pr
+            type=sha,prefix=
+            type=sha,format=long,prefix=
           labels: |
             org.opencontainers.image.documentation=https://sysflow.readthedocs.io/
-            org.opencontainers.image.vendor=SysFlow
+            org.opencontainers.image.vendor=SysFlow      
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Login to DockerHub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         if: ${{ github.event_name != 'pull_request' }}
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         if: ${{ github.event_name != 'pull_request' }}
         with:
           registry: ghcr.io
@@ -106,38 +125,36 @@ jobs:
       - name: Set build args
         id: args
         shell: bash
-        run: |
-          echo "##[set-output name=ubi_version;]$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)"
-          echo "##[set-output name=branch;]$(echo ${GITHUB_REF##refs/*/})"
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: |          
+          echo "UBI_VERSION=$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)" >> $GITHUB_ENV
+          echo "BRANCH=$(echo ${GITHUB_REF##refs/*/})" >> $GITHUB_ENV          
+          echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Build and push plugin builder image
         id: docker_plugin_builder
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            ${{ env.PLUGIN_BUILDER_DOCKER_REGISTRY_REPOSITORY }}:${{ steps.args.outputs.branch }}
-            ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ steps.args.outputs.branch }}
           target: base
-          labels: "${{ steps.meta.outputs.labels }}"
+          tags: "${{ steps.meta_builder.outputs.tags }}"          
+          labels: "${{ steps.meta_builder.outputs.labels }}"
           build-args: |
-            BUILD_NUMBER=${{ steps.args.outputs.sha_short }}
-            VERSION=${{ steps.args.outputs.branch }}
-            RELEASE=${{ steps.args.outputs.sha_short }}
-            UBI_VER=${{ steps.args.outputs.ubi_version }}
+            BUILD_NUMBER=${{ env.SHA_SHORT }}
+            VERSION=${{ env.BRANCH }}
+            RELEASE=${{ env.SHA_SHORT }}
+            UBI_VER=${{ env.UBI_VERSION }}
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           push: ${{ github.event_name != 'pull_request' }}
           tags: "${{ steps.meta.outputs.tags }}"
           labels: "${{ steps.meta.outputs.labels }}"
-          cache-from: type=registry,ref=ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ steps.args.outputs.branch }}
+          cache-from: type=registry,ref=ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ env.SHA_SHORT }}
           build-args: |
-            BUILD_NUMBER=${{ steps.args.outputs.sha_short }}
-            VERSION=${{ steps.args.outputs.branch }}
-            RELEASE=${{ steps.args.outputs.sha_short }}
-            UBI_VER=${{ steps.args.outputs.ubi_version }}
+            BUILD_NUMBER=${{ env.SHA_SHORT }}
+            VERSION=${{ env.BRANCH }}
+            RELEASE=${{ env.SHA_SHORT }}
+            UBI_VER=${{ env.UBI_VERSION }}
       - name: push README to Dockerhub
         uses: christian-korneck/update-container-description-action@v1
         if: ${{ github.ref == 'refs/heads/master' && github.event_name != 'pull_request' }}
@@ -158,9 +175,9 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Setup cmake
         uses: jwlawson/actions-setup-cmake@v1.12
         with:
@@ -169,31 +186,33 @@ jobs:
         id: tag_name
         shell: bash
         run: |
-          GHREF=${GITHUB_REF#refs/tags/}; echo ::set-output name=current_version::${GHREF%-*}
-          echo ::set-output name=current_tag::${GITHUB_REF#refs/tags/}
+          GHREF=${GITHUB_REF#refs/tags/}; echo "CURRENT_VERSION=${GHREF%%-*}" >> $GITHUB_ENV
+          echo "CURRENT_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Build Release Assets
         id: build_release_assets
         shell: bash
         run: |
-          docker pull ${{ env.DOCKER_REGISTRY_REPOSITORY }}:${{ steps.tag_name.outputs.current_tag }}
+          docker pull ${{ env.DOCKER_REGISTRY_REPOSITORY }}:${{ env.SHA_SHORT }}
+          docker tag ${{ env.DOCKER_REGISTRY_REPOSITORY }}:${{ env.SHA_SHORT }} ${{ env.DOCKER_REGISTRY_REPOSITORY }}:${{ env.CURRENT_TAG }}
           make package
-          echo "##[set-output name=deb;] $(ls ${{ github.workspace }}/scripts/cpack/*.deb)"
-          echo "##[set-output name=rpm;] $(ls ${{ github.workspace }}/scripts/cpack/*.rpm)"
-          echo "##[set-output name=targz;] $(ls ${{ github.workspace }}/scripts/cpack/*.tar.gz)"
+          echo "DEB=$(ls ${{ github.workspace }}/scripts/cpack/*.deb)" >> $GITHUB_ENV
+          echo "RPM=$(ls ${{ github.workspace }}/scripts/cpack/*.rpm)" >> $GITHUB_ENV
+          echo "TARGZ=$(ls ${{ github.workspace }}/scripts/cpack/*.tar.gz)" >> $GITHUB_ENV          
       - name: Get Changelog Entry
         id: changelog_reader
         uses: mindsers/changelog-reader-action@v2
         with:
-          version: ${{ steps.tag_name.outputs.current_version }}
+          version: ${{ env.CURRENT_VERSION }}
           path: ./CHANGELOG.md
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           body: ${{ steps.changelog_reader.outputs.changes }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: contains(steps.tag_name.outputs.current_version, '-rc')
+          prerelease: ( contains(env.CURRENT_VERSION, '-rc') || contains(env.CURRENT_VERSION, '-alpha') || contains(env.CURRENT_VERSION, '-beta') )
           draft: true
           files: |
-            ${{ steps.build_release_assets.outputs.deb }}
-            ${{ steps.build_release_assets.outputs.rpm }}
-            ${{ steps.build_release_assets.outputs.targz }}
+            ${{ env.DEB }}
+            ${{ env.RPM }}
+            ${{ env.TARGZ }}

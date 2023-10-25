@@ -30,9 +30,12 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-apis/go/sfgo"
-	"github.com/sysflow-telemetry/sf-processor/core/flattener"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/engine"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/monitor"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/falco"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy/sigma"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/common"
 )
 
 const (
@@ -42,10 +45,15 @@ const (
 
 // PolicyEngine defines a driver for the Policy Engine plugin.
 type PolicyEngine struct {
-	pi            *engine.PolicyInterpreter
-	outCh         []chan *engine.Record
+	pi            *engine.PolicyInterpreter[*common.Record]
+	outCh         []chan *common.Record
 	config        engine.Config
-	policyMonitor monitor.PolicyMonitor
+	policyMonitor monitor.PolicyMonitor[*common.Record]
+}
+
+// NewEventChan creates a new event record channel instance.
+func NewEventChan(size int) interface{} {
+	return &plugins.Channel[*common.Record]{In: make(chan *common.Record, size)}
 }
 
 // NewPolicyEngine constructs a new Policy Engine plugin.
@@ -56,11 +64,6 @@ func NewPolicyEngine() plugins.SFProcessor {
 // GetName returns the plugin name.
 func (s *PolicyEngine) GetName() string {
 	return pluginName
-}
-
-// NewEventChan creates a new event record channel instance.
-func NewEventChan(size int) interface{} {
-	return &engine.RecordChannel{In: make(chan *engine.Record, size)}
 }
 
 // Register registers plugin to plugin cache.
@@ -92,7 +95,7 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) (err error) {
 			return
 		}
 	} else {
-		s.policyMonitor, err = monitor.NewPolicyMonitor(s.config, s.out)
+		s.policyMonitor, err = monitor.NewPolicyMonitor(s.config, s.createPolicyInterpreter, s.out)
 		if err != nil {
 			logger.Error.Printf("Unable to load policy monitor %s, %v", s.config.Monitor.String(), err)
 			return
@@ -112,8 +115,12 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) (err error) {
 
 // Process implements the main loop of the plugin.
 // Records are processed concurrently. The number of concurrent threads is controlled by s.config.Concurrency.
-func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
-	in := ch.(*flattener.FlatChannel).In
+func (s *PolicyEngine) Process(ch []interface{}, wg *sync.WaitGroup) {
+	if len(ch) != 1 {
+		logger.Error.Println("Policy Engine only supports a single input channel at this time")
+		return
+	}
+	in := ch[0].(*common.Channel).In
 	defer wg.Done()
 	logger.Trace.Println("Starting policy engine with capacity: ", cap(in))
 
@@ -121,10 +128,11 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 	start := time.Now()
 	expiration := start.Add(s.config.MonitorInterval)
 
+	lastPerfTs := time.Now()
 	for {
 		if fc, ok := <-in; ok {
 			if s.pi == nil {
-				s.out(engine.NewRecord(*fc))
+				s.bypassPolicyEngine(fc)
 				continue
 			}
 			if s.policyMonitor != nil {
@@ -143,8 +151,13 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 					expiration = now.Add(s.config.MonitorInterval)
 				}
 			}
+			// Log the number of queued input elements
+			if logger.IsEnabled(logger.Perf) && time.Since(lastPerfTs) > 15*time.Second {
+				logger.Perf.Printf("Policy engine input channel queue: %d", len(in))
+				lastPerfTs = time.Now()
+			}
 			// Process record in interpreter's worker pool
-			s.pi.ProcessAsync(engine.NewRecord(*fc))
+			s.processAsync(fc)
 		} else {
 			logger.Trace.Println("Input channel closed. Shutting down.")
 			break
@@ -153,28 +166,45 @@ func (s *PolicyEngine) Process(ch interface{}, wg *sync.WaitGroup) {
 }
 
 // Creates a policy interpreter from configuration.
-func (s *PolicyEngine) createPolicyInterpreter() (*engine.PolicyInterpreter, error) {
+func (s *PolicyEngine) createPolicyInterpreter() (*engine.PolicyInterpreter[*common.Record], error) {
 	dir := s.config.PoliciesPath
+
+	// check  policies
 	logger.Info.Println("Loading policies from: ", dir)
-	paths, err := ioutils.ListFilePaths(dir, ".yaml")
+	paths, err := ioutils.ListRecursiveFilePaths(dir, ".yaml", ".yml")
 	if err != nil {
 		return nil, err
 	}
 	if len(paths) == 0 {
-		return nil, errors.New("no policy files with extension .yaml found in path: " + dir)
+		return nil, errors.New("no policy files with extension .yaml or .yml found in path: " + dir)
 	}
-	logger.Info.Println("Creating policy interpreter")
-	pi := engine.NewPolicyInterpreter(s.config, s.out)
+
+	// build interpreter
+	logger.Info.Printf("Creating %s policy interpreter", s.config.Language.String())
+	var pc policy.PolicyCompiler[*common.Record]
+	if s.config.Language == engine.Falco {
+		pc = falco.NewPolicyCompiler(common.NewOperations())
+	} else {
+		pc = sigma.NewPolicyCompiler(common.NewOperations(), s.config.ConfigPath)
+	}
+	pf := common.NewPrefilter()
+	ctx := common.NewContextualizer()
+	pi := engine.NewPolicyInterpreter(s.config, pc, pf, ctx, s.out)
+
+	// compile policies
 	err = pi.Compile(paths...)
 	if err != nil {
 		return nil, err
 	}
+
+	// start workers
 	pi.StartWorkers()
+
 	return pi, nil
 }
 
 // out sends a record to every output channel in the plugin.
-func (s *PolicyEngine) out(r *engine.Record) {
+func (s *PolicyEngine) out(r *common.Record) {
 	for _, c := range s.outCh {
 		c <- r
 	}
@@ -183,7 +213,7 @@ func (s *PolicyEngine) out(r *engine.Record) {
 // SetOutChan sets the output channel of the plugin.
 func (s *PolicyEngine) SetOutChan(ch []interface{}) {
 	for _, c := range ch {
-		s.outCh = append(s.outCh, (c.(*engine.RecordChannel)).In)
+		s.outCh = append(s.outCh, (c.(*plugins.Channel[*common.Record])).In)
 	}
 }
 

@@ -15,6 +15,42 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2023-09-30
+
+### Added
+
+- Experimental Sigma rules support
+- Multi-language rules engine support
+
+### Changed
+
+- Bumped UBI version to 9.2-755
+- Bump sf-apis to 0.6.0
+
+### Security
+
+- CVE-2022-41723: golang.org/x/net Uncontrolled Resource Consumption (updated to 0.7.0)
+- CVE-2022-27664: golang.org/x/net/http2 Denial of Service vulnerability (updated to 0.0.0-20220906165146-f3363e06e74c)
+- CVE-2022-32149: Denial of service in golang.org/x/text/language (updated to 0.3.8)
+- CVE-2022-41721: golang.org/x/net/http2/h2c vulnerable to request smuggling attack (updated to 0.1.1-0.20221104162952-702349b0e862)
+- CVE-2022-28948: gopkg.in/yaml.v3 Denial of Service (updated to 3.0.0-20220521103104-8f96da9f5d5e)
+
+## [0.5.1] - 2023-06-07
+
+### Added
+
+- Add multi-driver support
+
+### Changed
+
+- Bumped UBI version to 8.8-854
+- Bump sf-apis to 0.5.1
+
+### Fixed
+
+- Fix off-by-1 JSON ports encoding
+- Add correct formatting to mapPortList in JSON output
+
 ## [0.5.0] - 2022-10-17
 
 ### Added
@@ -169,7 +205,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - First release of SysFlow Processor.
 
-[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.5.0...HEAD
+[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.6.0...HEAD
+[0.6.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.5.1...0.6.0
+[0.5.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.4...0.5.0
 [0.4.4]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.3...0.4.4
 [0.4.3]: https://github.com/sysflow-telemetry/sf-processor/compare/0.4.2...0.4.3
