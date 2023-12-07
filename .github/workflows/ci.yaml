@@ -60,7 +60,11 @@ jobs:
           args: --disable=errcheck
   docker:
     needs: lint-driver
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+        arch: [amd64, arm64]
     permissions:
       contents: read
       packages: write
@@ -70,8 +74,21 @@ jobs:
       - name: Read manifest
         shell: bash
         run: |
-          echo "UBI_VERSION=$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)" >> $GITHUB_ENV
-      - name: Docker meta
+          echo "UBI_VERSION=$(awk -F'=' '/UBI_VERSION/{print $2}' makefile.manifest.inc)" >> $GITHUB_ENV          
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        if: ${{ github.event_name != 'pull_request' && github.event_name != 'workflow_dispatch' }}
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker meta builder
         id: meta_builder
         uses: docker/metadata-action@v4
         with:
@@ -108,20 +125,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        if: ${{ github.event_name != 'pull_request' }}
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        if: ${{ github.event_name != 'pull_request' }}
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        uses: docker/setup-buildx-action@v2            
       - name: Set build args
         id: args
         shell: bash
@@ -131,30 +135,34 @@ jobs:
           echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Build and push plugin builder image
         id: docker_plugin_builder
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' && !env.ACT }}
           target: base
           tags: "${{ steps.meta_builder.outputs.tags }}"          
           labels: "${{ steps.meta_builder.outputs.labels }}"
+          platforms: ${{ matrix.platform }}
           build-args: |
             BUILD_NUMBER=${{ env.SHA_SHORT }}
             VERSION=${{ env.BRANCH }}
             RELEASE=${{ env.SHA_SHORT }}
             UBI_VER=${{ env.UBI_VERSION }}
+            ARCH=${{ matrix.arch }}
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' && !env.ACT }}
           tags: "${{ steps.meta.outputs.tags }}"
-          labels: "${{ steps.meta.outputs.labels }}"
+          labels: "${{ steps.meta.outputs.labels }}"          
+          platforms: ${{ matrix.platform }}
           cache-from: type=registry,ref=ghcr.io/${{ env.GH_ORGANIZATION }}/plugin-builder:${{ env.SHA_SHORT }}
           build-args: |
             BUILD_NUMBER=${{ env.SHA_SHORT }}
             VERSION=${{ env.BRANCH }}
             RELEASE=${{ env.SHA_SHORT }}
             UBI_VER=${{ env.UBI_VERSION }}
+            ARCH=${{ matrix.arch }}
       - name: push README to Dockerhub
         uses: christian-korneck/update-container-description-action@v1
         if: ${{ github.ref == 'refs/heads/master' && github.event_name != 'pull_request' }}
