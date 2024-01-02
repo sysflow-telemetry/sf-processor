@@ -24,14 +24,13 @@
 package common
 
 import (
-	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/otel"
 	driver "github.com/sysflow-telemetry/sf-processor/driver/otel"
 )
 
 type Record = otel.ResourceLogs
 
-type Channel = plugins.Channel[*driver.OTELChannel]
+type Channel = driver.OTELChannel
 
 var NewOperations = otel.NewOperations
 
