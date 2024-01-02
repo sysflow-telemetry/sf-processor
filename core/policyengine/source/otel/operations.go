@@ -4,11 +4,18 @@
 package otel
 
 import (
+	"regexp"
+
+	"github.com/pkg/errors"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
 )
 
 type Operations struct{}
+
+func NewOperations() source.Operations[*ResourceLogs] {
+	return &Operations{}
+}
 
 func getAllAttributes(rl *ResourceLogs) []*KeyValue {
 	// all resource logs attributes
@@ -44,6 +51,7 @@ func (ops *Operations) Exists(attr string) (policy.Criterion[*ResourceLogs], err
 }
 
 func (ops *Operations) compareHelper(lattr string, rattr string, op source.Operator, kvs []*KeyValue) bool {
+	operator := OTEPOperator{}
 	for _, a := range kvs {
 		if a.Key != lattr {
 			continue
@@ -54,8 +62,8 @@ func (ops *Operations) compareHelper(lattr string, rattr string, op source.Opera
 			strVal := v.StringValue
 			return operator.doStringComparison(strVal, rattr, op)
 		case *ArrayValue:
-			arrVal := v.ArrayValue
-			return operator.doArrayComparison(arrVal, rattr, op)
+			// arrVal := v.ArrayValue
+			return operator.doArrayComparison(v, rattr, op)
 		case *BoolValue:
 			boolVal := v.BoolValue
 			return operator.doBooleanComparison(boolVal, rattr, op)
@@ -68,7 +76,7 @@ func (ops *Operations) compareHelper(lattr string, rattr string, op source.Opera
 		case *IntValue:
 			intVal := v.IntValue
 			return operator.doIntComparison(intVal, rattr, op)
-		case *KvlistValue:
+		case *KvListValue:
 			kvListVal := v.KvlistValue.Values
 			return ops.compareHelper(lattr, rattr, op, kvListVal)
 		}
@@ -120,4 +128,26 @@ func (ops *Operations) FoldAll(attr string, list []string, op source.Operator) (
 		return true
 	}
 	return policy.Criterion[*ResourceLogs]{Pred: f}, nil
+}
+
+func (op *Operations) RegExp(attr string, re string) (policy.Criterion[*ResourceLogs], error) {
+	if regexp, err := regexp.Compile(re); err == nil {
+		p := func(r *ResourceLogs) bool {
+			allAttrs := getAllAttributes(r)
+			for _, a := range allAttrs {
+				if a.Key != attr {
+					continue
+				}
+				v := a.Value.Value
+				strV, ok := v.(*StringValue)
+				if !ok {
+					return false
+				}
+				return regexp.FindString(strV.StringValue) != ""
+			}
+			return false
+		}
+		return policy.Criterion[*ResourceLogs]{Pred: p}, nil
+	}
+	return policy.False[*ResourceLogs](), errors.Errorf("could not compile regular expression %s", re)
 }
