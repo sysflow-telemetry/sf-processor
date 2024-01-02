@@ -49,13 +49,19 @@ func (oto *OTEPOperator) doStringComparison(strVal string, rattr string, op sour
 }
 
 func (oto *OTEPOperator) doArrayComparison(arrVal *ArrayValue, rattr string, op source.Operator) bool {
+	vals := arrVal.ArrayValue
 	switch op {
 	case source.Eq:
 		return false
 	case source.IEq:
 		return false
 	case source.Contains:
-		for _, i := range arrVal.Values {
+		if vals == nil {
+			//not a valid array
+			return false
+		}
+
+		for _, i := range vals.Values {
 			str, ok := i.Value.(*StringValue)
 			if !ok {
 				continue
@@ -66,7 +72,7 @@ func (oto *OTEPOperator) doArrayComparison(arrVal *ArrayValue, rattr string, op 
 		}
 		return false
 	case source.IContains:
-		for _, i := range arrVal.Values {
+		for _, i := range vals.Values {
 			str, ok := i.Value.(*StringValue)
 			if !ok {
 				continue
@@ -77,30 +83,30 @@ func (oto *OTEPOperator) doArrayComparison(arrVal *ArrayValue, rattr string, op 
 		}
 		return false
 	case source.Startswith:
-		firstVal := arrVal.Values[0]
+		firstVal := vals.Values[0]
 		str, ok := firstVal.Value.(*StringValue)
 		if !ok {
 			return false
 		}
 		return str.StringValue == rattr
 	case source.IStartswith:
-		firstVal := arrVal.Values[0]
+		firstVal := vals.Values[0]
 		str, ok := firstVal.Value.(*StringValue)
 		if !ok {
 			return false
 		}
 		return strings.EqualFold(str.StringValue, rattr)
 	case source.Endswith:
-		l := len(arrVal.Values)
-		lastVal := arrVal.Values[l-1]
+		l := len(vals.Values)
+		lastVal := vals.Values[l-1]
 		str, ok := lastVal.Value.(*StringValue)
 		if !ok {
 			return false
 		}
 		return str.StringValue == rattr
 	case source.IEndswith:
-		l := len(arrVal.Values)
-		lastVal := arrVal.Values[l-1]
+		l := len(vals.Values)
+		lastVal := vals.Values[l-1]
 		str, ok := lastVal.Value.(*StringValue)
 		if !ok {
 			return false
