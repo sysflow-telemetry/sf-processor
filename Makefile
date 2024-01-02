@@ -11,11 +11,12 @@ include ./makefile.manifest.inc
 
 # Basic go commands
 PATH=$(shell printenv PATH):/usr/local/go/bin
+BACKEND_TAG?=flatrecord
 GOCMD=go
-GOBUILD=$(GOCMD) build -trimpath -tags "exclude_graphdriver_btrfs flatrecord"
+GOBUILD=$(GOCMD) build -trimpath -tags "exclude_graphdriver_btrfs ${BACKEND_TAG}"
 GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test -tags "exclude_graphdriver_btrfs flatrecord"
-GOGET=$(GOCMD) get -tags "exclude_graphdriver_btrfs flatrecord"
+GOTEST=$(GOCMD) test -tags "exclude_graphdriver_btrfs ${BACKEND_TAG}"
+GOGET=$(GOCMD) get -tags "exclude_graphdriver_btrfs ${BACKEND_TAG}"
 BIN=sfprocessor
 OUTPUT=$(BIN)
 SRC=./driver
