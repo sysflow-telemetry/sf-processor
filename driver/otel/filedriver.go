@@ -31,7 +31,7 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 
-	// "github.ibm.com/sysflow/xdr/source/xdr/generated/schema"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/otel"
 
 	v1 "go.opentelemetry.io/proto/otlp/logs/v1"
 )
@@ -39,6 +39,10 @@ import (
 const (
 	fileDriverName = "otelfile"
 )
+
+type OTELChannel struct {
+	In chan *otel.ResourceLogs
+}
 
 func getFiles(filename string) ([]string, error) {
 	var fls []string
@@ -95,14 +99,14 @@ func (s *FileDriver) Init(pipeline plugins.SFPipeline, config map[string]interfa
 
 // Run runs the file driver
 func (s *FileDriver) Run(path string, running *bool) error {
-	// TODO need to figure out how to call init before being able to run the GetRootChannel things
-	// channel := s.pipeline.GetRootChannel()
-	// otepChannel := channel.(*OTEPChannel)
+	channel := s.pipeline.GetRootChannel()
+	otelChannel, ok := channel.(*OTELChannel)
+	if !ok {
+		logger.Error.Println("bad root channel type")
+		return fmt.Errorf("bad root channel type")
+	}
 
-	var channel OTELChannel
-	otepChannel := &channel
-
-	records := otepChannel.In
+	records := otelChannel.In
 
 	files, err := getFiles(path)
 	if err != nil {

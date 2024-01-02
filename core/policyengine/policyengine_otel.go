@@ -1,4 +1,3 @@
-//go: build otel
 //go:build otel
 // +build otel
 
