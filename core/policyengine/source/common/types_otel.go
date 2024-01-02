@@ -36,4 +36,4 @@ var NewOperations = otel.NewOperations
 
 var NewPrefilter = otel.NewPrefilter
 
-var NewContextualizer = otel.NewPrefilter
+var NewContextualizer = otel.NewContextualizer
