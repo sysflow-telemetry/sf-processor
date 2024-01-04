@@ -31,18 +31,12 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/otel"
-
 	v1 "go.opentelemetry.io/proto/otlp/logs/v1"
 )
 
 const (
 	fileDriverName = "otelfile"
 )
-
-type OTELChannel struct {
-	In chan *otel.ResourceLogs
-}
 
 func getFiles(filename string) ([]string, error) {
 	var fls []string
