@@ -65,12 +65,17 @@ func (s *KafkaDriver) Init(pipeline plugins.SFPipeline, config map[string]interf
 		return fmt.Errorf("invalid otelKafkaTopics list")
 	}
 
-	s.consumer = kafka.NewConsumer(&kafka.ConfigMap{
+	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": brokerString,
 		"group.id":          "sfprocessor-otel-kafka-driver",
 		"auto.offset.reset": "latest", // might want to make this earliest
 	})
 
+	if err != nil {
+		return fmt.Errorf("invalid driver config -- could not make consumer")
+	}
+
+	s.consumer = consumer
 	s.consumer.SubscribeTopics(topicsStrs, nil)
 
 	s.pipeline = pipeline
@@ -97,10 +102,13 @@ func (s *KafkaDriver) Run(path string, running *bool) error {
 		}
 
 		/* parses the message into an otel record log */
-		var rl otp.ResourceLogs
-		//might have to be msg.Value here. depends
-		// on how the kafka events are formatted
-		err = json.Unmarshal(msg, rl)
+		var rl *otp.ResourceLogs
+		//might have to do more parsing here depends on how
+		//kafka events are formed
+		err = json.Unmarshal(msg.Value, rl)
+		if err != nil {
+			return fmt.Errorf("could not parse message")
+		}
 		/* sends the record to the records channel */
 		records <- rl
 	}
