@@ -24,6 +24,7 @@ go 1.19
 
 require (
 	github.com/actgardner/gogen-avro/v7 v7.3.1
+	github.com/confluentinc/confluent-kafka-go/v2 v2.3.0
 	github.com/linkedin/goavro v2.1.0+incompatible
 	github.com/paulbellamy/ratecounter v0.2.0
 	github.com/pkg/errors v0.9.1
@@ -55,7 +56,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/magiconair/properties v1.8.5 // indirect
+	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
