@@ -31,7 +31,7 @@ import (
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 
-	v1 "go.opentelemetry.io/proto/otlp/logs/v1"
+	otp "go.opentelemetry.io/proto/otlp/logs/v1"
 )
 
 const (
@@ -108,7 +108,7 @@ func (s *FileDriver) Run(path string, running *bool) error {
 		return err
 	}
 
-	var otpLogs []*v1.ResourceLogs
+	var otpLogs []*otp.ResourceLogs
 
 	for _, fn := range files {
 		logger.Trace.Println("Loading file: " + fn)
