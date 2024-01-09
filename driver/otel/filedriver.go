@@ -128,19 +128,26 @@ func (s *FileDriver) Run(path string, running *bool) error {
 			logger.Error.Println("Error unmarshaling into OTP ResourceLogs: ", err)
 			return err
 		}
+
+		for _, otl := range otpLogs {
+			if !*running {
+				break
+			}
+
+			records <- otl
+		}
+
+		s.file.Close()
+		if !*running {
+			break
+		}
 	}
 
-	// TODO uncomment this to figure out how to send to the parsers etc
-	// for _, e := range otpLogs {
-	// 	if !*running {
-	// 		break
-	// 	}
-	// 	records <- e
-	// }
 	logger.Error.Println("Closing main channel")
 	if records != nil {
 		close(records)
 	}
+	s.pipeline.Wait()
 	return nil
 }
 
