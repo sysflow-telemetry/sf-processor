@@ -28,6 +28,8 @@ import (
 	"plugin"
 	"strings"
 
+	otel "github.com/sysflow-telemetry/sf-processor/driver/otel"
+
 	"github.com/spf13/viper"
 	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
@@ -70,6 +72,10 @@ func (p *PluginCache) init() {
 	(&exporter.Exporter{}).Register(p)
 	(&sysflow.FileDriver{}).Register(p)
 	(&sysflow.StreamingDriver{}).Register(p)
+
+	// ant edition
+	(&processor.OTELExporter{}).Register(p)
+	(&otel.KafkaDriver{}).Register(p)
 }
 
 // TryToLoadPlugin loads dynamic plugins to plugin cache from dir path.
@@ -156,6 +162,8 @@ func (p *PluginCache) GetConfig() (*Config, error) {
 		return nil, err
 	}
 	p.updateConfigFromEnv()
+
+	fmt.Printf("Config drivers %s\n", p.config.Drivers)
 
 	return p.config, nil
 }

@@ -8,11 +8,13 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/otel"
 	otp "go.opentelemetry.io/proto/otlp/logs/v1"
 )
 
 const (
-	kafkaDriverName = "otelkafka"
+	kafkaDriverName  = "otelkafka"
+	kafkaChannelName = "otelchan"
 )
 
 type KafkaDriver struct {
@@ -24,51 +26,40 @@ func NewKafkaDriver() plugins.SFDriver {
 	return &KafkaDriver{}
 }
 
+func NewOtelChan(size int) interface{} {
+	otc := OTELChannel{In: make(chan *otel.ResourceLogs, size)}
+	return &otc
+}
+
 func (s *KafkaDriver) GetName() string {
 	return kafkaDriverName
 }
 
 func (s *KafkaDriver) Register(pc plugins.SFPluginCache) {
 	pc.AddDriver(kafkaDriverName, NewKafkaDriver)
+	pc.AddChannel(kafkaChannelName, NewOtelChan)
 }
 
 func (s *KafkaDriver) Init(pipeline plugins.SFPipeline, config map[string]interface{}) error {
 	// TODO initalize the Kafka configuration here
-	rawBL, ok := config["otelKafkaBrokerList"]
+	brokerString, ok := config["otelKafkaBrokerList"]
 	if !ok {
 		return fmt.Errorf("no broker list found to initialize driver")
 	}
-	/* broker list of the form { hostname: "", port: ""} */
-	brokerList, ok := rawBL.([]map[string]string)
-	if !ok {
-		return fmt.Errorf("invalid broker list cannot initialize driver")
-	}
-	brokerStrs := []string{}
-	for _, broker := range brokerList {
-		hostname, ok := broker["hostname"]
-		if !ok {
-			return fmt.Errorf("invalid otelKafkaBrokerList -- no field hostname")
-		}
-		port, ok := broker["port"]
-		if !ok {
-			return fmt.Errorf("invalid otelKafkaBrokerList -- no field port")
-		}
-		brokerString := fmt.Sprintf("%s:%s", hostname, port)
-		brokerStrs = append(brokerStrs, brokerString)
-	}
-	brokerString := strings.Join(brokerStrs, "-")
 
 	/* assumes otelKafkaTopics is a list of strings */
 	topicsRaw := config["otelKafkaTopics"]
-	topicsStrs, ok := topicsRaw.([]string)
+	topicsStr, ok := topicsRaw.(string)
 	if !ok {
 		return fmt.Errorf("invalid otelKafkaTopics list")
 	}
 
+	topicsList := strings.Split(topicsStr, ",")
+
 	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": brokerString,
 		"group.id":          "sfprocessor-otel-kafka-driver",
-		"auto.offset.reset": "latest", // might want to make this earliest
+		"auto.offset.reset": "earliest", // might want to make this earliest
 	})
 
 	if err != nil {
@@ -76,7 +67,7 @@ func (s *KafkaDriver) Init(pipeline plugins.SFPipeline, config map[string]interf
 	}
 
 	s.consumer = consumer
-	s.consumer.SubscribeTopics(topicsStrs, nil)
+	s.consumer.SubscribeTopics(topicsList, nil)
 
 	s.pipeline = pipeline
 	return nil
@@ -84,6 +75,7 @@ func (s *KafkaDriver) Init(pipeline plugins.SFPipeline, config map[string]interf
 
 func (s *KafkaDriver) Run(path string, running *bool) error {
 	channel := s.pipeline.GetRootChannel()
+	fmt.Println("Right before the cast")
 	otelChannel, ok := channel.(*OTELChannel)
 	if !ok {
 		logger.Error.Println("bad root channel type")
@@ -93,7 +85,7 @@ func (s *KafkaDriver) Run(path string, running *bool) error {
 	records := otelChannel.In
 	defer close(records)
 	// defer s.pipeline.Wait()
-
+	fmt.Println("entering the loop")
 	for {
 		/* reads the message from the topics */
 		msg, err := s.consumer.ReadMessage(-1)
