@@ -82,6 +82,8 @@ func (pl *Pipeline) AddChannel(channelName string, channel interface{}) {
 // Load loads and enables the pipeline
 func (pl *Pipeline) Load(driverName string) error {
 	conf, err := pl.pluginCache.GetConfig()
+	fmt.Printf("--Config drivers %s\n", conf.Drivers)
+
 	if err != nil {
 		logger.Error.Println("Unable to load pipeline config: ", err)
 		return err
@@ -91,12 +93,15 @@ func (pl *Pipeline) Load(driverName string) error {
 		logger.Error.Println("Unable to load dynamic driver: ", err)
 		return err
 	}
+
 	if len(driverName) > 0 {
 		var driver plugins.SFDriver
 		if driver, err = pl.pluginCache.GetDriver(driverName); err != nil {
 			logger.Error.Println("Unable to load driver: ", err)
 			return err
 		}
+		fmt.Printf("Adding driver in if %s\n", driverName)
+
 		pl.drivers = append(pl.drivers, driver)
 	} else {
 		for _, d := range conf.Drivers {
@@ -106,7 +111,7 @@ func (pl *Pipeline) Load(driverName string) error {
 					logger.Error.Println("Unable to load driver: ", val, err)
 					return err
 				}
-				logger.Trace.Println("Loading driver: " + driver.GetName())
+				logger.Info.Println("Loading driver: " + driver.GetName())
 				pl.drivers = append(pl.drivers, driver)
 			}
 		}
@@ -206,9 +211,10 @@ func (pl *Pipeline) Init(path string) error {
 	logger.Info.Println("Starting the processing pipeline")
 	numDrivers := len(pl.drivers)
 	// initialize driver
+	fmt.Printf("Initializing %d drivers\n", len(pl.drivers))
 	for i, d := range pl.drivers {
 		conf := pl.GetDriverConfig(d.GetName())
-		logger.Trace.Println("Initializing Driver with config", d.GetName())
+		logger.Info.Println("Initializing Driver with config", d.GetName())
 		err := d.Init(pl, conf)
 		if err != nil {
 			logger.Error.Println("Driver initialization error: " + err.Error())
