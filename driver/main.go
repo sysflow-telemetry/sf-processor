@@ -134,6 +134,11 @@ func run() int {
 
 	// load pipeline
 	pl = pipeline.New(*driverDir, *pluginDir, *configFile)
+	fmt.Printf("Driver dir is: %s\n", pipeline.DriverDir)
+	if *inputType == "socket" {
+		emptyType := ""
+		inputType = &emptyType
+	}
 	err := pl.Load(*inputType)
 	if err != nil {
 		logger.Error.Println("Unable to load pipeline error: ", err.Error())

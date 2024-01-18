@@ -53,7 +53,8 @@ COPY makefile.manifest.inc ${SRC_ROOT}
 
 # Build
 RUN cd ${SRC_ROOT} && \
-    make SYSFLOW_VERSION=$VERSION \
+    make BACKEND_TAG=otel \
+    SYSFLOW_VERSION=$VERSION \
          SYSFLOW_BUILD_NUMBER=$BUILD_NUMBER \
          install
 
