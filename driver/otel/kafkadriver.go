@@ -75,7 +75,6 @@ func (s *KafkaDriver) Init(pipeline plugins.SFPipeline, config map[string]interf
 
 func (s *KafkaDriver) Run(path string, running *bool) error {
 	channel := s.pipeline.GetRootChannel()
-	fmt.Println("Right before the cast")
 	otelChannel, ok := channel.(*OTELChannel)
 	if !ok {
 		logger.Error.Println("bad root channel type")
@@ -85,7 +84,7 @@ func (s *KafkaDriver) Run(path string, running *bool) error {
 	records := otelChannel.In
 	defer close(records)
 	// defer s.pipeline.Wait()
-	fmt.Println("entering the loop")
+	fmt.Printf("Entering the loop\n")
 	for {
 		/* reads the message from the topics */
 		msg, err := s.consumer.ReadMessage(-1)
@@ -93,16 +92,21 @@ func (s *KafkaDriver) Run(path string, running *bool) error {
 			return fmt.Errorf("error reading message %s", err)
 		}
 
+		/* take the
 		/* parses the message into an otel record log */
-		var rl *otp.ResourceLogs
-		//might have to do more parsing here depends on how
-		//kafka events are formed
-		err = json.Unmarshal(msg.Value, rl)
+		dl := new(otp.LogsData)
+
+		// might have to do different parsing here depends on how
+		// kafka messages are formed which depends on the
+		// otel collector configuration
+		err = json.Unmarshal(msg.Value, &dl)
 		if err != nil {
 			return fmt.Errorf("could not parse message")
 		}
 		/* sends the record to the records channel */
-		records <- rl
+		for _, rl := range dl.ResourceLogs {
+			records <- rl
+		}
 	}
 }
 
