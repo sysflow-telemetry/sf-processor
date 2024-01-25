@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/golang/protobuf/proto"
+
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
@@ -20,6 +22,7 @@ const (
 type KafkaDriver struct {
 	pipeline plugins.SFPipeline
 	consumer *kafka.Consumer
+	encoding string
 }
 
 func NewKafkaDriver() plugins.SFDriver {
@@ -69,6 +72,17 @@ func (s *KafkaDriver) Init(pipeline plugins.SFPipeline, config map[string]interf
 	s.consumer = consumer
 	s.consumer.SubscribeTopics(topicsList, nil)
 
+	// set the encoding of the events read off of kafka
+	enc, ok := config["encoding"]
+	if !ok {
+		return fmt.Errorf("invalid config -- no encoding")
+	}
+	encStr, ok := enc.(string)
+	if (enc != "proto" && enc != "json") || !ok {
+		return fmt.Errorf("invalid config -- (%s) encoding not supported", enc)
+	}
+	s.encoding = encStr
+
 	s.pipeline = pipeline
 	return nil
 }
@@ -84,7 +98,6 @@ func (s *KafkaDriver) Run(path string, running *bool) error {
 	records := otelChannel.In
 	defer close(records)
 	// defer s.pipeline.Wait()
-	fmt.Printf("Entering the loop\n")
 	for {
 		/* reads the message from the topics */
 		msg, err := s.consumer.ReadMessage(-1)
@@ -99,7 +112,14 @@ func (s *KafkaDriver) Run(path string, running *bool) error {
 		// might have to do different parsing here depends on how
 		// kafka messages are formed which depends on the
 		// otel collector configuration
-		err = json.Unmarshal(msg.Value, &dl)
+		if s.encoding == "json" {
+			err = json.Unmarshal(msg.Value, &dl)
+		} else if s.encoding == "proto" {
+			err = proto.Unmarshal(msg.Value, &dl)
+		} else {
+			err = fmt.Errorf("invalid driver encoding %s", s.encoding)
+		}
+
 		if err != nil {
 			return fmt.Errorf("could not parse message")
 		}
