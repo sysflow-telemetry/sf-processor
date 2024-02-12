@@ -94,6 +94,9 @@ func (s *PolicyEngine) Init(conf map[string]interface{}) (err error) {
 			logger.Error.Printf("Unable to compile local policies from directory %s, %v", s.config.PoliciesPath, err)
 			return
 		}
+
+		// start workers
+		s.pi.StartWorkers()
 	} else {
 		s.policyMonitor, err = monitor.NewPolicyMonitor(s.config, s.createPolicyInterpreter, s.out)
 		if err != nil {
@@ -196,9 +199,6 @@ func (s *PolicyEngine) createPolicyInterpreter() (*engine.PolicyInterpreter[*com
 	if err != nil {
 		return nil, err
 	}
-
-	// start workers
-	pi.StartWorkers()
 
 	return pi, nil
 }
