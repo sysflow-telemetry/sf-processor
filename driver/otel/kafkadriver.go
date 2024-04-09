@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/protobuf/proto"
-
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/otel"
 	otp "go.opentelemetry.io/proto/otlp/logs/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -44,7 +43,6 @@ func (s *KafkaDriver) Register(pc plugins.SFPluginCache) {
 }
 
 func (s *KafkaDriver) Init(pipeline plugins.SFPipeline, config map[string]interface{}) error {
-	// TODO initalize the Kafka configuration here
 	brokerString, ok := config["otelKafkaBrokerList"]
 	if !ok {
 		return fmt.Errorf("no broker list found to initialize driver")
@@ -109,19 +107,16 @@ func (s *KafkaDriver) Run(path string, running *bool) error {
 		/* parses the message into an otel record log */
 		dl := new(otp.LogsData)
 
-		// might have to do different parsing here depends on how
-		// kafka messages are formed which depends on the
-		// otel collector configuration
 		if s.encoding == "json" {
 			err = json.Unmarshal(msg.Value, &dl)
 		} else if s.encoding == "proto" {
-			err = proto.Unmarshal(msg.Value, &dl)
+			err = proto.Unmarshal(msg.Value, dl)
 		} else {
 			err = fmt.Errorf("invalid driver encoding %s", s.encoding)
 		}
 
 		if err != nil {
-			return fmt.Errorf("could not parse message")
+			return fmt.Errorf("could not parse message %v", err)
 		}
 		/* sends the record to the records channel */
 		for _, rl := range dl.ResourceLogs {
