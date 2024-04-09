@@ -25,13 +25,16 @@ func getAllAttributes(rl *ResourceLogs) []*KeyValue {
 
 	for _, sl := range scopeLogs {
 		//scope logs attributes
-		allAttrs = append(allAttrs, sl.Scope.Attributes...)
+		if sl.Scope != nil && sl.Scope.Attributes != nil {
+			allAttrs = append(allAttrs, sl.Scope.Attributes...)
+		}
 
 		// sl.Log records have their own attributes as well
 		for _, lr := range sl.LogRecords {
 			allAttrs = append(allAttrs, lr.Attributes...)
 		}
 	}
+	// logger.Error.Printf("attrs: %v", allAttrs)
 	return allAttrs
 }
 
