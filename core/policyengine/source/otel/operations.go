@@ -18,8 +18,6 @@ func NewOperations() source.Operations[*ResourceLogs] {
 }
 
 func getAllAttributes(rl *ResourceLogs) []*KeyValue {
-	// all resource logs attributes
-	//TODO hardcode other values
 	allAttrs := rl.Resource.Attributes
 	scopeLogs := rl.ScopeLogs
 
@@ -54,7 +52,6 @@ func (ops *Operations) Exists(attr string) (policy.Criterion[*ResourceLogs], err
 }
 
 func (ops *Operations) compareHelper(lattr string, rattr string, op source.Operator, kvs []*KeyValue) bool {
-	operator := OTEPOperator{}
 	for _, a := range kvs {
 		if a.Key != lattr {
 			continue
@@ -63,22 +60,22 @@ func (ops *Operations) compareHelper(lattr string, rattr string, op source.Opera
 		switch v := val.(type) {
 		case *StringValue:
 			strVal := v.StringValue
-			return operator.doStringComparison(strVal, rattr, op)
+			return (&OTEPOperator{}).doStringComparison(strVal, rattr, op)
 		case *ArrayValue:
 			// arrVal := v.ArrayValue
-			return operator.doArrayComparison(v, rattr, op)
+			return (&OTEPOperator{}).doArrayComparison(v, rattr, op)
 		case *BoolValue:
 			boolVal := v.BoolValue
-			return operator.doBooleanComparison(boolVal, rattr, op)
+			return (&OTEPOperator{}).doBooleanComparison(boolVal, rattr, op)
 		case *BytesValue:
 			bytVal := v.BytesValue
-			return operator.doBytesComparison(bytVal, rattr, op)
+			return (&OTEPOperator{}).doBytesComparison(bytVal, rattr, op)
 		case *DoubleValue:
 			dblVal := v.DoubleValue
-			return operator.doDoubleComparison(dblVal, rattr, op)
+			return (&OTEPOperator{}).doDoubleComparison(dblVal, rattr, op)
 		case *IntValue:
 			intVal := v.IntValue
-			return operator.doIntComparison(intVal, rattr, op)
+			return (&OTEPOperator{}).doIntComparison(intVal, rattr, op)
 		case *KvListValue:
 			kvListVal := v.KvlistValue.Values
 			return ops.compareHelper(lattr, rattr, op, kvListVal)
@@ -86,14 +83,6 @@ func (ops *Operations) compareHelper(lattr string, rattr string, op source.Opera
 	}
 	return false
 }
-
-// func isStringOperation(op source.Operator) bool {
-// 	switch op {
-// 	case source.Contains, source.IContains, source.Startswith, source.Endswith, source.IStartswith, source.IEndswith, source.IEq:
-// 		return true
-// 	}
-// 	return false
-// }
 
 func (ops *Operations) Compare(lattr string, rattr string, op source.Operator) (policy.Criterion[*ResourceLogs], error) {
 	//TODO check if rattr is literal or in rule
