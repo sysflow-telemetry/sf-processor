@@ -68,7 +68,10 @@ func (s *KafkaDriver) Init(pipeline plugins.SFPipeline, config map[string]interf
 	}
 
 	s.consumer = consumer
-	s.consumer.SubscribeTopics(topicsList, nil)
+	err = s.consumer.SubscribeTopics(topicsList, nil)
+	if err != nil {
+		return fmt.Errorf("unable to subscribe to topics")
+	}
 
 	// set the encoding of the events read off of kafka
 	enc, ok := config["encoding"]
