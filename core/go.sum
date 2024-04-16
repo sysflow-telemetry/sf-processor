@@ -205,6 +205,8 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
+github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
+github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230905191833-17e4c751b04c h1:5BCJMIuiysHlYJe+nr/203cqIS6cpTIssbUD8v88VOU=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230905191833-17e4c751b04c/go.mod h1:eo1ATE056Rqb9LhE4LA/0Y2AHfV//1zdCw0py4/S5HM=
 github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230929141246-bc28a59e1300 h1:ZxzwimQe2R4kYorqS33/l+m/+SXWMzPn1cLtpA1ExA0=
