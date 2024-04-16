@@ -66,8 +66,10 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	go.mongodb.org/mongo-driver v1.7.5 // indirect
-	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
+	go.opentelemetry.io/proto/otlp v1.2.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/linkedin/goavro.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
