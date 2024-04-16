@@ -115,6 +115,10 @@ func (s *OTELExporter) Process(ch []interface{}, wg *sync.WaitGroup) {
 				nil,
 			)
 
+			if err != nil {
+				logger.Trace.Printf("OtelExporter Error producing kafka message %v", err)
+			}
+
 		}
 	}
 }
@@ -122,5 +126,3 @@ func (s *OTELExporter) Process(ch []interface{}, wg *sync.WaitGroup) {
 func (s *OTELExporter) SetOutChan(ch []interface{}) {}
 
 func (s *OTELExporter) Cleanup() {}
-
-func main() {}
