@@ -39,7 +39,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/satta/gommunityid v0.0.0-20210315182841-1cdcb73ce408
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.8.2
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230929141246-bc28a59e1300
 	github.com/tidwall/gjson v1.14.1
 	golang.org/x/exp v0.0.0-20230206171751-46f607a40771
@@ -48,6 +48,7 @@ require (
 require (
 	github.com/alecthomas/participle v0.7.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
+	github.com/confluentinc/confluent-kafka-go/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-openapi/errors v0.19.8 // indirect
 	github.com/go-openapi/strfmt v0.21.1 // indirect

@@ -31,7 +31,7 @@ require (
 	github.com/spf13/viper v1.10.1
 	github.com/sysflow-telemetry/sf-apis/go v0.0.0-20230929141246-bc28a59e1300
 	github.com/sysflow-telemetry/sf-processor/core v0.0.0-20220221021811-25c7181c2904
-	go.opentelemetry.io/proto/otlp v1.0.0
+	go.opentelemetry.io/proto/otlp v1.2.0
 )
 
 require (
@@ -75,10 +75,10 @@ require (
 	github.com/tidwall/pretty v1.2.0 // indirect
 	go.mongodb.org/mongo-driver v1.7.5 // indirect
 	golang.org/x/exp v0.0.0-20230206171751-46f607a40771 // indirect
-	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
