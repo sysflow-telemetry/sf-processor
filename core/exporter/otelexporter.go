@@ -1,4 +1,4 @@
-package processor
+package exporter
 
 import (
 	"encoding/json"
