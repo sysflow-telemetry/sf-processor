@@ -8,9 +8,7 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
 )
 
-type OTEPOperator struct{}
-
-func (oto *OTEPOperator) doStringComparison(strVal string, rattr string, op source.Operator) bool {
+func doStringComparison(strVal string, rattr string, op source.Operator) bool {
 	switch op {
 	case source.Eq:
 		return strVal == rattr
@@ -48,7 +46,7 @@ func (oto *OTEPOperator) doStringComparison(strVal string, rattr string, op sour
 	}
 }
 
-func (oto *OTEPOperator) doArrayComparison(arrVal *ArrayValue, rattr string, op source.Operator) bool {
+func doArrayComparison(arrVal *ArrayValue, rattr string, op source.Operator) bool {
 	vals := arrVal.ArrayValue
 	switch op {
 	case source.Eq:
@@ -66,7 +64,7 @@ func (oto *OTEPOperator) doArrayComparison(arrVal *ArrayValue, rattr string, op 
 			if !ok {
 				continue
 			}
-			if oto.doStringComparison(str.StringValue, rattr, op) {
+			if doStringComparison(str.StringValue, rattr, op) {
 				return true
 			}
 		}
@@ -77,7 +75,7 @@ func (oto *OTEPOperator) doArrayComparison(arrVal *ArrayValue, rattr string, op 
 			if !ok {
 				continue
 			}
-			if oto.doStringComparison(str.StringValue, rattr, op) {
+			if doStringComparison(str.StringValue, rattr, op) {
 				return true
 			}
 		}
@@ -126,7 +124,7 @@ func (oto *OTEPOperator) doArrayComparison(arrVal *ArrayValue, rattr string, op 
 	}
 }
 
-func (oto *OTEPOperator) doBooleanComparison(boolValue bool, rattr string, op source.Operator) bool {
+func doBooleanComparison(boolValue bool, rattr string, op source.Operator) bool {
 	rattrVal := true
 	if rattr == "False" {
 		rattrVal = false
@@ -162,7 +160,7 @@ func (oto *OTEPOperator) doBooleanComparison(boolValue bool, rattr string, op so
 	}
 }
 
-func (oto *OTEPOperator) doBytesComparison(byts []byte, rattr string, op source.Operator) bool {
+func doBytesComparison(byts []byte, rattr string, op source.Operator) bool {
 	brattr := []byte(rattr)
 	switch op {
 	case source.Eq:
@@ -195,7 +193,7 @@ func (oto *OTEPOperator) doBytesComparison(byts []byte, rattr string, op source.
 	}
 }
 
-func (oto *OTEPOperator) doDoubleComparison(dbl float64, rattr string, op source.Operator) bool {
+func doDoubleComparison(dbl float64, rattr string, op source.Operator) bool {
 	drattr, err := strconv.ParseFloat(strings.TrimSpace(rattr), 64)
 	if err != nil {
 		return false
@@ -231,7 +229,7 @@ func (oto *OTEPOperator) doDoubleComparison(dbl float64, rattr string, op source
 	}
 }
 
-func (oto *OTEPOperator) doIntComparison(intVal int64, rattr string, op source.Operator) bool {
+func doIntComparison(intVal int64, rattr string, op source.Operator) bool {
 	irattr, err := strconv.ParseInt(strings.TrimSpace(rattr), 10, 64)
 	if err != nil {
 		return false

@@ -96,6 +96,14 @@ func (s *KafkaDriver) Run(path string, running *bool) error {
 		return fmt.Errorf("bad root channel type")
 	}
 
+	encodeJson := true
+	if s.encoding == "proto" {
+		encodeJson = false
+	} else if s.encoding != "json" {
+		err := fmt.Errorf("invalid driver encoding %s", s.encoding)
+		return err
+	}
+
 	records := otelChannel.In
 	defer close(records)
 	// defer s.pipeline.Wait()
@@ -110,14 +118,11 @@ func (s *KafkaDriver) Run(path string, running *bool) error {
 		/* parses the message into an otel record log */
 		dl := new(otp.LogsData)
 
-		if s.encoding == "json" {
+		if encodeJson {
 			err = json.Unmarshal(msg.Value, &dl)
-		} else if s.encoding == "proto" {
-			err = proto.Unmarshal(msg.Value, dl)
 		} else {
-			err = fmt.Errorf("invalid driver encoding %s", s.encoding)
+			err = proto.Unmarshal(msg.Value, dl)
 		}
-
 		if err != nil {
 			return fmt.Errorf("could not parse message %v", err)
 		}

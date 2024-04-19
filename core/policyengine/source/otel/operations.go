@@ -60,22 +60,22 @@ func (ops *Operations) compareHelper(lattr string, rattr string, op source.Opera
 		switch v := val.(type) {
 		case *StringValue:
 			strVal := v.StringValue
-			return (&OTEPOperator{}).doStringComparison(strVal, rattr, op)
+			return doStringComparison(strVal, rattr, op)
 		case *ArrayValue:
 			// arrVal := v.ArrayValue
-			return (&OTEPOperator{}).doArrayComparison(v, rattr, op)
+			return doArrayComparison(v, rattr, op)
 		case *BoolValue:
 			boolVal := v.BoolValue
-			return (&OTEPOperator{}).doBooleanComparison(boolVal, rattr, op)
+			return doBooleanComparison(boolVal, rattr, op)
 		case *BytesValue:
 			bytVal := v.BytesValue
-			return (&OTEPOperator{}).doBytesComparison(bytVal, rattr, op)
+			return doBytesComparison(bytVal, rattr, op)
 		case *DoubleValue:
 			dblVal := v.DoubleValue
-			return (&OTEPOperator{}).doDoubleComparison(dblVal, rattr, op)
+			return doDoubleComparison(dblVal, rattr, op)
 		case *IntValue:
 			intVal := v.IntValue
-			return (&OTEPOperator{}).doIntComparison(intVal, rattr, op)
+			return doIntComparison(intVal, rattr, op)
 		case *KvListValue:
 			kvListVal := v.KvlistValue.Values
 			return ops.compareHelper(lattr, rattr, op, kvListVal)
