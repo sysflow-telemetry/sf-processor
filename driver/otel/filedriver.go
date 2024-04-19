@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2023 IBM Corporation.
+// Copyright (C) 2024 IBM Corporation.
 //
 // Authors:
 // Frederico Araujo <frederico.araujo@ibm.com>
@@ -17,8 +17,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package sysflow implements pluggable drivers for SysFlow ingestion.
-
+// Package otel implements pluggable drivers for otel ingestion.
 package otel
 
 import (
@@ -30,6 +29,7 @@ import (
 
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-apis/go/plugins"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/otel"
 
 	otp "go.opentelemetry.io/proto/otlp/logs/v1"
 )
@@ -94,7 +94,7 @@ func (s *FileDriver) Init(pipeline plugins.SFPipeline, config map[string]interfa
 // Run runs the file driver
 func (s *FileDriver) Run(path string, running *bool) error {
 	channel := s.pipeline.GetRootChannel()
-	otelChannel, ok := channel.(*OTELChannel)
+	otelChannel, ok := channel.(*plugins.Channel[*otel.ResourceLogs])
 	if !ok {
 		logger.Error.Println("bad root channel type")
 		return fmt.Errorf("bad root channel type")

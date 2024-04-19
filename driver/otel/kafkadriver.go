@@ -1,3 +1,23 @@
+//
+// Copyright (C) 2024 IBM Corporation.
+//
+// Authors:
+// Frederico Araujo <frederico.araujo@ibm.com>
+// Teryl Taylor <terylt@ibm.com>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Package otel implements pluggable drivers for otel ingestion.
 package otel
 
 import (
@@ -29,7 +49,7 @@ func NewKafkaDriver() plugins.SFDriver {
 }
 
 func NewOtelChan(size int) interface{} {
-	otc := OTELChannel{In: make(chan *otel.ResourceLogs, size)}
+	otc := plugins.Channel[*otel.ResourceLogs]{In: make(chan *otel.ResourceLogs, size)}
 	return &otc
 }
 
@@ -90,7 +110,7 @@ func (s *KafkaDriver) Init(pipeline plugins.SFPipeline, config map[string]interf
 
 func (s *KafkaDriver) Run(path string, running *bool) error {
 	channel := s.pipeline.GetRootChannel()
-	otelChannel, ok := channel.(*OTELChannel)
+	otelChannel, ok := channel.(*plugins.Channel[*otel.ResourceLogs])
 	if !ok {
 		logger.Error.Println("bad root channel type")
 		return fmt.Errorf("bad root channel type")

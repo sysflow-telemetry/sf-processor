@@ -24,16 +24,29 @@
 package common
 
 import (
+	"github.com/sysflow-telemetry/sf-apis/go/plugins"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/otel"
-	driver "github.com/sysflow-telemetry/sf-processor/driver/otel"
 )
 
+// Record is the record associated with the data source (backend) that will
+// be used with the rules compiler.  The policy engine is defined
+// with a "common.Record" type.  We use type aliasing to swap in
+// different data sources currently. We will support multipe sources
+// in the future. All types defined here are specific to the SysFlow flatrecord backend.
 type Record = otel.ResourceLogs
 
-type Channel = driver.OTELChannel
+// Channel is the backend specific channel wrapper object used to send data
+// to the policy engine
+type Channel = plugins.Channel[*otel.ResourceLogs]
 
+// NewOperations specifies a constructor for the backend specific operations
+// object used with the policy engine
 var NewOperations = otel.NewOperations
 
+// NewPrefilter specifies a constructor for the backend specific prefilter
+// object used with the policy engine
 var NewPrefilter = otel.NewPrefilter
 
+// NewContextualizer specifies a constructor for the backend specific contextualizer
+// object used with the policy engine
 var NewContextualizer = otel.NewContextualizer
