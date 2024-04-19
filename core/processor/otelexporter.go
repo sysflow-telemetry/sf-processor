@@ -83,6 +83,14 @@ func (s *OTELExporter) Process(ch []interface{}, wg *sync.WaitGroup) {
 		record := cha.In
 		defer wg.Done()
 
+		encodeJson := true
+		if s.encoding == "proto" {
+			encodeJson = false
+		} else if s.encoding != "json" {
+			logger.Error.Printf("invalid driver encoding %s", s.encoding)
+			return
+		}
+
 		for {
 			fc, ok := <-record
 			if !ok {
@@ -93,12 +101,12 @@ func (s *OTELExporter) Process(ch []interface{}, wg *sync.WaitGroup) {
 
 			var msgValue []byte
 			var err error
-			if s.encoding == "json" {
+			if encodeJson {
 				msgValue, err = json.Marshal(fc)
 				if err != nil {
 					logger.Trace.Println("failed to serialize record to json")
 				}
-			} else if s.encoding == "proto" {
+			} else {
 				msgValue, err = proto.Marshal(fc)
 				if err != nil {
 					logger.Trace.Println("failed to serialize to record proto")
