@@ -64,17 +64,16 @@ func NewPluginCache(conf string) *PluginCache {
 	return plug
 }
 
-// initializes plugin cache.
+// init initializes plugin cache.
 func (p *PluginCache) init() {
 	(&processor.SysFlowReader{}).Register(p)
 	(&processor.SysFlowProcessor{}).Register(p)
 	(&policyengine.PolicyEngine{}).Register(p)
 	(&exporter.Exporter{}).Register(p)
+	(&exporter.OTELExporter{}).Register(p)
 	(&sysflow.FileDriver{}).Register(p)
 	(&sysflow.StreamingDriver{}).Register(p)
-
-	// ant edition
-	(&processor.OTELExporter{}).Register(p)
+	(&otel.FileDriver{}).Register(p)
 	(&otel.KafkaDriver{}).Register(p)
 }
 
