@@ -81,7 +81,7 @@ func (s *Exporter) registerExportProtocols() {
 	(&transports.ElasticProto{}).Register(protocols)
 }
 
-// Init initializes the plugin with a configuration map and cache.
+// Init initializes the plugin with a configuration map.
 func (s *Exporter) Init(conf map[string]interface{}) error {
 	var err error
 
