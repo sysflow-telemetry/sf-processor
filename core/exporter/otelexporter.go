@@ -13,31 +13,39 @@ import (
 )
 
 const (
-	pluginLabel string = "otelexporter"
+	otelPluginName string = "otelexporter"
 )
 
 var Plugin OTELExporter
 
+// OTELExporter defines an OpenTelemetry exporter plugin.
 type OTELExporter struct {
 	producer    *kafka.Producer
 	exportTopic string
 	encoding    string
 }
 
+// NewOTELExporter creates a new plugin instance.
 func NewOTELExporter() plugins.SFProcessor {
 	return new(OTELExporter)
 }
 
+// GetName returns the plugin name.
 func (s *OTELExporter) GetName() string {
-	return pluginLabel
+	return otelPluginName
 }
 
+// Register registers plugin to plugin cache.
+func (s *OTELExporter) Register(pc plugins.SFPluginCache) {
+	pc.AddProcessor(otelPluginName, NewOTELExporter)
+}
+
+// Init initializes the plugin with a configuration map.
 func (s *OTELExporter) Init(conf map[string]interface{}) error {
 	brokerString, ok := conf["otelExportKafkaBrokerList"]
 	if !ok {
 		return fmt.Errorf("no broker list found to initialize driver")
 	}
-
 	topicRaw, ok := conf["otelExportTopic"]
 	if !ok {
 		return fmt.Errorf("no topic to export to")
@@ -66,17 +74,13 @@ func (s *OTELExporter) Init(conf map[string]interface{}) error {
 		return fmt.Errorf("invalid config -- (%s) encoding not supported", enc)
 	}
 	s.encoding = encStr
-
 	s.producer = producer
 	s.exportTopic = topicStr
 
 	return nil
 }
 
-func (s *OTELExporter) Register(pc plugins.SFPluginCache) {
-	pc.AddProcessor(pluginLabel, NewOTELExporter)
-}
-
+// Process implements the main interface of the plugin.
 func (s *OTELExporter) Process(ch []interface{}, wg *sync.WaitGroup) {
 	for _, chi := range ch {
 		cha := chi.(*plugins.Channel[*otel.ResourceLogs])
@@ -97,7 +101,6 @@ func (s *OTELExporter) Process(ch []interface{}, wg *sync.WaitGroup) {
 				logger.Trace.Println("Channel closed shutting down")
 				break
 			}
-			// fmt.Printf("Dealing with a record--%s\n", fc)
 
 			var msgValue []byte
 			var err error
@@ -131,6 +134,14 @@ func (s *OTELExporter) Process(ch []interface{}, wg *sync.WaitGroup) {
 	}
 }
 
+// SetOutChan sets the output channel of the plugin.
 func (s *OTELExporter) SetOutChan(ch []interface{}) {}
 
-func (s *OTELExporter) Cleanup() {}
+// Cleanup tears down plugin resources.
+func (s *OTELExporter) Cleanup() {
+	logger.Trace.Println("Exiting ", otelPluginName)
+	if !s.producer.IsClosed() {
+		s.producer.Flush(3000)
+		s.producer.Close()
+	}
+}
