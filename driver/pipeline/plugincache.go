@@ -70,7 +70,6 @@ func (p *PluginCache) init() {
 	(&processor.SysFlowProcessor{}).Register(p)
 	(&policyengine.PolicyEngine{}).Register(p)
 	(&exporter.Exporter{}).Register(p)
-	(&exporter.OTELExporter{}).Register(p)
 	(&sysflow.FileDriver{}).Register(p)
 	(&sysflow.StreamingDriver{}).Register(p)
 	(&otel.FileDriver{}).Register(p)
