@@ -133,7 +133,6 @@ func (s *FileDriver) Run(path string, running *bool) error {
 			if !*running {
 				break
 			}
-
 			records <- otl
 		}
 
@@ -153,9 +152,7 @@ func (s *FileDriver) Run(path string, running *bool) error {
 
 // Cleanup tears down the driver resources.
 func (s *FileDriver) Cleanup() {
-	// logger.Trace.Println("Exiting ", fileDriverName)
 	fmt.Println("Exiting ", fileDriverName)
-
 	if s.file != nil {
 		s.file.Close()
 	}

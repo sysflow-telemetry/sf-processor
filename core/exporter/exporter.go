@@ -30,7 +30,7 @@ import (
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/encoders"
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/transports"
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/common"
 )
 
 const (
@@ -45,7 +45,7 @@ type Exporter struct {
 	config    commons.Config
 	encoder   encoders.Encoder
 	transport transports.TransportProtocol
-	recs      []*flatrecord.Record
+	recs      []*common.Record
 	counter   int
 }
 
@@ -62,23 +62,6 @@ func (s *Exporter) GetName() string {
 // Register registers plugin to plugin cache.
 func (s *Exporter) Register(pc plugins.SFPluginCache) {
 	pc.AddProcessor(pluginName, NewExporter)
-}
-
-// registerCodecs register encoders for exporting processor data.
-func (s *Exporter) registerCodecs() {
-	(&encoders.JSONEncoder{}).Register(codecs)
-	(&encoders.ECSEncoder{}).Register(codecs)
-	(&encoders.OccurrenceEncoder{}).Register(codecs)
-}
-
-// registerExportProtocols register transport protocols for exporting processor data.
-func (s *Exporter) registerExportProtocols() {
-	(&transports.SyslogProto{}).Register(protocols)
-	(&transports.TerminalProto{}).Register(protocols)
-	(&transports.TextFileProto{}).Register(protocols)
-	(&transports.NullProto{}).Register(protocols)
-	(&transports.FindingsAPIProto{}).Register(protocols)
-	(&transports.ElasticProto{}).Register(protocols)
 }
 
 // Init initializes the plugin with a configuration map.
@@ -132,7 +115,7 @@ func (s *Exporter) Process(ch []interface{}, wg *sync.WaitGroup) {
 		logger.Error.Println("Exporter only supports a single input channel at this time")
 		return
 	}
-	cha := ch[0].(*plugins.Channel[*flatrecord.Record])
+	cha := ch[0].(*plugins.Channel[*common.Record])
 	record := cha.In
 	defer wg.Done()
 
