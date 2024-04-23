@@ -50,14 +50,12 @@ func CreateKafkaConfig(bc Config, conf map[string]interface{}) (c KafkaConfig, e
 
 	// parse config map
 	if v, ok := conf[KafkaConfigKey].(map[string]interface{}); ok {
-		cm := kafka.ConfigMap{}
 		for key, value := range v {
-			cm.SetKey(key, value)
+			c.ConfigMap.SetKey(key, value)
 		}
-		if _, ok := cm["bootstrap.servers"]; !ok {
+		if _, ok := c.ConfigMap["bootstrap.servers"]; !ok {
 			return c, fmt.Errorf("no broker list found to initialize the kafka producer")
 		}
-		c.ConfigMap = cm
 	} else {
 		return c, fmt.Errorf("no kafka config map defined in configuration")
 	}

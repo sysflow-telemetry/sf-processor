@@ -71,7 +71,7 @@ func (s *KafkaDriver) Init(pipeline plugins.SFPipeline, config map[string]interf
 		return fmt.Errorf("could not create kafka consumer")
 	}
 
-	err = s.consumer.SubscribeTopics(conf.Topics, nil)
+	err = consumer.SubscribeTopics(conf.Topics, nil)
 	if err != nil {
 		return fmt.Errorf("unable to subscribe to kafka topics: %v", conf.Topics)
 	}

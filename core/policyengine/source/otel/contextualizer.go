@@ -18,7 +18,8 @@ func (c *Contextualizer) GetRules(r *ResourceLogs) []policy.Rule[*ResourceLogs] 
 	return nil
 }
 
-func (c *Contextualizer) AddTags(r *ResourceLogs, tags ...string) {}
+func (c *Contextualizer) AddTags(r *ResourceLogs, tags ...string) {
+}
 
 func (c *Contextualizer) GetTags(r *ResourceLogs) []string {
 	return nil

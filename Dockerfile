@@ -53,10 +53,10 @@ COPY makefile.manifest.inc ${SRC_ROOT}
 
 # Build
 RUN cd ${SRC_ROOT} && \
-    make BACKEND_TAG=$BACKEND_TAG \
-    SYSFLOW_VERSION=$VERSION \
-         SYSFLOW_BUILD_NUMBER=$BUILD_NUMBER \
-         install
+    make BACKEND_TAG=${BACKEND_TAG} \
+    SYSFLOW_VERSION=${VERSION} \
+    SYSFLOW_BUILD_NUMBER=${BUILD_NUMBER} \
+    install
 
 #-----------------------
 # Stage: runtime
