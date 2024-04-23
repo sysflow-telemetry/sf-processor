@@ -10,18 +10,18 @@
 include ./makefile.manifest.inc
 
 # Basic go commands
-PATH=$(shell printenv PATH):/usr/local/go/bin
-BACKEND_TAG?=flatrecord
-GOCMD=go
-GOBUILD=$(GOCMD) build -trimpath -tags "exclude_graphdriver_btrfs ${BACKEND_TAG}"
-GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test -tags "exclude_graphdriver_btrfs ${BACKEND_TAG}"
-GOGET=$(GOCMD) get -tags "exclude_graphdriver_btrfs ${BACKEND_TAG}"
-BIN=sfprocessor
-OUTPUT=$(BIN)
-SRC=./driver
-PACKDIR=./scripts/cpack
-INSTALL_PATH=/usr/local/sysflow
+PATH = $(shell printenv PATH):/usr/local/go/bin
+BACKEND_TAG ?= flatrecord
+GOCMD = go
+GOBUILD = $(GOCMD) build -trimpath -tags "exclude_graphdriver_btrfs ${BACKEND_TAG}"
+GOCLEAN = $(GOCMD) clean
+GOTEST = $(GOCMD) test -tags "exclude_graphdriver_btrfs ${BACKEND_TAG}"
+GOGET = $(GOCMD) get -tags "exclude_graphdriver_btrfs ${BACKEND_TAG}"
+BIN = sfprocessor
+OUTPUT = $(BIN)
+SRC = ./driver
+PACKDIR = ./scripts/cpack
+INSTALL_PATH = /usr/local/sysflow
 
 .PHONY: build
 build: version deps
@@ -71,7 +71,7 @@ docker-build: docker-plugin-builder
 
 .PHONY: docker-plugin-builder
 docker-plugin-builder:
-	( DOCKER_BUILDKIT=1 docker build -t sysflowtelemetry/plugin-builder:${SYSFLOW_VERSION} --build-arg UBI_VER=$(UBI_VERSION) --target=base -f Dockerfile . )
+	( DOCKER_BUILDKIT=1 docker build -t sysflowtelemetry/plugin-builder:${SYSFLOW_VERSION} --build-arg BACKEND_TAG=$(BACKEND_TAG) --build-arg UBI_VER=$(UBI_VERSION) --target=base -f Dockerfile . )
 
 .PHONY: pull
 pull:
