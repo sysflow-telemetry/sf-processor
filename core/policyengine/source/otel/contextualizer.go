@@ -60,7 +60,7 @@ func (c *Contextualizer) AddRules(logs *ResourceLogs, rules ...policy.Rule[*Reso
 	if kvTag == nil && len(attrs) > 0 {
 		lastRecord := attrs[len(attrs)-1]
 		if lastRecord.Key == "sf.processor.tags" {
-			kvRule = lastRecord
+			kvTag = lastRecord
 		}
 	}
 
