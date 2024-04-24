@@ -15,11 +15,8 @@ func NewContextualizer() source.Contextualizer[*ResourceLogs] {
 }
 
 func (c *Contextualizer) AddRules(logs *ResourceLogs, rules ...policy.Rule[*ResourceLogs]) {
-	fmt.Println("Calling Add Rules...")
 	attrs := logs.Resource.Attributes
 	var kvRule *v1.KeyValue = nil
-
-	fmt.Printf("The attributes len is %d\n", len(attrs))
 
 	if len(attrs) > 1 {
 		lastRecord := attrs[len(attrs)-2]
@@ -99,9 +96,6 @@ func (c *Contextualizer) AddRules(logs *ResourceLogs, rules ...policy.Rule[*Reso
 		array.Values = append(array.Values, &v1.AnyValue{Value: tagValue})
 	}
 	logs.Resource.Attributes = attrs
-	fmt.Printf("The attributes len after is %d\n", len(attrs))
-	fmt.Printf("logs.Resource.Attributes: %v\n", logs.Resource.Attributes)
-
 }
 
 func (c *Contextualizer) GetRules(r *ResourceLogs) []policy.Rule[*ResourceLogs] {
