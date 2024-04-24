@@ -1,0 +1,31 @@
+{
+    "pipeline":[
+      {
+        "processor": "policyengine",
+        "in": "otel otelchan",
+        "out": "evt eventchan",
+        "language": "falco",
+        "policies": "/filter.yaml",
+        "config": "",
+        "mode": "alert"
+      },
+      {
+        "processor": "exporter",
+        "in": "evt eventchan",        
+        "format": "otel",     
+        "export": "kafka",
+        "kafka.config": {"bootstrap.servers": "kafka1:29092"},
+        "kafka.topic": "downstream",
+        "kafka.encoding": "proto" 
+      }      
+    ],
+    "drivers": [
+      {
+        "driver": "otelkafka",
+        "out": "otel otelchan",
+        "kafka.config": {"bootstrap.servers": "kafka1:29092"},
+        "kafka.topics": ["otel-logs"],        
+        "kafka.encoding": "proto"
+      }
+    ]
+  }
