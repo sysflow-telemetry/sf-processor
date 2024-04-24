@@ -66,7 +66,10 @@ install: build
 	cp ./resources/policies/distribution/* /usr/local/sysflow/resources/policies/
 
 .PHONY: docker-build
-docker-build: docker-plugin-builder
+docker-build: docker-plugin-builder	docker-processor
+
+.PHONY: docker-processor
+docker-processor:
 	( DOCKER_BUILDKIT=1 docker build --cache-from=sysflowtelemetry/plugin-builder:${SYSFLOW_VERSION} -t sysflowtelemetry/sf-processor:${SYSFLOW_VERSION} --build-arg BACKEND_TAG=$(BACKEND_TAG) --build-arg UBI_VER=$(UBI_VERSION) --target=runtime -f Dockerfile . )
 
 .PHONY: docker-plugin-builder
