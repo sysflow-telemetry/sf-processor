@@ -63,17 +63,17 @@ func (s *KafkaDriver) Register(pc plugins.SFPluginCache) {
 func (s *KafkaDriver) Init(pipeline plugins.SFPipeline, config map[string]interface{}) error {
 	conf, err := CreateKafkaConfig(config)
 	if err != nil {
-		return fmt.Errorf("caught error while reading kafka driver configuration")
+		return fmt.Errorf("caught error while reading kafka driver configuration %v", err)
 	}
 
 	consumer, err := kafka.NewConsumer(&conf.ConfigMap)
 	if err != nil {
-		return fmt.Errorf("could not create kafka consumer")
+		return fmt.Errorf("could not create kafka consumer. Error: %v", err)
 	}
 
 	err = consumer.SubscribeTopics(conf.Topics, nil)
 	if err != nil {
-		return fmt.Errorf("unable to subscribe to kafka topics: %v", conf.Topics)
+		return fmt.Errorf("unable to subscribe to kafka topics: %v. Error: %v", conf.Topics, err)
 	}
 
 	s.config = conf
@@ -97,7 +97,7 @@ func (s *KafkaDriver) Run(path string, running *bool) error {
 		/* reads the message from the topics */
 		msg, err := s.consumer.ReadMessage(-1)
 		if err != nil {
-			return fmt.Errorf("error reading message %s", err)
+			return fmt.Errorf("error reading message %v", err)
 		}
 
 		/* parses the message into an otel record log */
