@@ -73,7 +73,7 @@ func (s *KafkaDriver) Init(pipeline plugins.SFPipeline, config map[string]interf
 
 	err = consumer.SubscribeTopics(conf.Topics, nil)
 	if err != nil {
-		return fmt.Errorf("unable to subscribe to kafka topics %v: %v", conf.Topics, err)
+		return fmt.Errorf("unable to subscribe to kafka topics: %v. Error: %v", conf.Topics, err)
 	}
 
 	s.config = conf
@@ -97,7 +97,7 @@ func (s *KafkaDriver) Run(path string, running *bool) error {
 		/* reads the message from the topics */
 		msg, err := s.consumer.ReadMessage(-1)
 		if err != nil {
-			return fmt.Errorf("error reading message %s", err)
+			return fmt.Errorf("error reading message %v", err)
 		}
 
 		/* parses the message into an otel record log */
