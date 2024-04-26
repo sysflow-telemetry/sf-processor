@@ -37,6 +37,7 @@ func (s *Exporter) registerCodecs() {
 func (s *Exporter) registerExportProtocols() {
 	(&transports.TerminalProto{}).Register(protocols)
 	(&transports.TextFileProto{}).Register(protocols)
-	(&transports.NullProto{}).Register(protocols)
 	(&transports.KafkaProto{}).Register(protocols)
+	(&transports.NullProto{}).Register(protocols)
+
 }

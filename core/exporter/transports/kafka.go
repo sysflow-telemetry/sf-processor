@@ -41,7 +41,7 @@ func NewKafkaProto(conf commons.Config) TransportProtocol {
 
 // Register registers the text file proto object with the exporter.
 func (s *KafkaProto) Register(eps map[commons.Transport]TransportProtocolFactory) {
-	eps[commons.FileTransport] = NewKafkaProto
+	eps[commons.KafkaTransport] = NewKafkaProto
 }
 
 // Init initializes the text file.
