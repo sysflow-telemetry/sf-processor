@@ -139,12 +139,12 @@ const (
 	FileTransport
 	SyslogTransport
 	ESTransport
-	FindingsTransport
+	KafkaTransport
 	NullTransport
 )
 
 func (s Transport) String() string {
-	return [...]string{"terminal", "file", "syslog", "es", "findings", "null"}[s]
+	return [...]string{"terminal", "file", "syslog", "es", "kafka", "null"}[s]
 }
 
 func parseTransportConfig(s string) Transport {
@@ -157,8 +157,8 @@ func parseTransportConfig(s string) Transport {
 	if ESTransport.String() == s {
 		return ESTransport
 	}
-	if FindingsTransport.String() == s {
-		return FindingsTransport
+	if KafkaTransport.String() == s {
+		return KafkaTransport
 	}
 	if NullTransport.String() == s {
 		return NullTransport
