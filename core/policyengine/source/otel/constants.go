@@ -16,17 +16,11 @@
 // Package otel implements an open telemetry backend for the policy compilers.
 package otel
 
-import (
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
+// Enrichment/tagging attribute names.
+const (
+	SF_PROCESSOR_TAGS  string = "sf.processor.tags"
+	SF_PROCESSOR_RULES string = "sf.processor.rules"
 )
 
-type Prefilter struct{}
-
-func NewPrefilter() source.Prefilter[*ResourceLogs] {
-	return &Prefilter{}
-}
-
-func (p *Prefilter) IsApplicable(r *ResourceLogs, rule policy.Rule[*ResourceLogs]) bool {
-	return true
-}
+// Processor scope log name.
+const SF_PROCESSOR_SCOPE_NAME string = "sf-processor"
