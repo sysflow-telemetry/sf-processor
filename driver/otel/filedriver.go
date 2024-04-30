@@ -109,7 +109,6 @@ func (s *FileDriver) Run(path string, running *bool) error {
 	}
 
 	var otpLogs []*otp.ResourceLogs
-
 	for _, fn := range files {
 		logger.Trace.Println("Loading file: " + fn)
 		s.file, err = os.Open(fn)
@@ -122,26 +121,22 @@ func (s *FileDriver) Run(path string, running *bool) error {
 			logger.Error.Println("File read error: ", err)
 			return err
 		}
-
 		err = json.Unmarshal(bytes, &otpLogs)
 		if err != nil {
 			logger.Error.Println("Error unmarshaling into OTP ResourceLogs: ", err)
 			return err
 		}
-
 		for _, otl := range otpLogs {
 			if !*running {
 				break
 			}
 			records <- otl
 		}
-
 		s.file.Close()
 		if !*running {
 			break
 		}
 	}
-
 	logger.Error.Println("Closing main channel")
 	if records != nil {
 		close(records)
@@ -152,7 +147,7 @@ func (s *FileDriver) Run(path string, running *bool) error {
 
 // Cleanup tears down the driver resources.
 func (s *FileDriver) Cleanup() {
-	fmt.Println("Exiting ", fileDriverName)
+	logger.Trace.Println("Exiting ", fileDriverName)
 	if s.file != nil {
 		s.file.Close()
 	}

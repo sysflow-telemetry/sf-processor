@@ -161,8 +161,6 @@ func (p *PluginCache) GetConfig() (*Config, error) {
 	}
 	p.updateConfigFromEnv()
 
-	fmt.Printf("Config drivers %s\n", p.config.Drivers)
-
 	return p.config, nil
 }
 

@@ -82,7 +82,6 @@ func (pl *Pipeline) AddChannel(channelName string, channel interface{}) {
 // Load loads and enables the pipeline
 func (pl *Pipeline) Load(driverName string) error {
 	conf, err := pl.pluginCache.GetConfig()
-	fmt.Printf("--Config drivers %s\n", conf.Drivers)
 
 	if err != nil {
 		logger.Error.Println("Unable to load pipeline config: ", err)
@@ -100,8 +99,6 @@ func (pl *Pipeline) Load(driverName string) error {
 			logger.Error.Println("Unable to load driver: ", err)
 			return err
 		}
-		fmt.Printf("Adding driver in if %s\n", driverName)
-
 		pl.drivers = append(pl.drivers, driver)
 	} else {
 		for _, d := range conf.Drivers {
