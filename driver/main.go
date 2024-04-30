@@ -134,7 +134,6 @@ func run() int {
 
 	// load pipeline
 	pl = pipeline.New(*driverDir, *pluginDir, *configFile)
-	fmt.Printf("Driver dir is: %s\n", pipeline.DriverDir)
 	if *inputType == "socket" {
 		emptyType := ""
 		inputType = &emptyType
