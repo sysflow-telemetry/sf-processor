@@ -1,3 +1,19 @@
+//
+// Copyright (C) 2024 IBM Corporation.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Package otel implements an open telemetry backend for the policy compilers.
 package otel
 
 import (
@@ -5,7 +21,8 @@ import (
 
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/policy"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
-	v1 "go.opentelemetry.io/proto/otlp/common/v1"
+	otelcommon "go.opentelemetry.io/proto/otlp/common/v1"
+	otellogs "go.opentelemetry.io/proto/otlp/logs/v1"
 )
 
 type Contextualizer struct{}
@@ -15,65 +32,22 @@ func NewContextualizer() source.Contextualizer[*ResourceLogs] {
 }
 
 func (c *Contextualizer) AddRules(logs *ResourceLogs, rules ...policy.Rule[*ResourceLogs]) {
-	attrs := logs.Resource.Attributes
-	var kvRule *v1.KeyValue = nil
 
-	if len(attrs) > 1 {
-		lastRecord := attrs[len(attrs)-2]
-		if lastRecord.Key == "sf.processor.rules" {
-			kvRule = lastRecord
-		}
-	}
+	// get or create scope logs for sf-processor enrichment
+	attrs := c.getOrCreateProcessorScopeAttributes(logs)
 
-	if kvRule == nil && len(attrs) > 0 {
-		lastRecord := attrs[len(attrs)-1]
-		if lastRecord.Key == "sf.processor.rules" {
-			kvRule = lastRecord
-		}
-	}
+	// get or create kv attributes for rule names and tags
+	kvRule := c.getOrCreateAttribute(attrs, SF_PROCESSOR_RULES)
+	kvTag := c.getOrCreateAttribute(attrs, SF_PROCESSOR_TAGS)
 
-	if kvRule == nil {
-		arrayValue := &v1.ArrayValue{Values: make([]*v1.AnyValue, 0)}
-		anyArrayValue := &v1.AnyValue_ArrayValue{ArrayValue: arrayValue}
-		kvRule = &v1.KeyValue{Key: "sf.processor.rules", Value: &v1.AnyValue{Value: anyArrayValue}}
-		attrs = append(attrs, kvRule)
-	}
-
+	// set rules and retrieve tags
+	tags := make(map[string]int)
 	for _, rule := range rules {
-		//KeyValue->Value->Value(AnyValue)->Values(ArrayValue)
 		v := kvRule.Value.Value
 		arrayValue := v.(*ArrayValue)
 		array := arrayValue.ArrayValue
-		ruleValue := &v1.AnyValue_StringValue{StringValue: rule.Name}
-		array.Values = append(array.Values, &v1.AnyValue{Value: ruleValue})
-	}
-
-	var kvTag *v1.KeyValue = nil
-
-	if len(attrs) > 1 {
-		lastRecord := attrs[len(attrs)-2]
-		if lastRecord.Key == "sf.processor.tags" {
-			kvTag = lastRecord
-		}
-	}
-
-	if kvTag == nil && len(attrs) > 0 {
-		lastRecord := attrs[len(attrs)-1]
-		if lastRecord.Key == "sf.processor.tags" {
-			kvTag = lastRecord
-		}
-	}
-
-	if kvTag == nil {
-		arrayValue := &v1.ArrayValue{Values: make([]*v1.AnyValue, 0)}
-		anyArrayValue := &v1.AnyValue_ArrayValue{ArrayValue: arrayValue}
-		kvTag = &v1.KeyValue{Key: "sf.processor.tags", Value: &v1.AnyValue{Value: anyArrayValue}}
-		attrs = append(attrs, kvTag)
-	}
-
-	tags := make(map[string]int)
-
-	for _, rule := range rules {
+		ruleValue := &otelcommon.AnyValue_StringValue{StringValue: rule.Name}
+		array.Values = append(array.Values, &otelcommon.AnyValue{Value: ruleValue})
 		for _, tag := range rule.Tags {
 			switch v := tag.(type) {
 			case []string:
@@ -87,24 +61,55 @@ func (c *Contextualizer) AddRules(logs *ResourceLogs, rules ...policy.Rule[*Reso
 		}
 	}
 
+	// set tags
 	for tag := range tags {
-		//KeyValue->Value->Value(AnyValue)->Values(ArrayValue)
 		v := kvTag.Value.Value
 		arrayValue := v.(*ArrayValue)
 		array := arrayValue.ArrayValue
-		tagValue := &v1.AnyValue_StringValue{StringValue: tag}
-		array.Values = append(array.Values, &v1.AnyValue{Value: tagValue})
+		tagValue := &otelcommon.AnyValue_StringValue{StringValue: tag}
+		array.Values = append(array.Values, &otelcommon.AnyValue{Value: tagValue})
 	}
-	logs.Resource.Attributes = attrs
 }
 
 func (c *Contextualizer) GetRules(r *ResourceLogs) []policy.Rule[*ResourceLogs] {
 	return nil
 }
 
-func (c *Contextualizer) AddTags(r *ResourceLogs, tags ...string) {
-}
+func (c *Contextualizer) AddTags(r *ResourceLogs, tags ...string) {}
 
 func (c *Contextualizer) GetTags(r *ResourceLogs) []string {
 	return nil
+}
+
+func (c *Contextualizer) getOrCreateProcessorScopeAttributes(logs *ResourceLogs) *[]*otelcommon.KeyValue {
+	for _, scopeLog := range logs.ScopeLogs {
+		if scopeLog.Scope != nil && scopeLog.Scope.Name == SF_PROCESSOR_SCOPE_NAME {
+			return &scopeLog.Scope.Attributes
+		}
+	}
+	var sl *otellogs.ScopeLogs = &otellogs.ScopeLogs{}
+	sl.Scope = &otelcommon.InstrumentationScope{Name: SF_PROCESSOR_SCOPE_NAME}
+	sl.Scope.Attributes = make([]*otelcommon.KeyValue, 0)
+	logs.ScopeLogs = append(logs.ScopeLogs, sl)
+	return &sl.Scope.Attributes
+}
+
+func (c *Contextualizer) getOrCreateAttribute(attrs *[]*otelcommon.KeyValue, key string) *otelcommon.KeyValue {
+	if len(*attrs) > 1 {
+		lastAttr := (*attrs)[len(*attrs)-2]
+		if lastAttr.Key == key {
+			return lastAttr
+		}
+	}
+	if len(*attrs) > 0 {
+		lastAttr := (*attrs)[len(*attrs)-1]
+		if lastAttr.Key == key {
+			return lastAttr
+		}
+	}
+	arrayValue := &otelcommon.ArrayValue{Values: make([]*otelcommon.AnyValue, 0)}
+	anyArrayValue := &otelcommon.AnyValue_ArrayValue{ArrayValue: arrayValue}
+	kvAttr := &otelcommon.KeyValue{Key: key, Value: &otelcommon.AnyValue{Value: anyArrayValue}}
+	*attrs = append(*attrs, kvAttr)
+	return kvAttr
 }

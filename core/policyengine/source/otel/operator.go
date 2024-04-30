@@ -1,3 +1,19 @@
+//
+// Copyright (C) 2024 IBM Corporation.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Package otel implements an open telemetry backend for the policy compilers.
 package otel
 
 import (
@@ -5,6 +21,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/sysflow-telemetry/sf-apis/go/logger"
 	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source"
 )
 
@@ -41,7 +58,7 @@ func doStringComparison(strVal string, rattr string, op source.Operator) bool {
 	case source.GEq:
 		return strVal >= rattr
 	default:
-		// TODO log an error here about invalid operator
+		logger.Warn.Printf("unrecognized operator: %v", op)
 		return false
 	}
 }
@@ -119,7 +136,7 @@ func doArrayComparison(arrVal *ArrayValue, rattr string, op source.Operator) boo
 	case source.GEq:
 		return false
 	default:
-		// TODO log an error here about invalid operator
+		logger.Warn.Printf("unrecognized operator: %v", op)
 		return false
 	}
 }
@@ -155,7 +172,7 @@ func doBooleanComparison(boolValue bool, rattr string, op source.Operator) bool 
 	case source.GEq:
 		return false
 	default:
-		// TODO log an error here about invalid operator
+		logger.Warn.Printf("unrecognized operator: %v", op)
 		return false
 	}
 }
@@ -188,7 +205,7 @@ func doBytesComparison(byts []byte, rattr string, op source.Operator) bool {
 	case source.GEq:
 		return false
 	default:
-		// TODO log an error here about invalid operator
+		logger.Warn.Printf("unrecognized operator: %v", op)
 		return false
 	}
 }
@@ -224,7 +241,7 @@ func doDoubleComparison(dbl float64, rattr string, op source.Operator) bool {
 	case source.GEq:
 		return dbl >= drattr
 	default:
-		// TODO log an error here about invalid operator
+		logger.Warn.Printf("unrecognized operator: %v", op)
 		return false
 	}
 }
@@ -260,7 +277,7 @@ func doIntComparison(intVal int64, rattr string, op source.Operator) bool {
 	case source.GEq:
 		return intVal >= irattr
 	default:
-		// TODO log an error here about invalid operator
+		logger.Warn.Printf("unrecognized operator: %v", op)
 		return false
 	}
 }
