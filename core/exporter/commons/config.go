@@ -58,7 +58,7 @@ type Config struct {
 	FileConfig
 	SyslogConfig
 	ESConfig
-	FindingsConfig
+	KafkaConfig
 }
 
 // CreateConfig creates a new config object from config dictionary.
@@ -125,7 +125,7 @@ func CreateConfig(conf map[string]interface{}) (c Config, err error) {
 	if err != nil {
 		return
 	}
-	c.FindingsConfig, err = CreateFindingsConfig(c, conf)
+	c.KafkaConfig, err = CreateKafkaConfig(c, conf)
 
 	return
 }
@@ -139,12 +139,12 @@ const (
 	FileTransport
 	SyslogTransport
 	ESTransport
-	FindingsTransport
+	KafkaTransport
 	NullTransport
 )
 
 func (s Transport) String() string {
-	return [...]string{"terminal", "file", "syslog", "es", "findings", "null"}[s]
+	return [...]string{"terminal", "file", "syslog", "es", "kafka", "null"}[s]
 }
 
 func parseTransportConfig(s string) Transport {
@@ -157,8 +157,8 @@ func parseTransportConfig(s string) Transport {
 	if ESTransport.String() == s {
 		return ESTransport
 	}
-	if FindingsTransport.String() == s {
-		return FindingsTransport
+	if KafkaTransport.String() == s {
+		return KafkaTransport
 	}
 	if NullTransport.String() == s {
 		return NullTransport
@@ -171,13 +171,13 @@ type Format int
 
 // Format config options.
 const (
-	JSONFormat       Format = iota // JSON schema
-	ECSFormat                      // Elastic Common Schema
-	OccurrenceFormat               // IBM Findings Occurrence
+	JSONFormat Format = iota // JSON schema
+	ECSFormat                // Elastic Common Schema
+	OtelFormat               // Open Telemetry schema
 )
 
 func (s Format) String() string {
-	return [...]string{"json", "ecs", "occurrence"}[s]
+	return [...]string{"json", "ecs", "otel"}[s]
 }
 
 func parseFormatConfig(s string) Format {
@@ -186,8 +186,8 @@ func parseFormatConfig(s string) Format {
 		return JSONFormat
 	case ECSFormat.String():
 		return ECSFormat
-	case OccurrenceFormat.String():
-		return OccurrenceFormat
+	case OtelFormat.String():
+		return OtelFormat
 	}
 	return JSONFormat
 }

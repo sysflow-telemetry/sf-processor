@@ -1,3 +1,6 @@
+//go:build flatrecord
+// +build flatrecord
+
 //
 // Copyright (C) 2020 IBM Corporation.
 //
