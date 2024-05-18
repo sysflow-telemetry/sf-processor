@@ -470,23 +470,33 @@ func encodeUser(rec *flatrecord.Record) JSONData {
 // encodeProcess creates an ECS process field including the nested parent process.
 func encodeProcess(rec *flatrecord.Record) JSONData {
 	exe := flatrecord.Mapper.MapStr(flatrecord.SF_PROC_EXE)(rec)
+	args_count := 0
+	if flatrecord.Mapper.MapStr(flatrecord.SF_PROC_ARGS)(rec) != "" {
+  		args_count = len(strings.Split(flatrecord.Mapper.MapStr(flatrecord.SF_PROC_ARGS)(rec), " "))
+ 	}
 	process := JSONData{
-		ECS_PROC_EXE:     exe,
-		ECS_PROC_ARGS:    flatrecord.Mapper.MapStr(flatrecord.SF_PROC_ARGS)(rec),
-		ECS_PROC_CMDLINE: flatrecord.Mapper.MapStr(flatrecord.SF_PROC_CMDLINE)(rec),
-		ECS_PROC_PID:     flatrecord.Mapper.MapInt(flatrecord.SF_PROC_PID)(rec),
-		ECS_PROC_START:   utils.ToIsoTimeStr(flatrecord.Mapper.MapInt(flatrecord.SF_PROC_CREATETS)(rec)),
-		ECS_PROC_NAME:    path.Base(exe),
-		ECS_PROC_THREAD:  JSONData{ECS_PROC_TID: flatrecord.Mapper.MapInt(flatrecord.SF_PROC_TID)(rec)},
+		ECS_PROC_EXE:        exe,
+		ECS_PROC_ARGS:       flatrecord.Mapper.MapStr(flatrecord.SF_PROC_ARGS)(rec),
+		ECS_PROC_ARGS_COUNT: args_count,
+		ECS_PROC_CMDLINE:    flatrecord.Mapper.MapStr(flatrecord.SF_PROC_CMDLINE)(rec),
+		ECS_PROC_PID:        flatrecord.Mapper.MapInt(flatrecord.SF_PROC_PID)(rec),
+		ECS_PROC_START:      utils.ToIsoTimeStr(flatrecord.Mapper.MapInt(flatrecord.SF_PROC_CREATETS)(rec)),
+		ECS_PROC_NAME:       path.Base(exe),
+		ECS_PROC_THREAD:     JSONData{ECS_PROC_TID: flatrecord.Mapper.MapInt(flatrecord.SF_PROC_TID)(rec)},
 	}
 	pexe := flatrecord.Mapper.MapStr(flatrecord.SF_PPROC_EXE)(rec)
+	pargs_count := 0
+	if flatrecord.Mapper.MapStr(flatrecord.SF_PPROC_ARGS)(rec) != "" {
+  		pargs_count = len(strings.Split(flatrecord.Mapper.MapStr(flatrecord.SF_PPROC_ARGS)(rec), " "))
+ 	}
 	parent := JSONData{
-		ECS_PROC_EXE:     pexe,
-		ECS_PROC_ARGS:    flatrecord.Mapper.MapStr(flatrecord.SF_PPROC_ARGS)(rec),
-		ECS_PROC_CMDLINE: flatrecord.Mapper.MapStr(flatrecord.SF_PPROC_CMDLINE)(rec),
-		ECS_PROC_PID:     flatrecord.Mapper.MapInt(flatrecord.SF_PPROC_PID)(rec),
-		ECS_PROC_START:   utils.ToIsoTimeStr(flatrecord.Mapper.MapInt(flatrecord.SF_PPROC_CREATETS)(rec)),
-		ECS_PROC_NAME:    path.Base(pexe),
+		ECS_PROC_EXE:        pexe,
+		ECS_PROC_ARGS:       flatrecord.Mapper.MapStr(flatrecord.SF_PPROC_ARGS)(rec),
+		ECS_PROC_ARGS_COUNT: pargs_count,
+		ECS_PROC_CMDLINE:    flatrecord.Mapper.MapStr(flatrecord.SF_PPROC_CMDLINE)(rec),
+		ECS_PROC_PID:        flatrecord.Mapper.MapInt(flatrecord.SF_PPROC_PID)(rec),
+		ECS_PROC_START:      utils.ToIsoTimeStr(flatrecord.Mapper.MapInt(flatrecord.SF_PPROC_CREATETS)(rec)),
+		ECS_PROC_NAME:       path.Base(pexe),
 	}
 	process[ECS_PROC_PARENT] = parent
 	return process
