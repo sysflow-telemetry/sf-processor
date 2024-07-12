@@ -22,13 +22,13 @@ package encoders
 
 import (
 	"github.com/sysflow-telemetry/sf-processor/core/exporter/commons"
-	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/flatrecord"
+	"github.com/sysflow-telemetry/sf-processor/core/policyengine/source/common"
 )
 
 // Encoder converts and serializes a record into export data.
 type Encoder interface {
 	Register(codecs map[commons.Format]EncoderFactory)
-	Encode(recs []*flatrecord.Record) ([]commons.EncodedData, error)
+	Encode(recs []*common.Record) ([]commons.EncodedData, error)
 	Cleanup()
 }
 

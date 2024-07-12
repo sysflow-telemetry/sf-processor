@@ -34,6 +34,8 @@ ENV GOPATH=/go/
 
 ENV SRC_ROOT=/go/src/github.com/sysflow-telemetry/sf-processor/
 
+ARG BACKEND_TAG=flatrecord
+
 # Install dependencies
 RUN dnf update -y --disableplugin=subscription-manager && \
      dnf install -y  --disableplugin=subscription-manager wget gcc make git device-mapper-devel
@@ -51,9 +53,10 @@ COPY makefile.manifest.inc ${SRC_ROOT}
 
 # Build
 RUN cd ${SRC_ROOT} && \
-    make SYSFLOW_VERSION=$VERSION \
-         SYSFLOW_BUILD_NUMBER=$BUILD_NUMBER \
-         install
+    make BACKEND_TAG=${BACKEND_TAG} \
+    SYSFLOW_VERSION=${VERSION} \
+    SYSFLOW_BUILD_NUMBER=${BUILD_NUMBER} \
+    install
 
 #-----------------------
 # Stage: runtime
