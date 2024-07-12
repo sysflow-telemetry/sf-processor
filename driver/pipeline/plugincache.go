@@ -28,6 +28,8 @@ import (
 	"plugin"
 	"strings"
 
+	otel "github.com/sysflow-telemetry/sf-processor/driver/otel"
+
 	"github.com/spf13/viper"
 	"github.com/sysflow-telemetry/sf-apis/go/ioutils"
 	"github.com/sysflow-telemetry/sf-apis/go/logger"
@@ -62,7 +64,7 @@ func NewPluginCache(conf string) *PluginCache {
 	return plug
 }
 
-// initializes plugin cache.
+// init initializes plugin cache.
 func (p *PluginCache) init() {
 	(&processor.SysFlowReader{}).Register(p)
 	(&processor.SysFlowProcessor{}).Register(p)
@@ -70,6 +72,8 @@ func (p *PluginCache) init() {
 	(&exporter.Exporter{}).Register(p)
 	(&sysflow.FileDriver{}).Register(p)
 	(&sysflow.StreamingDriver{}).Register(p)
+	(&otel.FileDriver{}).Register(p)
+	(&otel.KafkaDriver{}).Register(p)
 }
 
 // TryToLoadPlugin loads dynamic plugins to plugin cache from dir path.
