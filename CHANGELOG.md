@@ -15,12 +15,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-## [0.7.0] - 2024-04-30
+## [0.7.0] - 2024-08-04
 
 ### Added
 
 - Kafka driver and exporter for Otel record logs
 - Policy engine backend for Otel record logs
+
+### Changed
+
+- Bump UBI to 9.4-1123.1719560047
 
 ## [0.6.3] - 2024-04-22
 
@@ -230,8 +234,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - First release of SysFlow Processor.
 
-[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.7.0...HEAD
-[0.7.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.6.3...0.7.0
+[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.7.0-rc4...HEAD
+[0.7.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.6.3...0.7.0-rc4
 [0.6.3]: https://github.com/sysflow-telemetry/sf-processor/compare/0.6.2...0.6.3
 [0.6.2]: https://github.com/sysflow-telemetry/sf-processor/compare/0.6.1...0.6.2
 [0.6.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.6.0...0.6.1
