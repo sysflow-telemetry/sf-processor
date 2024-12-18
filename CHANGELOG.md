@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-## [0.7.0] - 2024-08-04
+## [0.7.0] - 2024-12-18
 
 ### Added
 
@@ -24,7 +24,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
-- Bump UBI to 9.4-1123.1719560047
+- Bump UBI to 9.4-1214.1729773476
 
 ## [0.6.3] - 2024-04-22
 
@@ -234,8 +234,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - First release of SysFlow Processor.
 
-[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.7.0-rc4...HEAD
-[0.7.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.6.3...0.7.0-rc4
+[Unreleased]: https://github.com/sysflow-telemetry/sf-processor/compare/0.7.0...HEAD
+[0.7.0]: https://github.com/sysflow-telemetry/sf-processor/compare/0.6.3...0.7.0
 [0.6.3]: https://github.com/sysflow-telemetry/sf-processor/compare/0.6.2...0.6.3
 [0.6.2]: https://github.com/sysflow-telemetry/sf-processor/compare/0.6.1...0.6.2
 [0.6.1]: https://github.com/sysflow-telemetry/sf-processor/compare/0.6.0...0.6.1
